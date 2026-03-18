@@ -149,17 +149,11 @@
     </div>
   {:else if loading}
     <div class="loading-skeleton">
-      <div class="skeleton-balance">
-        <Shimmer classes="shimmer-lg" />
-      </div>
-      <div class="skeleton-tier">
-        <Shimmer classes="shimmer-md" />
-      </div>
-      <div class="skeleton-transactions">
-        <Shimmer classes="shimmer-sm" />
-        <Shimmer classes="shimmer-sm" />
-        <Shimmer classes="shimmer-sm" />
-      </div>
+      <Shimmer classes="shimmer-balance" />
+      <Shimmer classes="shimmer-tier" />
+      <Shimmer classes="shimmer-tx" />
+      <Shimmer classes="shimmer-tx" />
+      <Shimmer classes="shimmer-tx" />
     </div>
   {:else if error !== null}
     <div class="hub-error">
@@ -367,24 +361,21 @@
     padding-top: var(--space-4);
   }
 
-  .skeleton-balance {
+  :global(.shimmer-balance) {
+    --shimmer-width: 100%;
     --shimmer-height: 180px;
-    --shimmer-border-radius: var(--radius-lg);
-    --shimmer-background: var(--color-surface-2);
+    --shimmer-border-radius: 16px;
   }
 
-  .skeleton-tier {
-    --shimmer-height: 100px;
-    --shimmer-border-radius: var(--radius-lg);
-    --shimmer-background: var(--color-surface-2);
+  :global(.shimmer-tier) {
+    --shimmer-width: 100%;
+    --shimmer-height: 80px;
+    --shimmer-border-radius: 12px;
   }
 
-  .skeleton-transactions {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-    --shimmer-height: 56px;
-    --shimmer-border-radius: var(--radius-md);
-    --shimmer-background: var(--color-surface-2);
+  :global(.shimmer-tx) {
+    --shimmer-width: 100%;
+    --shimmer-height: 60px;
+    --shimmer-border-radius: 8px;
   }
 </style>

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { Table, Pill, Select, Pagination } from '@juspay/svelte-ui-components';
+  import { Table, Pill, Select, Pagination, Shimmer } from '@juspay/svelte-ui-components';
   import type { MerchantTransactionRow } from '$lib/client/modules/transactions';
   import { fetchMerchantTransactions, formatBucketType, formatMovementType, formatState } from '$lib/client/modules/transactions';
   import { currentMerchantId } from '$lib/client/modules/admin';
@@ -208,9 +208,12 @@
     </div>
 
     {#if loading}
-      <div class="loading-state">
-        <span class="loading-spinner"></span>
-        <p>Loading transactions...</p>
+      <div class="shimmer-rows">
+        <Shimmer classes="shimmer-row" />
+        <Shimmer classes="shimmer-row" />
+        <Shimmer classes="shimmer-row" />
+        <Shimmer classes="shimmer-row" />
+        <Shimmer classes="shimmer-row" />
       </div>
     {:else}
       <Table
@@ -360,30 +363,17 @@
     padding: var(--space-4) 0;
   }
 
-  .loading-state {
+  .shimmer-rows {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-4);
-    padding: var(--space-16);
-    color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
+    gap: var(--space-3);
+    padding: var(--space-4) 0;
   }
 
-  .loading-spinner {
-    width: 24px;
-    height: 24px;
-    border: 2px solid var(--color-border);
-    border-top-color: var(--color-primary);
-    border-radius: 50%;
-    animation: spin 0.6s linear infinite;
-  }
-
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
+  :global(.shimmer-row) {
+    --shimmer-width: 100%;
+    --shimmer-height: 48px;
+    --shimmer-border-radius: 4px;
   }
 
   .empty-state {

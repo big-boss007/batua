@@ -1,8 +1,14 @@
 <script lang="ts">
+  import { browser } from '$app/environment';
   import type { Snippet } from 'svelte';
   import type { StorefrontMerchant } from '$lib/client/modules/storefront';
   import { merchantContext } from '$lib/client/modules/storefront';
   import { MerchantHeader } from '$lib/client/modules/storefront/ui';
+
+  if (browser) {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+  }
 
   let { data, children }: { data: { merchant: StorefrontMerchant | null }; children: Snippet } = $props();
 

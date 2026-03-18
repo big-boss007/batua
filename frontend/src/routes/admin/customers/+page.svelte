@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Table, Pagination } from '@juspay/svelte-ui-components';
+  import { Table, Pagination, Shimmer } from '@juspay/svelte-ui-components';
   import type { Customer, CustomerDetail as CustomerDetailType, MerchantCustomerRow } from '$lib/client/modules/customers';
   import { getCustomerDetail, fetchMerchantCustomers } from '$lib/client/modules/customers';
   import { currentMerchantId } from '$lib/client/modules/admin';
@@ -133,9 +133,12 @@
         </div>
 
         {#if loadingList}
-          <div class="loading-state">
-            <span class="loading-spinner"></span>
-            <p>Loading customers...</p>
+          <div class="shimmer-rows">
+            <Shimmer classes="shimmer-row" />
+            <Shimmer classes="shimmer-row" />
+            <Shimmer classes="shimmer-row" />
+            <Shimmer classes="shimmer-row" />
+            <Shimmer classes="shimmer-row" />
           </div>
         {:else}
           <Table
@@ -166,9 +169,11 @@
       {#if loadingDetail || selectedDetail !== null}
         <aside class="detail-panel">
           {#if loadingDetail}
-            <div class="loading-state">
-              <span class="loading-spinner"></span>
-              <p>Loading customer details...</p>
+            <div class="shimmer-detail">
+              <Shimmer classes="shimmer-detail-header" />
+              <Shimmer classes="shimmer-row" />
+              <Shimmer classes="shimmer-row" />
+              <Shimmer classes="shimmer-row" />
             </div>
           {:else if selectedDetail}
             <div class="detail-header">
@@ -294,30 +299,30 @@
     padding: var(--space-4) 0;
   }
 
-  .loading-state {
+  .shimmer-rows {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-4);
-    padding: var(--space-16);
-    color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
+    gap: var(--space-3);
+    padding: var(--space-4) 0;
   }
 
-  .loading-spinner {
-    width: 24px;
-    height: 24px;
-    border: 2px solid var(--color-border);
-    border-top-color: var(--color-primary);
-    border-radius: 50%;
-    animation: spin 0.6s linear infinite;
+  .shimmer-detail {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4) 0;
   }
 
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
+  :global(.shimmer-row) {
+    --shimmer-width: 100%;
+    --shimmer-height: 48px;
+    --shimmer-border-radius: 4px;
+  }
+
+  :global(.shimmer-detail-header) {
+    --shimmer-width: 60%;
+    --shimmer-height: 24px;
+    --shimmer-border-radius: 4px;
   }
 
   .empty-state {

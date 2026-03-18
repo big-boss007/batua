@@ -1,4 +1,4 @@
-.PHONY: check test run fmt generate-types
+.PHONY: check test run fmt generate-types dev stop
 
 check:
 	cargo check
@@ -25,3 +25,19 @@ reset-db:
 	@echo "Database reset complete"
 
 reset-and-seed: reset-db seed
+
+dev:
+	@echo "Starting Batua..."
+	@cargo run &
+	@cd frontend && npm run dev -- --port 5174 &
+	@echo ""
+	@echo "  Backend:  http://localhost:3000"
+	@echo "  Frontend: http://localhost:5174"
+	@echo "  Admin:    http://localhost:5174/admin"
+	@echo ""
+	@wait
+
+stop:
+	@pkill -f "target/debug/batua" 2>/dev/null || true
+	@pkill -f "vite dev" 2>/dev/null || true
+	@echo "Stopped all services"
