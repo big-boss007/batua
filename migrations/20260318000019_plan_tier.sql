@@ -1,0 +1,1 @@
+ALTER TABLE merchants ADD COLUMN plan_tier TEXT NOT NULL DEFAULT 'free';

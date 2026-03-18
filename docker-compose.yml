@@ -1,0 +1,63 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: batua
+      POSTGRES_PASSWORD: batua
+      POSTGRES_DB: batua
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U batua"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  postgres-test:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: batua
+      POSTGRES_PASSWORD: batua
+      POSTGRES_DB: batua_test
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U batua"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  migrate:
+    image: postgres:16
+    depends_on:
+      postgres:
+        condition: service_healthy
+      postgres-test:
+        condition: service_healthy
+    volumes:
+      - ./migrations:/migrations
+    entrypoint: |
+      bash -c '
+        for f in $$(ls /migrations/*.sql | sort); do
+          echo "Running $$(basename $$f) on batua..."
+          PGPASSWORD=batua psql -h postgres -U batua -d batua -f "$$f" 2>&1 | grep -v "already exists" || true
+          echo "Running $$(basename $$f) on batua_test..."
+          PGPASSWORD=batua psql -h postgres-test -U batua -d batua_test -f "$$f" 2>&1 | grep -v "already exists" || true
+        done
+        echo "All migrations complete."
+      '
+
+volumes:
+  postgres_data:

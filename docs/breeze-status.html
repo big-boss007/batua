@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Breeze — Build Status</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface-2: #1a1a26;
+    --border: #2a2a3a;
+    --text: #e4e4ed;
+    --text-muted: #8888a0;
+    --green: #34d399;
+    --green-bg: rgba(52, 211, 153, 0.1);
+    --amber: #fbbf24;
+    --amber-bg: rgba(251, 191, 36, 0.1);
+    --rose: #fb7185;
+    --rose-bg: rgba(251, 113, 133, 0.1);
+    --blue: #60a5fa;
+    --blue-bg: rgba(96, 165, 250, 0.1);
+    --accent: #7c6aff;
+    --radius: 12px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .container { max-width: 1000px; margin: 0 auto; padding: 48px 24px 100px; }
+
+  .header { text-align: center; margin-bottom: 48px; }
+  .header h1 { font-size: 36px; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 8px; background: linear-gradient(135deg, #fff, #a0a0c0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .header p { color: var(--text-muted); font-size: 15px; }
+
+  /* Summary bar */
+  .summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 48px; }
+  .summary-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; text-align: center; }
+  .summary-value { font-size: 28px; font-weight: 700; }
+  .summary-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
+  .summary-card.done .summary-value { color: var(--green); }
+  .summary-card.partial .summary-value { color: var(--amber); }
+
+  /* Phase */
+  .phase { margin-bottom: 36px; }
+  .phase-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .phase-num { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0; }
+  .phase-title { font-size: 18px; font-weight: 700; }
+  .phase-status { margin-left: auto; padding: 4px 12px; border-radius: 100px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+
+  .status-done { background: var(--green-bg); color: var(--green); border: 1px solid rgba(52,211,153,0.2); }
+  .status-partial { background: var(--amber-bg); color: var(--amber); border: 1px solid rgba(251,191,36,0.2); }
+  .status-not-started { background: var(--surface-2); color: var(--text-muted); border: 1px solid var(--border); }
+  .status-blocked { background: var(--rose-bg); color: var(--rose); border: 1px solid rgba(251,113,133,0.2); }
+
+  .phase--done .phase-num { background: var(--green-bg); color: var(--green); border: 2px solid rgba(52,211,153,0.3); }
+  .phase--partial .phase-num { background: var(--amber-bg); color: var(--amber); border: 2px solid rgba(251,191,36,0.3); }
+  .phase--not-started .phase-num { background: var(--surface-2); color: var(--text-muted); border: 2px solid var(--border); }
+
+  /* Items table */
+  .items { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .item { display: grid; grid-template-columns: 28px 1fr 120px; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .item:last-child { border-bottom: none; }
+  .item-icon { font-size: 14px; text-align: center; }
+  .item-done .item-icon { color: var(--green); }
+  .item-partial .item-icon { color: var(--amber); }
+  .item-not-done .item-icon { color: var(--text-muted); }
+  .item-label { color: var(--text); }
+  .item-note { color: var(--text-muted); font-size: 11px; text-align: right; }
+  .item-done .item-label { color: var(--text); }
+  .item-not-done .item-label { color: var(--text-muted); }
+
+  .section-label { padding: 8px 16px; background: var(--surface-2); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+
+  /* Stats row */
+  .stats-row { display: flex; gap: 24px; margin-top: 48px; justify-content: center; }
+  .stat { text-align: center; }
+  .stat-value { font-size: 20px; font-weight: 700; color: var(--green); }
+  .stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+
+  @media (max-width: 640px) {
+    .summary { grid-template-columns: repeat(2, 1fr); }
+    .item { grid-template-columns: 24px 1fr; }
+    .item-note { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+  <h1>Breeze Build Status</h1>
+  <p>Updated 18 March 2026 — What's done, what's partial, what's not started.</p>
+</div>
+
+<div class="summary">
+  <div class="summary-card done"><div class="summary-value">60</div><div class="summary-label">Tests Passing</div></div>
+  <div class="summary-card done"><div class="summary-value">208</div><div class="summary-label">Files Generated</div></div>
+  <div class="summary-card done"><div class="summary-value">15</div><div class="summary-label">Backend Services</div></div>
+  <div class="summary-card partial"><div class="summary-value">4/7</div><div class="summary-label">Phases Complete</div></div>
+</div>
+
+<!-- Phase 0 -->
+<div class="phase phase--done">
+  <div class="phase-header">
+    <div class="phase-num">0</div>
+    <div class="phase-title">Bedrock</div>
+    <span class="phase-status status-done">Complete</span>
+  </div>
+  <div class="items">
+    <div class="section-label">Backend</div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Project scaffold — Rust/Axum, PostgreSQL, Redis, telemetry</span><span class="item-note">78 .rs files</span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Ledger core — all 8 truths implemented</span><span class="item-note">26 integration tests</span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Event system — ingestion, schema validation, dedup</span><span class="item-note"></span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Rule engine — YAML DSL parser, interpreter, snapshots, layered inheritance</span><span class="item-note">20 unit tests</span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Core DSL resources — WalletPolicy, EventSchema, RewardRule</span><span class="item-note"></span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Identity resolution — phone → customer_id, E.164 normalization</span><span class="item-note">12 unit tests</span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Database schema — 17 migrations, immutability trigger</span><span class="item-note">17 .sql files</span></div>
+    <div class="section-label">Frontend</div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">SvelteKit scaffold — foundation module, design tokens, API client</span><span class="item-note">113 .ts/.svelte</span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">@juspay/svelte-ui-components integrated + themed</span><span class="item-note">Table, Button, Modal, etc.</span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Light/dark theme with CSS custom properties</span><span class="item-note"></span></div>
+    <div class="section-label">Testing &amp; Infra</div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Integration tests — all 8 truths proven against real DB</span><span class="item-note">26 tests, 0.08s</span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Tracing lint — every pub async fn instrumented</span><span class="item-note">enforced by CI</span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">GitHub Actions CI — backend + frontend + integration</span><span class="item-note">3 jobs</span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Docker Compose — Postgres + Redis + auto-migrate</span><span class="item-note"></span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Seed script — 8 customers, 20 orders, full demo data</span><span class="item-note">make seed</span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">API documentation — 13 doc files, all endpoints</span><span class="item-note">docs/api-*.md</span></div>
+  </div>
+</div>
+
+<!-- Phase 1 -->
+<div class="phase phase--done">
+  <div class="phase-header">
+    <div class="phase-num">1</div>
+    <div class="phase-title">First Earn-Redeem Loop</div>
+    <span class="phase-status status-done">Complete</span>
+  </div>
+  <div class="items">
+    <div class="section-label">Backend</div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Shopify order.completed webhook receiver</span><span class="item-note">events service</span></div>
+    <div class="item item-partial"><span class="item-icon">&#9679;</span><span class="item-label">Commerce enrichment — product-to-collection pre-sync</span><span class="item-note">tables exist, sync not built</span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Prepaid earn flow — event → rules → ledger entry</span><span class="item-note">proven end-to-end</span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Credit lifecycle — earned state + expiry</span><span class="item-note"></span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Balance APIs — spendable, displayed, transaction history</span><span class="item-note"></span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Redemption engine — eligibility, constraints, atomic debit</span><span class="item-note">full state machine</span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Compensation path — Shopify failure → compensating credit</span><span class="item-note">stubbed Shopify call</span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Connector abstraction — capability → vendor mapping</span><span class="item-note"></span></div>
+    <div class="section-label">Frontend</div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Merchant admin — dashboard, merchant selector, sidebar</span><span class="item-note">live with real data</span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Rule configuration UI — create/edit, conditions builder</span><span class="item-note">Table + Modal + Toggle</span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Transaction log viewer + balance display</span><span class="item-note">Table + Pill + Pagination</span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Customer search + detail — Avatar, wallet, transactions</span><span class="item-note">live with real data</span></div>
+    <div class="item item-partial"><span class="item-icon">&#9679;</span><span class="item-label">Shopify checkout extension — balance display + apply credit</span><span class="item-note">needs Shopify app scaffold</span></div>
+  </div>
+</div>
+
+<!-- Phase 2 -->
+<div class="phase phase--done">
+  <div class="phase-header">
+    <div class="phase-num">2</div>
+    <div class="phase-title">India Market Readiness (COD + WhatsApp)</div>
+    <span class="phase-status status-done">Complete</span>
+  </div>
+  <div class="items">
+    <div class="section-label">COD Flow</div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">cod-pending bucket — held state, visible but not spendable</span><span class="item-note">proven in integration tests</span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Logistics webhook — POST /cod/webhook/delivery</span><span class="item-note"></span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">State machine — pending → delivered or RTO cancelled</span><span class="item-note">across movement</span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">COD-to-prepaid incentive — UPI switch → instant credit</span><span class="item-note"></span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">GeoPolicy — geo:india layer</span><span class="item-note"></span></div>
+    <div class="section-label">Notifications</div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">NotificationFlow DSL resource — trigger → template → channel</span><span class="item-note"></span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">WhatsApp BSP connector (Interakt/WATI)</span><span class="item-note">stubbed delivery</span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Template management — variable injection</span><span class="item-note">3 templates seeded</span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Trigger hooks — earn, redeem, COD-release, expiry</span><span class="item-note"></span></div>
+    <div class="section-label">Frontend</div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">COD analytics page wired</span><span class="item-note"></span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Notification template editor</span><span class="item-note"></span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Connector management UI</span><span class="item-note"></span></div>
+  </div>
+</div>
+
+<!-- Phase 3 -->
+<div class="phase phase--done">
+  <div class="phase-header">
+    <div class="phase-num">3</div>
+    <div class="phase-title">Campaigns + Loyalty Tiers</div>
+    <span class="phase-status status-done">Complete</span>
+  </div>
+  <div class="items">
+    <div class="section-label">Campaigns</div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Campaign resource — overlay model, multipliers, snapshots</span><span class="item-note"></span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Festive templates — 10 India festivals (Diwali, Navratri, etc.)</span><span class="item-note"></span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Campaign calendar + performance metrics</span><span class="item-note"></span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Frontend: campaign builder, template grid, calendar</span><span class="item-note"></span></div>
+    <div class="section-label">Loyalty Tiers</div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">LoyaltyProgram resource — tier definitions, evaluation</span><span class="item-note">seeded: Bronze→Platinum</span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Auto tier transitions — upgrade + downgrade</span><span class="item-note"></span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Per-tier earn multiplier</span><span class="item-note"></span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Frontend: loyalty designer, tier progress, distribution</span><span class="item-note"></span></div>
+  </div>
+</div>
+
+<!-- Phase 4 -->
+<div class="phase phase--partial">
+  <div class="phase-header">
+    <div class="phase-num">4</div>
+    <div class="phase-title">Gift Cards + Referrals</div>
+    <span class="phase-status status-partial">Backend Done, UI Partial</span>
+  </div>
+  <div class="items">
+    <div class="section-label">Gift Cards</div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Bearer instrument model — code-identified, transferable</span><span class="item-note"></span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Single + bulk issuance (idempotent per batch+row)</span><span class="item-note"></span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Claim — across movement (bearer → customer wallet)</span><span class="item-note"></span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Partial redemption + expiry</span><span class="item-note"></span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Frontend: gift card list, issue form, bulk upload</span><span class="item-note">API wired</span></div>
+    <div class="item item-partial"><span class="item-icon">&#9679;</span><span class="item-label">Gift card purchase flow (customer-facing)</span><span class="item-note">needs checkout extension</span></div>
+    <div class="section-label">Referrals</div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">ReferralProgram — dual reward, vanity codes</span><span class="item-note">PRIYA10, VIKRAM20 seeded</span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Anti-fraud — 5 signals (IP, device, velocity, self-referral, new account)</span><span class="item-note"></span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Creator/influencer mode — tiered commissions</span><span class="item-note"></span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Frontend: referral program config, analytics</span><span class="item-note">API wired</span></div>
+    <div class="item item-partial"><span class="item-icon">&#9679;</span><span class="item-label">Creator dashboard + Razorpay payout</span><span class="item-note">needs Razorpay integration</span></div>
+  </div>
+</div>
+
+<!-- Phase 5 -->
+<div class="phase phase--partial">
+  <div class="phase-header">
+    <div class="phase-num">5</div>
+    <div class="phase-title">Merchant Tools + Customer Experience</div>
+    <span class="phase-status status-partial">Backend Done, UI Partial</span>
+  </div>
+  <div class="items">
+    <div class="section-label">Merchant Admin</div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Goodwill credits (manual with admin actor cause)</span><span class="item-note"></span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Bulk credit/debit operations</span><span class="item-note"></span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Dispute resolution — reversal entries</span><span class="item-note"></span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Wallet policy management</span><span class="item-note">seeded for earned + gift card</span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Dashboard stats API</span><span class="item-note">live in UI</span></div>
+    <div class="section-label">Analytics</div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">COD analytics API (pending/delivered/RTO)</span><span class="item-note"></span></div>
+    <div class="item item-partial"><span class="item-icon">&#9679;</span><span class="item-label">RTO-aware loyalty metrics (loyalty vs non-loyalty)</span><span class="item-note">API exists, UI wired, needs real data</span></div>
+    <div class="item item-partial"><span class="item-icon">&#9679;</span><span class="item-label">Revenue attribution + campaign lift</span><span class="item-note">campaign performance API exists</span></div>
+    <div class="section-label">Customer Experience</div>
+    <div class="item item-partial"><span class="item-icon">&#9679;</span><span class="item-label">PDP widget — "Earn X on this product"</span><span class="item-note">needs Shopify theme extension</span></div>
+    <div class="item item-partial"><span class="item-icon">&#9679;</span><span class="item-label">Loyalty Hub page — customer-facing balance/history</span><span class="item-note">needs Shopify theme extension</span></div>
+    <div class="item item-partial"><span class="item-icon">&#9679;</span><span class="item-label">UPI wallet top-up (Razorpay)</span><span class="item-note">needs Razorpay integration</span></div>
+  </div>
+</div>
+
+<!-- Phase 6 -->
+<div class="phase phase--not-started">
+  <div class="phase-header">
+    <div class="phase-num">6</div>
+    <div class="phase-title">Platform</div>
+    <span class="phase-status status-not-started">Not Started</span>
+  </div>
+  <div class="items">
+    <div class="item item-not-done"><span class="item-icon">&#9675;</span><span class="item-label">Passes — Apple Wallet + Google Wallet</span><span class="item-note"></span></div>
+    <div class="item item-not-done"><span class="item-icon">&#9675;</span><span class="item-label">Social / non-purchase earning — 20+ action types</span><span class="item-note"></span></div>
+    <div class="item item-not-done"><span class="item-icon">&#9675;</span><span class="item-label">Paid memberships — Amazon Prime model</span><span class="item-note"></span></div>
+    <div class="item item-not-done"><span class="item-icon">&#9675;</span><span class="item-label">Additional integrations — Return Prime, Judge.me, ONDC</span><span class="item-note"></span></div>
+  </div>
+</div>
+
+<!-- Service boundaries -->
+<div class="phase phase--partial" style="margin-top: 48px;">
+  <div class="phase-header">
+    <div class="phase-num">&#8644;</div>
+    <div class="phase-title">External Integration Points</div>
+    <span class="phase-status status-blocked">Blocked on Partners</span>
+  </div>
+  <div class="items">
+    <div class="item item-not-done"><span class="item-icon">&#9675;</span><span class="item-label">Shopify App — OAuth, webhook HMAC, checkout extension, Admin API</span><span class="item-note">needs Partner account</span></div>
+    <div class="item item-not-done"><span class="item-icon">&#9675;</span><span class="item-label">Razorpay — UPI top-up, creator payouts</span><span class="item-note">needs Razorpay account</span></div>
+    <div class="item item-partial"><span class="item-icon">&#9679;</span><span class="item-label">Shiprocket — delivery webhook</span><span class="item-note">receiver built, needs real webhook format</span></div>
+    <div class="item item-partial"><span class="item-icon">&#9679;</span><span class="item-label">WhatsApp BSP (Interakt/WATI)</span><span class="item-note">connector built, delivery stubbed</span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">Identity service interface</span><span class="item-note">built internally</span></div>
+    <div class="item item-done"><span class="item-icon">&#10003;</span><span class="item-label">CPaaS interface — send(customer, template, vars, channel)</span><span class="item-note">connector abstraction done</span></div>
+  </div>
+</div>
+
+<div class="stats-row">
+  <div class="stat"><div class="stat-value">78</div><div class="stat-label">Rust Files</div></div>
+  <div class="stat"><div class="stat-value">113</div><div class="stat-label">Frontend Files</div></div>
+  <div class="stat"><div class="stat-value">17</div><div class="stat-label">Migrations</div></div>
+  <div class="stat"><div class="stat-value">13</div><div class="stat-label">API Docs</div></div>
+  <div class="stat"><div class="stat-value">60</div><div class="stat-label">Tests</div></div>
+  <div class="stat"><div class="stat-value">0</div><div class="stat-label">Errors</div></div>
+</div>
+
+</div>
+</body>
+</html>

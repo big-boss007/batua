@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Breeze — Implementation Phases</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface-2: #1a1a26;
+    --border: #2a2a3a;
+    --text: #e4e4ed;
+    --text-muted: #8888a0;
+    --accent: #7c6aff;
+    --accent-glow: rgba(124, 106, 255, 0.15);
+    --green: #34d399;
+    --green-muted: rgba(52, 211, 153, 0.12);
+    --amber: #fbbf24;
+    --amber-muted: rgba(251, 191, 36, 0.12);
+    --rose: #fb7185;
+    --rose-muted: rgba(251, 113, 133, 0.12);
+    --blue: #60a5fa;
+    --blue-muted: rgba(96, 165, 250, 0.12);
+    --cyan: #22d3ee;
+    --cyan-muted: rgba(34, 211, 238, 0.12);
+    --orange: #fb923c;
+    --orange-muted: rgba(251, 146, 60, 0.12);
+    --pink: #e879f9;
+    --pink-muted: rgba(232, 121, 249, 0.12);
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 60px 24px 120px;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 72px;
+  }
+
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    background: var(--accent-glow);
+    border: 1px solid rgba(124, 106, 255, 0.25);
+    border-radius: 100px;
+    font-size: 13px;
+    color: var(--accent);
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    margin-bottom: 24px;
+  }
+
+  .header h1 {
+    font-size: 44px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #fff 0%, #a0a0c0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .header p {
+    font-size: 17px;
+    color: var(--text-muted);
+    max-width: 580px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  /* Principle banner */
+  .principle {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px 28px;
+    margin-bottom: 64px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .principle-icon {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    background: var(--amber-muted);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+
+  .principle-text {
+    font-size: 15px;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+
+  .principle-text strong {
+    color: var(--amber);
+  }
+
+  /* Timeline */
+  .timeline {
+    position: relative;
+    padding-left: 0;
+  }
+
+  /* Phase */
+  .phase {
+    position: relative;
+    margin-bottom: 56px;
+  }
+
+  .phase:last-child { margin-bottom: 0; }
+
+  .phase-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .phase-number {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .phase-title-block {
+    flex: 1;
+  }
+
+  .phase-title {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  .phase-subtitle {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    font-style: italic;
+  }
+
+  .phase-body {
+    margin-left: 60px;
+  }
+
+  /* Color variants */
+  .phase--0 .phase-number { background: var(--accent-glow); color: var(--accent); border: 2px solid rgba(124, 106, 255, 0.3); }
+  .phase--1 .phase-number { background: var(--green-muted); color: var(--green); border: 2px solid rgba(52, 211, 153, 0.3); }
+  .phase--2 .phase-number { background: var(--amber-muted); color: var(--amber); border: 2px solid rgba(251, 191, 36, 0.3); }
+  .phase--3 .phase-number { background: var(--blue-muted); color: var(--blue); border: 2px solid rgba(96, 165, 250, 0.3); }
+  .phase--4 .phase-number { background: var(--rose-muted); color: var(--rose); border: 2px solid rgba(251, 113, 133, 0.3); }
+  .phase--5 .phase-number { background: var(--cyan-muted); color: var(--cyan); border: 2px solid rgba(34, 211, 238, 0.3); }
+  .phase--6 .phase-number { background: var(--pink-muted); color: var(--pink); border: 2px solid rgba(232, 121, 249, 0.3); }
+
+  .phase--0 .phase-title { color: var(--accent); }
+  .phase--1 .phase-title { color: var(--green); }
+  .phase--2 .phase-title { color: var(--amber); }
+  .phase--3 .phase-title { color: var(--blue); }
+  .phase--4 .phase-title { color: var(--rose); }
+  .phase--5 .phase-title { color: var(--cyan); }
+  .phase--6 .phase-title { color: var(--pink); }
+
+  /* Sections within a phase */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+
+  .section-header {
+    padding: 14px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-header .icon {
+    font-size: 14px;
+    opacity: 0.7;
+  }
+
+  .section-body {
+    padding: 16px 20px;
+  }
+
+  /* List items */
+  .item-list {
+    list-style: none;
+  }
+
+  .item-list li {
+    position: relative;
+    padding: 6px 0 6px 20px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text);
+  }
+
+  .item-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 14px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--border);
+  }
+
+  .item-list li strong {
+    color: #fff;
+    font-weight: 600;
+  }
+
+  .item-list .sub {
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+
+  /* Nested items */
+  .item-list .nested {
+    padding-left: 20px;
+    margin-top: 2px;
+  }
+
+  .item-list .nested li {
+    padding: 3px 0 3px 16px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .item-list .nested li::before {
+    width: 4px;
+    height: 4px;
+    top: 12px;
+    background: var(--border);
+  }
+
+  /* Exit criteria */
+  .exit-criteria {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-top: 12px;
+    overflow: hidden;
+  }
+
+  .exit-criteria .section-header {
+    color: var(--green);
+    background: rgba(52, 211, 153, 0.05);
+    border-bottom-color: rgba(52, 211, 153, 0.15);
+  }
+
+  .exit-criteria .check-list {
+    list-style: none;
+    padding: 16px 20px;
+  }
+
+  .exit-criteria .check-list li {
+    position: relative;
+    padding: 5px 0 5px 28px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text-muted);
+  }
+
+  .exit-criteria .check-list li::before {
+    content: '○';
+    position: absolute;
+    left: 4px;
+    top: 5px;
+    font-size: 14px;
+    color: var(--green);
+    opacity: 0.5;
+  }
+
+  /* Connector line between phases */
+  .connector {
+    width: 2px;
+    height: 24px;
+    background: var(--border);
+    margin: 0 0 0 21px;
+    border-radius: 1px;
+    margin-bottom: 8px;
+    margin-top: -24px;
+  }
+
+  /* Two column layout */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  @media (max-width: 640px) {
+    .two-col { grid-template-columns: 1fr; }
+    .phase-body { margin-left: 0; margin-top: 12px; }
+    .phase-header { flex-wrap: wrap; }
+    .header h1 { font-size: 32px; }
+    .container { padding: 40px 16px 80px; }
+  }
+
+  /* Footer */
+  .footer {
+    margin-top: 80px;
+    text-align: center;
+    padding-top: 32px;
+    border-top: 1px solid var(--border);
+  }
+
+  .footer p {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .footer a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  /* Epic tags */
+  .epic-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 12px;
+    padding: 0 20px 16px;
+  }
+
+  .epic-tag {
+    display: inline-flex;
+    padding: 3px 10px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.03em;
+  }
+
+  /* Boundaries section */
+  .boundaries {
+    margin-bottom: 64px;
+  }
+
+  .boundaries-title {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+    color: #fff;
+  }
+
+  .boundaries-subtitle {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+    line-height: 1.6;
+  }
+
+  .boundary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  @media (max-width: 640px) {
+    .boundary-grid { grid-template-columns: 1fr; }
+  }
+
+  .boundary-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .boundary-card-header {
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-2);
+  }
+
+  .boundary-badge {
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    flex-shrink: 0;
+  }
+
+  .boundary-badge--external {
+    background: var(--rose-muted);
+    color: var(--rose);
+    border: 1px solid rgba(251, 113, 133, 0.25);
+  }
+
+  .boundary-badge--internal {
+    background: var(--amber-muted);
+    color: var(--amber);
+    border: 1px solid rgba(251, 191, 36, 0.25);
+  }
+
+  .boundary-card-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  .boundary-card-body {
+    padding: 14px 16px;
+  }
+
+  .boundary-owner {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .boundary-owner strong {
+    color: var(--text);
+  }
+
+  .boundary-contract {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.6;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.02);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  }
+
+  .boundary-note {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 10px;
+    line-height: 1.5;
+    font-style: italic;
+  }
+
+  .boundary-phases {
+    display: flex;
+    gap: 4px;
+    margin-top: 10px;
+  }
+
+  .boundary-phase-tag {
+    padding: 2px 8px;
+    border-radius: 100px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+
+  /* Divider */
+  .section-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 48px 0;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-badge">Breeze — Implementation Plan</div>
+    <h1>Build the Ledger Right,<br>Ship Features on Top</h1>
+    <p>Seven phases from bedrock to platform. Each phase builds a complete, tested layer. No feature ships on a shaky foundation.</p>
+  </div>
+
+  <!-- Guiding Principle -->
+  <div class="principle">
+    <div class="principle-icon">!</div>
+    <div class="principle-text">
+      <strong>Gate rule:</strong> Each phase's exit criteria must be fully green before the next phase starts. The 8 ledger truths are tested in Phase 0 and re-validated in every subsequent phase. A regression in any truth is a stop-the-line event.
+    </div>
+  </div>
+
+  <!-- Service Boundaries -->
+  <div class="boundaries">
+    <div class="boundaries-title">Service Boundaries</div>
+    <div class="boundaries-subtitle">These layers are <strong style="color:#fb7185">not built by Breeze</strong>. We define the interface contract and consume them. Getting these boundaries wrong creates the band-aid architecture Breeze is designed to avoid.</div>
+
+    <div class="boundary-grid">
+
+      <div class="boundary-card">
+        <div class="boundary-card-header">
+          <span class="boundary-badge boundary-badge--internal">Internal</span>
+          <span class="boundary-card-name">1. Identity Service</span>
+        </div>
+        <div class="boundary-card-body">
+          <div class="boundary-owner">Owner: <strong>Internal identity team</strong></div>
+          <div class="boundary-contract">phone → { customer_id, is_verified, is_new }</div>
+          <div class="boundary-note">Opaque dependency. Breeze calls it, doesn't build it. Primary key is phone normalised to E.164. Provisional wallet + identity merge depend on this contract.</div>
+          <div class="boundary-phases">
+            <span class="boundary-phase-tag">Phase 0 — define contract</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="boundary-card">
+        <div class="boundary-card-header">
+          <span class="boundary-badge boundary-badge--internal">Internal</span>
+          <span class="boundary-card-name">2. CPaaS / Notifications</span>
+        </div>
+        <div class="boundary-card-body">
+          <div class="boundary-owner">Owner: <strong>CPaaS team</strong></div>
+          <div class="boundary-contract">send(customer_id, template, variables, channel_hint, locale)</div>
+          <div class="boundary-note">Breeze owns trigger logic, template definitions, and Connector mapping (which vendor). The CPaaS team owns actual WhatsApp/SMS/email delivery.</div>
+          <div class="boundary-phases">
+            <span class="boundary-phase-tag">Phase 2 — integration</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="boundary-card">
+        <div class="boundary-card-header">
+          <span class="boundary-badge boundary-badge--external">External</span>
+          <span class="boundary-card-name">3. Logistics / Delivery</span>
+        </div>
+        <div class="boundary-card-body">
+          <div class="boundary-owner">Owner: <strong>Shiprocket / Delhivery</strong></div>
+          <div class="boundary-contract">POST /order-delivered { order_id }</div>
+          <div class="boundary-note">Breeze exposes one inbound webhook. We own the state machine after the signal arrives. We do not build delivery tracking.</div>
+          <div class="boundary-phases">
+            <span class="boundary-phase-tag">Phase 2 — webhook receiver</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="boundary-card">
+        <div class="boundary-card-header">
+          <span class="boundary-badge boundary-badge--external">External</span>
+          <span class="boundary-card-name">4. Payment Gateway</span>
+        </div>
+        <div class="boundary-card-body">
+          <div class="boundary-owner">Owner: <strong>Out of scope</strong></div>
+          <div class="boundary-contract">payment_method read from Shopify order webhook</div>
+          <div class="boundary-note">Breeze is post-payment. No gateway integration. Payment method arrives via Shopify webhook. UPI top-up (Phase 5) uses Razorpay but only for post-payment ledger entry.</div>
+          <div class="boundary-phases">
+            <span class="boundary-phase-tag">Never — out of scope</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- Timeline -->
+  <div class="timeline">
+
+    <!-- Phase 0 -->
+    <div class="phase phase--0">
+      <div class="phase-header">
+        <div class="phase-number">0</div>
+        <div class="phase-title-block">
+          <div class="phase-title">Bedrock</div>
+          <div class="phase-subtitle">Ship nothing. Prove the architecture.</div>
+        </div>
+      </div>
+      <div class="phase-body">
+        <div class="two-col">
+          <div class="section">
+            <div class="section-header"><span class="icon">&#9881;</span> Backend</div>
+            <div class="section-body">
+              <ul class="item-list">
+                <li><strong>Project scaffold</strong> <span class="sub">— Rust/Axum, PostgreSQL, Redis, CI/CD, telemetry, type generation</span></li>
+                <li><strong>Ledger core — all 8 truths:</strong>
+                  <ul class="item-list nested">
+                    <li>Wallet identity model (merchant-scoped, stable, independent of holder)</li>
+                    <li>Bucket type system (earned-credit, cod-pending, gift-card, customer-funded)</li>
+                    <li>Four movements: in, held, out, across</li>
+                    <li>Atomic triple: earning unit + currency equivalent + conversion rate</li>
+                    <li>Full cause tracing: event + rule snapshot + campaign snapshot + actor + timestamp</li>
+                    <li>Idempotency key: SHA256(merchant + event + rule), checked before every write</li>
+                    <li>Double-entry balancing at write layer (bucket → customer → merchant → system)</li>
+                    <li>Two balance queries: displayed (includes held) vs spendable (excludes held)</li>
+                    <li>Append-only — no compaction, no overwrites, no background rollups</li>
+                  </ul>
+                </li>
+                <li><strong>Event system</strong> <span class="sub">— ingestion, schema validation, dedup</span></li>
+                <li><strong>Rule engine core</strong> <span class="sub">— YAML DSL parser, generic interpreter, rule versioning, immutable snapshots, layered inheritance</span></li>
+                <li><strong>Core DSL resources</strong> <span class="sub">— WalletPolicy, EventSchema, RewardRule</span></li>
+                <li><strong>Identity resolution</strong> <span class="sub">— phone → customer_id contract</span></li>
+              </ul>
+            </div>
+          </div>
+          <div>
+            <div class="section">
+              <div class="section-header"><span class="icon">&#9672;</span> Frontend</div>
+              <div class="section-body">
+                <ul class="item-list">
+                  <li><strong>Project scaffold</strong> <span class="sub">— SvelteKit, foundation module, type generation, API client</span></li>
+                  <li><strong>Design system</strong> <span class="sub">— CSS custom properties, light/dark theme, token scale</span></li>
+                  <li><strong>Component library</strong> <span class="sub">— @juspay/svelte-ui-components integration</span></li>
+                  <li><strong>Example module</strong> <span class="sub">— demonstrates full module pattern (barrel, store, remote, UI)</span></li>
+                </ul>
+              </div>
+            </div>
+            <div class="section" style="margin-top: 12px;">
+              <div class="section-header"><span class="icon">&#9888;</span> Testing — the whole point</div>
+              <div class="section-body">
+                <ul class="item-list">
+                  <li><strong>Property tests</strong> <span class="sub">— debits = credits, idempotent replays, no mutation, past-timestamp reconstruction</span></li>
+                  <li><strong>Concurrency tests</strong> <span class="sub">— parallel writes to same wallet, duplicate event floods</span></li>
+                  <li><strong>Rule engine tests</strong> <span class="sub">— layered inheritance, snapshot immutability</span></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="exit-criteria">
+          <div class="section-header"><span class="icon">&#10003;</span> Exit Criteria</div>
+          <ul class="check-list">
+            <li>All 8 foundational truths have dedicated test suites that pass</li>
+            <li>Concurrent write stress test passes without invariant violations</li>
+            <li>Rule engine evaluates a reward chain and produces correct ledger entries</li>
+            <li>Frontend scaffold has one complete module demonstrating the full pattern</li>
+          </ul>
+          <div class="epic-tags">
+            <span class="epic-tag">E1 — Wallet Core + Ledger</span>
+            <span class="epic-tag">E2 — Earn Rules Engine (partial)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector"></div>
+
+    <!-- Phase 1 -->
+    <div class="phase phase--1">
+      <div class="phase-header">
+        <div class="phase-number">1</div>
+        <div class="phase-title-block">
+          <div class="phase-title">First Earn-Redeem Loop</div>
+          <div class="phase-subtitle">One merchant, one rule, one customer earns and spends.</div>
+        </div>
+      </div>
+      <div class="phase-body">
+        <div class="two-col">
+          <div class="section">
+            <div class="section-header"><span class="icon">&#9881;</span> Backend</div>
+            <div class="section-body">
+              <ul class="item-list">
+                <li><strong>Shopify integration</strong> <span class="sub">— order.completed webhook receiver</span></li>
+                <li><strong>Commerce enrichment</strong> <span class="sub">— product-to-collection pre-sync (Category B data → local cache)</span></li>
+                <li><strong>Prepaid earn flow</strong> <span class="sub">— event → rule evaluation → ledger entry (full chain)</span></li>
+                <li><strong>Credit lifecycle</strong> <span class="sub">— earned state + expiry scheduler (out:expired entries)</span></li>
+                <li><strong>Balance APIs</strong> <span class="sub">— spendable, displayed, transaction history</span></li>
+                <li><strong>Redemption engine:</strong>
+                  <ul class="item-list nested">
+                    <li>Per-bucket eligibility vs order context (payment method, collections, value)</li>
+                    <li>Constraints: min redemption, step size, per-order cap, stackability</li>
+                    <li>Atomic debit → Shopify discount application</li>
+                    <li>Compensation: Shopify fails after commit → compensating credit, flagged for review</li>
+                    <li>State machine: initiated → validating → committed → applied → completed</li>
+                  </ul>
+                </li>
+                <li><strong>Connector abstraction</strong> <span class="sub">— capability → vendor mapping</span></li>
+              </ul>
+            </div>
+          </div>
+          <div class="section">
+            <div class="section-header"><span class="icon">&#9672;</span> Frontend</div>
+            <div class="section-body">
+              <ul class="item-list">
+                <li><strong>Merchant admin module:</strong>
+                  <ul class="item-list nested">
+                    <li>Rule configuration UI</li>
+                    <li>Transaction log viewer</li>
+                    <li>Customer balance lookup</li>
+                  </ul>
+                </li>
+                <li><strong>Shopify checkout extension:</strong>
+                  <ul class="item-list nested">
+                    <li>Balance display (total + eligible for this order)</li>
+                    <li>Apply credit control</li>
+                    <li>Redemption confirmation</li>
+                  </ul>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="exit-criteria">
+          <div class="section-header"><span class="icon">&#10003;</span> Exit Criteria</div>
+          <ul class="check-list">
+            <li>Merchant creates "5% cashback on prepaid orders" via admin UI</li>
+            <li>Customer order → webhook → earn → credit visible in wallet</li>
+            <li>Customer redeems at checkout → ledger debited → Shopify order discounted</li>
+            <li>Compensation path works on Shopify API failure</li>
+            <li>Full audit trail visible in transaction log</li>
+          </ul>
+          <div class="epic-tags">
+            <span class="epic-tag">E2 — Earn Rules Engine</span>
+            <span class="epic-tag">E3 — Redemption Engine</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector"></div>
+
+    <!-- Phase 2 -->
+    <div class="phase phase--2">
+      <div class="phase-header">
+        <div class="phase-number">2</div>
+        <div class="phase-title-block">
+          <div class="phase-title">India Market Readiness</div>
+          <div class="phase-subtitle">COD + WhatsApp — dead on arrival without these.</div>
+        </div>
+      </div>
+      <div class="phase-body">
+        <div class="two-col">
+          <div class="section">
+            <div class="section-header"><span class="icon">&#9881;</span> COD Flow</div>
+            <div class="section-body">
+              <ul class="item-list">
+                <li><strong>cod-pending bucket</strong> <span class="sub">— held state, visible but not spendable</span></li>
+                <li><strong>Logistics webhook</strong> <span class="sub">— POST /order-delivered + Shiprocket integration</span></li>
+                <li><strong>State machine</strong> <span class="sub">— cod-pending → earned (delivery) or cancelled (RTO)</span></li>
+                <li><strong>COD-to-prepaid incentive</strong> <span class="sub">— detect COD → offer UPI switch → instant credit</span></li>
+                <li><strong>GeoPolicy</strong> <span class="sub">— geo:india layer with all COD defaults</span></li>
+              </ul>
+            </div>
+          </div>
+          <div class="section">
+            <div class="section-header"><span class="icon">&#9881;</span> Notifications</div>
+            <div class="section-body">
+              <ul class="item-list">
+                <li><strong>NotificationFlow</strong> <span class="sub">— DSL resource for trigger → template → channel</span></li>
+                <li><strong>WhatsApp BSP</strong> <span class="sub">— Interakt / WATI via Connector abstraction</span></li>
+                <li><strong>Template management</strong> <span class="sub">— variable injection, locale support</span></li>
+                <li><strong>Trigger hooks</strong> <span class="sub">— earn, redeem, COD-release, expiry events</span></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="section" style="margin-top: 12px;">
+          <div class="section-header"><span class="icon">&#9672;</span> Frontend</div>
+          <div class="section-body">
+            <ul class="item-list">
+              <li><strong>Merchant admin</strong> <span class="sub">— COD analytics (pending/released/cancelled), notification config, COD-to-prepaid toggle</span></li>
+              <li><strong>Customer-facing</strong> <span class="sub">— pending credit display, WhatsApp opt-in</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="exit-criteria">
+          <div class="section-header"><span class="icon">&#10003;</span> Exit Criteria</div>
+          <ul class="check-list">
+            <li>COD order → credit held → delivery signal → released → WhatsApp sent</li>
+            <li>RTO → credit cancelled cleanly, no spendable balance leak</li>
+            <li>COD-to-prepaid incentive triggers and converts payment method</li>
+            <li>Vendor swappable via Connector config change (no code change)</li>
+          </ul>
+          <div class="epic-tags">
+            <span class="epic-tag">E4 — COD-to-Prepaid</span>
+            <span class="epic-tag">E5 — WhatsApp Notifications</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector"></div>
+
+    <!-- Phase 3 -->
+    <div class="phase phase--3">
+      <div class="phase-header">
+        <div class="phase-number">3</div>
+        <div class="phase-title-block">
+          <div class="phase-title">Campaigns + Loyalty Tiers</div>
+          <div class="phase-subtitle">From cashback tool to loyalty platform.</div>
+        </div>
+      </div>
+      <div class="phase-body">
+        <div class="two-col">
+          <div class="section">
+            <div class="section-header"><span class="icon">&#9881;</span> Campaigns</div>
+            <div class="section-body">
+              <ul class="item-list">
+                <li><strong>Campaign resource</strong> <span class="sub">— overlay model, multiplies base rules, never duplicates</span></li>
+                <li><strong>Time-bounded</strong> <span class="sub">— activates/deactivates automatically, base rule resumes with zero config change</span></li>
+                <li><strong>Campaign snapshot</strong> <span class="sub">— captured at evaluation time (Truth 4)</span></li>
+                <li><strong>Festive templates</strong> <span class="sub">— pre-built Diwali / Navratri / Holi configs, multiplier presets</span></li>
+              </ul>
+            </div>
+          </div>
+          <div class="section">
+            <div class="section-header"><span class="icon">&#9881;</span> Loyalty Tiers</div>
+            <div class="section-body">
+              <ul class="item-list">
+                <li><strong>LoyaltyProgram resource</strong> <span class="sub">— tier definitions with custom names + thresholds</span></li>
+                <li><strong>Evaluation criteria</strong> <span class="sub">— spend, points, or order count (configurable)</span></li>
+                <li><strong>Auto transitions</strong> <span class="sub">— upgrade + downgrade on qualifying events</span></li>
+                <li><strong>Per-tier benefits</strong> <span class="sub">— earn rate multiplier, exclusive access, etc.</span></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="section" style="margin-top: 12px;">
+          <div class="section-header"><span class="icon">&#9672;</span> Frontend</div>
+          <div class="section-body">
+            <ul class="item-list">
+              <li><strong>Campaign builder</strong> <span class="sub">— template → dates → multiplier, campaign calendar view</span></li>
+              <li><strong>Loyalty designer</strong> <span class="sub">— tiers, criteria, benefits configuration, tier distribution analytics</span></li>
+              <li><strong>Customer-facing</strong> <span class="sub">— current tier, progress bar, countdown widget, tier benefits</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="exit-criteria">
+          <div class="section-header"><span class="icon">&#10003;</span> Exit Criteria</div>
+          <ul class="check-list">
+            <li>"Diwali 3x" campaign activates → auto-deactivates → base rule resumes</li>
+            <li>Customer tier auto-upgrades on qualifying purchase, earn rate adjusts</li>
+            <li>Campaign + tier compound correctly (Gold + Diwali 3x = 3x of Gold rate)</li>
+          </ul>
+          <div class="epic-tags">
+            <span class="epic-tag">E6 — Loyalty Tiers</span>
+            <span class="epic-tag">E9 — Festive Campaign Builder</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector"></div>
+
+    <!-- Phase 4 -->
+    <div class="phase phase--4">
+      <div class="phase-header">
+        <div class="phase-number">4</div>
+        <div class="phase-title-block">
+          <div class="phase-title">Gift Cards + Referrals</div>
+          <div class="phase-subtitle">Two new value instruments that stress-test every ledger truth.</div>
+        </div>
+      </div>
+      <div class="phase-body">
+        <div class="two-col">
+          <div class="section">
+            <div class="section-header"><span class="icon">&#9881;</span> Gift Cards</div>
+            <div class="section-body">
+              <ul class="item-list">
+                <li><strong>GiftCardProgram</strong> <span class="sub">— DSL resource</span></li>
+                <li><strong>Bearer instrument</strong> <span class="sub">— code-identified, transferable until claimed</span></li>
+                <li><strong>Issuance</strong> <span class="sub">— single (purchase/admin) + bulk (CSV, idempotent per batch_id + row)</span></li>
+                <li><strong>Transfer</strong> <span class="sub">— across movement (bearer → customer wallet on claim)</span></li>
+                <li><strong>Partial redemption + expiry</strong> <span class="sub">— out:expired entry, never deletion</span></li>
+                <li><strong>Cause tracing</strong> <span class="sub">— payment ref for purchased, admin actor for issued, no rule (explicit null)</span></li>
+              </ul>
+            </div>
+          </div>
+          <div class="section">
+            <div class="section-header"><span class="icon">&#9881;</span> Referrals</div>
+            <div class="section-body">
+              <ul class="item-list">
+                <li><strong>ReferralProgram</strong> <span class="sub">— DSL resource</span></li>
+                <li><strong>Dual reward</strong> <span class="sub">— referrer + referee, independent entries</span></li>
+                <li><strong>Anti-fraud</strong> <span class="sub">— same IP/device, velocity limits</span></li>
+                <li><strong>Vanity codes</strong> <span class="sub">— RIYA10, creator/influencer mode</span></li>
+                <li><strong>Tiered commissions</strong> <span class="sub">— creator dashboard, Razorpay payout</span></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="exit-criteria">
+          <div class="section-header"><span class="icon">&#10003;</span> Exit Criteria</div>
+          <ul class="check-list">
+            <li>Full lifecycle: purchase → issue → send → claim → partial redeem → expiry — all correct entries</li>
+            <li>CSV re-upload produces zero duplicates</li>
+            <li>Referral converts → both earn → fraud signals flag suspicious patterns</li>
+          </ul>
+          <div class="epic-tags">
+            <span class="epic-tag">E7 — Gift Cards</span>
+            <span class="epic-tag">E13 — Referral Program</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector"></div>
+
+    <!-- Phase 5 -->
+    <div class="phase phase--5">
+      <div class="phase-header">
+        <div class="phase-number">5</div>
+        <div class="phase-title-block">
+          <div class="phase-title">Merchant Tools + Customer Experience</div>
+          <div class="phase-subtitle">Prove ROI. Complete the self-service experience.</div>
+        </div>
+      </div>
+      <div class="phase-body">
+        <div class="two-col">
+          <div class="section">
+            <div class="section-header"><span class="icon">&#9881;</span> Backend</div>
+            <div class="section-body">
+              <ul class="item-list">
+                <li><strong>Manual ops</strong> <span class="sub">— goodwill credits, dispute resolution, bulk credit/debit, identity merge</span></li>
+                <li><strong>Analytics APIs</strong> <span class="sub">— RTO loyalty vs non-loyalty, revenue attribution, campaign lift, cohorts</span></li>
+                <li><strong>PDP widget API</strong> <span class="sub">— "earn X on this product" calculation</span></li>
+                <li><strong>Loyalty Hub API</strong> <span class="sub">— full history, tier, benefits, active campaigns</span></li>
+                <li><strong>UPI wallet top-up</strong> <span class="sub">— Razorpay, customer-funded bucket (custodial)</span></li>
+              </ul>
+            </div>
+          </div>
+          <div class="section">
+            <div class="section-header"><span class="icon">&#9672;</span> Frontend</div>
+            <div class="section-body">
+              <ul class="item-list">
+                <li><strong>Analytics dashboard</strong> <span class="sub">— RTO, revenue, campaign ROI metrics</span></li>
+                <li><strong>Bulk operations UI</strong> <span class="sub">— credit/debit groups, dispute resolution</span></li>
+                <li><strong>Customer detail</strong> <span class="sub">— full wallet history, tier, LTV</span></li>
+                <li><strong>PDP widget</strong> <span class="sub">— Shopify theme extension</span></li>
+                <li><strong>Loyalty Hub page</strong> <span class="sub">— balance, history, tier, benefits, top-up</span></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="exit-criteria">
+          <div class="section-header"><span class="icon">&#10003;</span> Exit Criteria</div>
+          <ul class="check-list">
+            <li>Merchant sees: "loyalty members have 8% RTO vs 28% non-members"</li>
+            <li>Customer has complete self-service: balance, history, tier, benefits, top-up</li>
+            <li>Every manual operation creates audit trail with admin actor cause</li>
+          </ul>
+          <div class="epic-tags">
+            <span class="epic-tag">E10 — PDP + Loyalty Hub</span>
+            <span class="epic-tag">E11 — Analytics Dashboard</span>
+            <span class="epic-tag">E12 — Merchant Admin</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector"></div>
+
+    <!-- Phase 6 -->
+    <div class="phase phase--6">
+      <div class="phase-header">
+        <div class="phase-number">6</div>
+        <div class="phase-title-block">
+          <div class="phase-title">Platform</div>
+          <div class="phase-subtitle">Expand the surface area beyond core loyalty.</div>
+        </div>
+      </div>
+      <div class="phase-body">
+        <div class="section">
+          <div class="section-body">
+            <ul class="item-list">
+              <li><strong>Passes</strong> <span class="sub">— Apple Wallet + Google Wallet integration</span></li>
+              <li><strong>Social / non-purchase earning</strong> <span class="sub">— 20+ action types: reviews, follows, birthdays, milestones</span></li>
+              <li><strong>Paid memberships</strong> <span class="sub">— Amazon Prime model, membership-benefit bucket, renewal SystemOperation</span></li>
+              <li><strong>Additional integrations</strong> <span class="sub">— Return Prime, Judge.me, ONDC Connector, secondary payment gateways</span></li>
+            </ul>
+          </div>
+          <div class="epic-tags">
+            <span class="epic-tag">E8 — Passes</span>
+            <span class="epic-tag">E14 — Social Earning</span>
+            <span class="epic-tag">E15 — Paid Memberships</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <p>Breeze — Wallet · Loyalty · Gift Cards · Passes &nbsp;·&nbsp; March 2026</p>
+  </div>
+
+</div>
+
+</body>
+</html>
