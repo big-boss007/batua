@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Breeze — Architecture & Flow Diagrams</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface-2: #1a1a26;
+    --border: #2a2a3a;
+    --text: #e4e4ed;
+    --text-muted: #8888a0;
+    --accent: #7c6aff;
+    --green: #34d399;
+    --amber: #fbbf24;
+    --rose: #fb7185;
+    --blue: #60a5fa;
+    --cyan: #22d3ee;
+    --orange: #fb923c;
+    --pink: #e879f9;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 48px 24px 120px; }
+  h1 { font-size: 36px; font-weight: 700; text-align: center; margin-bottom: 8px; background: linear-gradient(135deg, #fff, #a0a0c0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .subtitle { text-align: center; color: var(--text-muted); margin-bottom: 48px; font-size: 15px; }
+  h2 { font-size: 22px; font-weight: 700; margin: 48px 0 24px; color: #fff; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  h3 { font-size: 16px; font-weight: 600; margin: 24px 0 12px; color: var(--text-muted); }
+
+  /* Diagram container */
+  .diagram { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 32px; margin-bottom: 32px; overflow-x: auto; }
+  .diagram-title { font-size: 14px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 20px; }
+
+  /* Block diagram styles */
+  .blocks { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+  .block { padding: 12px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; text-align: center; min-width: 120px; border: 1px solid; }
+  .block-service { background: rgba(124,106,255,0.1); border-color: rgba(124,106,255,0.3); color: var(--accent); }
+  .block-db { background: rgba(96,165,250,0.1); border-color: rgba(96,165,250,0.3); color: var(--blue); }
+  .block-frontend { background: rgba(52,211,153,0.1); border-color: rgba(52,211,153,0.3); color: var(--green); }
+  .block-external { background: rgba(251,191,36,0.1); border-color: rgba(251,191,36,0.3); color: var(--amber); }
+  .block-stub { background: rgba(251,113,133,0.1); border-color: rgba(251,113,133,0.3); color: var(--rose); }
+  .block small { display: block; font-size: 10px; opacity: 0.7; margin-top: 2px; }
+
+  /* Flow diagram */
+  .flow { display: flex; align-items: center; flex-wrap: wrap; gap: 0; justify-content: center; padding: 8px 0; }
+  .flow-step { padding: 10px 16px; border-radius: 8px; font-size: 12px; font-weight: 500; text-align: center; min-width: 100px; border: 1px solid; position: relative; }
+  .flow-arrow { color: var(--text-muted); font-size: 18px; padding: 0 6px; flex-shrink: 0; }
+  .flow-step.event { background: rgba(251,191,36,0.1); border-color: rgba(251,191,36,0.3); color: var(--amber); }
+  .flow-step.process { background: rgba(124,106,255,0.1); border-color: rgba(124,106,255,0.3); color: var(--accent); }
+  .flow-step.data { background: rgba(96,165,250,0.1); border-color: rgba(96,165,250,0.3); color: var(--blue); }
+  .flow-step.result { background: rgba(52,211,153,0.1); border-color: rgba(52,211,153,0.3); color: var(--green); }
+  .flow-step.error { background: rgba(251,113,133,0.1); border-color: rgba(251,113,133,0.3); color: var(--rose); }
+  .flow-step.held { background: rgba(251,191,36,0.1); border-color: rgba(251,191,36,0.3); color: var(--amber); }
+  .flow-step small { display: block; font-size: 10px; opacity: 0.7; margin-top: 2px; }
+
+  /* Vertical flow */
+  .vflow { display: flex; flex-direction: column; align-items: center; gap: 0; }
+  .vflow-arrow { color: var(--text-muted); font-size: 16px; padding: 4px 0; }
+
+  /* Split flow */
+  .split { display: flex; gap: 32px; justify-content: center; margin: 16px 0; }
+  .split-branch { display: flex; flex-direction: column; align-items: center; gap: 0; }
+  .split-label { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+  /* Table */
+  .layer-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .layer-table th { text-align: left; padding: 10px 14px; background: var(--surface-2); color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); }
+  .layer-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .layer-table td:first-child { font-weight: 600; color: var(--accent); white-space: nowrap; }
+  .layer-table tr:last-child td { border-bottom: none; }
+
+  /* Legend */
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 16px; justify-content: center; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-muted); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+
+  /* State machine */
+  .states { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .state { padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+  .state-active { background: rgba(52,211,153,0.15); color: var(--green); border: 1px solid rgba(52,211,153,0.3); }
+  .state-pending { background: rgba(251,191,36,0.15); color: var(--amber); border: 1px solid rgba(251,191,36,0.3); }
+  .state-terminal { background: rgba(251,113,133,0.15); color: var(--rose); border: 1px solid rgba(251,113,133,0.3); }
+  .state-process { background: rgba(124,106,255,0.15); color: var(--accent); border: 1px solid rgba(124,106,255,0.3); }
+  .state-arrow { color: var(--text-muted); font-size: 14px; display: flex; align-items: center; }
+
+  @media (max-width: 640px) {
+    .flow { flex-direction: column; }
+    .flow-arrow { transform: rotate(90deg); }
+    .split { flex-direction: column; gap: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>Breeze Architecture & Flows</h1>
+<p class="subtitle">Block diagrams for all implemented features and data flows</p>
+
+<!-- ============================================================ -->
+<h2>1. System Architecture</h2>
+<!-- ============================================================ -->
+
+<div class="diagram">
+  <div class="diagram-title">High-Level Architecture</div>
+  <div class="blocks" style="gap: 24px;">
+    <div style="display: flex; flex-direction: column; gap: 12px; align-items: center;">
+      <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em;">Frontend (SvelteKit)</div>
+      <div class="block block-frontend">Super Admin<small>/platform</small></div>
+      <div class="block block-frontend">Merchant Admin<small>/admin</small></div>
+      <div class="block block-frontend">Customer Storefront<small>/s/{slug}</small></div>
+    </div>
+    <div style="display: flex; align-items: center; color: var(--text-muted); font-size: 24px;">→</div>
+    <div style="display: flex; flex-direction: column; gap: 12px; align-items: center;">
+      <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em;">Backend (Rust / Axum)</div>
+      <div class="blocks" style="max-width: 400px;">
+        <div class="block block-service">Ledger</div>
+        <div class="block block-service">Wallets</div>
+        <div class="block block-service">Events</div>
+        <div class="block block-service">Rules</div>
+        <div class="block block-service">Identity</div>
+        <div class="block block-service">Earn</div>
+        <div class="block block-service">Redemption</div>
+        <div class="block block-service">COD</div>
+        <div class="block block-service">Campaigns</div>
+        <div class="block block-service">Loyalty</div>
+        <div class="block block-service">Gift Cards</div>
+        <div class="block block-service">Referrals</div>
+        <div class="block block-service">Notifications</div>
+        <div class="block block-service">Admin</div>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; color: var(--text-muted); font-size: 24px;">→</div>
+    <div style="display: flex; flex-direction: column; gap: 12px; align-items: center;">
+      <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em;">Data Stores</div>
+      <div class="block block-db">PostgreSQL<small>19 tables</small></div>
+      <div class="block block-db">Redis<small>cache</small></div>
+    </div>
+  </div>
+  <div class="legend" style="margin-top: 24px;">
+    <div class="legend-item"><div class="legend-dot" style="background: var(--accent);"></div> Backend Service</div>
+    <div class="legend-item"><div class="legend-dot" style="background: var(--green);"></div> Frontend App</div>
+    <div class="legend-item"><div class="legend-dot" style="background: var(--blue);"></div> Data Store</div>
+    <div class="legend-item"><div class="legend-dot" style="background: var(--amber);"></div> External (stubbed)</div>
+  </div>
+</div>
+
+<div class="diagram">
+  <div class="diagram-title">Service Boundaries — What Breeze Owns vs Consumes</div>
+  <table class="layer-table">
+    <tr><th>Layer</th><th>Owner</th><th>Breeze Interface</th><th>Status</th></tr>
+    <tr><td>Ledger + Wallets</td><td>Breeze</td><td>Core — all 8 truths implemented</td><td style="color: var(--green);">Built</td></tr>
+    <tr><td>Rule Engine (DSL)</td><td>Breeze</td><td>YAML config → evaluation → snapshots</td><td style="color: var(--green);">Built</td></tr>
+    <tr><td>Commerce (Shopify)</td><td>Breeze</td><td>Receive webhooks, pre-sync catalog</td><td style="color: var(--amber);">Webhook receiver built, HMAC not verified</td></tr>
+    <tr><td>Identity</td><td>Internal</td><td>phone → {customer_id, is_verified, is_new}</td><td style="color: var(--green);">Built internally</td></tr>
+    <tr><td>CPaaS / Notifications</td><td>CPaaS team</td><td>send(customer, template, vars, channel)</td><td style="color: var(--amber);">Connector built, delivery stubbed</td></tr>
+    <tr><td>Logistics</td><td>Shiprocket</td><td>POST /cod/webhook/delivery</td><td style="color: var(--amber);">Receiver built, needs real webhook</td></tr>
+    <tr><td>Payment Gateway</td><td>Out of scope</td><td>payment_method from Shopify webhook</td><td style="color: var(--text-muted);">Not needed</td></tr>
+  </table>
+</div>
+
+<!-- ============================================================ -->
+<h2>2. Database Schema</h2>
+<!-- ============================================================ -->
+
+<div class="diagram">
+  <div class="diagram-title">Entity Relationship (19 Tables)</div>
+  <table class="layer-table">
+    <tr><th>Group</th><th>Tables</th><th>Key Relationships</th></tr>
+    <tr><td>Core</td><td>merchants, customers, wallets</td><td>wallets: UNIQUE(merchant_id, customer_id) — one wallet per customer per merchant</td></tr>
+    <tr><td>Ledger</td><td>ledger_entries</td><td>→ wallets (wallet_id), → rule_snapshots, → campaign_snapshots. Immutability trigger prevents mutation of core fields.</td></tr>
+    <tr><td>Events</td><td>events</td><td>→ merchants. Idempotency key UNIQUE. States: received → processing → processed/failed</td></tr>
+    <tr><td>Rules</td><td>rules, rule_snapshots, campaigns, campaign_snapshots</td><td>rules → merchants. Snapshots are immutable copies frozen at evaluation time.</td></tr>
+    <tr><td>Redemption</td><td>redemption_requests, wallet_policies</td><td>→ wallets, → ledger_entries (debit + compensation). Policies per merchant+bucket.</td></tr>
+    <tr><td>COD</td><td>cod_orders</td><td>→ merchants, → wallets, → ledger_entries. Tracks pending → delivered/rto.</td></tr>
+    <tr><td>Notifications</td><td>notification_templates, notification_logs, connectors</td><td>Connectors: capability → vendor. Templates per merchant+channel+locale.</td></tr>
+    <tr><td>Loyalty</td><td>loyalty_programs, loyalty_tiers, customer_tiers</td><td>One program per merchant. Tiers ranked. Customer evaluated against tiers.</td></tr>
+    <tr><td>Gift Cards</td><td>gift_cards</td><td>→ wallets (bearer wallet). bearer_code UNIQUE. Claimed → customer wallet via across movement.</td></tr>
+    <tr><td>Referrals</td><td>referral_programs, referral_codes, referral_conversions</td><td>Codes → customers. Conversions link referrer+referee with fraud signals.</td></tr>
+    <tr><td>Commerce</td><td>product_collection_mappings, customer_order_stats</td><td>Pre-synced catalog cache. Order stats for is_first_order check.</td></tr>
+    <tr><td>Geo</td><td>geo_policies</td><td>merchants.geo_policy_id → geo_policies. India-specific COD/WhatsApp/UPI config.</td></tr>
+  </table>
+</div>
+
+<!-- ============================================================ -->
+<h2>3. Earn Flow</h2>
+<!-- ============================================================ -->
+
+<div class="diagram">
+  <div class="diagram-title">Prepaid Order → Earn Credit</div>
+  <div class="flow">
+    <div class="flow-step event">Shopify<br>Webhook<small>order.completed</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step process">Event<br>Ingestion<small>dedup check</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step process">Identity<br>Resolve<small>phone → customer</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step process">Get/Create<br>Wallet<small>merchant+customer</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step process">Rule<br>Evaluation<small>conditions + action</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step process">Campaign<br>Multiplier<small>if active</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step result">Ledger Entry<small>movement=In<br>bucket=EarnedCredit</small></div>
+  </div>
+  <h3 style="margin-top: 24px;">COD Order — Different Path</h3>
+  <div class="flow">
+    <div class="flow-step event">Shopify<br>Webhook<small>COD detected</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step process">Same pipeline<small>identity + wallet + rules</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step held">Ledger Entry<small>movement=Held<br>bucket=CodPending</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step data">COD Order<br>Record<small>state=pending</small></div>
+  </div>
+  <h3 style="margin-top: 24px;">Idempotency (Truth 8)</h3>
+  <div class="flow">
+    <div class="flow-step event">Duplicate<br>Webhook<small>same order ID</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step process">Idempotency<br>Key Check<small>SHA256(merchant+event+rule)</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step result" style="background: rgba(52,211,153,0.1); border-color: rgba(52,211,153,0.3);">Silently<br>Rejected<small>is_duplicate=true<br>balance unchanged</small></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2>4. COD Lifecycle</h2>
+<!-- ============================================================ -->
+
+<div class="diagram">
+  <div class="diagram-title">COD: Pending → Delivered or RTO</div>
+  <div class="vflow">
+    <div class="flow-step held">COD Order Created<small>credit in Held state<br>visible but NOT spendable</small></div>
+    <div class="vflow-arrow">↓</div>
+    <div style="font-size: 12px; color: var(--text-muted);">Awaiting logistics webhook...</div>
+    <div class="vflow-arrow">↓</div>
+  </div>
+  <div class="split">
+    <div class="split-branch">
+      <div class="split-label" style="color: var(--green);">Delivered</div>
+      <div class="flow-step result">Shiprocket Webhook<small>status=delivered</small></div>
+      <div class="vflow-arrow">↓</div>
+      <div class="flow-step process">Across Movement<small>Out from CodPending<br>+ In to EarnedCredit</small></div>
+      <div class="vflow-arrow">↓</div>
+      <div class="flow-step result">Credit Released<small>now spendable</small></div>
+    </div>
+    <div class="split-branch">
+      <div class="split-label" style="color: var(--rose);">RTO (Returned)</div>
+      <div class="flow-step error">Shiprocket Webhook<small>status=rto</small></div>
+      <div class="vflow-arrow">↓</div>
+      <div class="flow-step process">Out Movement<small>cancel held credit<br>state=cancelled</small></div>
+      <div class="vflow-arrow">↓</div>
+      <div class="flow-step error">Credit Cancelled<small>no customer impact</small></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2>5. Redemption Flow</h2>
+<!-- ============================================================ -->
+
+<div class="diagram">
+  <div class="diagram-title">Redemption State Machine</div>
+  <div class="flow" style="flex-wrap: wrap;">
+    <div class="state state-process">Initiated</div>
+    <span class="state-arrow">→</span>
+    <div class="state state-process">Validating</div>
+    <span class="state-arrow">→</span>
+    <div class="state state-active">Committed</div>
+    <span class="state-arrow">→</span>
+    <div class="state state-active">Applied</div>
+    <span class="state-arrow">→</span>
+    <div class="state state-active">Completed</div>
+  </div>
+  <div class="split" style="margin-top: 16px;">
+    <div class="split-branch">
+      <div class="split-label" style="color: var(--rose);">Validation fails</div>
+      <div class="state state-terminal">Rejected</div>
+      <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Ledger untouched</div>
+    </div>
+    <div class="split-branch">
+      <div class="split-label" style="color: var(--rose);">Shopify update fails</div>
+      <div class="state state-terminal">Failed → Compensated</div>
+      <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Compensating credit written</div>
+    </div>
+  </div>
+  <h3 style="margin-top: 24px;">Eligibility Evaluation</h3>
+  <div class="flow">
+    <div class="flow-step data">Get Balance<small>per bucket</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step process">Load Policies<small>per bucket type</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step process">Check Constraints<small>min, step, max%<br>stackability, exclusions</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step result">Eligible Amount<small>per bucket</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step process">Atomic Debit<small>idempotent write</small></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2>6. Rule Engine (DSL)</h2>
+<!-- ============================================================ -->
+
+<div class="diagram">
+  <div class="diagram-title">Rule Evaluation Pipeline</div>
+  <div class="flow">
+    <div class="flow-step event">Event Context<small>order_amount, payment_method<br>is_cod, collections, tags</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step process">Find Active<br>Rules<small>merchant + rule_type</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step process">Check<br>Conditions<small>8 operators<br>eq, gt, in, not_in...</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step process">Calculate<br>Reward<small>percentage or fixed<br>with max cap</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step process">Campaign<br>Overlay<small>multiply if active<br>campaign exists</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step result">Evaluation<br>Result<small>amount, bucket, rate<br>+ snapshots frozen</small></div>
+  </div>
+  <h3 style="margin-top: 24px;">Layered Inheritance</h3>
+  <div class="flow">
+    <div class="flow-step data">breeze-defaults<small>platform base</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step data">geo:india<small>COD, WhatsApp, UPI</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step data">merchant:acme<small>custom overrides</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step result">Final Config<small>merged</small></div>
+  </div>
+  <h3 style="margin-top: 24px;">Campaign as Overlay</h3>
+  <div class="flow">
+    <div class="flow-step data">Base Rule<small>5% cashback</small></div>
+    <span class="flow-arrow">×</span>
+    <div class="flow-step held">Diwali Campaign<small>3x multiplier<br>Oct 1-15</small></div>
+    <span class="flow-arrow">=</span>
+    <div class="flow-step result">15% cashback<small>during campaign<br>base resumes after</small></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2>7. Gift Card Lifecycle</h2>
+<!-- ============================================================ -->
+
+<div class="diagram">
+  <div class="diagram-title">Gift Card: Bearer Instrument → Claimed → Redeemed</div>
+  <div class="flow">
+    <div class="flow-step process">Issue<small>create bearer wallet<br>+ ledger In entry</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step data">Bearer Card<small>code: BRZE-XXXX<br>not bound to customer</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step process">Claim<small>across movement<br>bearer → customer wallet</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step result">Identity-Bound<small>now in customer's<br>gift_card bucket</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step process">Redeem<small>Out movement<br>partial OK</small></div>
+  </div>
+  <h3 style="margin-top: 16px;">Bulk Issuance (Idempotent)</h3>
+  <div class="flow">
+    <div class="flow-step event">CSV Upload<small>batch_id + rows</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step process">Per-row Key<small>batch_id + position</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step result">Re-upload = 0 dupes<small>Truth 8</small></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2>8. Referral Flow</h2>
+<!-- ============================================================ -->
+
+<div class="diagram">
+  <div class="diagram-title">Referral Conversion with Anti-Fraud</div>
+  <div class="flow">
+    <div class="flow-step event">Referee clicks<small>PRIYA10 link</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step process">Validate Code<small>active? max reached?</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step process">Fraud Check<small>5 signals:<br>IP, device, velocity<br>self-ref, new account</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step result">Dual Reward<small>referrer: ₹50<br>referee: ₹25<br>independent entries</small></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2>9. Loyalty Tier Evaluation</h2>
+<!-- ============================================================ -->
+
+<div class="diagram">
+  <div class="diagram-title">Tier Evaluation + Auto-Transition</div>
+  <div class="flow">
+    <div class="flow-step data">Customer's<br>Qualifying Value<small>spend / points / orders</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step process">Compare to<br>Tier Thresholds<small>Bronze: 0<br>Silver: 2K<br>Gold: 5K<br>Platinum: 15K</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step result">Highest<br>Qualifying Tier<small>auto upgrade/downgrade</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step result">Earn Rate<br>Multiplier<small>Gold: 1.5x<br>Platinum: 2.0x</small></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2>10. Notification Flow</h2>
+<!-- ============================================================ -->
+
+<div class="diagram">
+  <div class="diagram-title">Trigger → Template → Connector → Delivery</div>
+  <div class="flow">
+    <div class="flow-step event">Trigger<small>earn_credit<br>cod_delivered<br>redemption_success</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step process">Find Template<small>merchant + name<br>+ channel + locale</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step process">Render<small>{{customer_name}}<br>{{amount}}<br>{{balance}}</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step process">Resolve<br>Connector<small>whatsapp-bsp<br>→ Interakt</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step stub">CPaaS Send<small>stubbed<br>logs only</small></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2>11. Ledger — The 8 Foundational Truths</h2>
+<!-- ============================================================ -->
+
+<div class="diagram">
+  <div class="diagram-title">How Each Truth is Enforced</div>
+  <table class="layer-table">
+    <tr><th>Truth</th><th>Principle</th><th>Implementation</th></tr>
+    <tr><td>1</td><td>Merchant-scoped wallet</td><td>UNIQUE(merchant_id, customer_id). Bearer instruments via nullable customer_id + bearer_code.</td></tr>
+    <tr><td>2</td><td>Atomic triple</td><td>earning_unit + currency_equivalent + conversion_rate on every ledger entry. All three immutable.</td></tr>
+    <tr><td>3</td><td>Four movements + held</td><td>movement_type ENUM (in, held, out, across). Held excluded from spendable balance query. Across uses shared transfer_id.</td></tr>
+    <tr><td>4</td><td>Traceable cause</td><td>event_id + rule_snapshot_id + campaign_snapshot_id + actor_type + actor_id on every entry. Snapshots are immutable.</td></tr>
+    <tr><td>5</td><td>Books balance</td><td>Double-entry at write layer. Negative net in a bucket is valid (reversals). Redemption validation is above the ledger.</td></tr>
+    <tr><td>6</td><td>Value not fungible</td><td>bucket_type + constraints JSONB locked at earn time. Different origin = different rules for transferability, expiry, stackability.</td></tr>
+    <tr><td>7</td><td>Time is first-class</td><td>Append-only. prevent_ledger_mutation trigger rejects UPDATE on core columns. Expiry is an out entry, not deletion. get_balance_at for historical reconstruction.</td></tr>
+    <tr><td>8</td><td>Structural idempotency</td><td>idempotency_key TEXT UNIQUE on ledger_entries and events. SHA256(merchant+event+rule). Duplicate = silently rejected.</td></tr>
+  </table>
+</div>
+
+<!-- ============================================================ -->
+<h2>12. Frontend Architecture</h2>
+<!-- ============================================================ -->
+
+<div class="diagram">
+  <div class="diagram-title">Three Apps, Shared Foundation</div>
+  <table class="layer-table">
+    <tr><th>App</th><th>URL</th><th>Audience</th><th>Modules</th></tr>
+    <tr><td style="color: var(--pink);">Super Admin</td><td>/platform/*</td><td>Breeze team</td><td>platform (merchants, geo-policies, system health)</td></tr>
+    <tr><td style="color: var(--accent);">Merchant Admin</td><td>/admin/*</td><td>Merchant's team</td><td>admin, rules, transactions, customers, analytics, settings, loyalty, campaigns, gift-cards, referrals, notifications</td></tr>
+    <tr><td style="color: var(--green);">Storefront</td><td>/s/{slug}/*</td><td>End customer</td><td>storefront (loyalty hub, balance, gift cards, referrals)</td></tr>
+  </table>
+  <h3 style="margin-top: 24px;">Module Structure (each module)</h3>
+  <div class="flow">
+    <div class="flow-step data">index.ts<small>barrel export</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step data">types.ts<small>type keyword only</small></div>
+    <span class="flow-arrow">+</span>
+    <div class="flow-step process">remote.ts<small>API calls via<br>APICaller</small></div>
+    <span class="flow-arrow">+</span>
+    <div class="flow-step process">store.ts<small>Svelte stores<br>writable/derived</small></div>
+    <span class="flow-arrow">+</span>
+    <div class="flow-step result">ui/*.svelte<small>components using<br>@juspay/svelte-ui-components</small></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2>13. Balance Calculation</h2>
+<!-- ============================================================ -->
+
+<div class="diagram">
+  <div class="diagram-title">Displayed Balance vs Spendable Balance (Two Queries, Same Ledger)</div>
+  <div class="split">
+    <div class="split-branch" style="background: var(--surface-2); padding: 20px; border-radius: 8px; min-width: 280px;">
+      <div class="split-label" style="color: var(--blue);">Displayed Balance</div>
+      <div style="font-size: 13px; color: var(--text);">
+        SUM(In entries)<br>
+        + SUM(Held entries)<br>
+        − SUM(Out entries)<br>
+        <hr style="border-color: var(--border); margin: 8px 0;">
+        <strong>Includes pending COD</strong><br>
+        <span style="color: var(--text-muted);">Customer sees this</span>
+      </div>
+    </div>
+    <div class="split-branch" style="background: var(--surface-2); padding: 20px; border-radius: 8px; min-width: 280px;">
+      <div class="split-label" style="color: var(--green);">Spendable Balance</div>
+      <div style="font-size: 13px; color: var(--text);">
+        SUM(In entries)<br>
+        <span style="color: var(--rose);">− Held EXCLUDED</span><br>
+        − SUM(Out entries)<br>
+        <hr style="border-color: var(--border); margin: 8px 0;">
+        <strong>Excludes pending COD</strong><br>
+        <span style="color: var(--text-muted);">Redemption uses this</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2>14. COD-to-Prepaid Incentive</h2>
+<!-- ============================================================ -->
+
+<div class="diagram">
+  <div class="diagram-title">Convert COD → Prepaid at Checkout</div>
+  <div class="flow">
+    <div class="flow-step event">Checkout<small>COD selected</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step held">Detect COD<small>offer incentive</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step process">Customer<br>Switches to UPI<small>payment method change</small></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step result">Instant Credit<small>₹75 (or 2% of order)<br>In → EarnedCredit</small></div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>
