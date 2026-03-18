@@ -46,7 +46,7 @@ function decodeTemplate(raw: unknown): NotificationTemplate {
 async function fetchWalletPolicies(
   merchantId: string
 ): Promise<APIResult<Array<WalletPolicy>>> {
-  return apiCaller.get('/wallets/policies', decodeWalletPolicies, { merchant_id: merchantId });
+  return apiCaller.get(`/admin/wallet-policies/${merchantId}`, decodeWalletPolicies);
 }
 
 async function updateWalletPolicy(

@@ -6,9 +6,7 @@
   import { currentMerchant, currentMerchantId } from '$lib/client/modules/admin';
   import { createRule, fetchRules } from '$lib/client/modules/rules';
   import type { CreateRuleRequest } from '$lib/client/modules/rules';
-  import { fetchWalletPolicies, updateWalletPolicy } from '$lib/client/modules/settings';
-  import { createProgram, createTier } from '$lib/client/modules/customers';
-  import { createProgram as createReferralProgram } from '$lib/client/modules/referrals';
+  import { apiCaller } from '$lib/client/modules/foundation';
   import { toastStore } from '$lib/client/modules/foundation';
 
   let merchantId = $state<string | null>(null);
@@ -171,29 +169,26 @@
     if (merchantId === null) return;
     loading = true;
 
-    const policiesResult = await fetchWalletPolicies(merchantId);
-    if (policiesResult.tag === 'error') {
-      toastStore.push({ message: policiesResult.message, level: 'error' });
-      loading = false;
-      return;
-    }
-
-    const cashbackPolicy = policiesResult.data.find((p) => p.bucket_type === 'cashback');
-    if (cashbackPolicy !== undefined) {
-      const updateResult = await updateWalletPolicy(cashbackPolicy.id, {
+    const result = await apiCaller.post(
+      '/admin/wallet-policies',
+      {
+        merchant_id: merchantId,
+        bucket_type: 'earned_credit',
         min_redemption: Number(minRedemption),
-        step_size: null,
+        step_size: 1,
         max_per_order_pct: Number(maxPerOrderPct),
         max_per_order_fixed: null,
         stackable_with_discounts: allowWithDiscounts,
-        default_expiry_days: 90,
+        default_expiry_days: 365,
         is_transferable: false
-      });
-      if (updateResult.tag === 'error') {
-        toastStore.push({ message: updateResult.message, level: 'error' });
-        loading = false;
-        return;
-      }
+      },
+      (raw: unknown) => raw
+    );
+
+    if (result.tag === 'error') {
+      toastStore.push({ message: result.message, level: 'error' });
+      loading = false;
+      return;
     }
 
     completedSteps.policy = true;
@@ -213,16 +208,19 @@
 
     loading = true;
 
-    const programResult = await createProgram(merchantId, {
-      name: 'Loyalty Program',
-      evaluation_criteria: 'total_spend'
-    });
+    const programResult = await apiCaller.post(
+      '/loyalty/programs',
+      { merchant_id: merchantId, name: 'Loyalty Program', evaluation_criteria: 'spend' },
+      (raw: unknown) => raw as Record<string, unknown>
+    );
 
     if (programResult.tag === 'error') {
       toastStore.push({ message: programResult.message, level: 'error' });
       loading = false;
       return;
     }
+
+    const programId = programResult.data['id'] as string;
 
     const tierDefs = [
       { name: 'Bronze', rank: 1, threshold: 0, earn_rate_multiplier: 1.0 },
@@ -232,13 +230,11 @@
     ];
 
     for (const tier of tierDefs) {
-      const tierResult = await createTier(merchantId, {
-        name: tier.name,
-        rank: tier.rank,
-        threshold: tier.threshold,
-        earn_rate_multiplier: tier.earn_rate_multiplier,
-        benefits: {}
-      });
+      const tierResult = await apiCaller.post(
+        '/loyalty/tiers',
+        { program_id: programId, ...tier, benefits: {} },
+        (raw: unknown) => raw
+      );
       if (tierResult.tag === 'error') {
         toastStore.push({ message: tierResult.message, level: 'error' });
         loading = false;
@@ -261,12 +257,16 @@
 
     loading = true;
 
-    const result = await createReferralProgram({
-      referrer_reward_amount: Number(referrerReward),
-      referee_reward_amount: Number(refereeReward),
-      max_referrals_per_customer: null,
-      is_active: true
-    });
+    const result = await apiCaller.post(
+      '/referrals/programs',
+      {
+        merchant_id: merchantId,
+        referrer_reward_amount: Number(referrerReward),
+        referee_reward_amount: Number(refereeReward),
+        max_referrals_per_customer: null
+      },
+      (raw: unknown) => raw
+    );
 
     if (result.tag === 'error') {
       toastStore.push({ message: result.message, level: 'error' });
@@ -582,11 +582,11 @@
                 Wallet policy set (min Rs. {minRedemption}, max {maxPerOrderPct}% per order)
               </li>
               <li class="summary-item" class:summary-done={completedSteps.tiers} class:summary-skipped={!completedSteps.tiers}>
-                <span class="check">{completedSteps.tiers ? '&#10003;' : '&#8211;'}</span>
+                <span class="check">{completedSteps.tiers ? '✓' : '—'}</span>
                 {completedSteps.tiers ? 'Loyalty tiers configured (Bronze, Silver, Gold, Platinum)' : 'Loyalty tiers skipped'}
               </li>
               <li class="summary-item" class:summary-done={completedSteps.referrals} class:summary-skipped={!completedSteps.referrals}>
-                <span class="check">{completedSteps.referrals ? '&#10003;' : '&#8211;'}</span>
+                <span class="check">{completedSteps.referrals ? '✓' : '—'}</span>
                 {completedSteps.referrals ? `Referral program set up (Rs. ${referrerReward} referrer / Rs. ${refereeReward} referee)` : 'Referral program skipped'}
               </li>
             </ul>
