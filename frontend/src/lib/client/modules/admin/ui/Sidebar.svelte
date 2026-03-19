@@ -183,7 +183,7 @@
   }
 
   .sidebar.collapsed .toggle-btn {
-    display: none;
+    margin: 0 auto;
   }
 
   .sidebar.collapsed .nav-item {
