@@ -11,8 +11,8 @@ use super::helpers;
 use super::storage;
 use super::types::{
     CheckMilestonesRequest, CheckStreakRequest, CreateMilestoneRequest, CreateStreakConfigRequest,
-    ManualCreditRequest, NewsletterSignupRequest, ProcessBirthdayBonusRequest, ProcessEarnRequest,
-    ProfileCompletionRequest,
+    CreateWheelRequest, ManualCreditRequest, NewsletterSignupRequest,
+    ProcessBirthdayBonusRequest, ProcessEarnRequest, ProfileCompletionRequest, SpinRequest,
 };
 
 #[tracing::instrument(skip(app_state))]
@@ -146,5 +146,41 @@ pub async fn check_streaks(
 ) -> impl IntoResponse {
     let result =
         helpers::check_and_award_streaks(&app_state.db, req.merchant_id, req.customer_id).await?;
+    Ok::<_, AppError>((StatusCode::OK, Json(result)))
+}
+
+#[tracing::instrument(skip(app_state))]
+pub async fn create_wheel_config(
+    State(app_state): State<AppState>,
+    Json(req): Json<CreateWheelRequest>,
+) -> impl IntoResponse {
+    let result = helpers::create_wheel(&app_state.db, req).await?;
+    Ok::<_, AppError>((StatusCode::CREATED, Json(result)))
+}
+
+#[tracing::instrument(skip(app_state))]
+pub async fn get_wheel_config(
+    State(app_state): State<AppState>,
+    Path(merchant_id): Path<Uuid>,
+) -> impl IntoResponse {
+    let config = storage::get_wheel_config(&app_state.db, merchant_id)
+        .await?
+        .ok_or_else(|| {
+            AppError::NotFound("no spin wheel configured for this merchant".to_string())
+        })?;
+    let segments = storage::get_wheel_segments(&app_state.db, config.id).await?;
+    let result = super::types::WheelWithSegments {
+        config,
+        segments,
+    };
+    Ok::<_, AppError>((StatusCode::OK, Json(result)))
+}
+
+#[tracing::instrument(skip(app_state))]
+pub async fn spin_wheel(
+    State(app_state): State<AppState>,
+    Json(req): Json<SpinRequest>,
+) -> impl IntoResponse {
+    let result = helpers::spin_wheel(&app_state.db, req).await?;
     Ok::<_, AppError>((StatusCode::OK, Json(result)))
 }

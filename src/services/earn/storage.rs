@@ -5,7 +5,7 @@ use uuid::Uuid;
 use crate::error::AppError;
 use super::types::{
     AchievedMilestone, CreateMilestoneRequest, CreateStreakConfigRequest, MilestoneConfig,
-    NewsletterSignupCount, StreakConfig,
+    NewsletterSignupCount, SpinWheelConfig, SpinWheelSegment, StreakConfig,
 };
 
 #[derive(Debug, sqlx::FromRow)]
@@ -370,6 +370,146 @@ pub async fn record_streak_achievement(
     .bind(ledger_entry_id)
     .bind(window_start)
     .bind(window_end)
+    .execute(pool)
+    .await?;
+
+    Ok(())
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn create_wheel_config(
+    pool: &PgPool,
+    merchant_id: Uuid,
+    name: &str,
+    daily_spin_limit: i32,
+) -> Result<SpinWheelConfig, AppError> {
+    let config = sqlx::query_as::<_, SpinWheelConfig>(
+        r#"
+        INSERT INTO spin_wheel_configs (merchant_id, name, daily_spin_limit)
+        VALUES ($1, $2, $3)
+        RETURNING *
+        "#,
+    )
+    .bind(merchant_id)
+    .bind(name)
+    .bind(daily_spin_limit)
+    .fetch_one(pool)
+    .await?;
+
+    Ok(config)
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn create_wheel_segment(
+    pool: &PgPool,
+    wheel_id: Uuid,
+    label: &str,
+    reward_amount: f64,
+    probability: f64,
+    color: &str,
+    position: i32,
+) -> Result<SpinWheelSegment, AppError> {
+    let segment = sqlx::query_as::<_, SpinWheelSegment>(
+        r#"
+        INSERT INTO spin_wheel_segments (wheel_id, label, reward_amount, probability, color, position)
+        VALUES ($1, $2, $3, $4, $5, $6)
+        RETURNING *
+        "#,
+    )
+    .bind(wheel_id)
+    .bind(label)
+    .bind(reward_amount)
+    .bind(probability)
+    .bind(color)
+    .bind(position)
+    .fetch_one(pool)
+    .await?;
+
+    Ok(segment)
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn get_wheel_config(
+    pool: &PgPool,
+    merchant_id: Uuid,
+) -> Result<Option<SpinWheelConfig>, AppError> {
+    let config = sqlx::query_as::<_, SpinWheelConfig>(
+        r#"
+        SELECT id, merchant_id, name, is_active, daily_spin_limit, created_at
+        FROM spin_wheel_configs
+        WHERE merchant_id = $1
+        "#,
+    )
+    .bind(merchant_id)
+    .fetch_optional(pool)
+    .await?;
+
+    Ok(config)
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn get_wheel_segments(
+    pool: &PgPool,
+    wheel_id: Uuid,
+) -> Result<Vec<SpinWheelSegment>, AppError> {
+    let segments = sqlx::query_as::<_, SpinWheelSegment>(
+        r#"
+        SELECT id, wheel_id, label, reward_amount, probability, color, position, created_at
+        FROM spin_wheel_segments
+        WHERE wheel_id = $1
+        ORDER BY position ASC
+        "#,
+    )
+    .bind(wheel_id)
+    .fetch_all(pool)
+    .await?;
+
+    Ok(segments)
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn count_spins_today(
+    pool: &PgPool,
+    merchant_id: Uuid,
+    customer_id: Uuid,
+) -> Result<i64, AppError> {
+    let row: (i64,) = sqlx::query_as(
+        r#"
+        SELECT COUNT(*)::int8
+        FROM spin_results
+        WHERE merchant_id = $1
+            AND customer_id = $2
+            AND spun_at >= CURRENT_DATE
+        "#,
+    )
+    .bind(merchant_id)
+    .bind(customer_id)
+    .fetch_one(pool)
+    .await?;
+
+    Ok(row.0)
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn record_spin_result(
+    pool: &PgPool,
+    merchant_id: Uuid,
+    customer_id: Uuid,
+    segment_id: Uuid,
+    reward_amount: f64,
+    ledger_entry_id: Option<Uuid>,
+) -> Result<(), AppError> {
+    sqlx::query(
+        r#"
+        INSERT INTO spin_results (merchant_id, customer_id, segment_id, reward_amount, ledger_entry_id)
+        VALUES ($1, $2, $3, $4, $5)
+        "#,
+    )
+    .bind(merchant_id)
+    .bind(customer_id)
+    .bind(segment_id)
+    .bind(reward_amount)
+    .bind(ledger_entry_id)
     .execute(pool)
     .await?;
 

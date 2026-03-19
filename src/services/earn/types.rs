@@ -208,3 +208,61 @@ pub struct ActiveStreak {
     pub window_days: i32,
     pub progress_pct: f64,
 }
+
+#[derive(Debug, Clone, Serialize, sqlx::FromRow)]
+pub struct SpinWheelConfig {
+    pub id: Uuid,
+    pub merchant_id: Uuid,
+    pub name: String,
+    pub is_active: bool,
+    pub daily_spin_limit: i32,
+    pub created_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, sqlx::FromRow)]
+pub struct SpinWheelSegment {
+    pub id: Uuid,
+    pub wheel_id: Uuid,
+    pub label: String,
+    pub reward_amount: f64,
+    pub probability: f64,
+    pub color: String,
+    pub position: i32,
+    pub created_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CreateWheelRequest {
+    pub merchant_id: Uuid,
+    pub name: Option<String>,
+    pub daily_spin_limit: Option<i32>,
+    pub segments: Vec<CreateSegmentRequest>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CreateSegmentRequest {
+    pub label: String,
+    pub reward_amount: f64,
+    pub probability: f64,
+    pub color: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct SpinRequest {
+    pub merchant_id: Uuid,
+    pub customer_id: Uuid,
+}
+
+#[derive(Debug, Serialize)]
+pub struct SpinResult {
+    pub segment: SpinWheelSegment,
+    pub reward_amount: f64,
+    pub ledger_entry_id: Option<Uuid>,
+    pub spins_remaining_today: i32,
+}
+
+#[derive(Debug, Serialize)]
+pub struct WheelWithSegments {
+    pub config: SpinWheelConfig,
+    pub segments: Vec<SpinWheelSegment>,
+}

@@ -37,4 +37,13 @@ pub fn router() -> axum::Router<AppState> {
             get(handler::list_streak_configs),
         )
         .route("/earn/check-streaks", post(handler::check_streaks))
+        .route(
+            "/earn/spin-wheel/config",
+            post(handler::create_wheel_config),
+        )
+        .route("/earn/spin-wheel/spin", post(handler::spin_wheel))
+        .route(
+            "/earn/spin-wheel/{merchant_id}",
+            get(handler::get_wheel_config),
+        )
 }

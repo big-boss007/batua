@@ -17,10 +17,11 @@ use crate::services::wallets;
 
 use super::storage;
 use super::types::{
-    ActiveStreak, BirthdayBonusEntry, BirthdayBonusResult, EarnEntry, EarnResult,
-    ManualCreditRequest, ManualCreditResult, MilestoneAchievementEntry, MilestoneCheckResult,
-    NewsletterSignupRequest, NewsletterSignupResult, ProfileCompletionRequest,
-    ProfileCompletionResult, StreakAchievementEntry, StreakCheckResult,
+    ActiveStreak, BirthdayBonusEntry, BirthdayBonusResult, CreateWheelRequest, EarnEntry,
+    EarnResult, ManualCreditRequest, ManualCreditResult, MilestoneAchievementEntry,
+    MilestoneCheckResult, NewsletterSignupRequest, NewsletterSignupResult,
+    ProfileCompletionRequest, ProfileCompletionResult, SpinRequest, SpinResult,
+    StreakAchievementEntry, StreakCheckResult, WheelWithSegments,
 };
 
 #[tracing::instrument(skip(pool), err(Debug))]
@@ -785,5 +786,134 @@ pub async fn check_and_award_milestones(
     Ok(MilestoneCheckResult {
         customer_id,
         milestones_achieved: achieved,
+    })
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn create_wheel(
+    pool: &PgPool,
+    req: CreateWheelRequest,
+) -> Result<WheelWithSegments, AppError> {
+    let name = req.name.as_deref().unwrap_or("Lucky Wheel");
+    let daily_spin_limit = req.daily_spin_limit.unwrap_or(1);
+
+    let config =
+        storage::create_wheel_config(pool, req.merchant_id, name, daily_spin_limit).await?;
+
+    let mut segments = Vec::with_capacity(req.segments.len());
+    for (i, seg) in req.segments.iter().enumerate() {
+        let color = seg.color.as_deref().unwrap_or("#7c6aff");
+        let segment = storage::create_wheel_segment(
+            pool,
+            config.id,
+            &seg.label,
+            seg.reward_amount,
+            seg.probability,
+            color,
+            i as i32,
+        )
+        .await?;
+        segments.push(segment);
+    }
+
+    Ok(WheelWithSegments { config, segments })
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn spin_wheel(pool: &PgPool, req: SpinRequest) -> Result<SpinResult, AppError> {
+    let config = storage::get_wheel_config(pool, req.merchant_id)
+        .await?
+        .ok_or_else(|| {
+            AppError::NotFound("no spin wheel configured for this merchant".to_string())
+        })?;
+
+    if !config.is_active {
+        return Err(AppError::BadRequest(
+            "spin wheel is not active".to_string(),
+        ));
+    }
+
+    let spins_today = storage::count_spins_today(pool, req.merchant_id, req.customer_id).await?;
+    if spins_today >= config.daily_spin_limit as i64 {
+        return Err(AppError::BadRequest(
+            "no spins remaining today".to_string(),
+        ));
+    }
+
+    let segments = storage::get_wheel_segments(pool, config.id).await?;
+    if segments.is_empty() {
+        return Err(AppError::BadRequest(
+            "wheel has no segments configured".to_string(),
+        ));
+    }
+
+    let total_weight: f64 = segments.iter().map(|s| s.probability).sum();
+    if total_weight <= 0.0 {
+        return Err(AppError::Internal(
+            "total segment weight is zero".to_string(),
+        ));
+    }
+
+    let random_value =
+        (Uuid::new_v4().as_u128() % 10000) as f64 / 10000.0 * total_weight;
+
+    let mut accumulated = 0.0_f64;
+    let mut winning_segment = &segments[0];
+    for segment in &segments {
+        accumulated += segment.probability;
+        if random_value < accumulated {
+            winning_segment = segment;
+            break;
+        }
+    }
+
+    let mut ledger_entry_id: Option<Uuid> = None;
+
+    if winning_segment.reward_amount > 0.0 {
+        let wallet =
+            wallets::storage::get_or_create_wallet(pool, req.merchant_id, req.customer_id).await?;
+
+        let idempotency_key = format!("spin:{}:{}", req.customer_id, Uuid::new_v4());
+
+        let new_entry = NewLedgerEntry {
+            wallet_id: wallet.id,
+            bucket_type: BucketType::EarnedCredit,
+            movement_type: MovementType::In,
+            earning_unit: winning_segment.reward_amount,
+            currency_equivalent: winning_segment.reward_amount,
+            conversion_rate: 1.0,
+            event_id: None,
+            rule_snapshot_id: None,
+            campaign_snapshot_id: None,
+            actor_type: ActorType::System,
+            actor_id: Some("spin_wheel".to_string()),
+            payment_reference: Some(format!("spin:{}", winning_segment.label)),
+            transfer_id: None,
+            constraints: serde_json::json!({}),
+            expires_at: None,
+        };
+
+        let entry = ledger::storage::create_entry(pool, new_entry, idempotency_key).await?;
+        ledger_entry_id = Some(entry.id);
+    }
+
+    storage::record_spin_result(
+        pool,
+        req.merchant_id,
+        req.customer_id,
+        winning_segment.id,
+        winning_segment.reward_amount,
+        ledger_entry_id,
+    )
+    .await?;
+
+    let spins_remaining_today =
+        config.daily_spin_limit - (spins_today as i32 + 1);
+
+    Ok(SpinResult {
+        segment: winning_segment.clone(),
+        reward_amount: winning_segment.reward_amount,
+        ledger_entry_id,
+        spins_remaining_today,
     })
 }
