@@ -19,6 +19,7 @@ use super::storage;
 use super::types::{
     BirthdayBonusEntry, BirthdayBonusResult, EarnEntry, EarnResult, ManualCreditRequest,
     ManualCreditResult, MilestoneAchievementEntry, MilestoneCheckResult,
+    NewsletterSignupRequest, NewsletterSignupResult,
 };
 
 #[tracing::instrument(skip(pool), err(Debug))]
@@ -276,6 +277,111 @@ pub async fn process_birthday_bonuses(
         skipped,
         entries,
     })
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn process_newsletter_signup(
+    pool: &PgPool,
+    req: NewsletterSignupRequest,
+) -> Result<NewsletterSignupResult, AppError> {
+    if !identity::helpers::validate_email(&req.email) {
+        return Err(AppError::BadRequest(format!(
+            "invalid email: {}",
+            req.email
+        )));
+    }
+
+    let customer_id = resolve_newsletter_customer(pool, &req).await?;
+
+    let already = storage::has_newsletter_signup(pool, req.merchant_id, customer_id).await?;
+    if already {
+        return Ok(NewsletterSignupResult {
+            customer_id,
+            email: req.email,
+            rewarded: false,
+            already_subscribed: true,
+            ledger_entry_id: None,
+            amount: 0.0,
+        });
+    }
+
+    let wallet =
+        wallets::storage::get_or_create_wallet(pool, req.merchant_id, customer_id).await?;
+
+    let hash_input = format!("{}{}newsletter_signup", req.merchant_id, customer_id);
+    let mut hasher = Sha256::new();
+    hasher.update(hash_input.as_bytes());
+    let hash = format!("{:x}", hasher.finalize());
+    let idempotency_key = format!("newsletter:{hash}");
+
+    let new_entry = NewLedgerEntry {
+        wallet_id: wallet.id,
+        bucket_type: BucketType::EarnedCredit,
+        movement_type: MovementType::In,
+        earning_unit: req.amount,
+        currency_equivalent: req.amount,
+        conversion_rate: 1.0,
+        event_id: None,
+        rule_snapshot_id: None,
+        campaign_snapshot_id: None,
+        actor_type: ActorType::System,
+        actor_id: Some("newsletter_signup".to_string()),
+        payment_reference: Some(format!("newsletter_signup:{}", req.email)),
+        transfer_id: None,
+        constraints: serde_json::json!({}),
+        expires_at: None,
+    };
+
+    let entry = ledger::storage::create_entry(pool, new_entry, idempotency_key).await?;
+
+    storage::record_newsletter_signup(
+        pool,
+        req.merchant_id,
+        customer_id,
+        entry.id,
+        &req.email,
+        "webhook",
+    )
+    .await?;
+
+    Ok(NewsletterSignupResult {
+        customer_id,
+        email: req.email,
+        rewarded: true,
+        already_subscribed: false,
+        ledger_entry_id: Some(entry.id),
+        amount: entry.earning_unit,
+    })
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+async fn resolve_newsletter_customer(
+    pool: &PgPool,
+    req: &NewsletterSignupRequest,
+) -> Result<Uuid, AppError> {
+    if let Some(customer_id) = req.customer_id {
+        let _customer = identity::storage::get_customer(pool, customer_id).await?;
+        return Ok(customer_id);
+    }
+
+    if let Some(ref phone) = req.phone {
+        let resolve_req = ResolveIdentityRequest {
+            phone: phone.clone(),
+            email: Some(req.email.clone()),
+            name: None,
+            external_id: None,
+        };
+        let (customer, _is_new) = identity::storage::resolve_or_create(pool, &resolve_req).await?;
+        return Ok(customer.id);
+    }
+
+    if let Some(customer) = identity::storage::resolve_by_email(pool, &req.email).await? {
+        return Ok(customer.id);
+    }
+
+    Err(AppError::BadRequest(
+        "cannot resolve customer: provide customer_id or phone, or ensure a customer with this email exists".to_string(),
+    ))
 }
 
 #[tracing::instrument(skip(event))]

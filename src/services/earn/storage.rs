@@ -3,7 +3,7 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::error::AppError;
-use super::types::{AchievedMilestone, CreateMilestoneRequest, MilestoneConfig};
+use super::types::{AchievedMilestone, CreateMilestoneRequest, MilestoneConfig, NewsletterSignupCount};
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct CustomerOrderStats {
@@ -174,4 +174,75 @@ pub async fn get_customer_milestones(
     .await?;
 
     Ok(milestones)
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn has_newsletter_signup(
+    pool: &PgPool,
+    merchant_id: Uuid,
+    customer_id: Uuid,
+) -> Result<bool, AppError> {
+    let row: Option<(i32,)> = sqlx::query_as(
+        r#"
+        SELECT 1 AS one
+        FROM newsletter_signups
+        WHERE merchant_id = $1 AND customer_id = $2
+        LIMIT 1
+        "#,
+    )
+    .bind(merchant_id)
+    .bind(customer_id)
+    .fetch_optional(pool)
+    .await?;
+
+    Ok(row.is_some())
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn record_newsletter_signup(
+    pool: &PgPool,
+    merchant_id: Uuid,
+    customer_id: Uuid,
+    ledger_entry_id: Uuid,
+    email: &str,
+    source: &str,
+) -> Result<(), AppError> {
+    sqlx::query(
+        r#"
+        INSERT INTO newsletter_signups (merchant_id, customer_id, ledger_entry_id, email, source)
+        VALUES ($1, $2, $3, $4, $5)
+        ON CONFLICT (merchant_id, customer_id) DO NOTHING
+        "#,
+    )
+    .bind(merchant_id)
+    .bind(customer_id)
+    .bind(ledger_entry_id)
+    .bind(email)
+    .bind(source)
+    .execute(pool)
+    .await?;
+
+    Ok(())
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn get_newsletter_signup_count(
+    pool: &PgPool,
+    merchant_id: Uuid,
+) -> Result<NewsletterSignupCount, AppError> {
+    let row: (i64,) = sqlx::query_as(
+        r#"
+        SELECT COUNT(*)::int8 AS count
+        FROM newsletter_signups
+        WHERE merchant_id = $1
+        "#,
+    )
+    .bind(merchant_id)
+    .fetch_one(pool)
+    .await?;
+
+    Ok(NewsletterSignupCount {
+        merchant_id,
+        count: row.0,
+    })
 }

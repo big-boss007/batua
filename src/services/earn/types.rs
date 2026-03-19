@@ -115,3 +115,28 @@ pub struct AchievedMilestone {
     pub reward_amount: f64,
     pub achieved_at: DateTime<Utc>,
 }
+
+#[derive(Debug, Deserialize)]
+pub struct NewsletterSignupRequest {
+    pub merchant_id: Uuid,
+    pub email: String,
+    pub phone: Option<String>,
+    pub customer_id: Option<Uuid>,
+    pub amount: f64,
+}
+
+#[derive(Debug, Serialize)]
+pub struct NewsletterSignupResult {
+    pub customer_id: Uuid,
+    pub email: String,
+    pub rewarded: bool,
+    pub already_subscribed: bool,
+    pub ledger_entry_id: Option<Uuid>,
+    pub amount: f64,
+}
+
+#[derive(Debug, Serialize)]
+pub struct NewsletterSignupCount {
+    pub merchant_id: Uuid,
+    pub count: i64,
+}

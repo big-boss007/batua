@@ -11,7 +11,7 @@ use super::helpers;
 use super::storage;
 use super::types::{
     CheckMilestonesRequest, CreateMilestoneRequest, ManualCreditRequest,
-    ProcessBirthdayBonusRequest, ProcessEarnRequest,
+    NewsletterSignupRequest, ProcessBirthdayBonusRequest, ProcessEarnRequest,
 };
 
 #[tracing::instrument(skip(app_state))]
@@ -79,4 +79,27 @@ pub async fn get_customer_milestones(
     let milestones =
         storage::get_customer_milestones(&app_state.db, merchant_id, customer_id).await?;
     Ok::<_, AppError>((StatusCode::OK, Json(milestones)))
+}
+
+#[tracing::instrument(skip(app_state))]
+pub async fn newsletter_signup(
+    State(app_state): State<AppState>,
+    Json(req): Json<NewsletterSignupRequest>,
+) -> impl IntoResponse {
+    let result = helpers::process_newsletter_signup(&app_state.db, req).await?;
+    let status = if result.already_subscribed {
+        StatusCode::OK
+    } else {
+        StatusCode::CREATED
+    };
+    Ok::<_, AppError>((status, Json(result)))
+}
+
+#[tracing::instrument(skip(app_state))]
+pub async fn get_newsletter_signup_count(
+    State(app_state): State<AppState>,
+    Path(merchant_id): Path<Uuid>,
+) -> impl IntoResponse {
+    let count = storage::get_newsletter_signup_count(&app_state.db, merchant_id).await?;
+    Ok::<_, AppError>((StatusCode::OK, Json(count)))
 }

@@ -21,6 +21,25 @@ pub struct CustomerWithWallet {
 }
 
 #[tracing::instrument(skip(pool), err(Debug))]
+pub async fn resolve_by_email(
+    pool: &PgPool,
+    email: &str,
+) -> Result<Option<Customer>, AppError> {
+    let customer = sqlx::query_as::<_, Customer>(
+        r#"
+        SELECT id, phone, email, name, external_id, is_verified, birthday, created_at, updated_at
+        FROM customers
+        WHERE email = $1
+        "#,
+    )
+    .bind(email)
+    .fetch_optional(pool)
+    .await?;
+
+    Ok(customer)
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
 pub async fn resolve_by_phone(
     pool: &PgPool,
     phone: &str,

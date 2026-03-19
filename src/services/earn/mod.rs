@@ -19,4 +19,12 @@ pub fn router() -> axum::Router<AppState> {
             "/earn/milestones/{merchant_id}/{customer_id}",
             get(handler::get_customer_milestones),
         )
+        .route(
+            "/earn/newsletter-signup",
+            post(handler::newsletter_signup),
+        )
+        .route(
+            "/earn/newsletter-signups/{merchant_id}",
+            get(handler::get_newsletter_signup_count),
+        )
 }
