@@ -240,6 +240,77 @@ post /notifications/connectors "{\"merchant_id\":\"$MID\",\"capability\":\"sms\"
 echo "  SMS → MSG91"
 
 # -----------------------------------------------------------
+# 13. Milestones
+# -----------------------------------------------------------
+echo ""
+echo "=== Setting up milestones ==="
+post /earn/milestones "{\"merchant_id\":\"$MID\",\"name\":\"3rd Order Bonus\",\"milestone_type\":\"order_count\",\"threshold\":3,\"reward_amount\":50}" > /dev/null
+echo "  3rd Order Bonus: 3 orders → ₹50"
+post /earn/milestones "{\"merchant_id\":\"$MID\",\"name\":\"₹5K Club\",\"milestone_type\":\"lifetime_spend\",\"threshold\":5000,\"reward_amount\":150}" > /dev/null
+echo "  ₹5K Club: ₹5,000 spend → ₹150"
+post /earn/milestones "{\"merchant_id\":\"$MID\",\"name\":\"10th Order Celebration\",\"milestone_type\":\"order_count\",\"threshold\":10,\"reward_amount\":500}" > /dev/null
+echo "  10th Order: 10 orders → ₹500"
+
+# -----------------------------------------------------------
+# 14. Streak configs
+# -----------------------------------------------------------
+echo ""
+echo "=== Setting up streak rewards ==="
+post /earn/streaks "{\"merchant_id\":\"$MID\",\"name\":\"3 in 30\",\"required_orders\":3,\"window_days\":30,\"reward_amount\":75}" > /dev/null
+echo "  3 orders in 30 days → ₹75"
+
+# -----------------------------------------------------------
+# 15. Spin-the-wheel
+# -----------------------------------------------------------
+echo ""
+echo "=== Setting up spin wheel ==="
+post /earn/spin-wheel/config "{\"merchant_id\":\"$MID\",\"name\":\"Lucky Spin\",\"daily_spin_limit\":3,\"segments\":[{\"label\":\"₹10 Off\",\"reward_amount\":10,\"probability\":30,\"color\":\"#10b981\"},{\"label\":\"₹25 Off\",\"reward_amount\":25,\"probability\":25,\"color\":\"#3b82f6\"},{\"label\":\"₹50 Off\",\"reward_amount\":50,\"probability\":15,\"color\":\"#7c6aff\"},{\"label\":\"₹100 Off\",\"reward_amount\":100,\"probability\":5,\"color\":\"#f59e0b\"},{\"label\":\"Better luck!\",\"reward_amount\":0,\"probability\":20,\"color\":\"#6b7280\"},{\"label\":\"₹5 Off\",\"reward_amount\":5,\"probability\":5,\"color\":\"#ef4444\"}]}" > /dev/null
+echo "  Lucky Spin: 6 segments, 3 spins/day"
+
+# -----------------------------------------------------------
+# 16. Membership plans
+# -----------------------------------------------------------
+echo ""
+echo "=== Setting up membership plans ==="
+post /earn/memberships/plans "{\"merchant_id\":\"$MID\",\"name\":\"Desi Premium Monthly\",\"plan_type\":\"monthly\",\"price\":99,\"earn_rate_multiplier\":2.0,\"benefits\":{\"free_shipping\":true,\"early_access\":true}}" > /dev/null
+echo "  Monthly: ₹99/mo, 2x earn, free shipping"
+post /earn/memberships/plans "{\"merchant_id\":\"$MID\",\"name\":\"Desi Premium Annual\",\"plan_type\":\"annual\",\"price\":799,\"earn_rate_multiplier\":2.5,\"benefits\":{\"free_shipping\":true,\"early_access\":true,\"priority_support\":true}}" > /dev/null
+echo "  Annual: ₹799/yr, 2.5x earn, priority support"
+
+# -----------------------------------------------------------
+# 17. Set birthdays (Priya + Arjun = today, others = various)
+# -----------------------------------------------------------
+echo ""
+echo "=== Setting customer birthdays ==="
+psql -U chirag -d batua -c "UPDATE customers SET birthday = CURRENT_DATE WHERE phone = '+919876543210';" > /dev/null 2>&1
+psql -U chirag -d batua -c "UPDATE customers SET birthday = CURRENT_DATE WHERE phone = '+918765432109';" > /dev/null 2>&1
+psql -U chirag -d batua -c "UPDATE customers SET birthday = '1995-06-15' WHERE phone = '+917654321098';" > /dev/null 2>&1
+psql -U chirag -d batua -c "UPDATE customers SET birthday = '1990-12-25' WHERE phone = '+916543210987';" > /dev/null 2>&1
+psql -U chirag -d batua -c "UPDATE customers SET birthday = '1998-08-20' WHERE phone = '+919988776655';" > /dev/null 2>&1
+psql -U chirag -d batua -c "UPDATE customers SET birthday = '1992-01-10' WHERE phone = '+918877665544';" > /dev/null 2>&1
+psql -U chirag -d batua -c "UPDATE customers SET birthday = '1997-11-05' WHERE phone = '+917766554433';" > /dev/null 2>&1
+psql -U chirag -d batua -c "UPDATE customers SET birthday = '1994-03-22' WHERE phone = '+916655443322';" > /dev/null 2>&1
+echo "  Priya + Arjun: birthday = today"
+echo "  Others: various dates throughout the year"
+
+# -----------------------------------------------------------
+# 18. Second merchant for coalition
+# -----------------------------------------------------------
+echo ""
+echo "=== Creating second merchant for coalition ==="
+M2=$(post /admin/merchants '{"external_id":"shop_fresh_fashion","name":"Fresh Fashion","domain":"freshfashion.myshopify.com","slug":"fresh-fashion","currency":"INR","timezone":"Asia/Kolkata"}')
+M2ID=$(echo "$M2" | jq_id "['id']")
+echo "  Fresh Fashion ($M2ID)"
+
+# Create coalition
+post /admin/coalitions "{\"name\":\"Fashion Alliance\",\"merchant_ids\":[\"$MID\",\"$M2ID\"]}" > /dev/null
+echo "  Coalition: Fashion Alliance (Desi Threads + Fresh Fashion)"
+
+# Create Priya's wallet at Fresh Fashion
+post /wallets/get-or-create "{\"merchant_id\":\"$M2ID\",\"customer_id\":\"${CIDS[0]}\"}" > /dev/null
+echo "  Priya has wallets at both merchants"
+
+# -----------------------------------------------------------
 # Summary
 # -----------------------------------------------------------
 echo ""
@@ -247,15 +318,50 @@ echo "============================================"
 echo "  SEED COMPLETE"
 echo "============================================"
 echo ""
-echo "  Merchant:   Desi Threads ($MID)"
-echo "  Customers:  8"
-echo "  Orders:     20 (mixed prepaid + COD)"
-echo "  Rules:      3 reward rules"
-echo "  Loyalty:    4 tiers (Bronze/Silver/Gold/Platinum)"
-echo "  Referrals:  2 codes (PRIYA10, VIKRAM20)"
-echo "  Templates:  3 WhatsApp templates"
-echo "  Connectors: 2 (Interakt, MSG91)"
+echo "  Merchant:    Desi Threads ($MID)"
+echo "  Customers:   8 (with birthdays set)"
+echo "  Orders:      20 (mixed prepaid + COD)"
+echo "  Rules:       3 reward rules"
+echo "  Loyalty:     4 tiers (Bronze/Silver/Gold/Platinum)"
+echo "  Referrals:   2 codes (PRIYA10, VIKRAM20)"
+echo "  Milestones:  3 configs (3rd order, ₹5K, 10th order)"
+echo "  Streak:      3 in 30 → ₹75"
+echo "  Spin wheel:  6 segments, 3/day"
+echo "  Memberships: Monthly ₹99, Annual ₹799"
+echo "  Coalition:   Fashion Alliance (Desi Threads + Fresh Fashion)"
+echo "  Templates:   3 WhatsApp templates"
+echo "  Connectors:  2 (Interakt, MSG91)"
 echo ""
-echo "  Admin UI:   http://localhost:5174/admin"
-echo "  API:        $API"
+echo "============================================"
+echo "  HOW TO TEST PHASE 6 FEATURES"
+echo "============================================"
+echo ""
+echo "  Birthday bonus (₹100 each):"
+echo "    curl -X POST $API/earn/birthday-bonus -H 'Content-Type: application/json' -d '{\"merchant_id\":\"$MID\",\"amount\":100}'"
+echo ""
+echo "  Milestones (check Priya — 4 orders):"
+echo "    curl -X POST $API/earn/check-milestones -H 'Content-Type: application/json' -d '{\"merchant_id\":\"$MID\",\"customer_id\":\"${CIDS[0]}\"}'"
+echo ""
+echo "  Newsletter signup (₹25):"
+echo "    curl -X POST $API/earn/newsletter-signup -H 'Content-Type: application/json' -d '{\"merchant_id\":\"$MID\",\"email\":\"rohit@example.com\",\"phone\":\"6655443322\",\"amount\":25}'"
+echo ""
+echo "  Profile completion (₹30):"
+echo "    curl -X POST $API/earn/profile-completion -H 'Content-Type: application/json' -d '{\"merchant_id\":\"$MID\",\"customer_id\":\"${CIDS[0]}\"}'"
+echo ""
+echo "  Streak check (Priya — 4 orders in 30 days):"
+echo "    curl -X POST $API/earn/check-streaks -H 'Content-Type: application/json' -d '{\"merchant_id\":\"$MID\",\"customer_id\":\"${CIDS[0]}\"}'"
+echo ""
+echo "  Spin wheel:"
+echo "    curl -X POST $API/earn/spin-wheel/spin -H 'Content-Type: application/json' -d '{\"merchant_id\":\"$MID\",\"customer_id\":\"${CIDS[0]}\"}'"
+echo ""
+echo "  Subscribe to membership:"
+echo "    PLAN_ID=\$(curl -s $API/earn/memberships/plans/$MID | python3 -c \"import sys,json; print(json.load(sys.stdin)[0]['id'])\")"
+echo "    curl -X POST $API/earn/memberships/subscribe -H 'Content-Type: application/json' -d '{\"merchant_id\":\"$MID\",\"customer_id\":\"${CIDS[0]}\",\"plan_id\":\"'\$PLAN_ID'\"}'"
+echo ""
+echo "  Coalition transfer (₹50 Desi → Fresh):"
+echo "    curl -X POST $API/admin/coalitions/transfer -H 'Content-Type: application/json' -d '{\"customer_id\":\"${CIDS[0]}\",\"from_merchant_id\":\"$MID\",\"to_merchant_id\":\"$M2ID\",\"amount\":50}'"
+echo ""
+echo "  Admin UI:    http://localhost:5174/admin"
+echo "  Storefront:  http://localhost:5174/s/desi-threads"
+echo "  Platform:    http://localhost:5174/platform"
 echo ""
