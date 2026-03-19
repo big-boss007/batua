@@ -60,4 +60,17 @@ pub fn router() -> Router<AppState> {
             "/admin/merchants/{merchant_id}/analytics",
             get(handler::merchant_analytics),
         )
+        .route("/admin/coalitions", post(handler::create_coalition))
+        .route(
+            "/admin/coalitions/{merchant_id}",
+            get(handler::get_merchant_coalitions),
+        )
+        .route(
+            "/admin/coalitions/transfer",
+            post(handler::coalition_transfer),
+        )
+        .route(
+            "/admin/coalitions/transfers/{customer_id}",
+            get(handler::get_coalition_transfers),
+        )
 }

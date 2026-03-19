@@ -235,3 +235,74 @@ pub struct MerchantAnalytics {
     pub non_loyalty_rto_rate: f64,
     pub repeat_purchase_rate: f64,
 }
+
+#[derive(Debug, Clone, Serialize, sqlx::FromRow)]
+pub struct Coalition {
+    pub id: Uuid,
+    pub name: String,
+    pub is_active: bool,
+    pub created_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, sqlx::FromRow)]
+pub struct CoalitionMember {
+    pub id: Uuid,
+    pub coalition_id: Uuid,
+    pub merchant_id: Uuid,
+    pub conversion_rate: f64,
+    pub is_active: bool,
+    pub joined_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CreateCoalitionRequest {
+    pub name: String,
+    pub merchant_ids: Vec<Uuid>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CoalitionTransferRequest {
+    pub customer_id: Uuid,
+    pub from_merchant_id: Uuid,
+    pub to_merchant_id: Uuid,
+    pub amount: f64,
+}
+
+#[derive(Debug, Serialize)]
+pub struct CoalitionTransferResult {
+    pub transfer_id: Uuid,
+    pub from_amount: f64,
+    pub to_amount: f64,
+    pub conversion_rate: f64,
+    pub from_balance_after: f64,
+    pub to_balance_after: f64,
+}
+
+#[derive(Debug, Serialize)]
+pub struct CoalitionInfo {
+    pub coalition: Coalition,
+    pub members: Vec<CoalitionMemberInfo>,
+}
+
+#[derive(Debug, Serialize, sqlx::FromRow)]
+pub struct CoalitionMemberInfo {
+    pub merchant_id: Uuid,
+    pub merchant_name: String,
+    pub conversion_rate: f64,
+}
+
+#[derive(Debug, Clone, Serialize, sqlx::FromRow)]
+pub struct CoalitionTransferRecord {
+    pub id: Uuid,
+    pub coalition_id: Uuid,
+    pub customer_id: Uuid,
+    pub from_merchant_id: Uuid,
+    pub to_merchant_id: Uuid,
+    pub from_wallet_id: Uuid,
+    pub to_wallet_id: Uuid,
+    pub amount: f64,
+    pub converted_amount: f64,
+    pub conversion_rate: f64,
+    pub transfer_id: Uuid,
+    pub created_at: DateTime<Utc>,
+}

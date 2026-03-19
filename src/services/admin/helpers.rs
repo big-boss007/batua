@@ -4,14 +4,14 @@ use uuid::Uuid;
 use crate::error::AppError;
 use crate::services::ledger::storage as ledger_storage;
 use crate::services::ledger::types::{
-    ActorType, CreditState, LedgerEntry, MovementType, NewLedgerEntry,
+    ActorType, BucketType, CreditState, LedgerEntry, MovementType, NewLedgerEntry,
 };
 use crate::services::wallets::storage as wallet_storage;
 
 use super::storage;
 use super::types::{
-    AdminDashboard, BulkCreditItemResult, BulkCreditRequest, BulkCreditResult, DisputeRequest,
-    DisputeResult,
+    AdminDashboard, BulkCreditItemResult, BulkCreditRequest, BulkCreditResult,
+    CoalitionTransferRequest, CoalitionTransferResult, DisputeRequest, DisputeResult,
 };
 
 #[tracing::instrument(skip(pool), err(Debug))]
@@ -158,6 +158,148 @@ pub async fn process_dispute(
 #[tracing::instrument(skip(pool), err(Debug))]
 pub async fn get_system_dashboard(pool: &PgPool) -> Result<AdminDashboard, AppError> {
     storage::get_dashboard_stats(pool).await
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn transfer_coalition_credits(
+    pool: &PgPool,
+    req: &CoalitionTransferRequest,
+) -> Result<CoalitionTransferResult, AppError> {
+    let (coalition, from_member, to_member) = storage::get_coalition_for_merchants(
+        pool,
+        req.from_merchant_id,
+        req.to_merchant_id,
+    )
+    .await?
+    .ok_or_else(|| {
+        AppError::BadRequest("merchants are not in the same coalition".to_string())
+    })?;
+
+    let from_wallet = wallet_storage::get_wallet_by_merchant_customer(
+        pool,
+        req.from_merchant_id,
+        req.customer_id,
+    )
+    .await?
+    .ok_or_else(|| {
+        AppError::NotFound(format!(
+            "customer {} has no wallet at merchant {}",
+            req.customer_id, req.from_merchant_id
+        ))
+    })?;
+
+    let balance = ledger_storage::get_balance(pool, from_wallet.id).await?;
+    if balance.spendable_balance < req.amount {
+        return Err(AppError::BadRequest(format!(
+            "insufficient balance: spendable {}, requested {}",
+            balance.spendable_balance, req.amount
+        )));
+    }
+
+    let to_wallet = wallet_storage::get_wallet_by_merchant_customer(
+        pool,
+        req.to_merchant_id,
+        req.customer_id,
+    )
+    .await?
+    .ok_or_else(|| {
+        AppError::NotFound(format!(
+            "customer {} has no wallet at merchant {}",
+            req.customer_id, req.to_merchant_id
+        ))
+    })?;
+
+    let conversion_rate = to_member.conversion_rate / from_member.conversion_rate;
+    let converted_amount = req.amount * conversion_rate;
+
+    let idempotency_base = format!(
+        "coalition-{}-{}-{}-{}-{}",
+        coalition.id, req.customer_id, req.from_merchant_id, req.to_merchant_id, req.amount
+    );
+
+    let out_entry = NewLedgerEntry {
+        wallet_id: from_wallet.id,
+        bucket_type: BucketType::EarnedCredit,
+        movement_type: MovementType::Out,
+        earning_unit: req.amount,
+        currency_equivalent: req.amount,
+        conversion_rate: 1.0,
+        event_id: None,
+        rule_snapshot_id: None,
+        campaign_snapshot_id: None,
+        actor_type: ActorType::System,
+        actor_id: Some(format!("coalition:{}", coalition.id)),
+        payment_reference: None,
+        transfer_id: None,
+        constraints: serde_json::json!({
+            "coalition_id": coalition.id,
+            "coalition_transfer": true,
+            "to_merchant_id": req.to_merchant_id,
+        }),
+        expires_at: None,
+    };
+
+    let in_entry = NewLedgerEntry {
+        wallet_id: to_wallet.id,
+        bucket_type: BucketType::EarnedCredit,
+        movement_type: MovementType::In,
+        earning_unit: converted_amount,
+        currency_equivalent: converted_amount,
+        conversion_rate,
+        event_id: None,
+        rule_snapshot_id: None,
+        campaign_snapshot_id: None,
+        actor_type: ActorType::System,
+        actor_id: Some(format!("coalition:{}", coalition.id)),
+        payment_reference: None,
+        transfer_id: None,
+        constraints: serde_json::json!({
+            "coalition_id": coalition.id,
+            "coalition_transfer": true,
+            "from_merchant_id": req.from_merchant_id,
+        }),
+        expires_at: None,
+    };
+
+    let (out_result, _in_result) = ledger_storage::create_across_movement(
+        pool,
+        out_entry,
+        format!("{idempotency_base}-out"),
+        in_entry,
+        format!("{idempotency_base}-in"),
+    )
+    .await?;
+
+    let transfer_id = out_result
+        .transfer_id
+        .unwrap_or_else(Uuid::new_v4);
+
+    storage::record_coalition_transfer(
+        pool,
+        coalition.id,
+        req.customer_id,
+        req.from_merchant_id,
+        req.to_merchant_id,
+        from_wallet.id,
+        to_wallet.id,
+        req.amount,
+        converted_amount,
+        conversion_rate,
+        transfer_id,
+    )
+    .await?;
+
+    let from_balance = ledger_storage::get_balance(pool, from_wallet.id).await?;
+    let to_balance = ledger_storage::get_balance(pool, to_wallet.id).await?;
+
+    Ok(CoalitionTransferResult {
+        transfer_id,
+        from_amount: req.amount,
+        to_amount: converted_amount,
+        conversion_rate,
+        from_balance_after: from_balance.spendable_balance,
+        to_balance_after: to_balance.spendable_balance,
+    })
 }
 
 fn parse_bucket_type(

@@ -8,9 +8,10 @@ use crate::error::AppError;
 use super::helpers;
 use super::storage;
 use super::types::{
-    BulkCreditRequest, CreateGeoPolicyRequest, CreateMerchantRequest, DisputeRequest,
-    MerchantCustomersQuery, MerchantTransactionsQuery, PaginationQuery, RecentEventsQuery,
-    UpdateMerchantRequest, UpdatePlanRequest, WalletPolicyRequest,
+    BulkCreditRequest, CoalitionTransferRequest, CreateCoalitionRequest, CreateGeoPolicyRequest,
+    CreateMerchantRequest, DisputeRequest, MerchantCustomersQuery, MerchantTransactionsQuery,
+    PaginationQuery, RecentEventsQuery, UpdateMerchantRequest, UpdatePlanRequest,
+    WalletPolicyRequest,
 };
 
 #[tracing::instrument(skip(app_state))]
@@ -267,4 +268,71 @@ pub async fn merchant_transactions(
     .await?;
 
     Ok::<_, AppError>(Json(transactions))
+}
+
+#[tracing::instrument(skip(app_state))]
+pub async fn create_coalition(
+    State(app_state): State<AppState>,
+    Json(req): Json<CreateCoalitionRequest>,
+) -> impl IntoResponse {
+    if req.merchant_ids.len() < 2 {
+        return Err(AppError::BadRequest(
+            "a coalition requires at least 2 merchants".to_string(),
+        ));
+    }
+
+    let coalition = storage::create_coalition(&app_state.db, &req.name).await?;
+
+    let mut members = Vec::with_capacity(req.merchant_ids.len());
+    for merchant_id in &req.merchant_ids {
+        let member =
+            storage::add_coalition_member(&app_state.db, coalition.id, *merchant_id, 1.0).await?;
+        members.push(member);
+    }
+
+    Ok::<_, AppError>((
+        axum::http::StatusCode::CREATED,
+        Json(serde_json::json!({
+            "coalition": coalition,
+            "members": members,
+        })),
+    ))
+}
+
+#[tracing::instrument(skip(app_state))]
+pub async fn get_merchant_coalitions(
+    State(app_state): State<AppState>,
+    Path(merchant_id): Path<Uuid>,
+) -> impl IntoResponse {
+    let pool = app_state.db_reader.as_ref().unwrap_or(&app_state.db);
+    let coalitions = storage::get_merchant_coalitions(pool, merchant_id).await?;
+
+    Ok::<_, AppError>(Json(coalitions))
+}
+
+#[tracing::instrument(skip(app_state))]
+pub async fn coalition_transfer(
+    State(app_state): State<AppState>,
+    Json(req): Json<CoalitionTransferRequest>,
+) -> impl IntoResponse {
+    if req.amount <= 0.0 {
+        return Err(AppError::BadRequest(
+            "transfer amount must be positive".to_string(),
+        ));
+    }
+
+    let result = helpers::transfer_coalition_credits(&app_state.db, &req).await?;
+
+    Ok::<_, AppError>(Json(result))
+}
+
+#[tracing::instrument(skip(app_state))]
+pub async fn get_coalition_transfers(
+    State(app_state): State<AppState>,
+    Path(customer_id): Path<Uuid>,
+) -> impl IntoResponse {
+    let pool = app_state.db_reader.as_ref().unwrap_or(&app_state.db);
+    let transfers = storage::get_coalition_transfers_for_customer(pool, customer_id).await?;
+
+    Ok::<_, AppError>(Json(transfers))
 }

@@ -5,7 +5,8 @@ use crate::error::AppError;
 use crate::services::redemption::types::WalletPolicy;
 
 use super::types::{
-    AdminDashboard, CreateGeoPolicyRequest, CreateMerchantRequest, GeoPolicy, Merchant,
+    AdminDashboard, Coalition, CoalitionInfo, CoalitionMember, CoalitionMemberInfo,
+    CoalitionTransferRecord, CreateGeoPolicyRequest, CreateMerchantRequest, GeoPolicy, Merchant,
     MerchantAnalytics, MerchantCustomer, MerchantDashboard, MerchantStats, MerchantTransaction,
     RecentEvent, SystemHealth, UpdateMerchantRequest, WalletPolicyRequest,
 };
@@ -677,4 +678,246 @@ pub async fn get_merchant_analytics(
         non_loyalty_rto_rate: 28.0,
         repeat_purchase_rate: 35.0,
     })
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn create_coalition(pool: &PgPool, name: &str) -> Result<Coalition, AppError> {
+    let coalition = sqlx::query_as::<_, Coalition>(
+        r#"
+        INSERT INTO coalitions (name)
+        VALUES ($1)
+        RETURNING id, name, is_active, created_at
+        "#,
+    )
+    .bind(name)
+    .fetch_one(pool)
+    .await?;
+
+    Ok(coalition)
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn add_coalition_member(
+    pool: &PgPool,
+    coalition_id: Uuid,
+    merchant_id: Uuid,
+    conversion_rate: f64,
+) -> Result<CoalitionMember, AppError> {
+    let member = sqlx::query_as::<_, CoalitionMember>(
+        r#"
+        INSERT INTO coalition_members (coalition_id, merchant_id, conversion_rate)
+        VALUES ($1, $2, $3)
+        RETURNING id, coalition_id, merchant_id, conversion_rate, is_active, joined_at
+        "#,
+    )
+    .bind(coalition_id)
+    .bind(merchant_id)
+    .bind(conversion_rate)
+    .fetch_one(pool)
+    .await
+    .map_err(|e| match e {
+        sqlx::Error::Database(ref db_err) if db_err.is_unique_violation() => {
+            AppError::Conflict(format!(
+                "merchant {merchant_id} is already in coalition {coalition_id}"
+            ))
+        }
+        other => AppError::Database(other),
+    })?;
+
+    Ok(member)
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn get_coalition_for_merchants(
+    pool: &PgPool,
+    merchant_a: Uuid,
+    merchant_b: Uuid,
+) -> Result<Option<(Coalition, CoalitionMember, CoalitionMember)>, AppError> {
+    #[derive(Debug, sqlx::FromRow)]
+    struct CoalitionWithMembers {
+        coalition_id: Uuid,
+        coalition_name: String,
+        coalition_is_active: bool,
+        coalition_created_at: chrono::DateTime<chrono::Utc>,
+        member_a_id: Uuid,
+        member_a_conversion_rate: f64,
+        member_a_is_active: bool,
+        member_a_joined_at: chrono::DateTime<chrono::Utc>,
+        member_b_id: Uuid,
+        member_b_conversion_rate: f64,
+        member_b_is_active: bool,
+        member_b_joined_at: chrono::DateTime<chrono::Utc>,
+    }
+
+    let row = sqlx::query_as::<_, CoalitionWithMembers>(
+        r#"
+        SELECT
+            c.id AS coalition_id,
+            c.name AS coalition_name,
+            c.is_active AS coalition_is_active,
+            c.created_at AS coalition_created_at,
+            cm_a.id AS member_a_id,
+            cm_a.conversion_rate AS member_a_conversion_rate,
+            cm_a.is_active AS member_a_is_active,
+            cm_a.joined_at AS member_a_joined_at,
+            cm_b.id AS member_b_id,
+            cm_b.conversion_rate AS member_b_conversion_rate,
+            cm_b.is_active AS member_b_is_active,
+            cm_b.joined_at AS member_b_joined_at
+        FROM coalitions c
+        JOIN coalition_members cm_a ON cm_a.coalition_id = c.id AND cm_a.merchant_id = $1
+        JOIN coalition_members cm_b ON cm_b.coalition_id = c.id AND cm_b.merchant_id = $2
+        WHERE c.is_active = true
+          AND cm_a.is_active = true
+          AND cm_b.is_active = true
+        LIMIT 1
+        "#,
+    )
+    .bind(merchant_a)
+    .bind(merchant_b)
+    .fetch_optional(pool)
+    .await?;
+
+    let Some(r) = row else {
+        return Ok(None);
+    };
+
+    let coalition = Coalition {
+        id: r.coalition_id,
+        name: r.coalition_name,
+        is_active: r.coalition_is_active,
+        created_at: r.coalition_created_at,
+    };
+
+    let member_a = CoalitionMember {
+        id: r.member_a_id,
+        coalition_id: r.coalition_id,
+        merchant_id: merchant_a,
+        conversion_rate: r.member_a_conversion_rate,
+        is_active: r.member_a_is_active,
+        joined_at: r.member_a_joined_at,
+    };
+
+    let member_b = CoalitionMember {
+        id: r.member_b_id,
+        coalition_id: r.coalition_id,
+        merchant_id: merchant_b,
+        conversion_rate: r.member_b_conversion_rate,
+        is_active: r.member_b_is_active,
+        joined_at: r.member_b_joined_at,
+    };
+
+    Ok(Some((coalition, member_a, member_b)))
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn get_merchant_coalitions(
+    pool: &PgPool,
+    merchant_id: Uuid,
+) -> Result<Vec<CoalitionInfo>, AppError> {
+    let coalitions = sqlx::query_as::<_, Coalition>(
+        r#"
+        SELECT c.id, c.name, c.is_active, c.created_at
+        FROM coalitions c
+        JOIN coalition_members cm ON cm.coalition_id = c.id
+        WHERE cm.merchant_id = $1
+          AND cm.is_active = true
+          AND c.is_active = true
+        ORDER BY c.created_at DESC
+        "#,
+    )
+    .bind(merchant_id)
+    .fetch_all(pool)
+    .await?;
+
+    let mut results = Vec::with_capacity(coalitions.len());
+
+    for coalition in coalitions {
+        let members = sqlx::query_as::<_, CoalitionMemberInfo>(
+            r#"
+            SELECT cm.merchant_id, m.name AS merchant_name, cm.conversion_rate
+            FROM coalition_members cm
+            JOIN merchants m ON m.id = cm.merchant_id
+            WHERE cm.coalition_id = $1
+              AND cm.is_active = true
+            ORDER BY cm.joined_at
+            "#,
+        )
+        .bind(coalition.id)
+        .fetch_all(pool)
+        .await?;
+
+        results.push(CoalitionInfo {
+            coalition,
+            members,
+        });
+    }
+
+    Ok(results)
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn record_coalition_transfer(
+    pool: &PgPool,
+    coalition_id: Uuid,
+    customer_id: Uuid,
+    from_merchant_id: Uuid,
+    to_merchant_id: Uuid,
+    from_wallet_id: Uuid,
+    to_wallet_id: Uuid,
+    amount: f64,
+    converted_amount: f64,
+    conversion_rate: f64,
+    transfer_id: Uuid,
+) -> Result<(), AppError> {
+    sqlx::query(
+        r#"
+        INSERT INTO coalition_transfers (
+            coalition_id, customer_id,
+            from_merchant_id, to_merchant_id,
+            from_wallet_id, to_wallet_id,
+            amount, converted_amount, conversion_rate,
+            transfer_id
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        "#,
+    )
+    .bind(coalition_id)
+    .bind(customer_id)
+    .bind(from_merchant_id)
+    .bind(to_merchant_id)
+    .bind(from_wallet_id)
+    .bind(to_wallet_id)
+    .bind(amount)
+    .bind(converted_amount)
+    .bind(conversion_rate)
+    .bind(transfer_id)
+    .execute(pool)
+    .await?;
+
+    Ok(())
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn get_coalition_transfers_for_customer(
+    pool: &PgPool,
+    customer_id: Uuid,
+) -> Result<Vec<CoalitionTransferRecord>, AppError> {
+    let records = sqlx::query_as::<_, CoalitionTransferRecord>(
+        r#"
+        SELECT id, coalition_id, customer_id,
+               from_merchant_id, to_merchant_id,
+               from_wallet_id, to_wallet_id,
+               amount, converted_amount, conversion_rate,
+               transfer_id, created_at
+        FROM coalition_transfers
+        WHERE customer_id = $1
+        ORDER BY created_at DESC
+        "#,
+    )
+    .bind(customer_id)
+    .fetch_all(pool)
+    .await?;
+
+    Ok(records)
 }
