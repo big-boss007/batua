@@ -158,3 +158,53 @@ pub struct ProfileCompletionResult {
     pub amount: f64,
     pub ledger_entry_id: Option<Uuid>,
 }
+
+#[derive(Debug, Clone, Serialize, sqlx::FromRow)]
+pub struct StreakConfig {
+    pub id: Uuid,
+    pub merchant_id: Uuid,
+    pub name: String,
+    pub required_orders: i32,
+    pub window_days: i32,
+    pub reward_amount: f64,
+    pub is_active: bool,
+    pub created_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CreateStreakConfigRequest {
+    pub merchant_id: Uuid,
+    pub name: String,
+    pub required_orders: i32,
+    pub window_days: i32,
+    pub reward_amount: f64,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CheckStreakRequest {
+    pub merchant_id: Uuid,
+    pub customer_id: Uuid,
+}
+
+#[derive(Debug, Serialize)]
+pub struct StreakCheckResult {
+    pub customer_id: Uuid,
+    pub streaks_achieved: Vec<StreakAchievementEntry>,
+    pub active_streaks: Vec<ActiveStreak>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct StreakAchievementEntry {
+    pub streak_name: String,
+    pub reward_amount: f64,
+    pub ledger_entry_id: Uuid,
+}
+
+#[derive(Debug, Serialize)]
+pub struct ActiveStreak {
+    pub streak_name: String,
+    pub required_orders: i32,
+    pub orders_in_window: i64,
+    pub window_days: i32,
+    pub progress_pct: f64,
+}

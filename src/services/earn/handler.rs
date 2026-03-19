@@ -10,8 +10,8 @@ use crate::error::AppError;
 use super::helpers;
 use super::storage;
 use super::types::{
-    CheckMilestonesRequest, CreateMilestoneRequest, ManualCreditRequest,
-    NewsletterSignupRequest, ProcessBirthdayBonusRequest, ProcessEarnRequest,
+    CheckMilestonesRequest, CheckStreakRequest, CreateMilestoneRequest, CreateStreakConfigRequest,
+    ManualCreditRequest, NewsletterSignupRequest, ProcessBirthdayBonusRequest, ProcessEarnRequest,
     ProfileCompletionRequest,
 };
 
@@ -119,4 +119,32 @@ pub async fn profile_completion(
         StatusCode::OK
     };
     Ok::<_, AppError>((status, Json(result)))
+}
+
+#[tracing::instrument(skip(app_state))]
+pub async fn create_streak_config(
+    State(app_state): State<AppState>,
+    Json(req): Json<CreateStreakConfigRequest>,
+) -> impl IntoResponse {
+    let config = storage::create_streak_config(&app_state.db, &req).await?;
+    Ok::<_, AppError>((StatusCode::CREATED, Json(config)))
+}
+
+#[tracing::instrument(skip(app_state))]
+pub async fn list_streak_configs(
+    State(app_state): State<AppState>,
+    Path(merchant_id): Path<Uuid>,
+) -> impl IntoResponse {
+    let configs = storage::get_active_streak_configs(&app_state.db, merchant_id).await?;
+    Ok::<_, AppError>((StatusCode::OK, Json(configs)))
+}
+
+#[tracing::instrument(skip(app_state))]
+pub async fn check_streaks(
+    State(app_state): State<AppState>,
+    Json(req): Json<CheckStreakRequest>,
+) -> impl IntoResponse {
+    let result =
+        helpers::check_and_award_streaks(&app_state.db, req.merchant_id, req.customer_id).await?;
+    Ok::<_, AppError>((StatusCode::OK, Json(result)))
 }

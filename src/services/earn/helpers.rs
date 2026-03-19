@@ -17,10 +17,10 @@ use crate::services::wallets;
 
 use super::storage;
 use super::types::{
-    BirthdayBonusEntry, BirthdayBonusResult, EarnEntry, EarnResult, ManualCreditRequest,
-    ManualCreditResult, MilestoneAchievementEntry, MilestoneCheckResult,
+    ActiveStreak, BirthdayBonusEntry, BirthdayBonusResult, EarnEntry, EarnResult,
+    ManualCreditRequest, ManualCreditResult, MilestoneAchievementEntry, MilestoneCheckResult,
     NewsletterSignupRequest, NewsletterSignupResult, ProfileCompletionRequest,
-    ProfileCompletionResult,
+    ProfileCompletionResult, StreakAchievementEntry, StreakCheckResult,
 };
 
 #[tracing::instrument(skip(pool), err(Debug))]
@@ -570,6 +570,116 @@ pub async fn process_profile_completion(
         rewarded: true,
         amount: entry.earning_unit,
         ledger_entry_id: Some(entry.id),
+    })
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn check_and_award_streaks(
+    pool: &PgPool,
+    merchant_id: Uuid,
+    customer_id: Uuid,
+) -> Result<StreakCheckResult, AppError> {
+    let wallet =
+        wallets::storage::get_or_create_wallet(pool, merchant_id, customer_id).await?;
+
+    let configs = storage::get_active_streak_configs(pool, merchant_id).await?;
+
+    let mut streaks_achieved = Vec::new();
+    let mut active_streaks = Vec::new();
+
+    let now = Utc::now();
+
+    for config in &configs {
+        let orders_in_window =
+            storage::count_recent_orders(pool, merchant_id, customer_id, config.window_days)
+                .await?;
+
+        let progress_pct = if config.required_orders > 0 {
+            ((orders_in_window as f64) / (config.required_orders as f64) * 100.0).min(100.0)
+        } else {
+            0.0
+        };
+
+        active_streaks.push(ActiveStreak {
+            streak_name: config.name.clone(),
+            required_orders: config.required_orders,
+            orders_in_window,
+            window_days: config.window_days,
+            progress_pct,
+        });
+
+        if orders_in_window >= config.required_orders as i64 {
+            let window_start = now
+                .checked_sub_days(Days::new(config.window_days as u64))
+                .unwrap_or(now);
+            let window_end = now;
+
+            let already = storage::has_streak_achievement_in_window(
+                pool,
+                customer_id,
+                config.id,
+                window_start,
+            )
+            .await?;
+
+            if already {
+                continue;
+            }
+
+            let window_start_date = window_start.format("%Y-%m-%d").to_string();
+            let hash_input = format!(
+                "{}{}{}{}",
+                merchant_id, customer_id, config.id, window_start_date
+            );
+            let mut hasher = Sha256::new();
+            hasher.update(hash_input.as_bytes());
+            let hash = format!("{:x}", hasher.finalize());
+            let idempotency_key = format!("streak:{hash}");
+
+            let new_entry = NewLedgerEntry {
+                wallet_id: wallet.id,
+                bucket_type: BucketType::EarnedCredit,
+                movement_type: MovementType::In,
+                earning_unit: config.reward_amount,
+                currency_equivalent: config.reward_amount,
+                conversion_rate: 1.0,
+                event_id: None,
+                rule_snapshot_id: None,
+                campaign_snapshot_id: None,
+                actor_type: ActorType::System,
+                actor_id: Some("streak_reward".to_string()),
+                payment_reference: Some(format!("streak:{}", config.name)),
+                transfer_id: None,
+                constraints: serde_json::json!({}),
+                expires_at: None,
+            };
+
+            let entry =
+                ledger::storage::create_entry(pool, new_entry, idempotency_key).await?;
+
+            storage::record_streak_achievement(
+                pool,
+                merchant_id,
+                customer_id,
+                config.id,
+                entry.id,
+                window_start,
+                window_end,
+            )
+            .await?;
+
+            streaks_achieved.push(StreakAchievementEntry {
+                streak_name: config.name.clone(),
+                reward_amount: config.reward_amount,
+                ledger_entry_id: entry.id,
+            });
+        }
+    }
+
+    Ok(StreakCheckResult {
+        customer_id,
+        streaks_achieved,
+        active_streaks,
     })
 }
 

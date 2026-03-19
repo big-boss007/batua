@@ -3,7 +3,10 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::error::AppError;
-use super::types::{AchievedMilestone, CreateMilestoneRequest, MilestoneConfig, NewsletterSignupCount};
+use super::types::{
+    AchievedMilestone, CreateMilestoneRequest, CreateStreakConfigRequest, MilestoneConfig,
+    NewsletterSignupCount, StreakConfig,
+};
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct CustomerOrderStats {
@@ -245,4 +248,130 @@ pub async fn get_newsletter_signup_count(
         merchant_id,
         count: row.0,
     })
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn create_streak_config(
+    pool: &PgPool,
+    req: &CreateStreakConfigRequest,
+) -> Result<StreakConfig, AppError> {
+    let config = sqlx::query_as::<_, StreakConfig>(
+        r#"
+        INSERT INTO streak_configs (merchant_id, name, required_orders, window_days, reward_amount)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING *
+        "#,
+    )
+    .bind(req.merchant_id)
+    .bind(&req.name)
+    .bind(req.required_orders)
+    .bind(req.window_days)
+    .bind(req.reward_amount)
+    .fetch_one(pool)
+    .await?;
+
+    Ok(config)
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn get_active_streak_configs(
+    pool: &PgPool,
+    merchant_id: Uuid,
+) -> Result<Vec<StreakConfig>, AppError> {
+    let configs = sqlx::query_as::<_, StreakConfig>(
+        r#"
+        SELECT id, merchant_id, name, required_orders, window_days, reward_amount, is_active, created_at
+        FROM streak_configs
+        WHERE merchant_id = $1 AND is_active = true
+        ORDER BY required_orders ASC
+        "#,
+    )
+    .bind(merchant_id)
+    .fetch_all(pool)
+    .await?;
+
+    Ok(configs)
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn count_recent_orders(
+    pool: &PgPool,
+    merchant_id: Uuid,
+    customer_id: Uuid,
+    days: i32,
+) -> Result<i64, AppError> {
+    let row: (i64,) = sqlx::query_as(
+        r#"
+        SELECT COUNT(DISTINCT le.payment_reference)::int8
+        FROM ledger_entries le
+        JOIN wallets w ON le.wallet_id = w.id
+        WHERE w.merchant_id = $1
+            AND w.customer_id = $2
+            AND le.movement_type = 'in'
+            AND le.bucket_type = 'earned_credit'
+            AND le.payment_reference LIKE 'order:%'
+            AND le.created_at > NOW() - ($3 || ' days')::interval
+        "#,
+    )
+    .bind(merchant_id)
+    .bind(customer_id)
+    .bind(days.to_string())
+    .fetch_one(pool)
+    .await?;
+
+    Ok(row.0)
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn has_streak_achievement_in_window(
+    pool: &PgPool,
+    customer_id: Uuid,
+    streak_config_id: Uuid,
+    window_start: DateTime<Utc>,
+) -> Result<bool, AppError> {
+    let row: Option<(i32,)> = sqlx::query_as(
+        r#"
+        SELECT 1 AS one
+        FROM streak_achievements
+        WHERE customer_id = $1
+            AND streak_config_id = $2
+            AND window_start = $3
+        LIMIT 1
+        "#,
+    )
+    .bind(customer_id)
+    .bind(streak_config_id)
+    .bind(window_start)
+    .fetch_optional(pool)
+    .await?;
+
+    Ok(row.is_some())
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn record_streak_achievement(
+    pool: &PgPool,
+    merchant_id: Uuid,
+    customer_id: Uuid,
+    streak_config_id: Uuid,
+    ledger_entry_id: Uuid,
+    window_start: DateTime<Utc>,
+    window_end: DateTime<Utc>,
+) -> Result<(), AppError> {
+    sqlx::query(
+        r#"
+        INSERT INTO streak_achievements (merchant_id, customer_id, streak_config_id, ledger_entry_id, window_start, window_end)
+        VALUES ($1, $2, $3, $4, $5, $6)
+        "#,
+    )
+    .bind(merchant_id)
+    .bind(customer_id)
+    .bind(streak_config_id)
+    .bind(ledger_entry_id)
+    .bind(window_start)
+    .bind(window_end)
+    .execute(pool)
+    .await?;
+
+    Ok(())
 }

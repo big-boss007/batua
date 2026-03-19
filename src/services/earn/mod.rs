@@ -31,4 +31,10 @@ pub fn router() -> axum::Router<AppState> {
             "/earn/profile-completion",
             post(handler::profile_completion),
         )
+        .route("/earn/streaks", post(handler::create_streak_config))
+        .route(
+            "/earn/streaks/{merchant_id}",
+            get(handler::list_streak_configs),
+        )
+        .route("/earn/check-streaks", post(handler::check_streaks))
 }
