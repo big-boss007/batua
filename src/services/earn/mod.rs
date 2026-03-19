@@ -46,4 +46,28 @@ pub fn router() -> axum::Router<AppState> {
             "/earn/spin-wheel/{merchant_id}",
             get(handler::get_wheel_config),
         )
+        .route(
+            "/earn/memberships/plans",
+            post(handler::create_membership_plan),
+        )
+        .route(
+            "/earn/memberships/plans/{merchant_id}",
+            get(handler::list_membership_plans),
+        )
+        .route(
+            "/earn/memberships/subscribe",
+            post(handler::subscribe_membership),
+        )
+        .route(
+            "/earn/memberships/renew",
+            post(handler::renew_membership),
+        )
+        .route(
+            "/earn/memberships/cancel/{membership_id}",
+            post(handler::cancel_membership),
+        )
+        .route(
+            "/earn/memberships/status/{merchant_id}/{customer_id}",
+            get(handler::membership_status),
+        )
 }

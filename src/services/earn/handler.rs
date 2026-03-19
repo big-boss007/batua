@@ -10,9 +10,10 @@ use crate::error::AppError;
 use super::helpers;
 use super::storage;
 use super::types::{
-    CheckMilestonesRequest, CheckStreakRequest, CreateMilestoneRequest, CreateStreakConfigRequest,
-    CreateWheelRequest, ManualCreditRequest, NewsletterSignupRequest,
-    ProcessBirthdayBonusRequest, ProcessEarnRequest, ProfileCompletionRequest, SpinRequest,
+    CheckMilestonesRequest, CheckStreakRequest, CreateMembershipPlanRequest,
+    CreateMilestoneRequest, CreateStreakConfigRequest, CreateWheelRequest, ManualCreditRequest,
+    NewsletterSignupRequest, ProcessBirthdayBonusRequest, ProcessEarnRequest,
+    ProfileCompletionRequest, RenewRequest, SpinRequest, SubscribeRequest,
 };
 
 #[tracing::instrument(skip(app_state))]
@@ -182,5 +183,64 @@ pub async fn spin_wheel(
     Json(req): Json<SpinRequest>,
 ) -> impl IntoResponse {
     let result = helpers::spin_wheel(&app_state.db, req).await?;
+    Ok::<_, AppError>((StatusCode::OK, Json(result)))
+}
+
+#[tracing::instrument(skip(app_state))]
+pub async fn create_membership_plan(
+    State(app_state): State<AppState>,
+    Json(req): Json<CreateMembershipPlanRequest>,
+) -> impl IntoResponse {
+    let plan = storage::create_membership_plan(&app_state.db, &req).await?;
+    Ok::<_, AppError>((StatusCode::CREATED, Json(plan)))
+}
+
+#[tracing::instrument(skip(app_state))]
+pub async fn list_membership_plans(
+    State(app_state): State<AppState>,
+    Path(merchant_id): Path<Uuid>,
+) -> impl IntoResponse {
+    let plans = storage::get_membership_plans(&app_state.db, merchant_id).await?;
+    Ok::<_, AppError>((StatusCode::OK, Json(plans)))
+}
+
+#[tracing::instrument(skip(app_state))]
+pub async fn subscribe_membership(
+    State(app_state): State<AppState>,
+    Json(req): Json<SubscribeRequest>,
+) -> impl IntoResponse {
+    let result = helpers::subscribe_to_plan(&app_state.db, req).await?;
+    let status = if result.is_new {
+        StatusCode::CREATED
+    } else {
+        StatusCode::OK
+    };
+    Ok::<_, AppError>((status, Json(result)))
+}
+
+#[tracing::instrument(skip(app_state))]
+pub async fn renew_membership(
+    State(app_state): State<AppState>,
+    Json(req): Json<RenewRequest>,
+) -> impl IntoResponse {
+    let result = helpers::renew_membership(&app_state.db, req).await?;
+    Ok::<_, AppError>((StatusCode::OK, Json(result)))
+}
+
+#[tracing::instrument(skip(app_state))]
+pub async fn cancel_membership(
+    State(app_state): State<AppState>,
+    Path(membership_id): Path<Uuid>,
+) -> impl IntoResponse {
+    let result = helpers::cancel_membership_by_id(&app_state.db, membership_id).await?;
+    Ok::<_, AppError>((StatusCode::OK, Json(result)))
+}
+
+#[tracing::instrument(skip(app_state))]
+pub async fn membership_status(
+    State(app_state): State<AppState>,
+    Path((merchant_id, customer_id)): Path<(Uuid, Uuid)>,
+) -> impl IntoResponse {
+    let result = helpers::get_membership_status(&app_state.db, merchant_id, customer_id).await?;
     Ok::<_, AppError>((StatusCode::OK, Json(result)))
 }

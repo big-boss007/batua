@@ -266,3 +266,73 @@ pub struct WheelWithSegments {
     pub config: SpinWheelConfig,
     pub segments: Vec<SpinWheelSegment>,
 }
+
+#[derive(Debug, Clone, Serialize, sqlx::FromRow)]
+pub struct MembershipPlan {
+    pub id: Uuid,
+    pub merchant_id: Uuid,
+    pub name: String,
+    pub plan_type: String,
+    pub price: f64,
+    pub earn_rate_multiplier: f64,
+    pub benefits: serde_json::Value,
+    pub is_active: bool,
+    pub created_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, sqlx::FromRow)]
+pub struct CustomerMembership {
+    pub id: Uuid,
+    pub merchant_id: Uuid,
+    pub customer_id: Uuid,
+    pub plan_id: Uuid,
+    pub status: String,
+    pub started_at: DateTime<Utc>,
+    pub expires_at: DateTime<Utc>,
+    pub renewed_count: i32,
+    pub cancelled_at: Option<DateTime<Utc>>,
+    pub created_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CreateMembershipPlanRequest {
+    pub merchant_id: Uuid,
+    pub name: String,
+    pub plan_type: String,
+    pub price: f64,
+    pub earn_rate_multiplier: Option<f64>,
+    pub benefits: Option<serde_json::Value>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct SubscribeRequest {
+    pub merchant_id: Uuid,
+    pub customer_id: Uuid,
+    pub plan_id: Uuid,
+}
+
+#[derive(Debug, Serialize)]
+pub struct SubscribeResult {
+    pub membership: CustomerMembership,
+    pub plan: MembershipPlan,
+    pub is_new: bool,
+    pub message: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct RenewRequest {
+    pub membership_id: Uuid,
+}
+
+#[derive(Debug, Serialize)]
+pub struct MembershipStatus {
+    pub membership: Option<CustomerMembership>,
+    pub plan: Option<MembershipPlan>,
+    pub is_active: bool,
+    pub days_remaining: i64,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CancelMembershipRequest {
+    pub membership_id: Uuid,
+}

@@ -4,7 +4,8 @@ use uuid::Uuid;
 
 use crate::error::AppError;
 use super::types::{
-    AchievedMilestone, CreateMilestoneRequest, CreateStreakConfigRequest, MilestoneConfig,
+    AchievedMilestone, CreateMembershipPlanRequest, CreateMilestoneRequest,
+    CreateStreakConfigRequest, CustomerMembership, MembershipPlan, MilestoneConfig,
     NewsletterSignupCount, SpinWheelConfig, SpinWheelSegment, StreakConfig,
 };
 
@@ -514,4 +515,250 @@ pub async fn record_spin_result(
     .await?;
 
     Ok(())
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn create_membership_plan(
+    pool: &PgPool,
+    req: &CreateMembershipPlanRequest,
+) -> Result<MembershipPlan, AppError> {
+    let earn_rate_multiplier = req.earn_rate_multiplier.unwrap_or(1.5);
+    let benefits = req.benefits.clone().unwrap_or(serde_json::json!({}));
+
+    let plan = sqlx::query_as::<_, MembershipPlan>(
+        r#"
+        INSERT INTO membership_plans (merchant_id, name, plan_type, price, earn_rate_multiplier, benefits)
+        VALUES ($1, $2, $3, $4, $5, $6)
+        RETURNING *
+        "#,
+    )
+    .bind(req.merchant_id)
+    .bind(&req.name)
+    .bind(&req.plan_type)
+    .bind(req.price)
+    .bind(earn_rate_multiplier)
+    .bind(&benefits)
+    .fetch_one(pool)
+    .await?;
+
+    Ok(plan)
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn get_membership_plans(
+    pool: &PgPool,
+    merchant_id: Uuid,
+) -> Result<Vec<MembershipPlan>, AppError> {
+    let plans = sqlx::query_as::<_, MembershipPlan>(
+        r#"
+        SELECT id, merchant_id, name, plan_type, price, earn_rate_multiplier, benefits, is_active, created_at
+        FROM membership_plans
+        WHERE merchant_id = $1 AND is_active = true
+        ORDER BY price ASC
+        "#,
+    )
+    .bind(merchant_id)
+    .fetch_all(pool)
+    .await?;
+
+    Ok(plans)
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn get_membership_plan(
+    pool: &PgPool,
+    id: Uuid,
+) -> Result<MembershipPlan, AppError> {
+    let plan = sqlx::query_as::<_, MembershipPlan>(
+        r#"
+        SELECT id, merchant_id, name, plan_type, price, earn_rate_multiplier, benefits, is_active, created_at
+        FROM membership_plans
+        WHERE id = $1
+        "#,
+    )
+    .bind(id)
+    .fetch_one(pool)
+    .await
+    .map_err(|e| match e {
+        sqlx::Error::RowNotFound => AppError::NotFound(format!("membership plan {id} not found")),
+        other => AppError::Database(other),
+    })?;
+
+    Ok(plan)
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn subscribe_customer(
+    pool: &PgPool,
+    merchant_id: Uuid,
+    customer_id: Uuid,
+    plan_id: Uuid,
+    expires_at: DateTime<Utc>,
+) -> Result<CustomerMembership, AppError> {
+    let membership = sqlx::query_as::<_, CustomerMembership>(
+        r#"
+        INSERT INTO customer_memberships (merchant_id, customer_id, plan_id, status, expires_at)
+        VALUES ($1, $2, $3, 'active', $4)
+        RETURNING *
+        "#,
+    )
+    .bind(merchant_id)
+    .bind(customer_id)
+    .bind(plan_id)
+    .bind(expires_at)
+    .fetch_one(pool)
+    .await?;
+
+    Ok(membership)
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn get_customer_membership(
+    pool: &PgPool,
+    merchant_id: Uuid,
+    customer_id: Uuid,
+) -> Result<Option<CustomerMembership>, AppError> {
+    let membership = sqlx::query_as::<_, CustomerMembership>(
+        r#"
+        SELECT id, merchant_id, customer_id, plan_id, status, started_at, expires_at,
+               renewed_count, cancelled_at, created_at
+        FROM customer_memberships
+        WHERE merchant_id = $1 AND customer_id = $2
+        ORDER BY created_at DESC
+        LIMIT 1
+        "#,
+    )
+    .bind(merchant_id)
+    .bind(customer_id)
+    .fetch_optional(pool)
+    .await?;
+
+    Ok(membership)
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn get_customer_membership_by_id(
+    pool: &PgPool,
+    membership_id: Uuid,
+) -> Result<CustomerMembership, AppError> {
+    let membership = sqlx::query_as::<_, CustomerMembership>(
+        r#"
+        SELECT id, merchant_id, customer_id, plan_id, status, started_at, expires_at,
+               renewed_count, cancelled_at, created_at
+        FROM customer_memberships
+        WHERE id = $1
+        "#,
+    )
+    .bind(membership_id)
+    .fetch_one(pool)
+    .await
+    .map_err(|e| match e {
+        sqlx::Error::RowNotFound => {
+            AppError::NotFound(format!("membership {membership_id} not found"))
+        }
+        other => AppError::Database(other),
+    })?;
+
+    Ok(membership)
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn renew_membership(
+    pool: &PgPool,
+    membership_id: Uuid,
+    new_expires_at: DateTime<Utc>,
+) -> Result<CustomerMembership, AppError> {
+    let membership = sqlx::query_as::<_, CustomerMembership>(
+        r#"
+        UPDATE customer_memberships
+        SET expires_at = $2,
+            renewed_count = renewed_count + 1,
+            status = 'active'
+        WHERE id = $1
+        RETURNING *
+        "#,
+    )
+    .bind(membership_id)
+    .bind(new_expires_at)
+    .fetch_one(pool)
+    .await
+    .map_err(|e| match e {
+        sqlx::Error::RowNotFound => {
+            AppError::NotFound(format!("membership {membership_id} not found"))
+        }
+        other => AppError::Database(other),
+    })?;
+
+    Ok(membership)
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn cancel_membership(
+    pool: &PgPool,
+    membership_id: Uuid,
+) -> Result<CustomerMembership, AppError> {
+    let membership = sqlx::query_as::<_, CustomerMembership>(
+        r#"
+        UPDATE customer_memberships
+        SET status = 'cancelled',
+            cancelled_at = now()
+        WHERE id = $1
+        RETURNING *
+        "#,
+    )
+    .bind(membership_id)
+    .fetch_one(pool)
+    .await
+    .map_err(|e| match e {
+        sqlx::Error::RowNotFound => {
+            AppError::NotFound(format!("membership {membership_id} not found"))
+        }
+        other => AppError::Database(other),
+    })?;
+
+    Ok(membership)
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn expire_membership(
+    pool: &PgPool,
+    membership_id: Uuid,
+) -> Result<CustomerMembership, AppError> {
+    let membership = sqlx::query_as::<_, CustomerMembership>(
+        r#"
+        UPDATE customer_memberships
+        SET status = 'expired'
+        WHERE id = $1
+        RETURNING *
+        "#,
+    )
+    .bind(membership_id)
+    .fetch_one(pool)
+    .await
+    .map_err(|e| match e {
+        sqlx::Error::RowNotFound => {
+            AppError::NotFound(format!("membership {membership_id} not found"))
+        }
+        other => AppError::Database(other),
+    })?;
+
+    Ok(membership)
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn get_expired_memberships(
+    pool: &PgPool,
+) -> Result<Vec<CustomerMembership>, AppError> {
+    let memberships = sqlx::query_as::<_, CustomerMembership>(
+        r#"
+        SELECT id, merchant_id, customer_id, plan_id, status, started_at, expires_at,
+               renewed_count, cancelled_at, created_at
+        FROM customer_memberships
+        WHERE status = 'active' AND expires_at < now()
+        "#,
+    )
+    .fetch_all(pool)
+    .await?;
+
+    Ok(memberships)
 }

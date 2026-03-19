@@ -18,10 +18,11 @@ use crate::services::wallets;
 use super::storage;
 use super::types::{
     ActiveStreak, BirthdayBonusEntry, BirthdayBonusResult, CreateWheelRequest, EarnEntry,
-    EarnResult, ManualCreditRequest, ManualCreditResult, MilestoneAchievementEntry,
-    MilestoneCheckResult, NewsletterSignupRequest, NewsletterSignupResult,
-    ProfileCompletionRequest, ProfileCompletionResult, SpinRequest, SpinResult,
-    StreakAchievementEntry, StreakCheckResult, WheelWithSegments,
+    EarnResult, ManualCreditRequest, ManualCreditResult, MembershipStatus,
+    MilestoneAchievementEntry, MilestoneCheckResult, NewsletterSignupRequest,
+    NewsletterSignupResult, ProfileCompletionRequest, ProfileCompletionResult, RenewRequest,
+    SpinRequest, SpinResult, StreakAchievementEntry, StreakCheckResult, SubscribeRequest,
+    SubscribeResult, WheelWithSegments,
 };
 
 #[tracing::instrument(skip(pool), err(Debug))]
@@ -916,4 +917,141 @@ pub async fn spin_wheel(pool: &PgPool, req: SpinRequest) -> Result<SpinResult, A
         ledger_entry_id,
         spins_remaining_today,
     })
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn subscribe_to_plan(
+    pool: &PgPool,
+    req: SubscribeRequest,
+) -> Result<SubscribeResult, AppError> {
+    let plan = storage::get_membership_plan(pool, req.plan_id).await?;
+
+    if !plan.is_active {
+        return Err(AppError::BadRequest(
+            "membership plan is not active".to_string(),
+        ));
+    }
+
+    let existing = storage::get_customer_membership(pool, req.merchant_id, req.customer_id).await?;
+    if let Some(ref membership) = existing {
+        if membership.status == "active" && membership.plan_id == req.plan_id {
+            return Ok(SubscribeResult {
+                membership: membership.clone(),
+                plan,
+                is_new: false,
+                message: "already subscribed to this plan".to_string(),
+            });
+        }
+    }
+
+    let now = Utc::now();
+    let expires_at = match plan.plan_type.as_str() {
+        "annual" => now
+            .checked_add_days(Days::new(365))
+            .unwrap_or(now),
+        _ => now
+            .checked_add_days(Days::new(30))
+            .unwrap_or(now),
+    };
+
+    let membership =
+        storage::subscribe_customer(pool, req.merchant_id, req.customer_id, req.plan_id, expires_at)
+            .await?;
+
+    Ok(SubscribeResult {
+        membership,
+        plan,
+        is_new: true,
+        message: "subscription created successfully".to_string(),
+    })
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn renew_membership(
+    pool: &PgPool,
+    req: RenewRequest,
+) -> Result<SubscribeResult, AppError> {
+    let membership = storage::get_customer_membership_by_id(pool, req.membership_id).await?;
+    let plan = storage::get_membership_plan(pool, membership.plan_id).await?;
+
+    let base = if membership.expires_at > Utc::now() {
+        membership.expires_at
+    } else {
+        Utc::now()
+    };
+
+    let new_expires_at = match plan.plan_type.as_str() {
+        "annual" => base
+            .checked_add_days(Days::new(365))
+            .unwrap_or(base),
+        _ => base
+            .checked_add_days(Days::new(30))
+            .unwrap_or(base),
+    };
+
+    let updated = storage::renew_membership(pool, req.membership_id, new_expires_at).await?;
+
+    Ok(SubscribeResult {
+        membership: updated,
+        plan,
+        is_new: false,
+        message: "membership renewed successfully".to_string(),
+    })
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn get_membership_status(
+    pool: &PgPool,
+    merchant_id: Uuid,
+    customer_id: Uuid,
+) -> Result<MembershipStatus, AppError> {
+    let membership = storage::get_customer_membership(pool, merchant_id, customer_id).await?;
+
+    let Some(membership) = membership else {
+        return Ok(MembershipStatus {
+            membership: None,
+            plan: None,
+            is_active: false,
+            days_remaining: 0,
+        });
+    };
+
+    if membership.status == "active" && membership.expires_at < Utc::now() {
+        storage::expire_membership(pool, membership.id).await?;
+        let plan = storage::get_membership_plan(pool, membership.plan_id).await?;
+        let expired = super::types::CustomerMembership {
+            status: "expired".to_string(),
+            ..membership
+        };
+        return Ok(MembershipStatus {
+            membership: Some(expired),
+            plan: Some(plan),
+            is_active: false,
+            days_remaining: 0,
+        });
+    }
+
+    let plan = storage::get_membership_plan(pool, membership.plan_id).await?;
+    let is_active = membership.status == "active";
+    let days_remaining = if is_active {
+        let dur = membership.expires_at - Utc::now();
+        dur.num_days().max(0)
+    } else {
+        0
+    };
+
+    Ok(MembershipStatus {
+        membership: Some(membership),
+        plan: Some(plan),
+        is_active,
+        days_remaining,
+    })
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn cancel_membership_by_id(
+    pool: &PgPool,
+    membership_id: Uuid,
+) -> Result<super::types::CustomerMembership, AppError> {
+    storage::cancel_membership(pool, membership_id).await
 }
