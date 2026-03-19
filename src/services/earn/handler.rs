@@ -12,6 +12,7 @@ use super::storage;
 use super::types::{
     CheckMilestonesRequest, CreateMilestoneRequest, ManualCreditRequest,
     NewsletterSignupRequest, ProcessBirthdayBonusRequest, ProcessEarnRequest,
+    ProfileCompletionRequest,
 };
 
 #[tracing::instrument(skip(app_state))]
@@ -102,4 +103,20 @@ pub async fn get_newsletter_signup_count(
 ) -> impl IntoResponse {
     let count = storage::get_newsletter_signup_count(&app_state.db, merchant_id).await?;
     Ok::<_, AppError>((StatusCode::OK, Json(count)))
+}
+
+#[tracing::instrument(skip(app_state))]
+pub async fn profile_completion(
+    State(app_state): State<AppState>,
+    Json(req): Json<ProfileCompletionRequest>,
+) -> impl IntoResponse {
+    let result = helpers::process_profile_completion(&app_state.db, req).await?;
+    let status = if result.already_rewarded {
+        StatusCode::OK
+    } else if result.rewarded {
+        StatusCode::CREATED
+    } else {
+        StatusCode::OK
+    };
+    Ok::<_, AppError>((status, Json(result)))
 }

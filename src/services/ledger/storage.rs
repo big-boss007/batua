@@ -344,3 +344,23 @@ fn build_wallet_balance(
         buckets,
     })
 }
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn entry_exists_by_idempotency_key(
+    pool: &PgPool,
+    idempotency_key: &str,
+) -> Result<bool, AppError> {
+    let row: Option<(i32,)> = sqlx::query_as(
+        r#"
+        SELECT 1 AS one
+        FROM ledger_entries
+        WHERE idempotency_key = $1
+        LIMIT 1
+        "#,
+    )
+    .bind(idempotency_key)
+    .fetch_optional(pool)
+    .await?;
+
+    Ok(row.is_some())
+}

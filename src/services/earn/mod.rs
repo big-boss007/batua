@@ -27,4 +27,8 @@ pub fn router() -> axum::Router<AppState> {
             "/earn/newsletter-signups/{merchant_id}",
             get(handler::get_newsletter_signup_count),
         )
+        .route(
+            "/earn/profile-completion",
+            post(handler::profile_completion),
+        )
 }

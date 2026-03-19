@@ -19,7 +19,8 @@ use super::storage;
 use super::types::{
     BirthdayBonusEntry, BirthdayBonusResult, EarnEntry, EarnResult, ManualCreditRequest,
     ManualCreditResult, MilestoneAchievementEntry, MilestoneCheckResult,
-    NewsletterSignupRequest, NewsletterSignupResult,
+    NewsletterSignupRequest, NewsletterSignupResult, ProfileCompletionRequest,
+    ProfileCompletionResult,
 };
 
 #[tracing::instrument(skip(pool), err(Debug))]
@@ -465,6 +466,111 @@ fn generate_earn_idempotency_key(event_id: Uuid, rule_snapshot_id: Option<Uuid>)
         Some(rsid) => format!("earn:{event_id}:{rsid}"),
         None => format!("earn:{event_id}"),
     }
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn process_profile_completion(
+    pool: &PgPool,
+    req: ProfileCompletionRequest,
+) -> Result<ProfileCompletionResult, AppError> {
+    let customer = identity::storage::get_customer(pool, req.customer_id).await?;
+
+    let name_filled = customer.name.as_ref().map_or(false, |n| !n.is_empty());
+    let email_filled = customer.email.as_ref().map_or(false, |e| !e.is_empty());
+    let birthday_filled = customer.birthday.is_some();
+
+    let mut fields_complete = Vec::new();
+    let mut fields_missing = Vec::new();
+
+    if name_filled {
+        fields_complete.push("name".to_string());
+    } else {
+        fields_missing.push("name".to_string());
+    }
+    if email_filled {
+        fields_complete.push("email".to_string());
+    } else {
+        fields_missing.push("email".to_string());
+    }
+    if birthday_filled {
+        fields_complete.push("birthday".to_string());
+    } else {
+        fields_missing.push("birthday".to_string());
+    }
+
+    let total_fields = 3.0_f64;
+    let completion_pct = (fields_complete.len() as f64 / total_fields) * 100.0;
+
+    if !fields_missing.is_empty() {
+        return Ok(ProfileCompletionResult {
+            customer_id: req.customer_id,
+            fields_complete,
+            fields_missing,
+            completion_pct,
+            already_rewarded: false,
+            rewarded: false,
+            amount: 0.0,
+            ledger_entry_id: None,
+        });
+    }
+
+    let hash_input = format!("{}{}profile_complete", req.merchant_id, req.customer_id);
+    let mut hasher = Sha256::new();
+    hasher.update(hash_input.as_bytes());
+    let hash = format!("{:x}", hasher.finalize());
+    let idempotency_key = format!("profile_complete:{hash}");
+
+    let already_exists =
+        ledger::storage::entry_exists_by_idempotency_key(pool, &idempotency_key).await?;
+
+    if already_exists {
+        return Ok(ProfileCompletionResult {
+            customer_id: req.customer_id,
+            fields_complete,
+            fields_missing,
+            completion_pct,
+            already_rewarded: true,
+            rewarded: false,
+            amount: 0.0,
+            ledger_entry_id: None,
+        });
+    }
+
+    let wallet =
+        wallets::storage::get_or_create_wallet(pool, req.merchant_id, req.customer_id).await?;
+
+    let amount = 30.0_f64;
+
+    let new_entry = NewLedgerEntry {
+        wallet_id: wallet.id,
+        bucket_type: BucketType::EarnedCredit,
+        movement_type: MovementType::In,
+        earning_unit: amount,
+        currency_equivalent: amount,
+        conversion_rate: 1.0,
+        event_id: None,
+        rule_snapshot_id: None,
+        campaign_snapshot_id: None,
+        actor_type: ActorType::System,
+        actor_id: Some("profile_completion".to_string()),
+        payment_reference: Some("profile_completion:all_fields".to_string()),
+        transfer_id: None,
+        constraints: serde_json::json!({}),
+        expires_at: None,
+    };
+
+    let entry = ledger::storage::create_entry(pool, new_entry, idempotency_key).await?;
+
+    Ok(ProfileCompletionResult {
+        customer_id: req.customer_id,
+        fields_complete,
+        fields_missing,
+        completion_pct,
+        already_rewarded: false,
+        rewarded: true,
+        amount: entry.earning_unit,
+        ledger_entry_id: Some(entry.id),
+    })
 }
 
 fn parse_bucket_type(s: &str) -> Result<BucketType, AppError> {

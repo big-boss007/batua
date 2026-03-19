@@ -140,3 +140,21 @@ pub struct NewsletterSignupCount {
     pub merchant_id: Uuid,
     pub count: i64,
 }
+
+#[derive(Debug, Deserialize)]
+pub struct ProfileCompletionRequest {
+    pub merchant_id: Uuid,
+    pub customer_id: Uuid,
+}
+
+#[derive(Debug, Serialize)]
+pub struct ProfileCompletionResult {
+    pub customer_id: Uuid,
+    pub fields_complete: Vec<String>,
+    pub fields_missing: Vec<String>,
+    pub completion_pct: f64,
+    pub already_rewarded: bool,
+    pub rewarded: bool,
+    pub amount: f64,
+    pub ledger_entry_id: Option<Uuid>,
+}
