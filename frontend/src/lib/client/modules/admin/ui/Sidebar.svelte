@@ -56,6 +56,16 @@
       </a>
     {/each}
   </nav>
+
+  <div class="sidebar-footer">
+    <a href="/platform/merchants" class="switch-merchant" title={collapsed ? 'Switch Merchant' : null}>
+      {#if collapsed}
+        <span class="nav-icon">&rArr;</span>
+      {:else}
+        Switch Merchant &rarr;
+      {/if}
+    </a>
+  </div>
 </aside>
 
 <style>
@@ -179,6 +189,28 @@
   .sidebar.collapsed .nav-item {
     justify-content: center;
     padding: var(--space-2);
+  }
+
+  .sidebar-footer {
+    margin-top: auto;
+    padding: var(--space-3);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .switch-merchant {
+    display: block;
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    text-decoration: none;
+    text-align: center;
+    padding: var(--space-2);
+    border-radius: var(--radius-sm);
+    transition: color var(--transition-fast), background var(--transition-fast);
+  }
+
+  .switch-merchant:hover {
+    color: var(--color-primary);
+    background: var(--color-surface-2);
   }
 
   @media (max-width: 768px) {

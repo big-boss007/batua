@@ -3,7 +3,8 @@
   import { ThemeSwitcher } from '@juspay/svelte-ui-components';
   import { sidebarStore, themeStore } from '$lib/client/modules/foundation';
   import type { NavItem } from '$lib/client/modules/admin';
-  import { Sidebar, MerchantSelector } from '$lib/client/modules/admin/ui';
+  import { currentMerchant, fetchMerchants, getCurrentMerchantId } from '$lib/client/modules/admin';
+  import { Sidebar } from '$lib/client/modules/admin/ui';
 
   let { children }: { children: Snippet } = $props();
 
@@ -22,10 +23,35 @@
   ];
 
   let sidebarCollapsed = $state(false);
+  let merchantName = $state<string | null>(null);
 
   sidebarStore.subscribe((state) => {
     sidebarCollapsed = state.collapsed;
   });
+
+  currentMerchant.subscribe((m) => {
+    merchantName = m !== null ? m.name : null;
+  });
+
+  async function ensureMerchantSelected() {
+    const savedId = getCurrentMerchantId();
+    if (savedId !== null) {
+      const result = await fetchMerchants(1, 50);
+      if (result.tag === 'success') {
+        const saved = result.data.find((m) => m.id === savedId) ?? null;
+        if (saved !== null) {
+          currentMerchant.set(saved);
+          return;
+        }
+      }
+    }
+    const result = await fetchMerchants(1, 1);
+    if (result.tag === 'success' && result.data.length > 0) {
+      currentMerchant.set(result.data[0]);
+    }
+  }
+
+  ensureMerchantSelected();
 
   function handleToggleSidebar() {
     sidebarStore.toggle();
@@ -54,7 +80,9 @@
           </svg>
         </button>
         <span class="merchant-name">Merchant Admin</span>
-        <MerchantSelector />
+        {#if merchantName}
+          <span class="merchant-name-badge">{merchantName}</span>
+        {/if}
       </div>
       <div class="top-bar-right">
         <ThemeSwitcher mode="toggle" onchange={handleThemeChange} />
@@ -127,6 +155,15 @@
     font-size: var(--font-size-md);
     font-weight: var(--font-weight-semibold);
     color: var(--color-text);
+  }
+
+  .merchant-name-badge {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-primary);
+    background: var(--color-surface-2);
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-full, 9999px);
   }
 
   .content {

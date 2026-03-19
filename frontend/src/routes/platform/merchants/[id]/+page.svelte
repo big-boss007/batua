@@ -1,8 +1,10 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
   import { Button, Toggle, Select } from '@juspay/svelte-ui-components';
   import type { PageData } from './$types';
   import type { PlatformMerchant, MerchantStats } from '$lib/client/modules/platform';
   import { updateMerchant, updateMerchantPlan } from '$lib/client/modules/platform';
+  import { setCurrentMerchantId } from '$lib/client/modules/admin';
   import { toastStore, formatDate } from '$lib/client/modules/foundation';
   import { StatsGrid } from '$lib/client/modules/platform/ui';
 
@@ -83,9 +85,14 @@
         <h1>{merchant.name}</h1>
       </div>
       <Button
-        text="Open Merchant Admin"
-        classes="btn-secondary"
-        onclick={() => window.open('/admin', '_blank')}
+        text="Open as Merchant"
+        classes="btn-primary"
+        onclick={() => {
+          if (merchant !== null) {
+            setCurrentMerchantId(merchant.id);
+            goto('/admin');
+          }
+        }}
       />
     </div>
 
