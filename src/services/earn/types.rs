@@ -40,3 +40,26 @@ pub struct ManualCreditResult {
     pub wallet_id: Uuid,
     pub amount: f64,
 }
+
+#[derive(Debug, Deserialize)]
+pub struct ProcessBirthdayBonusRequest {
+    pub merchant_id: Uuid,
+    pub amount: f64,
+}
+
+#[derive(Debug, Serialize)]
+pub struct BirthdayBonusResult {
+    pub merchant_id: Uuid,
+    pub processed: i32,
+    pub credited: i32,
+    pub skipped: i32,
+    pub entries: Vec<BirthdayBonusEntry>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct BirthdayBonusEntry {
+    pub customer_id: Uuid,
+    pub customer_name: Option<String>,
+    pub amount: f64,
+    pub ledger_entry_id: Uuid,
+}

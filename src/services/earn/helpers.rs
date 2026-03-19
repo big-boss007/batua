@@ -1,4 +1,5 @@
 use chrono::{Days, Utc};
+use sha2::{Digest, Sha256};
 use sqlx::PgPool;
 use uuid::Uuid;
 
@@ -15,7 +16,10 @@ use crate::services::cod;
 use crate::services::wallets;
 
 use super::storage;
-use super::types::{EarnEntry, EarnResult, ManualCreditRequest, ManualCreditResult};
+use super::types::{
+    BirthdayBonusEntry, BirthdayBonusResult, EarnEntry, EarnResult, ManualCreditRequest,
+    ManualCreditResult,
+};
 
 #[tracing::instrument(skip(pool), err(Debug))]
 pub async fn process_earn(pool: &PgPool, event_id: Uuid) -> Result<EarnResult, AppError> {
@@ -206,6 +210,71 @@ pub async fn process_manual_credit(
         ledger_entry_id: entry.id,
         wallet_id: wallet.id,
         amount: entry.earning_unit,
+    })
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn process_birthday_bonuses(
+    pool: &PgPool,
+    merchant_id: Uuid,
+    amount: f64,
+) -> Result<BirthdayBonusResult, AppError> {
+    let birthday_customers =
+        identity::storage::get_customers_with_birthday_today(pool, merchant_id).await?;
+
+    let processed = birthday_customers.len() as i32;
+    let mut credited = 0i32;
+    let mut skipped = 0i32;
+    let mut entries = Vec::new();
+
+    let today = Utc::now().format("%Y-%m-%d").to_string();
+
+    for cw in &birthday_customers {
+        let hash_input = format!("{}{}birthday{}", merchant_id, cw.id, today);
+        let mut hasher = Sha256::new();
+        hasher.update(hash_input.as_bytes());
+        let hash = format!("{:x}", hasher.finalize());
+        let idempotency_key = format!("birthday:{hash}");
+
+        let new_entry = NewLedgerEntry {
+            wallet_id: cw.wallet_id,
+            bucket_type: BucketType::EarnedCredit,
+            movement_type: MovementType::In,
+            earning_unit: amount,
+            currency_equivalent: amount,
+            conversion_rate: 1.0,
+            event_id: None,
+            rule_snapshot_id: None,
+            campaign_snapshot_id: None,
+            actor_type: ActorType::System,
+            actor_id: Some("birthday_bonus".to_string()),
+            payment_reference: Some(format!("birthday_bonus:{}", today)),
+            transfer_id: None,
+            constraints: serde_json::json!({}),
+            expires_at: None,
+        };
+
+        let entry = ledger::storage::create_entry(pool, new_entry, idempotency_key).await?;
+
+        if entry.earning_unit > 0.0 {
+            credited += 1;
+            entries.push(BirthdayBonusEntry {
+                customer_id: cw.id,
+                customer_name: cw.name.clone(),
+                amount: entry.earning_unit,
+                ledger_entry_id: entry.id,
+            });
+        } else {
+            skipped += 1;
+        }
+    }
+
+    Ok(BirthdayBonusResult {
+        merchant_id,
+        processed,
+        credited,
+        skipped,
+        entries,
     })
 }
 

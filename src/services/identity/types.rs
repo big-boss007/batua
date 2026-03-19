@@ -1,4 +1,4 @@
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -10,6 +10,7 @@ pub struct Customer {
     pub name: Option<String>,
     pub external_id: Option<String>,
     pub is_verified: bool,
+    pub birthday: Option<NaiveDate>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -35,6 +36,7 @@ pub struct UpdateCustomerRequest {
     pub name: Option<String>,
     pub external_id: Option<String>,
     pub is_verified: Option<bool>,
+    pub birthday: Option<NaiveDate>,
 }
 
 #[derive(Debug, Deserialize)]

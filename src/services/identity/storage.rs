@@ -6,6 +6,20 @@ use crate::error::AppError;
 use super::helpers::normalize_phone;
 use super::types::{Customer, CustomerQuery, ResolveIdentityRequest, UpdateCustomerRequest};
 
+#[derive(Debug, sqlx::FromRow)]
+pub struct CustomerWithWallet {
+    pub id: Uuid,
+    pub phone: String,
+    pub email: Option<String>,
+    pub name: Option<String>,
+    pub external_id: Option<String>,
+    pub is_verified: bool,
+    pub birthday: Option<chrono::NaiveDate>,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+    pub updated_at: chrono::DateTime<chrono::Utc>,
+    pub wallet_id: Uuid,
+}
+
 #[tracing::instrument(skip(pool), err(Debug))]
 pub async fn resolve_by_phone(
     pool: &PgPool,
@@ -15,7 +29,7 @@ pub async fn resolve_by_phone(
 
     let customer = sqlx::query_as::<_, Customer>(
         r#"
-        SELECT id, phone, email, name, external_id, is_verified, created_at, updated_at
+        SELECT id, phone, email, name, external_id, is_verified, birthday, created_at, updated_at
         FROM customers
         WHERE phone = $1
         "#,
@@ -44,7 +58,7 @@ pub async fn create_customer(
         r#"
         INSERT INTO customers (phone, email, name, external_id)
         VALUES ($1, $2, $3, $4)
-        RETURNING id, phone, email, name, external_id, is_verified, created_at, updated_at
+        RETURNING id, phone, email, name, external_id, is_verified, birthday, created_at, updated_at
         "#,
     )
     .bind(&normalized_phone)
@@ -69,7 +83,7 @@ pub async fn create_customer(
 pub async fn get_customer(pool: &PgPool, id: Uuid) -> Result<Customer, AppError> {
     let customer = sqlx::query_as::<_, Customer>(
         r#"
-        SELECT id, phone, email, name, external_id, is_verified, created_at, updated_at
+        SELECT id, phone, email, name, external_id, is_verified, birthday, created_at, updated_at
         FROM customers
         WHERE id = $1
         "#,
@@ -101,9 +115,10 @@ pub async fn update_customer(
             name = COALESCE($3, name),
             external_id = COALESCE($4, external_id),
             is_verified = COALESCE($5, is_verified),
+            birthday = COALESCE($6, birthday),
             updated_at = now()
         WHERE id = $1
-        RETURNING id, phone, email, name, external_id, is_verified, created_at, updated_at
+        RETURNING id, phone, email, name, external_id, is_verified, birthday, created_at, updated_at
         "#,
     )
     .bind(id)
@@ -111,6 +126,7 @@ pub async fn update_customer(
     .bind(&req.name)
     .bind(&req.external_id)
     .bind(req.is_verified)
+    .bind(req.birthday)
     .fetch_optional(pool)
     .await?
     .ok_or_else(|| AppError::NotFound(format!("customer {id} not found")))?;
@@ -127,7 +143,7 @@ pub async fn resolve_or_create(
 
     let existing = sqlx::query_as::<_, Customer>(
         r#"
-        SELECT id, phone, email, name, external_id, is_verified, created_at, updated_at
+        SELECT id, phone, email, name, external_id, is_verified, birthday, created_at, updated_at
         FROM customers
         WHERE phone = $1
         "#,
@@ -151,7 +167,7 @@ pub async fn resolve_or_create(
         INSERT INTO customers (phone, email, name, external_id)
         VALUES ($1, $2, $3, $4)
         ON CONFLICT (phone) DO NOTHING
-        RETURNING id, phone, email, name, external_id, is_verified, created_at, updated_at
+        RETURNING id, phone, email, name, external_id, is_verified, birthday, created_at, updated_at
         "#,
     )
     .bind(&normalized_phone)
@@ -167,7 +183,7 @@ pub async fn resolve_or_create(
 
     let customer = sqlx::query_as::<_, Customer>(
         r#"
-        SELECT id, phone, email, name, external_id, is_verified, created_at, updated_at
+        SELECT id, phone, email, name, external_id, is_verified, birthday, created_at, updated_at
         FROM customers
         WHERE phone = $1
         "#,
@@ -192,7 +208,7 @@ pub async fn search_customers(
             let normalized = normalize_phone(phone)?;
             let customers = sqlx::query_as::<_, Customer>(
                 r#"
-                SELECT id, phone, email, name, external_id, is_verified, created_at, updated_at
+                SELECT id, phone, email, name, external_id, is_verified, birthday, created_at, updated_at
                 FROM customers
                 WHERE phone = $1 OR external_id = $2
                 ORDER BY created_at DESC
@@ -209,7 +225,7 @@ pub async fn search_customers(
             let normalized = normalize_phone(phone)?;
             let customers = sqlx::query_as::<_, Customer>(
                 r#"
-                SELECT id, phone, email, name, external_id, is_verified, created_at, updated_at
+                SELECT id, phone, email, name, external_id, is_verified, birthday, created_at, updated_at
                 FROM customers
                 WHERE phone = $1
                 ORDER BY created_at DESC
@@ -224,7 +240,7 @@ pub async fn search_customers(
         (None, Some(external_id)) => {
             let customers = sqlx::query_as::<_, Customer>(
                 r#"
-                SELECT id, phone, email, name, external_id, is_verified, created_at, updated_at
+                SELECT id, phone, email, name, external_id, is_verified, birthday, created_at, updated_at
                 FROM customers
                 WHERE external_id = $1
                 ORDER BY created_at DESC
@@ -240,4 +256,28 @@ pub async fn search_customers(
             "at least one of phone or external_id is required".to_string(),
         )),
     }
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn get_customers_with_birthday_today(
+    pool: &PgPool,
+    merchant_id: Uuid,
+) -> Result<Vec<CustomerWithWallet>, AppError> {
+    let rows = sqlx::query_as::<_, CustomerWithWallet>(
+        r#"
+        SELECT c.id, c.phone, c.email, c.name, c.external_id, c.is_verified,
+               c.birthday, c.created_at, c.updated_at, w.id AS wallet_id
+        FROM wallets w
+        JOIN customers c ON w.customer_id = c.id
+        WHERE w.merchant_id = $1
+          AND c.birthday IS NOT NULL
+          AND EXTRACT(MONTH FROM c.birthday) = EXTRACT(MONTH FROM CURRENT_DATE)
+          AND EXTRACT(DAY FROM c.birthday) = EXTRACT(DAY FROM CURRENT_DATE)
+        "#,
+    )
+    .bind(merchant_id)
+    .fetch_all(pool)
+    .await?;
+
+    Ok(rows)
 }

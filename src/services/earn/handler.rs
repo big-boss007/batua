@@ -7,7 +7,7 @@ use crate::app_state::AppState;
 use crate::error::AppError;
 
 use super::helpers;
-use super::types::{ManualCreditRequest, ProcessEarnRequest};
+use super::types::{ManualCreditRequest, ProcessBirthdayBonusRequest, ProcessEarnRequest};
 
 #[tracing::instrument(skip(app_state))]
 pub async fn process_earn(
@@ -25,4 +25,14 @@ pub async fn manual_credit(
 ) -> impl IntoResponse {
     let result = helpers::process_manual_credit(&app_state.db, req).await?;
     Ok::<_, AppError>((StatusCode::CREATED, Json(result)))
+}
+
+#[tracing::instrument(skip(app_state))]
+pub async fn birthday_bonus(
+    State(app_state): State<AppState>,
+    Json(req): Json<ProcessBirthdayBonusRequest>,
+) -> impl IntoResponse {
+    let result =
+        helpers::process_birthday_bonuses(&app_state.db, req.merchant_id, req.amount).await?;
+    Ok::<_, AppError>((StatusCode::OK, Json(result)))
 }
