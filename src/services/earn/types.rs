@@ -1,3 +1,4 @@
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -62,4 +63,55 @@ pub struct BirthdayBonusEntry {
     pub customer_name: Option<String>,
     pub amount: f64,
     pub ledger_entry_id: Uuid,
+}
+
+#[derive(Debug, Clone, Serialize, sqlx::FromRow)]
+pub struct MilestoneConfig {
+    pub id: Uuid,
+    pub merchant_id: Uuid,
+    pub name: String,
+    pub milestone_type: String,
+    pub threshold: f64,
+    pub reward_amount: f64,
+    pub is_active: bool,
+    pub created_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CreateMilestoneRequest {
+    pub merchant_id: Uuid,
+    pub name: String,
+    pub milestone_type: String,
+    pub threshold: f64,
+    pub reward_amount: f64,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CheckMilestonesRequest {
+    pub merchant_id: Uuid,
+    pub customer_id: Uuid,
+}
+
+#[derive(Debug, Serialize)]
+pub struct MilestoneCheckResult {
+    pub customer_id: Uuid,
+    pub milestones_achieved: Vec<MilestoneAchievementEntry>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct MilestoneAchievementEntry {
+    pub milestone_name: String,
+    pub reward_amount: f64,
+    pub ledger_entry_id: Uuid,
+}
+
+#[derive(Debug, Clone, Serialize, sqlx::FromRow)]
+pub struct AchievedMilestone {
+    pub id: Uuid,
+    pub merchant_id: Uuid,
+    pub name: String,
+    pub milestone_type: String,
+    pub threshold: f64,
+    pub reward_amount: f64,
+    pub achieved_at: DateTime<Utc>,
 }

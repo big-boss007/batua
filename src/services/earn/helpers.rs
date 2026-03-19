@@ -18,7 +18,7 @@ use crate::services::wallets;
 use super::storage;
 use super::types::{
     BirthdayBonusEntry, BirthdayBonusResult, EarnEntry, EarnResult, ManualCreditRequest,
-    ManualCreditResult,
+    ManualCreditResult, MilestoneAchievementEntry, MilestoneCheckResult,
 };
 
 #[tracing::instrument(skip(pool), err(Debug))]
@@ -375,4 +375,93 @@ fn parse_bucket_type(s: &str) -> Result<BucketType, AppError> {
             "unknown bucket type: {other}"
         ))),
     }
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn check_and_award_milestones(
+    pool: &PgPool,
+    merchant_id: Uuid,
+    customer_id: Uuid,
+) -> Result<MilestoneCheckResult, AppError> {
+    let wallet =
+        wallets::storage::get_or_create_wallet(pool, merchant_id, customer_id).await?;
+
+    let milestones = storage::get_active_milestones(pool, merchant_id).await?;
+
+    let order_stats = storage::get_customer_order_stats(pool, merchant_id, customer_id).await?;
+
+    let (total_orders, total_spend) = match order_stats {
+        Some(stats) => (stats.total_orders, stats.total_spend),
+        None => {
+            return Ok(MilestoneCheckResult {
+                customer_id,
+                milestones_achieved: Vec::new(),
+            });
+        }
+    };
+
+    let mut achieved = Vec::new();
+
+    for milestone in &milestones {
+        let already = storage::has_achieved_milestone(pool, customer_id, milestone.id).await?;
+        if already {
+            continue;
+        }
+
+        let threshold_crossed = match milestone.milestone_type.as_str() {
+            "order_count" => total_orders as f64 >= milestone.threshold,
+            "lifetime_spend" => total_spend >= milestone.threshold,
+            _ => false,
+        };
+
+        if !threshold_crossed {
+            continue;
+        }
+
+        let hash_input = format!("{}{}{}", merchant_id, customer_id, milestone.id);
+        let mut hasher = Sha256::new();
+        hasher.update(hash_input.as_bytes());
+        let hash = format!("{:x}", hasher.finalize());
+        let idempotency_key = format!("milestone:{hash}");
+
+        let new_entry = NewLedgerEntry {
+            wallet_id: wallet.id,
+            bucket_type: BucketType::EarnedCredit,
+            movement_type: MovementType::In,
+            earning_unit: milestone.reward_amount,
+            currency_equivalent: milestone.reward_amount,
+            conversion_rate: 1.0,
+            event_id: None,
+            rule_snapshot_id: None,
+            campaign_snapshot_id: None,
+            actor_type: ActorType::System,
+            actor_id: Some("milestone_reward".to_string()),
+            payment_reference: Some(format!("milestone:{}", milestone.name)),
+            transfer_id: None,
+            constraints: serde_json::json!({}),
+            expires_at: None,
+        };
+
+        let entry = ledger::storage::create_entry(pool, new_entry, idempotency_key).await?;
+
+        storage::record_milestone_achievement(
+            pool,
+            merchant_id,
+            customer_id,
+            milestone.id,
+            entry.id,
+        )
+        .await?;
+
+        achieved.push(MilestoneAchievementEntry {
+            milestone_name: milestone.name.clone(),
+            reward_amount: milestone.reward_amount,
+            ledger_entry_id: entry.id,
+        });
+    }
+
+    Ok(MilestoneCheckResult {
+        customer_id,
+        milestones_achieved: achieved,
+    })
 }
