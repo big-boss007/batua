@@ -14,7 +14,7 @@
   import { currentMerchantId } from '$lib/client/modules/admin';
   import { toastStore, formatCurrencyINR, formatDateTime } from '$lib/client/modules/foundation';
 
-  const BUCKET_TYPES = ['earned_credit', 'cashback', 'gift_card', 'promotional', 'referral'];
+  const BUCKET_TYPES = ['earned_credit', 'cod_pending', 'gift_card', 'customer_funded', 'referral_reward', 'goodwill_credit', 'membership_benefit', 'refund_credit'];
   const MOVEMENT_TYPES = ['in', 'out', 'held', 'across'];
 
   let bucketItems = $derived(BUCKET_TYPES.map((bt) => ({ id: bt, label: formatBucketType(bt) })));
