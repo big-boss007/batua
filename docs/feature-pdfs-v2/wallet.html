@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="UTF-8">
+<title>1. Wallet & Dashboard — Breeze Product Demo</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  @page { size: landscape; margin: 0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: Inter, -apple-system, sans-serif; background: #1d1d1f; color: #fff; }
+  .slide {
+    width: 1280px; height: 720px;
+    display: flex; flex-direction: column;
+    background: #1d1d1f;
+    page-break-after: always; break-after: page;
+    position: relative;
+  }
+  .slide-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 40px;
+    font-size: 13px;
+  }
+  .slide-feature { color: #7c6aff; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; font-size: 12px; }
+  .slide-num { color: #555; }
+  .slide-body {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    padding: 0 40px;
+  }
+  .slide-body img {
+    max-width: 1100px; max-height: 530px;
+    border-radius: 10px; border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    object-fit: contain;
+  }
+  .slide-footer {
+    padding: 12px 40px 20px;
+    text-align: center;
+  }
+  .slide-title { font-size: 16px; font-weight: 600; color: #fff; margin-bottom: 3px; }
+  .slide-desc { font-size: 13px; color: #86868b; }
+</style>
+</head><body>
+
+    <div class="slide">
+      <div class="slide-header">
+        <span class="slide-feature">1. Wallet & Dashboard</span>
+        <span class="slide-num">1/13</span>
+      </div>
+      <div class="slide-body">
+        <img src="file:///Users/chirag/Developer/batua/docs/screenshots-v2/wallet/01-dashboard.png" alt="Merchant Admin — Dashboard">
+      </div>
+      <div class="slide-footer">
+        <p class="slide-title">Merchant Admin — Dashboard</p>
+        <p class="slide-desc">Merchant-scoped metrics: active customers, credits, earned, redeemed, COD pending, redemptions</p>
+      </div>
+    </div>
+
+    <div class="slide">
+      <div class="slide-header">
+        <span class="slide-feature">1. Wallet & Dashboard</span>
+        <span class="slide-num">2/13</span>
+      </div>
+      <div class="slide-body">
+        <img src="file:///Users/chirag/Developer/batua/docs/screenshots-v2/wallet/02-dashboard-empty.png" alt="Merchant Admin — Dashboard (Low Activity)">
+      </div>
+      <div class="slide-footer">
+        <p class="slide-title">Merchant Admin — Dashboard (Low Activity)</p>
+        <p class="slide-desc">BookWorm merchant with minimal data — shows empty/low state</p>
+      </div>
+    </div>
+
+    <div class="slide">
+      <div class="slide-header">
+        <span class="slide-feature">1. Wallet & Dashboard</span>
+        <span class="slide-num">3/13</span>
+      </div>
+      <div class="slide-body">
+        <img src="file:///Users/chirag/Developer/batua/docs/screenshots-v2/wallet/03-transactions-feed.png" alt="Merchant Admin — Transactions Feed">
+      </div>
+      <div class="slide-footer">
+        <p class="slide-title">Merchant Admin — Transactions Feed</p>
+        <p class="slide-desc">Merchant-wide transaction feed showing all customers, movement types, amounts</p>
+      </div>
+    </div>
+
+    <div class="slide">
+      <div class="slide-header">
+        <span class="slide-feature">1. Wallet & Dashboard</span>
+        <span class="slide-num">4/13</span>
+      </div>
+      <div class="slide-body">
+        <img src="file:///Users/chirag/Developer/batua/docs/screenshots-v2/wallet/04-transactions-filtered.png" alt="Merchant Admin — Transactions (Filtered)">
+      </div>
+      <div class="slide-footer">
+        <p class="slide-title">Merchant Admin — Transactions (Filtered)</p>
+        <p class="slide-desc">Filtered view with bucket type and movement type dropdowns applied</p>
+      </div>
+    </div>
+
+    <div class="slide">
+      <div class="slide-header">
+        <span class="slide-feature">1. Wallet & Dashboard</span>
+        <span class="slide-num">5/13</span>
+      </div>
+      <div class="slide-body">
+        <img src="file:///Users/chirag/Developer/batua/docs/screenshots-v2/wallet/05-customers-list.png" alt="Merchant Admin — Customer List">
+      </div>
+      <div class="slide-footer">
+        <p class="slide-title">Merchant Admin — Customer List</p>
+        <p class="slide-desc">Browsable list of all customers with name, phone, email, joined date</p>
+      </div>
+    </div>
+
+    <div class="slide">
+      <div class="slide-header">
+        <span class="slide-feature">1. Wallet & Dashboard</span>
+        <span class="slide-num">6/13</span>
+      </div>
+      <div class="slide-body">
+        <img src="file:///Users/chirag/Developer/batua/docs/screenshots-v2/wallet/06-customer-detail.png" alt="Merchant Admin — Customer Detail">
+      </div>
+      <div class="slide-footer">
+        <p class="slide-title">Merchant Admin — Customer Detail</p>
+        <p class="slide-desc">Customer profile with wallet balance (displayed vs spendable), recent transactions</p>
+      </div>
+    </div>
+
+    <div class="slide">
+      <div class="slide-header">
+        <span class="slide-feature">1. Wallet & Dashboard</span>
+        <span class="slide-num">7/13</span>
+      </div>
+      <div class="slide-body">
+        <img src="file:///Users/chirag/Developer/batua/docs/screenshots-v2/wallet/07-customer-search.png" alt="Merchant Admin — Customer Search">
+      </div>
+      <div class="slide-footer">
+        <p class="slide-title">Merchant Admin — Customer Search</p>
+        <p class="slide-desc">Search by phone number with debounced results</p>
+      </div>
+    </div>
+
+    <div class="slide">
+      <div class="slide-header">
+        <span class="slide-feature">1. Wallet & Dashboard</span>
+        <span class="slide-num">8/13</span>
+      </div>
+      <div class="slide-body">
+        <img src="file:///Users/chirag/Developer/batua/docs/screenshots-v2/wallet/08-settings-store.png" alt="Merchant Admin — My Store Settings">
+      </div>
+      <div class="slide-footer">
+        <p class="slide-title">Merchant Admin — My Store Settings</p>
+        <p class="slide-desc">Editable merchant profile: name, domain, slug, plan tier, storefront URL</p>
+      </div>
+    </div>
+
+    <div class="slide">
+      <div class="slide-header">
+        <span class="slide-feature">1. Wallet & Dashboard</span>
+        <span class="slide-num">9/13</span>
+      </div>
+      <div class="slide-body">
+        <img src="file:///Users/chirag/Developer/batua/docs/screenshots-v2/wallet/09-settings-policies.png" alt="Merchant Admin — Wallet Policies">
+      </div>
+      <div class="slide-footer">
+        <p class="slide-title">Merchant Admin — Wallet Policies</p>
+        <p class="slide-desc">Per-bucket redemption constraints: min, max %, stackability, expiry</p>
+      </div>
+    </div>
+
+    <div class="slide">
+      <div class="slide-header">
+        <span class="slide-feature">1. Wallet & Dashboard</span>
+        <span class="slide-num">10/13</span>
+      </div>
+      <div class="slide-body">
+        <img src="file:///Users/chirag/Developer/batua/docs/screenshots-v2/wallet/10-storefront-landing.png" alt="Customer — Loyalty Hub Landing">
+      </div>
+      <div class="slide-footer">
+        <p class="slide-title">Customer — Loyalty Hub Landing</p>
+        <p class="slide-desc">Mobile-first phone entry screen at /s/desi-threads</p>
+      </div>
+    </div>
+
+    <div class="slide">
+      <div class="slide-header">
+        <span class="slide-feature">1. Wallet & Dashboard</span>
+        <span class="slide-num">11/13</span>
+      </div>
+      <div class="slide-body">
+        <img src="file:///Users/chirag/Developer/batua/docs/screenshots-v2/wallet/11-storefront-balance.png" alt="Customer — Wallet Balance">
+      </div>
+      <div class="slide-footer">
+        <p class="slide-title">Customer — Wallet Balance</p>
+        <p class="slide-desc">Spendable balance card with bucket breakdown after phone entry</p>
+      </div>
+    </div>
+
+    <div class="slide">
+      <div class="slide-header">
+        <span class="slide-feature">1. Wallet & Dashboard</span>
+        <span class="slide-num">12/13</span>
+      </div>
+      <div class="slide-body">
+        <img src="file:///Users/chirag/Developer/batua/docs/screenshots-v2/wallet/12-storefront-transactions.png" alt="Customer — Recent Transactions">
+      </div>
+      <div class="slide-footer">
+        <p class="slide-title">Customer — Recent Transactions</p>
+        <p class="slide-desc">Transaction history with color-coded movement types</p>
+      </div>
+    </div>
+
+    <div class="slide">
+      <div class="slide-header">
+        <span class="slide-feature">1. Wallet & Dashboard</span>
+        <span class="slide-num">13/13</span>
+      </div>
+      <div class="slide-body">
+        <img src="file:///Users/chirag/Developer/batua/docs/screenshots-v2/wallet/13-balance-check.png" alt="Customer — Quick Balance Check">
+      </div>
+      <div class="slide-footer">
+        <p class="slide-title">Customer — Quick Balance Check</p>
+        <p class="slide-desc">Lightweight balance lookup at /s/desi-threads/balance</p>
+      </div>
+    </div>
+
+</body></html>

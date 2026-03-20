@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="UTF-8">
+<title>6. Analytics & COD — Breeze Product Demo</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  @page { size: landscape; margin: 0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: Inter, -apple-system, sans-serif; background: #1d1d1f; color: #fff; }
+  .slide {
+    width: 1280px; height: 720px;
+    display: flex; flex-direction: column;
+    background: #1d1d1f;
+    page-break-after: always; break-after: page;
+    position: relative;
+  }
+  .slide-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 40px;
+    font-size: 13px;
+  }
+  .slide-feature { color: #7c6aff; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; font-size: 12px; }
+  .slide-num { color: #555; }
+  .slide-body {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    padding: 0 40px;
+  }
+  .slide-body img {
+    max-width: 1100px; max-height: 530px;
+    border-radius: 10px; border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    object-fit: contain;
+  }
+  .slide-footer {
+    padding: 12px 40px 20px;
+    text-align: center;
+  }
+  .slide-title { font-size: 16px; font-weight: 600; color: #fff; margin-bottom: 3px; }
+  .slide-desc { font-size: 13px; color: #86868b; }
+</style>
+</head><body>
+
+    <div class="slide">
+      <div class="slide-header">
+        <span class="slide-feature">6. Analytics & COD</span>
+        <span class="slide-num">1/2</span>
+      </div>
+      <div class="slide-body">
+        <img src="file:///Users/chirag/Developer/batua/docs/screenshots-v2/analytics/01-analytics-overview.png" alt="Merchant Admin — Analytics Overview">
+      </div>
+      <div class="slide-footer">
+        <p class="slide-title">Merchant Admin — Analytics Overview</p>
+        <p class="slide-desc">Total earned/redeemed/active/expired with COD breakdown</p>
+      </div>
+    </div>
+
+    <div class="slide">
+      <div class="slide-header">
+        <span class="slide-feature">6. Analytics & COD</span>
+        <span class="slide-num">2/2</span>
+      </div>
+      <div class="slide-body">
+        <img src="file:///Users/chirag/Developer/batua/docs/screenshots-v2/analytics/02-analytics-scroll.png" alt="Merchant Admin — COD & RTO Analysis">
+      </div>
+      <div class="slide-footer">
+        <p class="slide-title">Merchant Admin — COD & RTO Analysis</p>
+        <p class="slide-desc">COD pending/delivered/RTO, prepaid vs COD split, RTO loyalty comparison</p>
+      </div>
+    </div>
+
+</body></html>
