@@ -12,13 +12,14 @@ async function copyToClipboard(text: string): Promise<boolean> {
 }
 
 const bucketLabels: Record<string, string> = {
-  cashback: 'Cashback',
-  loyalty_points: 'Loyalty Points',
-  referral_bonus: 'Referral Bonus',
+  earned_credit: 'Earned Credit',
+  cod_pending: 'COD Pending',
   gift_card: 'Gift Card',
-  promotional: 'Promotional',
-  store_credit: 'Store Credit',
-  signup_bonus: 'Signup Bonus'
+  customer_funded: 'Customer Funded',
+  referral_reward: 'Referral Reward',
+  goodwill_credit: 'Goodwill Credit',
+  membership_benefit: 'Membership Benefit',
+  refund_credit: 'Refund Credit'
 };
 
 function formatBucketLabel(type: string): string {

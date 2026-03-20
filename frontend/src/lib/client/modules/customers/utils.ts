@@ -24,8 +24,19 @@ function formatMovementType(movement: string): string {
   return movement.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+const BUCKET_LABELS: Record<string, string> = {
+  earned_credit: 'Earned Credit',
+  cod_pending: 'COD Pending',
+  gift_card: 'Gift Card',
+  customer_funded: 'Customer Funded',
+  referral_reward: 'Referral Reward',
+  goodwill_credit: 'Goodwill Credit',
+  membership_benefit: 'Membership Benefit',
+  refund_credit: 'Refund Credit'
+};
+
 function formatBucketType(bucket: string): string {
-  return bucket.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  return BUCKET_LABELS[bucket] ?? bucket.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 export { getTierColor, formatMultiplier, sortTiersByRank, formatMovementType, formatBucketType };

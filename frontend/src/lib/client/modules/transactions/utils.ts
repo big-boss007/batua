@@ -8,8 +8,19 @@ type StateHint = {
   color: string;
 };
 
+const BUCKET_LABELS: Record<string, string> = {
+  earned_credit: 'Earned Credit',
+  cod_pending: 'COD Pending',
+  gift_card: 'Gift Card',
+  customer_funded: 'Customer Funded',
+  referral_reward: 'Referral Reward',
+  goodwill_credit: 'Goodwill Credit',
+  membership_benefit: 'Membership Benefit',
+  refund_credit: 'Refund Credit'
+};
+
 function formatBucketType(bucketType: string): string {
-  return bucketType
+  return BUCKET_LABELS[bucketType] ?? bucketType
     .split('_')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(' ');
