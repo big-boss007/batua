@@ -157,6 +157,7 @@ pub struct LedgerEntryDetail {
     pub state: String,
     pub customer_name: Option<String>,
     pub customer_phone: Option<String>,
+    pub customer_email: Option<String>,
     pub rule_name: Option<String>,
     pub campaign_name: Option<String>,
     pub event_type: Option<String>,

@@ -394,6 +394,7 @@ pub async fn get_entry_detail(
             le.state::text AS state,
             c.name AS customer_name,
             c.phone AS customer_phone,
+            c.email AS customer_email,
             r.name AS rule_name,
             camp.name AS campaign_name,
             ev.event_type AS event_type,

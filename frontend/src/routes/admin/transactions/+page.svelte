@@ -332,6 +332,12 @@
                   <span class="value mono">{selectedEntry.customer_phone}</span>
                 </div>
               {/if}
+              {#if selectedEntry.customer_email !== null}
+                <div class="detail-row">
+                  <span class="label">Email</span>
+                  <span class="value">{selectedEntry.customer_email}</span>
+                </div>
+              {/if}
 
               <div class="detail-row">
                 <span class="label">Bucket</span>

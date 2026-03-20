@@ -99,6 +99,7 @@ export type LedgerEntryDetail = {
   state: string;
   customer_name: string | null;
   customer_phone: string | null;
+  customer_email: string | null;
   rule_name: string | null;
   campaign_name: string | null;
   event_type: string | null;
