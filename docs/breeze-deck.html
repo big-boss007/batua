@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Breeze Retention Suite — Deck</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  @page { size: landscape; margin: 0; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    background: #000;
+    color: #fff;
+  }
+
+  .slide {
+    width: 1280px;
+    height: 720px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 80px 100px;
+    page-break-after: always;
+    break-after: page;
+  }
+
+  /* Backgrounds */
+  .bg-black { background: #1d1d1f; color: #fff; }
+  .bg-white { background: #fbfbfd; color: #1d1d1f; }
+  .bg-gradient { background: linear-gradient(135deg, #1d1d1f 0%, #2d1b69 50%, #1d1d1f 100%); color: #fff; }
+  .bg-purple { background: #7c6aff; color: #fff; }
+  .bg-light { background: #f5f5f7; color: #1d1d1f; }
+
+  /* Typography */
+  .t-hero { font-size: 64px; font-weight: 800; letter-spacing: -0.04em; line-height: 1.05; }
+  .t-title { font-size: 48px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; }
+  .t-subtitle { font-size: 32px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; }
+  .t-body { font-size: 22px; font-weight: 400; line-height: 1.5; }
+  .t-body-lg { font-size: 26px; font-weight: 400; line-height: 1.5; }
+  .t-small { font-size: 18px; font-weight: 400; line-height: 1.5; }
+  .t-eyebrow { font-size: 16px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; }
+  .t-stat { font-size: 72px; font-weight: 800; letter-spacing: -0.04em; }
+  .t-stat-md { font-size: 56px; font-weight: 800; letter-spacing: -0.03em; }
+
+  .c-muted { color: #86868b; }
+  .c-accent { color: #7c6aff; }
+  .c-green { color: #34d399; }
+  .c-red { color: #fb7185; }
+  .c-amber { color: #fbbf24; }
+  .c-dark-muted { color: #6b7280; }
+
+  .mb-8 { margin-bottom: 8px; }
+  .mb-16 { margin-bottom: 16px; }
+  .mb-24 { margin-bottom: 24px; }
+  .mb-32 { margin-bottom: 32px; }
+  .mb-48 { margin-bottom: 48px; }
+  .mt-auto { margin-top: auto; }
+  .text-center { text-align: center; }
+  .text-right { text-align: right; }
+
+  /* Layout helpers */
+  .row { display: flex; gap: 48px; align-items: flex-start; }
+  .row-center { display: flex; gap: 48px; align-items: center; }
+  .col { flex: 1; }
+  .col-2 { flex: 2; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 20px; }
+  .grid-5 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; gap: 16px; }
+
+  /* Cards */
+  .card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 28px;
+  }
+  .card-white {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  }
+  .card-purple {
+    background: rgba(124,106,255,0.12);
+    border: 1px solid rgba(124,106,255,0.25);
+    border-radius: 16px;
+    padding: 28px;
+  }
+
+  /* Pill badge */
+  .pill {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .pill-purple { background: rgba(124,106,255,0.15); color: #7c6aff; }
+  .pill-green { background: rgba(52,211,153,0.15); color: #34d399; }
+  .pill-red { background: rgba(251,113,133,0.15); color: #fb7185; }
+  .pill-amber { background: rgba(251,191,36,0.15); color: #fbbf24; }
+  .pill-dark { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); }
+
+  /* Divider */
+  .divider { width: 60px; height: 4px; background: #7c6aff; border-radius: 2px; margin-bottom: 32px; }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; font-size: 16px; }
+  th { text-align: left; padding: 12px 16px; font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 2px solid rgba(255,255,255,0.15); }
+  td { padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .table-light th { color: #6b7280; border-bottom-color: #e5e7eb; }
+  .table-light td { border-bottom-color: #f3f4f6; color: #1d1d1f; }
+
+  /* Check / X marks */
+  .check { color: #34d399; font-weight: 700; }
+  .cross { color: #86868b; }
+
+  /* Slide number */
+  .slide-num {
+    position: absolute;
+    bottom: 24px;
+    right: 40px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.3);
+    font-weight: 500;
+  }
+  .bg-white .slide-num,
+  .bg-light .slide-num { color: rgba(0,0,0,0.2); }
+
+  /* Logo watermark */
+  .logo {
+    position: absolute;
+    top: 32px;
+    left: 40px;
+    font-size: 18px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.4);
+  }
+  .bg-white .logo,
+  .bg-light .logo { color: rgba(0,0,0,0.2); }
+
+  /* List */
+  .feature-list { list-style: none; }
+  .feature-list li { padding: 8px 0; font-size: 20px; display: flex; align-items: center; gap: 12px; }
+  .feature-list li::before { content: '→'; color: #7c6aff; font-weight: 700; }
+
+  .check-list { list-style: none; }
+  .check-list li { padding: 6px 0; font-size: 18px; display: flex; align-items: center; gap: 10px; }
+  .check-list li::before { content: '✓'; color: #34d399; font-weight: 700; font-size: 16px; }
+  .check-list li.disabled::before { content: '—'; color: #86868b; }
+  .check-list li.disabled { color: #86868b; }
+
+  /* Stat row */
+  .stat-row { display: flex; gap: 0; }
+  .stat-item { flex: 1; text-align: center; padding: 24px; }
+  .stat-item + .stat-item { border-left: 1px solid rgba(255,255,255,0.1); }
+
+  /* Flow arrow */
+  .flow { display: flex; align-items: center; gap: 0; justify-content: center; }
+  .flow-box { padding: 16px 24px; border-radius: 12px; font-size: 15px; font-weight: 500; text-align: center; min-width: 120px; }
+  .flow-arrow { padding: 0 12px; font-size: 24px; color: #86868b; }
+  .flow-green { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.25); color: #34d399; }
+  .flow-purple { background: rgba(124,106,255,0.12); border: 1px solid rgba(124,106,255,0.25); color: #7c6aff; }
+  .flow-amber { background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.25); color: #fbbf24; }
+  .flow-red { background: rgba(251,113,133,0.12); border: 1px solid rgba(251,113,133,0.25); color: #fb7185; }
+  .flow-dark { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #fff; }
+
+  @media print {
+    .slide { page-break-after: always; break-after: page; }
+    body { background: #000; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- SLIDE 1: Title -->
+<!-- ============================================================ -->
+<div class="slide bg-gradient">
+  <div style="text-align: center;">
+    <p class="t-eyebrow c-accent mb-32">Introducing</p>
+    <h1 class="t-hero mb-24">Breeze<br>Retention Suite</h1>
+    <p class="t-body-lg c-muted mb-48">Wallet · Loyalty · Gift Cards · Referrals · Campaigns · Memberships</p>
+    <p class="t-body c-muted">The complete retention platform for Indian Shopify brands.<br>COD-ready. WhatsApp-first. Festive-native.</p>
+  </div>
+  <div class="slide-num">1</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 2: The Problem -->
+<!-- ============================================================ -->
+<div class="slide bg-black">
+  <div class="logo">Breeze</div>
+  <p class="t-eyebrow c-accent mb-24">The Problem</p>
+  <h2 class="t-title mb-48">You're spending ₹300 to acquire<br>a customer who never comes back.</h2>
+  <div class="grid-5">
+    <div class="card" style="text-align: center;">
+      <p class="t-stat-md c-accent">15-25%</p>
+      <p class="t-small c-muted" style="margin-top: 8px;">Repeat purchase rate<br><span style="font-size: 14px;">(benchmark: 35-40%)</span></p>
+    </div>
+    <div class="card" style="text-align: center;">
+      <p class="t-stat-md c-accent">30-50%</p>
+      <p class="t-small c-muted" style="margin-top: 8px;">Orders are COD</p>
+    </div>
+    <div class="card" style="text-align: center;">
+      <p class="t-stat-md c-red">25-35%</p>
+      <p class="t-small c-muted" style="margin-top: 8px;">COD return rate<br><span style="font-size: 14px;">₹150-300 per RTO</span></p>
+    </div>
+    <div class="card" style="text-align: center;">
+      <p class="t-stat-md c-green">85%</p>
+      <p class="t-small c-muted" style="margin-top: 8px;">WhatsApp open rate<br><span style="font-size: 14px;">vs 18% email</span></p>
+    </div>
+    <div class="card" style="text-align: center;">
+      <p class="t-stat-md c-amber">₹17K</p>
+      <p class="t-small c-muted" style="margin-top: 8px;">Smile.io charges<br><span style="font-size: 14px;">per month</span></p>
+    </div>
+  </div>
+  <div class="slide-num">2</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 3: How It Works -->
+<!-- ============================================================ -->
+<div class="slide bg-black">
+  <div class="logo">Breeze</div>
+  <p class="t-eyebrow c-accent mb-24">How It Works</p>
+  <h2 class="t-title mb-48">Three steps. No code.</h2>
+  <div class="grid-3">
+    <div class="card">
+      <p class="t-eyebrow c-accent mb-16">Step 01</p>
+      <p class="t-subtitle mb-16" style="color: #fff;">Customer earns</p>
+      <p class="t-small c-muted">Order placed → Breeze calculates cashback → credit lands in wallet.</p>
+      <p class="t-small c-muted" style="margin-top: 12px;"><strong style="color: #fff;">Prepaid?</strong> Instant credit.<br><strong style="color: #fff;">COD?</strong> Held until delivery.</p>
+    </div>
+    <div class="card">
+      <p class="t-eyebrow c-accent mb-16">Step 02</p>
+      <p class="t-subtitle mb-16" style="color: #fff;">Customer sees balance</p>
+      <p class="t-small c-muted">WhatsApp message:<br>"Hi Priya! You earned ₹100 on order #3001. Balance: ₹465."</p>
+      <p class="t-small" style="margin-top: 12px; color: #34d399;">85% open rate.</p>
+    </div>
+    <div class="card">
+      <p class="t-eyebrow c-accent mb-16">Step 03</p>
+      <p class="t-subtitle mb-16" style="color: #fff;">Customer comes back</p>
+      <p class="t-small c-muted">At checkout: "You have ₹365 in rewards. Apply?"</p>
+      <p class="t-small c-muted" style="margin-top: 12px;">That credit is why they buy from you — not from an Instagram ad.</p>
+    </div>
+  </div>
+  <div class="slide-num">3</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 4: Six Pillars -->
+<!-- ============================================================ -->
+<div class="slide bg-gradient">
+  <div class="logo">Breeze</div>
+  <div style="text-align: center;">
+    <p class="t-eyebrow c-accent mb-24">Six Products. One Platform.</p>
+    <h2 class="t-title mb-48">Everything you need to keep<br>customers coming back.</h2>
+  </div>
+  <div class="grid-3">
+    <div class="card" style="text-align: center;">
+      <p class="t-subtitle mb-8">💳</p>
+      <p class="t-subtitle mb-8" style="color: #fff;">Wallet</p>
+      <p class="t-small c-muted">Cashback, store credits, COD-hold, balance management</p>
+    </div>
+    <div class="card" style="text-align: center;">
+      <p class="t-subtitle mb-8">⭐</p>
+      <p class="t-subtitle mb-8" style="color: #fff;">Loyalty</p>
+      <p class="t-small c-muted">Tiers, milestones, streaks, birthday bonus, profile rewards</p>
+    </div>
+    <div class="card" style="text-align: center;">
+      <p class="t-subtitle mb-8">🎁</p>
+      <p class="t-subtitle mb-8" style="color: #fff;">Gift Cards</p>
+      <p class="t-small c-muted">Single + bulk issuance, claim, partial redemption</p>
+    </div>
+    <div class="card" style="text-align: center;">
+      <p class="t-subtitle mb-8">🔗</p>
+      <p class="t-subtitle mb-8" style="color: #fff;">Referrals</p>
+      <p class="t-small c-muted">Dual reward, vanity codes, creator mode, anti-fraud</p>
+    </div>
+    <div class="card" style="text-align: center;">
+      <p class="t-subtitle mb-8">🎉</p>
+      <p class="t-subtitle mb-8" style="color: #fff;">Campaigns</p>
+      <p class="t-small c-muted">10 festive templates, spin-the-wheel, campaign overlay</p>
+    </div>
+    <div class="card" style="text-align: center;">
+      <p class="t-subtitle mb-8">👑</p>
+      <p class="t-subtitle mb-8" style="color: #fff;">Memberships</p>
+      <p class="t-small c-muted">Monthly/annual plans, earn multiplier, premium benefits</p>
+    </div>
+  </div>
+  <div class="slide-num">4</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 5: COD Problem Solved -->
+<!-- ============================================================ -->
+<div class="slide bg-white">
+  <div class="logo">Breeze</div>
+  <p class="t-eyebrow c-accent mb-24">Wallet</p>
+  <h2 class="t-title mb-48" style="color: #1d1d1f;">The COD problem, solved.</h2>
+  <div class="row">
+    <div class="col">
+      <table class="table-light">
+        <tr><th>What happens</th><th>Other tools</th><th style="color: #7c6aff;">Breeze</th></tr>
+        <tr><td>Customer orders via COD</td><td>₹100 credit instantly</td><td style="color: #7c6aff;">₹100 held (visible, not spendable)</td></tr>
+        <tr><td>Order delivered</td><td>Nothing</td><td style="color: #34d399;">₹100 released to spendable</td></tr>
+        <tr><td>Order returned (RTO)</td><td>Manual reversal (or forgotten)</td><td style="color: #34d399;">Auto-cancelled</td></tr>
+        <tr><td>Customer switches to UPI</td><td>Nothing</td><td style="color: #34d399;">₹75 instant credit incentive</td></tr>
+      </table>
+    </div>
+  </div>
+  <p class="t-body" style="margin-top: 32px; color: #6b7280;">COD-to-prepaid conversion saves ₹150-300 per order. Merchants see <strong style="color: #1d1d1f;">8-12% of COD orders switch to prepaid.</strong></p>
+  <div class="slide-num">5</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 6: Loyalty -->
+<!-- ============================================================ -->
+<div class="slide bg-black">
+  <div class="logo">Breeze</div>
+  <p class="t-eyebrow c-accent mb-24">Loyalty</p>
+  <h2 class="t-title mb-32">Reward your best customers.<br>They'll reward you back.</h2>
+  <div class="row">
+    <div class="col">
+      <div class="flow" style="margin-bottom: 32px;">
+        <div class="flow-box flow-dark">🥉 Bronze<br><span style="font-size: 12px;">1x earn</span></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-box flow-dark">🥈 Silver<br><span style="font-size: 12px;">1.25x · ₹2K</span></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-box flow-purple">🥇 Gold<br><span style="font-size: 12px;">1.5x · ₹5K</span></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-box flow-amber">💎 Platinum<br><span style="font-size: 12px;">2x · ₹15K</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="grid-4" style="margin-top: 8px;">
+    <div class="card">
+      <p class="t-small" style="color: #fff; font-weight: 600;">🎂 Birthday Bonus</p>
+      <p class="t-small c-muted" style="margin-top: 8px;">₹100 auto-credited. One per year. Set and forget.</p>
+    </div>
+    <div class="card">
+      <p class="t-small" style="color: #fff; font-weight: 600;">🏆 Milestones</p>
+      <p class="t-small c-muted" style="margin-top: 8px;">3rd order: ₹50. 10th: ₹500. ₹5K spend: ₹150.</p>
+    </div>
+    <div class="card">
+      <p class="t-small" style="color: #fff; font-weight: 600;">🔥 Streaks</p>
+      <p class="t-small c-muted" style="margin-top: 8px;">3 orders in 30 days = ₹75 bonus. Progress shown.</p>
+    </div>
+    <div class="card">
+      <p class="t-small" style="color: #fff; font-weight: 600;">📝 Profile Completion</p>
+      <p class="t-small c-muted" style="margin-top: 8px;">Complete profile = ₹30. Better data for you.</p>
+    </div>
+  </div>
+  <div class="slide-num">6</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 7: Gift Cards + Referrals -->
+<!-- ============================================================ -->
+<div class="slide bg-black">
+  <div class="logo">Breeze</div>
+  <div class="row">
+    <div class="col">
+      <p class="t-eyebrow c-accent mb-16">Gift Cards</p>
+      <h3 class="t-subtitle mb-24">Diwali. Rakhi. Birthdays.<br>New revenue on the table.</h3>
+      <ul class="feature-list">
+        <li>Single + bulk CSV issuance (idempotent)</li>
+        <li>Bearer code until claimed</li>
+        <li>Partial redemption</li>
+        <li>Balance check on storefront</li>
+      </ul>
+    </div>
+    <div class="col">
+      <p class="t-eyebrow c-accent mb-16">Referrals</p>
+      <h3 class="t-subtitle mb-24">Your customers are your<br>cheapest acquisition channel.</h3>
+      <ul class="feature-list">
+        <li>Dual reward: ₹50 referrer + ₹25 referee</li>
+        <li>Vanity codes: PRIYA10, VIKRAM20</li>
+        <li>Creator / influencer mode</li>
+        <li>5 anti-fraud signals built in</li>
+      </ul>
+      <p class="t-small c-muted" style="margin-top: 16px;">Ads: ₹300/customer. Referral: <span class="c-green">₹50/customer.</span></p>
+    </div>
+  </div>
+  <div class="slide-num">7</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 8: Campaigns + Memberships -->
+<!-- ============================================================ -->
+<div class="slide bg-black">
+  <div class="logo">Breeze</div>
+  <div class="row">
+    <div class="col">
+      <p class="t-eyebrow c-accent mb-16">Campaigns</p>
+      <h3 class="t-subtitle mb-24">Diwali is in 3 weeks.<br>Setup takes 3 minutes.</h3>
+      <div class="grid-3" style="gap: 12px; margin-bottom: 24px;">
+        <div class="card" style="text-align: center; padding: 16px;"><p style="font-size: 14px;">🪔 Diwali<br><span class="c-accent" style="font-size: 12px;">3x cashback</span></p></div>
+        <div class="card" style="text-align: center; padding: 16px;"><p style="font-size: 14px;">🎨 Holi<br><span class="c-accent" style="font-size: 12px;">2x cashback</span></p></div>
+        <div class="card" style="text-align: center; padding: 16px;"><p style="font-size: 14px;">🧵 Rakhi<br><span class="c-accent" style="font-size: 12px;">2x cashback</span></p></div>
+      </div>
+      <p class="t-small c-muted">10 pre-built festive templates. Campaign = overlay on base rule. Ends automatically.</p>
+      <p class="t-small c-muted" style="margin-top: 12px;"><strong style="color: #fff;">🎡 Spin-the-wheel:</strong> 6 weighted segments, 3 spins/day.</p>
+    </div>
+    <div class="col">
+      <p class="t-eyebrow c-accent mb-16">Memberships</p>
+      <h3 class="t-subtitle mb-24">The Amazon Prime model.<br>For your store.</h3>
+      <div class="card" style="margin-bottom: 16px;">
+        <p class="t-small" style="color: #fff; font-weight: 600;">Monthly — ₹99/mo</p>
+        <p class="t-small c-muted">2x cashback · Free shipping · Early access</p>
+      </div>
+      <div class="card-purple">
+        <p class="t-small" style="color: #fff; font-weight: 600;">Annual — ₹799/yr <span class="pill pill-green" style="font-size: 11px; padding: 2px 8px;">Save 33%</span></p>
+        <p class="t-small c-muted">2.5x cashback · Priority support · Exclusive collections</p>
+      </div>
+      <p class="t-small c-muted" style="margin-top: 16px;">Members spend <span class="c-green">3-4x more</span> than non-members.</p>
+    </div>
+  </div>
+  <div class="slide-num">8</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 9: India-Native -->
+<!-- ============================================================ -->
+<div class="slide bg-white">
+  <div class="logo">Breeze</div>
+  <div style="text-align: center;">
+    <p class="t-eyebrow c-accent mb-24">Why Breeze Wins in India</p>
+    <h2 class="t-title mb-48" style="color: #1d1d1f;">India-native. Not India-adapted.</h2>
+  </div>
+  <table class="table-light">
+    <tr><th style="width: 25%;">Challenge</th><th style="width: 35%;">Global Tools</th><th style="width: 40%; color: #7c6aff;">Breeze</th></tr>
+    <tr><td>30-50% COD orders</td><td>Instant credit (broken)</td><td style="color: #7c6aff;">Held until delivery confirmed</td></tr>
+    <tr><td>25-35% RTO rate</td><td>Manual reversal</td><td style="color: #7c6aff;">Auto-cancel on return</td></tr>
+    <tr><td>COD logistics cost</td><td>Nothing</td><td style="color: #7c6aff;">"Switch to UPI, get ₹75" — 8-12% conversion</td></tr>
+    <tr><td>WhatsApp is primary</td><td>Email notifications</td><td style="color: #7c6aff;">WhatsApp-first (Interakt, WATI, AiSensy)</td></tr>
+    <tr><td>8-10 festive windows</td><td>Build from scratch</td><td style="color: #7c6aff;">10 pre-built templates, 2-minute setup</td></tr>
+    <tr><td>Influencer commerce</td><td>No creator tools</td><td style="color: #7c6aff;">Vanity codes + tiered commissions</td></tr>
+  </table>
+  <div class="slide-num">9</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 10: vs Competition -->
+<!-- ============================================================ -->
+<div class="slide bg-black">
+  <div class="logo">Breeze</div>
+  <p class="t-eyebrow c-accent mb-24">Competitive Landscape</p>
+  <h2 class="t-title mb-32">vs. the competition</h2>
+  <table>
+    <tr><th></th><th>Smile.io</th><th>Nector</th><th>Rise.ai</th><th style="color: #7c6aff;">Breeze</th></tr>
+    <tr><td>COD credit hold</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="check">✓</td></tr>
+    <tr><td>COD-to-prepaid</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="check">✓</td></tr>
+    <tr><td>WhatsApp</td><td class="cross">—</td><td class="check">✓</td><td class="cross">—</td><td class="check">✓</td></tr>
+    <tr><td>Festive templates</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="c-accent">10 built-in</td></tr>
+    <tr><td>Gift cards (unified)</td><td class="cross">—</td><td class="cross">—</td><td class="check">✓</td><td class="check">✓ unified</td></tr>
+    <tr><td>Referrals + creators</td><td class="check">✓</td><td class="check">✓</td><td class="cross">—</td><td class="check">✓ + creators</td></tr>
+    <tr><td>Paid memberships</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="check">✓</td></tr>
+    <tr><td>Spin wheel</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="check">✓</td></tr>
+    <tr><td>Coalition loyalty</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="check">✓</td></tr>
+    <tr><td style="font-weight: 700;">Full-feature price</td><td>₹17,000/mo</td><td>₹4,000/mo</td><td>₹5,000/mo</td><td class="c-accent" style="font-weight: 700;">₹2,999/mo</td></tr>
+  </table>
+  <div class="slide-num">10</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 11: Pricing -->
+<!-- ============================================================ -->
+<div class="slide bg-light">
+  <div class="logo">Breeze</div>
+  <div style="text-align: center;">
+    <p class="t-eyebrow c-accent mb-16">Pricing</p>
+    <h2 class="t-title mb-8" style="color: #1d1d1f;">Flat pricing. Not per-order.</h2>
+    <p class="t-body c-dark-muted mb-32">Same price whether you process 100 orders or 10,000.</p>
+  </div>
+  <div class="grid-4">
+    <div class="card-white">
+      <p class="t-small" style="font-weight: 700; color: #1d1d1f;">Free</p>
+      <p style="font-size: 13px; color: #86868b; margin-bottom: 12px;">Try it out</p>
+      <p style="font-size: 40px; font-weight: 800; color: #1d1d1f;">₹0<span style="font-size: 16px; font-weight: 400; color: #86868b;">/mo</span></p>
+      <ul class="check-list" style="margin-top: 16px; font-size: 14px;">
+        <li>Wallet (100 txns/mo)</li>
+        <li class="disabled">Loyalty</li>
+        <li class="disabled">Referrals</li>
+      </ul>
+    </div>
+    <div class="card-white">
+      <p class="t-small" style="font-weight: 700; color: #1d1d1f;">Grow</p>
+      <p style="font-size: 13px; color: #86868b; margin-bottom: 12px;">Growing brands</p>
+      <p style="font-size: 40px; font-weight: 800; color: #1d1d1f;">₹999<span style="font-size: 16px; font-weight: 400; color: #86868b;">/mo</span></p>
+      <ul class="check-list" style="margin-top: 16px; font-size: 14px;">
+        <li>Wallet — Unlimited</li>
+        <li>Loyalty + rules</li>
+        <li>Referrals</li>
+        <li>WhatsApp</li>
+      </ul>
+    </div>
+    <div class="card-white" style="border: 2px solid #7c6aff; position: relative;">
+      <span class="pill pill-purple" style="position: absolute; top: -12px; right: 16px; font-size: 11px;">Most Popular</span>
+      <p class="t-small" style="font-weight: 700; color: #1d1d1f;">Scale</p>
+      <p style="font-size: 13px; color: #86868b; margin-bottom: 12px;">Serious about retention</p>
+      <p style="font-size: 40px; font-weight: 800; color: #7c6aff;">₹2,999<span style="font-size: 16px; font-weight: 400; color: #86868b;">/mo</span></p>
+      <ul class="check-list" style="margin-top: 16px; font-size: 14px;">
+        <li>Everything in Grow</li>
+        <li>Gift Cards</li>
+        <li>Campaigns + templates</li>
+        <li>Memberships</li>
+        <li>Gamification</li>
+      </ul>
+    </div>
+    <div class="card-white">
+      <p class="t-small" style="font-weight: 700; color: #1d1d1f;">Enterprise</p>
+      <p style="font-size: 13px; color: #86868b; margin-bottom: 12px;">Multi-brand / custom</p>
+      <p style="font-size: 40px; font-weight: 800; color: #1d1d1f;">₹7,999+<span style="font-size: 16px; font-weight: 400; color: #86868b;">/mo</span></p>
+      <ul class="check-list" style="margin-top: 16px; font-size: 14px;">
+        <li>Everything in Scale</li>
+        <li>Coalition loyalty</li>
+        <li>Custom rules</li>
+        <li>Dedicated support</li>
+      </ul>
+    </div>
+  </div>
+  <div class="slide-num">11</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 12: ROI -->
+<!-- ============================================================ -->
+<div class="slide bg-black">
+  <div class="logo">Breeze</div>
+  <p class="t-eyebrow c-accent mb-24">The ROI Conversation</p>
+  <h2 class="t-title mb-48">Show this to your CFO.</h2>
+  <div class="grid-2">
+    <div>
+      <table>
+        <tr><th>Metric</th><th>Before</th><th style="color: #34d399;">After Breeze</th></tr>
+        <tr><td>Repeat purchase rate</td><td>18%</td><td class="c-green">30%+</td></tr>
+        <tr><td>COD-to-prepaid</td><td>0%</td><td class="c-green">8-12%</td></tr>
+        <tr><td>RTO (loyalty members)</td><td>28%</td><td class="c-green">8%</td></tr>
+        <tr><td>Customer LTV (6mo)</td><td>₹1,800</td><td class="c-green">₹3,800</td></tr>
+        <tr><td>Cost per repeat customer</td><td>₹300 (ads)</td><td class="c-green">₹50 (rewards)</td></tr>
+      </table>
+    </div>
+    <div class="card" style="display: flex; flex-direction: column; justify-content: center; text-align: center;">
+      <p class="t-small c-muted mb-16">"We spend ₹2,999/mo on Breeze.</p>
+      <p class="t-small c-muted mb-16">Last month, loyalty credits drove<br><strong style="color: #fff; font-size: 24px;">247 repeat orders</strong><br>we wouldn't have gotten.</p>
+      <p class="t-small c-muted">That's <strong class="c-green" style="font-size: 24px;">₹12 per repeat order.</strong><br>Our CAC through ads is ₹300."</p>
+    </div>
+  </div>
+  <div class="slide-num">12</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 13: CTA -->
+<!-- ============================================================ -->
+<div class="slide bg-gradient">
+  <div style="text-align: center;">
+    <h2 class="t-hero mb-32">5 minutes to your first<br>loyalty program.</h2>
+    <p class="t-body-lg c-muted mb-48">Install → Run the wizard → Your next customer earns cashback.</p>
+    <div style="display: flex; gap: 24px; justify-content: center;">
+      <span class="pill" style="background: #7c6aff; color: #fff; padding: 16px 40px; font-size: 20px; border-radius: 14px;">Start Free</span>
+      <span class="pill" style="background: rgba(255,255,255,0.1); color: #fff; padding: 16px 40px; font-size: 20px; border-radius: 14px;">Book a Demo</span>
+    </div>
+    <p class="t-small c-muted" style="margin-top: 24px;">No credit card required.</p>
+  </div>
+  <div class="slide-num">13</div>
+</div>
+
+</body>
+</html>
