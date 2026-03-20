@@ -320,19 +320,16 @@
                 <span class="amount">{formatCurrencyINR(selectedEntry.currency_equivalent)}</span>
               </div>
 
-              {#if selectedEntry.customer_name !== null || selectedEntry.customer_phone !== null}
+              {#if selectedEntry.customer_name !== null}
                 <div class="detail-row">
                   <span class="label">Customer</span>
-                  <span class="value">
-                    {#if selectedEntry.customer_name !== null}
-                      {selectedEntry.customer_name}
-                      {#if selectedEntry.customer_phone !== null}
-                        ({selectedEntry.customer_phone})
-                      {/if}
-                    {:else}
-                      {selectedEntry.customer_phone}
-                    {/if}
-                  </span>
+                  <span class="value">{selectedEntry.customer_name}</span>
+                </div>
+              {/if}
+              {#if selectedEntry.customer_phone !== null}
+                <div class="detail-row">
+                  <span class="label">Phone</span>
+                  <span class="value mono">{selectedEntry.customer_phone}</span>
                 </div>
               {/if}
 
