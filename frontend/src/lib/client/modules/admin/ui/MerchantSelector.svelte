@@ -32,7 +32,7 @@
 
       const savedId = getCurrentMerchantId();
       const savedMerchant =
-        savedId !== null ? merchants.find((m) => m.id === savedId) ?? null : null;
+        savedId !== null ? (merchants.find((m) => m.id === savedId) ?? null) : null;
 
       if (savedMerchant !== null) {
         currentMerchant.set(savedMerchant);

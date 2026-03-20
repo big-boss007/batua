@@ -5,17 +5,15 @@
     onsubmit,
     loading = false
   }: {
-    onsubmit: (data: {
-      geo_code: string;
-      name: string;
-      config: Record<string, unknown>;
-    }) => void;
+    onsubmit: (data: { geo_code: string; name: string; config: Record<string, unknown> }) => void;
     loading?: boolean;
   } = $props();
 
   let geoCode = $state('');
   let name = $state('');
-  let configJson = $state('{\n  "cod_enabled": false,\n  "default_currency": "INR",\n  "whatsapp_default": false,\n  "upi_topup_enabled": false,\n  "default_timezone": "Asia/Kolkata"\n}');
+  let configJson = $state(
+    '{\n  "cod_enabled": false,\n  "default_currency": "INR",\n  "whatsapp_default": false,\n  "upi_topup_enabled": false,\n  "default_timezone": "Asia/Kolkata"\n}'
+  );
   let configError = $state<string | null>(null);
 
   function handleGeoCodeInput(value: string) {
@@ -52,23 +50,19 @@
   }
 </script>
 
-<form class="geo-form" onsubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+<form
+  class="geo-form"
+  onsubmit={(e) => {
+    e.preventDefault();
+    handleSubmit();
+  }}
+>
   <div class="form-field">
-    <Input
-      value={geoCode}
-      label="Geo Code"
-      placeholder="india"
-      onInput={handleGeoCodeInput}
-    />
+    <Input value={geoCode} label="Geo Code" placeholder="india" onInput={handleGeoCodeInput} />
   </div>
 
   <div class="form-field">
-    <Input
-      value={name}
-      label="Policy Name"
-      placeholder="India Default"
-      onInput={handleNameInput}
-    />
+    <Input value={name} label="Policy Name" placeholder="India Default" onInput={handleNameInput} />
   </div>
 
   <div class="form-field">

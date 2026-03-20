@@ -39,8 +39,16 @@
   let codCards = $derived(
     analytics !== null
       ? [
-          { label: 'COD Pending', value: analytics.cod_pending.toLocaleString('en-IN'), accent: 'warning' },
-          { label: 'COD Delivered', value: analytics.cod_delivered.toLocaleString('en-IN'), accent: 'success' },
+          {
+            label: 'COD Pending',
+            value: analytics.cod_pending.toLocaleString('en-IN'),
+            accent: 'warning'
+          },
+          {
+            label: 'COD Delivered',
+            value: analytics.cod_delivered.toLocaleString('en-IN'),
+            accent: 'success'
+          },
           { label: 'COD RTO', value: analytics.cod_rto.toLocaleString('en-IN'), accent: 'error' }
         ]
       : []
@@ -59,9 +67,7 @@
   );
 
   let rtoMaxRate = $derived(
-    analytics !== null
-      ? Math.max(analytics.loyalty_rto_rate, analytics.non_loyalty_rto_rate, 1)
-      : 1
+    analytics !== null ? Math.max(analytics.loyalty_rto_rate, analytics.non_loyalty_rto_rate, 1) : 1
   );
 
   let loyaltyWidth = $derived(
@@ -130,7 +136,9 @@
           <div class="split-bar-group">
             <div class="split-header">
               <span class="split-label">Prepaid</span>
-              <span class="split-value">{analytics.prepaid_orders.toLocaleString('en-IN')} ({prepaidPct}%)</span>
+              <span class="split-value"
+                >{analytics.prepaid_orders.toLocaleString('en-IN')} ({prepaidPct}%)</span
+              >
             </div>
             <div class="split-track">
               <div class="split-fill split-prepaid" style="width: {prepaidPct}%"></div>
@@ -139,7 +147,9 @@
           <div class="split-bar-group">
             <div class="split-header">
               <span class="split-label">COD</span>
-              <span class="split-value">{analytics.cod_orders.toLocaleString('en-IN')} ({codPct}%)</span>
+              <span class="split-value"
+                >{analytics.cod_orders.toLocaleString('en-IN')} ({codPct}%)</span
+              >
             </div>
             <div class="split-track">
               <div class="split-fill split-cod" style="width: {codPct}%"></div>

@@ -1,9 +1,5 @@
 import type { PageLoad } from './$types';
-import {
-  fetchWalletPolicies,
-  fetchConnectors,
-  fetchTemplates
-} from '$lib/client/modules/settings';
+import { fetchWalletPolicies, fetchConnectors, fetchTemplates } from '$lib/client/modules/settings';
 
 export const load: PageLoad = async ({ url }) => {
   const merchantId = url.searchParams.get('merchant') ?? 'default';

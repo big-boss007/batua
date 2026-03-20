@@ -26,11 +26,36 @@
   let statItems = $derived(
     stats !== null
       ? [
-          { label: 'Total Wallets', value: stats.total_wallets, metricType: 'number' as const, icon: 'W' },
-          { label: 'Customers', value: stats.total_customers, metricType: 'number' as const, icon: 'C' },
-          { label: 'Ledger Entries', value: stats.total_ledger_entries, metricType: 'number' as const, icon: '#' },
-          { label: 'Active Credits', value: stats.active_credits, metricType: 'currency' as const, icon: '$' },
-          { label: 'Total Redeemed', value: stats.total_redeemed, metricType: 'currency' as const, icon: 'R' }
+          {
+            label: 'Total Wallets',
+            value: stats.total_wallets,
+            metricType: 'number' as const,
+            icon: 'W'
+          },
+          {
+            label: 'Customers',
+            value: stats.total_customers,
+            metricType: 'number' as const,
+            icon: 'C'
+          },
+          {
+            label: 'Ledger Entries',
+            value: stats.total_ledger_entries,
+            metricType: 'number' as const,
+            icon: '#'
+          },
+          {
+            label: 'Active Credits',
+            value: stats.active_credits,
+            metricType: 'currency' as const,
+            icon: '$'
+          },
+          {
+            label: 'Total Redeemed',
+            value: stats.total_redeemed,
+            metricType: 'currency' as const,
+            icon: 'R'
+          }
         ]
       : []
   );
@@ -51,7 +76,10 @@
 
   async function handleStatusToggle(checked: boolean) {
     if (merchant === null) return;
-    const result = await updateMerchant(merchant.id, { is_active: checked } as Record<string, unknown>);
+    const result = await updateMerchant(merchant.id, { is_active: checked } as Record<
+      string,
+      unknown
+    >);
     if (result.tag === 'success') {
       isActive = checked;
       toastStore.push({

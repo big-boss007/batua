@@ -8,10 +8,8 @@ export const load: PageLoad = async () => {
     fetchRecentEvents(10)
   ]);
 
-  const stats: DashboardStats | null =
-    statsResult.tag === 'success' ? statsResult.data : null;
-  const events: RecentEvent[] =
-    eventsResult.tag === 'success' ? eventsResult.data : [];
+  const stats: DashboardStats | null = statsResult.tag === 'success' ? statsResult.data : null;
+  const events: RecentEvent[] = eventsResult.tag === 'success' ? eventsResult.data : [];
 
   return { stats, events };
 };

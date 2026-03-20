@@ -10,7 +10,8 @@
     document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
   }
 
-  let { data, children }: { data: { merchant: StorefrontMerchant | null }; children: Snippet } = $props();
+  let { data, children }: { data: { merchant: StorefrontMerchant | null }; children: Snippet } =
+    $props();
 
   let merchant = $derived(data.merchant);
 
@@ -42,8 +43,7 @@
         <div class="error-icon">?</div>
         <h2 class="error-title">Store not found</h2>
         <p class="error-text">
-          We couldn't find a rewards program at this address.
-          Please check the URL and try again.
+          We couldn't find a rewards program at this address. Please check the URL and try again.
         </p>
       </div>
     </main>

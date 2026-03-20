@@ -27,20 +27,12 @@
   );
 </script>
 
-<Table
-  tableHeaders={headers}
-  tableData={tableData}
-  sortable={true}
-  sortableColumns={[0, 1, 2]}
->
+<Table tableHeaders={headers} {tableData} sortable={true} sortableColumns={[0, 1, 2]}>
   {#snippet cell(value, rowIndex, colIndex)}
     {#if colIndex === 0}
       <code class="geo-code">{value}</code>
     {:else if colIndex === 2}
-      <Pill
-        text={String(value)}
-        classes={value === 'Active' ? 'pill-success' : 'pill-error'}
-      />
+      <Pill text={String(value)} classes={value === 'Active' ? 'pill-success' : 'pill-error'} />
     {:else}
       {value}
     {/if}

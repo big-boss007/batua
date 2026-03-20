@@ -1,6 +1,10 @@
 <script lang="ts">
   import type { LedgerEntry } from '$lib/client/modules/transactions';
-  import { formatBucketType, formatMovementType, formatState } from '$lib/client/modules/transactions';
+  import {
+    formatBucketType,
+    formatMovementType,
+    formatState
+  } from '$lib/client/modules/transactions';
   import { formatCurrencyINR, formatDateTime } from '$lib/client/modules/foundation';
   import { Table, Pill, Pagination } from '@juspay/svelte-ui-components';
 
@@ -88,9 +92,7 @@
       { label: 'State', sortKey: 'state' },
       { label: 'Actor', sortKey: null }
     ];
-    return fields.map((f) =>
-      f.sortKey ? `${f.label}${sortIndicator(f.sortKey)}` : f.label
-    );
+    return fields.map((f) => (f.sortKey ? `${f.label}${sortIndicator(f.sortKey)}` : f.label));
   });
 
   let tableData = $derived(
@@ -104,7 +106,6 @@
       formatBucketType(entry.actor_type)
     ])
   );
-
 </script>
 
 <div class="table-container">
@@ -113,12 +114,12 @@
       {#if colIndex === 2}
         <Pill text={String(value)} classes={movementPillClass(String(value))} />
       {:else if colIndex === 5}
-        <Pill
-          text={String(value)}
-          classes={statePillClass(sortedEntries[rowIndex].state)}
-        />
+        <Pill text={String(value)} classes={statePillClass(sortedEntries[rowIndex].state)} />
       {:else if colIndex === 3}
-        <span class="cell-amount" style="color: {formatMovementType(sortedEntries[rowIndex].movement_type).color}">
+        <span
+          class="cell-amount"
+          style="color: {formatMovementType(sortedEntries[rowIndex].movement_type).color}"
+        >
           {value}
         </span>
       {:else if colIndex === 0}

@@ -24,7 +24,9 @@ const MOVEMENT_MAP: Record<string, MovementHint> = {
 
 function formatMovementType(movementType: string): MovementHint {
   const key = movementType.toLowerCase();
-  return MOVEMENT_MAP[key] ?? { label: formatBucketType(movementType), color: 'var(--color-text-muted)' };
+  return (
+    MOVEMENT_MAP[key] ?? { label: formatBucketType(movementType), color: 'var(--color-text-muted)' }
+  );
 }
 
 const STATE_MAP: Record<string, StateHint> = {

@@ -35,7 +35,16 @@
       <span class="logo-icon">B</span>
     {/if}
     <button class="toggle-btn" onclick={ontoggle} aria-label="Toggle sidebar">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
         {#if collapsed}
           <polyline points="9 18 15 12 9 6"></polyline>
         {:else}
@@ -133,7 +142,9 @@
     background: transparent;
     color: var(--color-text-muted);
     border-radius: var(--radius-sm);
-    transition: background var(--transition-fast), color var(--transition-fast);
+    transition:
+      background var(--transition-fast),
+      color var(--transition-fast);
     flex-shrink: 0;
   }
 
@@ -160,7 +171,9 @@
     font-weight: var(--font-weight-medium);
     text-decoration: none;
     white-space: nowrap;
-    transition: background var(--transition-fast), color var(--transition-fast);
+    transition:
+      background var(--transition-fast),
+      color var(--transition-fast);
   }
 
   .nav-item:hover {

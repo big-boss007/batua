@@ -70,9 +70,7 @@
     referrals: false
   });
 
-  let previewOrderAmount = $derived(
-    Number(minOrderAmount) > 0 ? Number(minOrderAmount) : 500
-  );
+  let previewOrderAmount = $derived(Number(minOrderAmount) > 0 ? Number(minOrderAmount) : 500);
 
   let previewCashback = $derived(() => {
     const raw = (previewOrderAmount * prepaidPercent) / 100;
@@ -311,9 +309,7 @@
     <div class="already-done">
       <div class="already-done-icon">&#10003;</div>
       <h2>Setup Complete</h2>
-      <p class="already-done-text">
-        This merchant already has reward rules configured.
-      </p>
+      <p class="already-done-text">This merchant already has reward rules configured.</p>
       <div class="already-done-actions">
         <Button text="Go to Dashboard" classes="btn-primary" onclick={goToDashboard} />
       </div>
@@ -328,15 +324,12 @@
         <div class="step-panel welcome-panel">
           <div class="welcome-icon">&#9733;</div>
           <h1 class="welcome-title">Welcome to Batua!</h1>
-          <p class="welcome-subtitle">
-            Let's set up your loyalty program in 5 minutes.
-          </p>
+          <p class="welcome-subtitle">Let's set up your loyalty program in 5 minutes.</p>
           <p class="welcome-merchant">Setting up for <strong>{merchantName}</strong></p>
           <div class="step-actions">
             <Button text="Get Started" classes="btn-primary" onclick={goNext} />
           </div>
         </div>
-
       {:else if currentStep === 1}
         <div class="step-panel">
           <h2 class="step-title">Create Your First Reward Rule</h2>
@@ -351,7 +344,9 @@
                 max={20}
                 step={1}
                 showValue={true}
-                onchange={(v) => { prepaidPercent = v; }}
+                onchange={(v) => {
+                  prepaidPercent = v;
+                }}
               />
               <span class="slider-value">{prepaidPercent}%</span>
             </div>
@@ -363,7 +358,9 @@
                 value={minOrderAmount}
                 label="Minimum order amount"
                 placeholder="500"
-                onInput={(v) => { minOrderAmount = v; }}
+                onInput={(v) => {
+                  minOrderAmount = v;
+                }}
               />
             </div>
             <div class="form-group">
@@ -371,7 +368,9 @@
                 value={maxCashbackPerOrder}
                 label="Maximum cashback per order"
                 placeholder="200"
-                onInput={(v) => { maxCashbackPerOrder = v; }}
+                onInput={(v) => {
+                  maxCashbackPerOrder = v;
+                }}
               />
             </div>
           </div>
@@ -380,7 +379,9 @@
             <Toggle
               text="Also reward COD orders?"
               checked={enableCod}
-              onclick={(checked) => { enableCod = checked; }}
+              onclick={(checked) => {
+                enableCod = checked;
+              }}
             />
           </div>
 
@@ -394,7 +395,9 @@
                   max={20}
                   step={1}
                   showValue={true}
-                  onchange={(v) => { codPercent = v; }}
+                  onchange={(v) => {
+                    codPercent = v;
+                  }}
                 />
                 <span class="slider-value">{codPercent}%</span>
               </div>
@@ -420,7 +423,6 @@
             />
           </div>
         </div>
-
       {:else if currentStep === 2}
         <div class="step-panel">
           <h2 class="step-title">Set Up Wallet Policy</h2>
@@ -431,7 +433,9 @@
               value={minRedemption}
               label="Minimum redemption amount"
               placeholder="10"
-              onInput={(v) => { minRedemption = v; }}
+              onInput={(v) => {
+                minRedemption = v;
+              }}
             />
           </div>
 
@@ -440,7 +444,9 @@
               value={maxPerOrderPct}
               label="Maximum per order (%)"
               placeholder="50"
-              onInput={(v) => { maxPerOrderPct = v; }}
+              onInput={(v) => {
+                maxPerOrderPct = v;
+              }}
             />
           </div>
 
@@ -448,21 +454,17 @@
             <Toggle
               text="Allow redemption with discount codes"
               checked={allowWithDiscounts}
-              onclick={(checked) => { allowWithDiscounts = checked; }}
+              onclick={(checked) => {
+                allowWithDiscounts = checked;
+              }}
             />
           </div>
 
           <div class="step-actions">
             <Button text="Back" classes="btn-secondary" onclick={goBack} />
-            <Button
-              text="Next"
-              classes="btn-primary"
-              showLoader={loading}
-              onclick={submitPolicy}
-            />
+            <Button text="Next" classes="btn-primary" showLoader={loading} onclick={submitPolicy} />
           </div>
         </div>
-
       {:else if currentStep === 3}
         <div class="step-panel">
           <h2 class="step-title">Loyalty Tiers</h2>
@@ -472,7 +474,9 @@
             <Toggle
               text="Enable loyalty tiers"
               checked={enableTiers}
-              onclick={(checked) => { enableTiers = checked; }}
+              onclick={(checked) => {
+                enableTiers = checked;
+              }}
             />
           </div>
 
@@ -513,7 +517,6 @@
             />
           </div>
         </div>
-
       {:else if currentStep === 4}
         <div class="step-panel">
           <h2 class="step-title">Referral Program</h2>
@@ -523,7 +526,9 @@
             <Toggle
               text="Enable referral program"
               checked={enableReferrals}
-              onclick={(checked) => { enableReferrals = checked; }}
+              onclick={(checked) => {
+                enableReferrals = checked;
+              }}
             />
           </div>
 
@@ -534,7 +539,9 @@
                   value={referrerReward}
                   label="Referrer reward (Rs.)"
                   placeholder="50"
-                  onInput={(v) => { referrerReward = v; }}
+                  onInput={(v) => {
+                    referrerReward = v;
+                  }}
                 />
               </div>
               <div class="form-group">
@@ -542,7 +549,9 @@
                   value={refereeReward}
                   label="Referee reward (Rs.)"
                   placeholder="25"
-                  onInput={(v) => { refereeReward = v; }}
+                  onInput={(v) => {
+                    refereeReward = v;
+                  }}
                 />
               </div>
             </div>
@@ -561,7 +570,6 @@
             />
           </div>
         </div>
-
       {:else if currentStep === 5}
         <div class="step-panel done-panel">
           <div class="done-icon">&#10003;</div>
@@ -575,19 +583,33 @@
             <ul class="summary-list">
               <li class="summary-item summary-done">
                 <span class="check">&#10003;</span>
-                Reward rule created ({prepaidPercent}% cashback on prepaid orders{enableCod ? `, ${codPercent}% on COD` : ''})
+                Reward rule created ({prepaidPercent}% cashback on prepaid orders{enableCod
+                  ? `, ${codPercent}% on COD`
+                  : ''})
               </li>
               <li class="summary-item summary-done">
                 <span class="check">&#10003;</span>
                 Wallet policy set (min Rs. {minRedemption}, max {maxPerOrderPct}% per order)
               </li>
-              <li class="summary-item" class:summary-done={completedSteps.tiers} class:summary-skipped={!completedSteps.tiers}>
+              <li
+                class="summary-item"
+                class:summary-done={completedSteps.tiers}
+                class:summary-skipped={!completedSteps.tiers}
+              >
                 <span class="check">{completedSteps.tiers ? '✓' : '—'}</span>
-                {completedSteps.tiers ? 'Loyalty tiers configured (Bronze, Silver, Gold, Platinum)' : 'Loyalty tiers skipped'}
+                {completedSteps.tiers
+                  ? 'Loyalty tiers configured (Bronze, Silver, Gold, Platinum)'
+                  : 'Loyalty tiers skipped'}
               </li>
-              <li class="summary-item" class:summary-done={completedSteps.referrals} class:summary-skipped={!completedSteps.referrals}>
+              <li
+                class="summary-item"
+                class:summary-done={completedSteps.referrals}
+                class:summary-skipped={!completedSteps.referrals}
+              >
                 <span class="check">{completedSteps.referrals ? '✓' : '—'}</span>
-                {completedSteps.referrals ? `Referral program set up (Rs. ${referrerReward} referrer / Rs. ${refereeReward} referee)` : 'Referral program skipped'}
+                {completedSteps.referrals
+                  ? `Referral program set up (Rs. ${referrerReward} referrer / Rs. ${refereeReward} referee)`
+                  : 'Referral program skipped'}
               </li>
             </ul>
           </div>

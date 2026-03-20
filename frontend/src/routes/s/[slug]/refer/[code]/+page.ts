@@ -1,6 +1,10 @@
 import type { PageLoad } from './$types';
 import { fetchReferralCode, fetchReferralProgram } from '$lib/client/modules/storefront';
-import type { ReferralCodeInfo, ReferralProgramInfo, StorefrontMerchant } from '$lib/client/modules/storefront';
+import type {
+  ReferralCodeInfo,
+  ReferralProgramInfo,
+  StorefrontMerchant
+} from '$lib/client/modules/storefront';
 
 export const load: PageLoad = async ({ params, parent }) => {
   const parentData = await parent();

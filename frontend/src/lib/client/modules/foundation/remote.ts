@@ -104,7 +104,11 @@ class APICaller {
     return request(config, decoder);
   }
 
-  async get<T>(path: string, decoder: (raw: unknown) => T, params?: Record<string, string>): Promise<APIResult<T>> {
+  async get<T>(
+    path: string,
+    decoder: (raw: unknown) => T,
+    params?: Record<string, string>
+  ): Promise<APIResult<T>> {
     return this.call({ method: 'GET', path, params }, decoder);
   }
 

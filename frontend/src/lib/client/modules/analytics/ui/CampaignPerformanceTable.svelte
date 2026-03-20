@@ -21,7 +21,7 @@
   <Table
     tableTitle="Campaign Performance"
     tableHeaders={['Campaign', 'Entries', 'Total Value', 'Customers', 'Avg. Reward']}
-    tableData={tableData}
+    {tableData}
     sortable={false}
   >
     {#snippet empty()}

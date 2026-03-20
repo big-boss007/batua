@@ -7,10 +7,7 @@
     lookupWallet,
     fetchBalance
   } from '$lib/client/modules/storefront';
-  import type {
-    StorefrontMerchant,
-    CustomerBalance
-  } from '$lib/client/modules/storefront';
+  import type { StorefrontMerchant, CustomerBalance } from '$lib/client/modules/storefront';
   import { PhoneInput, BalanceCard } from '$lib/client/modules/storefront/ui';
 
   let { data }: { data: { merchant: StorefrontMerchant | null } } = $props();
@@ -94,9 +91,7 @@
     <div class="balance-error">
       <div class="error-icon">!</div>
       <p class="error-text">{error}</p>
-      <button class="error-retry" onclick={handleChangePhone}>
-        Try a different number
-      </button>
+      <button class="error-retry" onclick={handleChangePhone}> Try a different number </button>
     </div>
   {:else if balance !== null}
     <div class="balance-phone-bar">

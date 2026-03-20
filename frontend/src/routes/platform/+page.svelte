@@ -17,10 +17,30 @@
   let events: RecentEvent[] = $derived(data.events ?? []);
 
   let metricItems = $derived([
-    { label: 'Total Merchants', value: stats.total_merchants, metricType: 'number' as const, icon: 'M' },
-    { label: 'Total Wallets', value: stats.total_wallets, metricType: 'number' as const, icon: 'W' },
-    { label: 'Ledger Entries', value: stats.total_ledger_entries, metricType: 'number' as const, icon: '#' },
-    { label: 'Active Credits', value: stats.total_value_in_system, metricType: 'currency' as const, icon: '$' }
+    {
+      label: 'Total Merchants',
+      value: stats.total_merchants,
+      metricType: 'number' as const,
+      icon: 'M'
+    },
+    {
+      label: 'Total Wallets',
+      value: stats.total_wallets,
+      metricType: 'number' as const,
+      icon: 'W'
+    },
+    {
+      label: 'Ledger Entries',
+      value: stats.total_ledger_entries,
+      metricType: 'number' as const,
+      icon: '#'
+    },
+    {
+      label: 'Active Credits',
+      value: stats.total_value_in_system,
+      metricType: 'currency' as const,
+      icon: '$'
+    }
   ]);
 </script>
 
@@ -38,7 +58,7 @@
 
   <section class="events-section">
     <h3 class="section-title">Recent Events</h3>
-    <EventsTable events={events} />
+    <EventsTable {events} />
   </section>
 </div>
 

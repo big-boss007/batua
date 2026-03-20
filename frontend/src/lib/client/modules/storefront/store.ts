@@ -2,9 +2,8 @@ import { writable } from 'svelte/store';
 import type { StorefrontMerchant } from './types';
 
 function createCustomerPhoneStore() {
-  const stored = typeof window !== 'undefined'
-    ? sessionStorage.getItem('batua-storefront-phone')
-    : null;
+  const stored =
+    typeof window !== 'undefined' ? sessionStorage.getItem('batua-storefront-phone') : null;
   const { subscribe, set } = writable<string | null>(stored);
 
   return {

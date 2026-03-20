@@ -135,9 +135,7 @@
   {#if phone === null}
     <div class="hub-hero">
       <h2 class="hub-title">Your Rewards</h2>
-      <p class="hub-subtitle">
-        Check your balance, tier status, and recent activity
-      </p>
+      <p class="hub-subtitle">Check your balance, tier status, and recent activity</p>
     </div>
     <PhoneInput onSubmit={handlePhoneSubmit} />
 
@@ -159,9 +157,7 @@
     <div class="hub-error">
       <div class="hub-error-icon">!</div>
       <p class="hub-error-text">{error}</p>
-      <button class="hub-error-retry" onclick={handleChangePhone}>
-        Try a different number
-      </button>
+      <button class="hub-error-retry" onclick={handleChangePhone}> Try a different number </button>
     </div>
   {:else}
     <div class="hub-phone-bar">
@@ -292,7 +288,9 @@
     box-shadow: var(--shadow-sm);
     text-decoration: none;
     color: var(--color-text);
-    transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+    transition:
+      box-shadow var(--transition-fast),
+      transform var(--transition-fast);
   }
 
   .quick-link:hover {

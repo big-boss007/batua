@@ -54,10 +54,7 @@ async function claimGiftCard(code: string): Promise<APIResult<GiftCard>> {
   return apiCaller.post('/gift-cards/claim', { code }, decodeGiftCard);
 }
 
-async function redeemGiftCard(
-  code: string,
-  amount: number
-): Promise<APIResult<GiftCard>> {
+async function redeemGiftCard(code: string, amount: number): Promise<APIResult<GiftCard>> {
   return apiCaller.post('/gift-cards/redeem', { code, amount }, decodeGiftCard);
 }
 
@@ -73,10 +70,16 @@ function decodeGiftCardStats(raw: unknown): GiftCardStats {
   };
 }
 
-async function fetchGiftCardStats(
-  merchantId: string
-): Promise<APIResult<GiftCardStats>> {
+async function fetchGiftCardStats(merchantId: string): Promise<APIResult<GiftCardStats>> {
   return apiCaller.get(`/gift-cards/merchant/${merchantId}/stats`, decodeGiftCardStats);
 }
 
-export { issueGiftCard, bulkIssue, fetchGiftCards, getGiftCardByCode, claimGiftCard, redeemGiftCard, fetchGiftCardStats };
+export {
+  issueGiftCard,
+  bulkIssue,
+  fetchGiftCards,
+  getGiftCardByCode,
+  claimGiftCard,
+  redeemGiftCard,
+  fetchGiftCardStats
+};

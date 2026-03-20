@@ -2,7 +2,11 @@
   import { goto } from '$app/navigation';
   import { Button, Shimmer } from '@juspay/svelte-ui-components';
   import type { MerchantDashboard, Merchant } from '$lib/client/modules/admin';
-  import { currentMerchant, currentMerchantId, fetchMerchantDashboard } from '$lib/client/modules/admin';
+  import {
+    currentMerchant,
+    currentMerchantId,
+    fetchMerchantDashboard
+  } from '$lib/client/modules/admin';
   import { MetricCard } from '$lib/client/modules/admin/ui';
 
   let dashboard = $state<MerchantDashboard | null>(null);

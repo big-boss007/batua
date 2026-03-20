@@ -1,7 +1,11 @@
 <script lang="ts">
   import type { Rule, RewardRuleConfig, Condition, RewardAction } from '../types';
 
-  let { rule = null, onSave, onCancel }: {
+  let {
+    rule = null,
+    onSave,
+    onCancel
+  }: {
     rule?: Rule | null;
     onSave: (name: string, ruleType: string, config: RewardRuleConfig) => void;
     onCancel: () => void;
@@ -25,9 +29,7 @@
   let expiryDays = $state<number | null>(rule?.config.action.expiry_days ?? null);
 
   let nameError = $derived(name.trim().length === 0 ? 'Name is required' : null);
-  let hasConditionError = $derived(
-    conditions.some((c) => c.field.trim().length === 0)
-  );
+  let hasConditionError = $derived(conditions.some((c) => c.field.trim().length === 0));
   let isValid = $derived(nameError === null && !hasConditionError && actionValue > 0);
 
   const EVENT_TYPES = [
@@ -86,7 +88,13 @@
   }
 </script>
 
-<form class="rule-form" onsubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+<form
+  class="rule-form"
+  onsubmit={(e) => {
+    e.preventDefault();
+    handleSubmit();
+  }}
+>
   <h2 class="form-title">{isEdit ? 'Edit Rule' : 'Create Rule'}</h2>
 
   <section class="form-section">
@@ -99,7 +107,9 @@
         class="field-input"
         class:field-error={nameError !== null && name.length > 0}
         value={name}
-        oninput={(e) => { name = e.currentTarget.value; }}
+        oninput={(e) => {
+          name = e.currentTarget.value;
+        }}
         placeholder="e.g. 10% Cashback on Orders"
       />
       {#if nameError !== null && name.length > 0}
@@ -114,7 +124,9 @@
           id="rule-type"
           class="field-input"
           value={ruleType}
-          onchange={(e) => { ruleType = e.currentTarget.value; }}
+          onchange={(e) => {
+            ruleType = e.currentTarget.value;
+          }}
           disabled={isEdit}
         >
           {#each RULE_TYPES as rt}
@@ -129,7 +141,9 @@
           id="event-type"
           class="field-input"
           value={eventType}
-          onchange={(e) => { eventType = e.currentTarget.value; }}
+          onchange={(e) => {
+            eventType = e.currentTarget.value;
+          }}
         >
           {#each EVENT_TYPES as et}
             <option value={et}>{et.replaceAll('_', ' ')}</option>
@@ -204,7 +218,9 @@
           id="bucket-type"
           class="field-input"
           value={bucketType}
-          onchange={(e) => { bucketType = e.currentTarget.value; }}
+          onchange={(e) => {
+            bucketType = e.currentTarget.value;
+          }}
         >
           {#each BUCKET_TYPES as bt}
             <option value={bt}>{bt.replaceAll('_', ' ')}</option>
@@ -217,7 +233,9 @@
           id="calculation"
           class="field-input"
           value={calculation}
-          onchange={(e) => { calculation = e.currentTarget.value; }}
+          onchange={(e) => {
+            calculation = e.currentTarget.value;
+          }}
         >
           {#each CALCULATION_TYPES as ct}
             <option value={ct}>{ct.replaceAll('_', ' ')}</option>
@@ -236,7 +254,9 @@
           type="number"
           class="field-input"
           value={actionValue}
-          oninput={(e) => { actionValue = Number(e.currentTarget.value); }}
+          oninput={(e) => {
+            actionValue = Number(e.currentTarget.value);
+          }}
           min="0"
           step={calculation === 'percentage' ? '0.1' : '1'}
         />

@@ -99,8 +99,6 @@ function decodeRulePerformance(raw: unknown): RulePerformance {
   };
 }
 
-export async function fetchRulePerformance(
-  ruleId: string
-): Promise<APIResult<RulePerformance>> {
+export async function fetchRulePerformance(ruleId: string): Promise<APIResult<RulePerformance>> {
   return apiCaller.get(`/rules/${ruleId}/performance`, decodeRulePerformance);
 }

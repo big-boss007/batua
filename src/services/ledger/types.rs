@@ -133,3 +133,32 @@ pub struct GetEntriesQuery {
 pub struct BalanceAtQuery {
     pub at: DateTime<Utc>,
 }
+
+#[derive(Debug, Serialize, sqlx::FromRow)]
+pub struct LedgerEntryDetail {
+    pub id: Uuid,
+    pub wallet_id: Uuid,
+    pub bucket_type: String,
+    pub movement_type: String,
+    pub earning_unit: f64,
+    pub currency_equivalent: f64,
+    pub conversion_rate: f64,
+    pub idempotency_key: String,
+    pub event_id: Option<Uuid>,
+    pub rule_snapshot_id: Option<Uuid>,
+    pub campaign_snapshot_id: Option<Uuid>,
+    pub actor_type: String,
+    pub actor_id: Option<String>,
+    pub payment_reference: Option<String>,
+    pub transfer_id: Option<Uuid>,
+    pub constraints: serde_json::Value,
+    pub expires_at: Option<DateTime<Utc>>,
+    pub created_at: DateTime<Utc>,
+    pub state: String,
+    pub customer_name: Option<String>,
+    pub customer_phone: Option<String>,
+    pub rule_name: Option<String>,
+    pub campaign_name: Option<String>,
+    pub event_type: Option<String>,
+    pub linked_entry_id: Option<Uuid>,
+}

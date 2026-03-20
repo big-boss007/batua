@@ -1,7 +1,9 @@
 <script lang="ts">
   import type { Campaign } from '../types';
 
-  let { campaigns }: {
+  let {
+    campaigns
+  }: {
     campaigns: Array<Campaign>;
   } = $props();
 
@@ -41,7 +43,12 @@
         <div class="campaign-card">
           <div class="campaign-header">
             <h3 class="campaign-name">{campaign.name}</h3>
-            <span class="status-badge" class:active={status === 'active'} class:upcoming={status === 'upcoming'} class:expired={status === 'expired'}>
+            <span
+              class="status-badge"
+              class:active={status === 'active'}
+              class:upcoming={status === 'upcoming'}
+              class:expired={status === 'expired'}
+            >
               {status}
             </span>
           </div>
@@ -52,7 +59,9 @@
             </div>
             <div class="detail-row">
               <span class="detail-label">Dates</span>
-              <span class="detail-value">{formatDateRange(campaign.starts_at, campaign.ends_at)}</span>
+              <span class="detail-value"
+                >{formatDateRange(campaign.starts_at, campaign.ends_at)}</span
+              >
             </div>
             {#if campaign.multiplier !== null}
               <div class="detail-row">

@@ -72,14 +72,15 @@
   }
 </script>
 
-<form class="onboard-form" onsubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+<form
+  class="onboard-form"
+  onsubmit={(e) => {
+    e.preventDefault();
+    handleSubmit();
+  }}
+>
   <div class="form-field">
-    <Input
-      value={name}
-      label="Merchant Name"
-      placeholder="Acme Store"
-      onInput={handleNameInput}
-    />
+    <Input value={name} label="Merchant Name" placeholder="Acme Store" onInput={handleNameInput} />
   </div>
 
   <div class="form-field">
@@ -101,12 +102,7 @@
   </div>
 
   <div class="form-field">
-    <Input
-      value={slug}
-      label="Slug"
-      placeholder="acme-store"
-      onInput={handleSlugInput}
-    />
+    <Input value={slug} label="Slug" placeholder="acme-store" onInput={handleSlugInput} />
   </div>
 
   <div class="form-field">

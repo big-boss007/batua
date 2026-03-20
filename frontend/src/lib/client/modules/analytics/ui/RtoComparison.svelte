@@ -11,9 +11,7 @@
   let loyaltyWidth = $derived((loyaltyRate / maxRate) * 100);
   let nonLoyaltyWidth = $derived((nonLoyaltyRate / maxRate) * 100);
   let reduction = $derived(
-    nonLoyaltyRate > 0
-      ? Math.round(((nonLoyaltyRate - loyaltyRate) / nonLoyaltyRate) * 100)
-      : 0
+    nonLoyaltyRate > 0 ? Math.round(((nonLoyaltyRate - loyaltyRate) / nonLoyaltyRate) * 100) : 0
   );
 </script>
 

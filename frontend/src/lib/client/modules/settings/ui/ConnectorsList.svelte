@@ -6,7 +6,12 @@
   let { connectors }: { connectors: Array<Connector> } = $props();
 
   let tableData = $derived(
-    connectors.map((c) => [c.capability, c.vendor, String(c.priority), c.is_active ? 'Active' : 'Inactive'])
+    connectors.map((c) => [
+      c.capability,
+      c.vendor,
+      String(c.priority),
+      c.is_active ? 'Active' : 'Inactive'
+    ])
   );
 </script>
 
@@ -14,7 +19,7 @@
   <Table
     tableTitle="Connectors"
     tableHeaders={['Capability', 'Vendor', 'Priority', 'Status']}
-    tableData={tableData}
+    {tableData}
     sortable={false}
   >
     {#snippet cell(value, rowIndex, colIndex)}

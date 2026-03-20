@@ -2,8 +2,18 @@
   import { Tabs, Button } from '@juspay/svelte-ui-components';
 
   import type { GiftCard, GiftCardStats, BulkIssueForm } from '$lib/client/modules/gift-cards';
-  import { issueGiftCard, bulkIssue, fetchGiftCardStats, giftCards } from '$lib/client/modules/gift-cards';
-  import { GiftCardsList, IssueGiftCardForm as IssueForm, BulkIssueForm as BulkForm, GiftCardDetail } from '$lib/client/modules/gift-cards/ui';
+  import {
+    issueGiftCard,
+    bulkIssue,
+    fetchGiftCardStats,
+    giftCards
+  } from '$lib/client/modules/gift-cards';
+  import {
+    GiftCardsList,
+    IssueGiftCardForm as IssueForm,
+    BulkIssueForm as BulkForm,
+    GiftCardDetail
+  } from '$lib/client/modules/gift-cards/ui';
   import { currentMerchantId } from '$lib/client/modules/admin';
   import { toastStore, formatCurrencyINR } from '$lib/client/modules/foundation';
 
@@ -98,11 +108,23 @@
     </div>
   {/if}
 
-  <Tabs items={tabItems} activeIndex={activeTabIndex} onchange={(idx) => { handleTabChange(idx) }} />
+  <Tabs
+    items={tabItems}
+    activeIndex={activeTabIndex}
+    onchange={(idx) => {
+      handleTabChange(idx);
+    }}
+  />
 
   {#if selectedCard}
     <div class="detail-section">
-      <Button text="Back to list" classes="btn-back" onclick={() => { selectedCard = null }} />
+      <Button
+        text="Back to list"
+        classes="btn-back"
+        onclick={() => {
+          selectedCard = null;
+        }}
+      />
       <GiftCardDetail card={selectedCard} />
     </div>
   {:else if activeTab === 'list'}

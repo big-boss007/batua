@@ -86,9 +86,7 @@
   {:else}
     <GiftCardStatus {card} />
     <div class="gift-check-actions">
-      <button class="check-another" onclick={handleReset}>
-        Check another card
-      </button>
+      <button class="check-another" onclick={handleReset}> Check another card </button>
     </div>
   {/if}
 

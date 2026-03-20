@@ -76,3 +76,31 @@ export type MerchantTransactionRow = {
   state: string;
   created_at: string;
 };
+
+export type LedgerEntryDetail = {
+  id: string;
+  wallet_id: string;
+  bucket_type: string;
+  movement_type: string;
+  earning_unit: number;
+  currency_equivalent: number;
+  conversion_rate: number;
+  idempotency_key: string;
+  event_id: string | null;
+  rule_snapshot_id: string | null;
+  campaign_snapshot_id: string | null;
+  actor_type: string;
+  actor_id: string | null;
+  payment_reference: string | null;
+  transfer_id: string | null;
+  constraints: Record<string, unknown>;
+  expires_at: string | null;
+  created_at: string;
+  state: string;
+  customer_name: string | null;
+  customer_phone: string | null;
+  rule_name: string | null;
+  campaign_name: string | null;
+  event_type: string | null;
+  linked_entry_id: string | null;
+};

@@ -23,7 +23,13 @@
   let submitting = $state(false);
   let benefitsError = $state<string | null>(null);
 
-  let isValid = $derived(name.trim().length > 0 && rank > 0 && threshold >= 0 && earnRateMultiplier > 0 && benefitsError === null);
+  let isValid = $derived(
+    name.trim().length > 0 &&
+      rank > 0 &&
+      threshold >= 0 &&
+      earnRateMultiplier > 0 &&
+      benefitsError === null
+  );
   let isEditing = $derived(tier !== null);
 
   function validateBenefits(json: string): Record<string, unknown> | null {
@@ -81,26 +87,14 @@
 
     <div class="form-field form-field-small">
       <label class="form-label" for="tier-rank">Rank</label>
-      <input
-        id="tier-rank"
-        type="number"
-        class="form-input"
-        min="1"
-        bind:value={rank}
-      />
+      <input id="tier-rank" type="number" class="form-input" min="1" bind:value={rank} />
     </div>
   </div>
 
   <div class="form-row">
     <div class="form-field">
       <label class="form-label" for="tier-threshold">Threshold</label>
-      <input
-        id="tier-threshold"
-        type="number"
-        class="form-input"
-        min="0"
-        bind:value={threshold}
-      />
+      <input id="tier-threshold" type="number" class="form-input" min="0" bind:value={threshold} />
       <span class="form-hint">Minimum value to reach this tier</span>
     </div>
 

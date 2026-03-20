@@ -1,6 +1,10 @@
 <script lang="ts">
   import { Table, Pagination, Shimmer } from '@juspay/svelte-ui-components';
-  import type { Customer, CustomerDetail as CustomerDetailType, MerchantCustomerRow } from '$lib/client/modules/customers';
+  import type {
+    Customer,
+    CustomerDetail as CustomerDetailType,
+    MerchantCustomerRow
+  } from '$lib/client/modules/customers';
   import { getCustomerDetail, fetchMerchantCustomers } from '$lib/client/modules/customers';
   import { currentMerchantId } from '$lib/client/modules/admin';
   import { toastStore, formatDate } from '$lib/client/modules/foundation';
@@ -28,9 +32,7 @@
     ])
   );
 
-  let totalPages = $derived(
-    customers.length < pageSize ? currentPage : currentPage + 1
-  );
+  let totalPages = $derived(customers.length < pageSize ? currentPage : currentPage + 1);
 
   currentMerchantId.subscribe((id) => {
     if (id !== null && id !== merchantId) {
@@ -143,7 +145,7 @@
         {:else}
           <Table
             tableHeaders={TABLE_HEADERS}
-            tableData={tableData}
+            {tableData}
             sortable={false}
             onRowClick={handleRowClick}
             --table-row-hover-background="var(--color-surface-2)"
@@ -156,11 +158,7 @@
 
           {#if customers.length > 0}
             <div class="pagination-wrapper">
-              <Pagination
-                totalPages={totalPages}
-                currentPage={currentPage}
-                onchange={handlePageChange}
-              />
+              <Pagination {totalPages} {currentPage} onchange={handlePageChange} />
             </div>
           {/if}
         {/if}

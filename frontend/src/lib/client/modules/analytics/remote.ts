@@ -1,6 +1,11 @@
 import { apiCaller } from '$lib/client/modules/foundation';
 import type { APIResult } from '$lib/client/modules/foundation';
-import type { MerchantAnalytics, CodAnalytics, CampaignPerformance, OverviewMetrics } from './types';
+import type {
+  MerchantAnalytics,
+  CodAnalytics,
+  CampaignPerformance,
+  OverviewMetrics
+} from './types';
 
 function decodeMerchantAnalytics(raw: unknown): MerchantAnalytics {
   const r = raw as Record<string, unknown>;
@@ -50,9 +55,7 @@ function decodeOverviewMetrics(raw: unknown): OverviewMetrics {
   };
 }
 
-async function fetchMerchantAnalytics(
-  merchantId: string
-): Promise<APIResult<MerchantAnalytics>> {
+async function fetchMerchantAnalytics(merchantId: string): Promise<APIResult<MerchantAnalytics>> {
   return apiCaller.get(`/admin/merchants/${merchantId}/analytics`, decodeMerchantAnalytics);
 }
 
@@ -72,11 +75,7 @@ async function fetchCampaignPerformance(
   from: string,
   to: string
 ): Promise<APIResult<Array<CampaignPerformance>>> {
-  return apiCaller.get(
-    '/admin/dashboard',
-    decodeCampaignPerformance,
-    { from, to }
-  );
+  return apiCaller.get('/admin/dashboard', decodeCampaignPerformance, { from, to });
 }
 
 async function fetchOverviewMetrics(
@@ -84,11 +83,7 @@ async function fetchOverviewMetrics(
   from: string,
   to: string
 ): Promise<APIResult<OverviewMetrics>> {
-  return apiCaller.get(
-    '/admin/dashboard',
-    decodeOverviewMetrics,
-    { from, to }
-  );
+  return apiCaller.get('/admin/dashboard', decodeOverviewMetrics, { from, to });
 }
 
 export {

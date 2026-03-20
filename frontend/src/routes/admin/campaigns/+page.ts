@@ -5,7 +5,12 @@ import {
   fetchFestiveTemplates,
   fetchRules
 } from '$lib/client/modules/rules';
-import type { Campaign, FestiveTemplate, CampaignCalendarEntry, Rule } from '$lib/client/modules/rules';
+import type {
+  Campaign,
+  FestiveTemplate,
+  CampaignCalendarEntry,
+  Rule
+} from '$lib/client/modules/rules';
 
 export const load: PageLoad = async () => {
   const merchantId = 'default';

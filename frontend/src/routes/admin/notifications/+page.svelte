@@ -3,7 +3,11 @@
 
   import type { PageData } from './$types';
   import type { UpdateTemplateRequest, NotificationLog } from '$lib/client/modules/settings';
-  import { updateTemplate, templatesStore, fetchNotificationLogs } from '$lib/client/modules/settings';
+  import {
+    updateTemplate,
+    templatesStore,
+    fetchNotificationLogs
+  } from '$lib/client/modules/settings';
   import { currentMerchantId } from '$lib/client/modules/admin';
   import { toastStore, formatDateTime } from '$lib/client/modules/foundation';
   import { NotificationTemplateEditor } from '$lib/client/modules/settings/ui';
@@ -21,7 +25,7 @@
   let activeTab = $derived(tabIds[activeTabIndex]);
 
   let selectedTemplate = $derived(
-    selectedId !== null ? data.templates.find((t) => t.id === selectedId) ?? null : null
+    selectedId !== null ? (data.templates.find((t) => t.id === selectedId) ?? null) : null
   );
 
   currentMerchantId.subscribe((id) => {
@@ -73,7 +77,13 @@
     <h1 class="page-title">Notifications</h1>
   </header>
 
-  <Tabs items={tabItems} activeIndex={activeTabIndex} onchange={(idx) => { handleTabChange(idx) }} />
+  <Tabs
+    items={tabItems}
+    activeIndex={activeTabIndex}
+    onchange={(idx) => {
+      handleTabChange(idx);
+    }}
+  />
 
   {#if activeTab === 'templates'}
     {#if data.templates.length === 0}
@@ -131,7 +141,11 @@
             {:else if colIndex === 1}
               <Pill
                 text={String(value)}
-                classes={String(value) === 'sent' ? 'pill-log-success' : String(value) === 'failed' ? 'pill-log-error' : 'pill-log-default'}
+                classes={String(value) === 'sent'
+                  ? 'pill-log-success'
+                  : String(value) === 'failed'
+                    ? 'pill-log-error'
+                    : 'pill-log-default'}
               />
             {:else}
               {value}

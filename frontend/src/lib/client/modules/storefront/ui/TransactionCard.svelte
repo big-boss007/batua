@@ -8,13 +8,20 @@
 
   let icon = $derived.by(() => {
     switch (entry.movement_type) {
-      case 'In': return '+';
-      case 'Out': return '-';
-      case 'Held': return '\u23F3';
-      case 'Across': return '\u21C4';
-      case 'Released': return '+';
-      case 'Expired': return '-';
-      default: return '\u2022';
+      case 'In':
+        return '+';
+      case 'Out':
+        return '-';
+      case 'Held':
+        return '\u23F3';
+      case 'Across':
+        return '\u21C4';
+      case 'Released':
+        return '+';
+      case 'Expired':
+        return '-';
+      default:
+        return '\u2022';
     }
   });
 

@@ -1,5 +1,11 @@
 import { writable } from 'svelte/store';
-import type { Customer, CustomerDetail, LoyaltyProgram, LoyaltyTier, TierDistribution } from './types';
+import type {
+  Customer,
+  CustomerDetail,
+  LoyaltyProgram,
+  LoyaltyTier,
+  TierDistribution
+} from './types';
 
 function createCustomerSearchStore() {
   const { subscribe, set, update } = writable<{

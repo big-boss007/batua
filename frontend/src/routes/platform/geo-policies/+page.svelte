@@ -53,7 +53,7 @@
     <Button text="+ Create Geo Policy" classes="btn-primary" onclick={handleOpenModal} />
   </div>
 
-  <GeoPolicyTable policies={policies} />
+  <GeoPolicyTable {policies} />
 </div>
 
 {#if showCreateModal}

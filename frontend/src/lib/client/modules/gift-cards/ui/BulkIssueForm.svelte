@@ -80,7 +80,13 @@
       <span class="upload-title">Upload CSV</span>
       <span class="upload-hint">Format: amount, recipient_phone (optional)</span>
     </label>
-    <input id="csv-upload" class="file-input" type="file" accept=".csv" onchange={handleFileChange} />
+    <input
+      id="csv-upload"
+      class="file-input"
+      type="file"
+      accept=".csv"
+      onchange={handleFileChange}
+    />
   </div>
 
   {#if parseError}

@@ -6,18 +6,37 @@
 
   import type { PageData } from './$types';
   import type { Merchant } from '$lib/client/modules/admin';
-  import type { WalletPolicy, UpdateWalletPolicyRequest, CreateConnectorRequest, UpdateTemplateRequest } from '$lib/client/modules/settings';
-  import { updateWalletPolicy, createConnector, updateTemplate, walletPoliciesStore, connectorsStore, templatesStore, updateMerchantProfile } from '$lib/client/modules/settings';
+  import type {
+    WalletPolicy,
+    UpdateWalletPolicyRequest,
+    CreateConnectorRequest,
+    UpdateTemplateRequest
+  } from '$lib/client/modules/settings';
+  import {
+    updateWalletPolicy,
+    createConnector,
+    updateTemplate,
+    walletPoliciesStore,
+    connectorsStore,
+    templatesStore,
+    updateMerchantProfile
+  } from '$lib/client/modules/settings';
   import { currentMerchant, currentMerchantId } from '$lib/client/modules/admin';
   import { toastStore } from '$lib/client/modules/foundation';
-  import { WalletPoliciesList, WalletPolicyForm, ConnectorsList, ConnectorForm, NotificationTemplateEditor } from '$lib/client/modules/settings/ui';
+  import {
+    WalletPoliciesList,
+    WalletPolicyForm,
+    ConnectorsList,
+    ConnectorForm,
+    NotificationTemplateEditor
+  } from '$lib/client/modules/settings/ui';
 
   let { data }: { data: PageData } = $props();
 
   const tabIds = ['store', 'policies', 'connectors', 'notifications'] as const;
   const tabItems = ['My Store', 'Wallet Policies', 'Connectors', 'Notifications'];
   let activeTabIndex = $state(
-    Math.max(0, tabIds.indexOf(data.activeTab as typeof tabIds[number]))
+    Math.max(0, tabIds.indexOf(data.activeTab as (typeof tabIds)[number]))
   );
   let activeTab = $derived(tabIds[activeTabIndex]);
   let editingPolicy = $state<WalletPolicy | null>(null);
@@ -119,7 +138,13 @@
     <h1 class="page-title">Settings</h1>
   </header>
 
-  <Tabs items={tabItems} activeIndex={activeTabIndex} onchange={(idx) => { handleTabChange(idx) }} />
+  <Tabs
+    items={tabItems}
+    activeIndex={activeTabIndex}
+    onchange={(idx) => {
+      handleTabChange(idx);
+    }}
+  />
 
   <div class="tab-content">
     {#if activeTab === 'store'}
@@ -129,30 +154,33 @@
             value={storeName}
             label="Merchant Name"
             placeholder="Store name"
-            onInput={(val) => { storeName = val }}
+            onInput={(val) => {
+              storeName = val;
+            }}
           />
 
           <Input
             value={storeDomain}
             label="Domain"
             placeholder="example.com"
-            onInput={(val) => { storeDomain = val }}
+            onInput={(val) => {
+              storeDomain = val;
+            }}
           />
 
           <Input
             value={storeSlug}
             label="Slug"
             placeholder="my-store"
-            onInput={(val) => { storeSlug = val }}
+            onInput={(val) => {
+              storeSlug = val;
+            }}
           />
 
           <div class="form-field">
             <span class="field-label">Plan Tier</span>
             <div class="plan-tier-display">
-              <Pill
-                text={merchant.plan_tier ?? 'free'}
-                classes="pill-plan"
-              />
+              <Pill text={merchant.plan_tier ?? 'free'} classes="pill-plan" />
             </div>
           </div>
 
@@ -180,7 +208,13 @@
     {:else if activeTab === 'policies'}
       {#if editingPolicy !== null}
         <WalletPolicyForm policy={editingPolicy} onSave={handleSavePolicy} />
-        <Button text="Cancel" classes="btn-cancel" onclick={() => { editingPolicy = null }} />
+        <Button
+          text="Cancel"
+          classes="btn-cancel"
+          onclick={() => {
+            editingPolicy = null;
+          }}
+        />
       {:else}
         <WalletPoliciesList policies={data.policies} onEdit={handleEditPolicy} />
       {/if}
@@ -188,9 +222,21 @@
       <ConnectorsList connectors={data.connectors} />
       {#if showConnectorForm}
         <ConnectorForm onSave={handleCreateConnector} />
-        <Button text="Cancel" classes="btn-cancel" onclick={() => { showConnectorForm = false }} />
+        <Button
+          text="Cancel"
+          classes="btn-cancel"
+          onclick={() => {
+            showConnectorForm = false;
+          }}
+        />
       {:else}
-        <Button text="Add Connector" classes="btn-primary" onclick={() => { showConnectorForm = true }} />
+        <Button
+          text="Add Connector"
+          classes="btn-primary"
+          onclick={() => {
+            showConnectorForm = true;
+          }}
+        />
       {/if}
     {:else if activeTab === 'notifications'}
       {#if data.templates.length === 0}

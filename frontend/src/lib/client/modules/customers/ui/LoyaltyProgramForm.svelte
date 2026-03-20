@@ -45,11 +45,7 @@
 
   <div class="form-field">
     <label class="form-label" for="program-criteria">Evaluation Criteria</label>
-    <select
-      id="program-criteria"
-      class="form-select"
-      bind:value={evaluationCriteria}
-    >
+    <select id="program-criteria" class="form-select" bind:value={evaluationCriteria}>
       <option value="spend">Total Spend</option>
       <option value="orders">Order Count</option>
       <option value="points">Points Earned</option>

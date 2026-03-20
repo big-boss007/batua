@@ -27,9 +27,7 @@
     return 'pill-success';
   });
 
-  let isExpired = $derived(
-    card.expires_at !== null && new Date(card.expires_at) < new Date()
-  );
+  let isExpired = $derived(card.expires_at !== null && new Date(card.expires_at) < new Date());
 </script>
 
 <div class="gift-card">
@@ -62,7 +60,8 @@
 
   {#if card.expires_at !== null}
     <p class="gift-card-expiry" class:expired={isExpired}>
-      {isExpired ? 'Expired' : 'Expires'} {formatDate(card.expires_at)}
+      {isExpired ? 'Expired' : 'Expires'}
+      {formatDate(card.expires_at)}
     </p>
   {/if}
 </div>

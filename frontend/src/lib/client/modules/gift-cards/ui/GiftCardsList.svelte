@@ -33,7 +33,7 @@
 
 <Table
   tableHeaders={['Code', 'Initial', 'Current', 'Status', 'Created']}
-  tableData={tableData}
+  {tableData}
   sortable={false}
 >
   {#snippet cell(value, rowIndex, colIndex)}

@@ -24,11 +24,15 @@
       </div>
       <div class="feature-item">
         <span class="feature-label">Default Notification Templates</span>
-        <span class="feature-desc">System-level templates for earn, redemption, COD, tier upgrades</span>
+        <span class="feature-desc"
+          >System-level templates for earn, redemption, COD, tier upgrades</span
+        >
       </div>
       <div class="feature-item">
         <span class="feature-label">Default Connectors</span>
-        <span class="feature-desc">Fallback connector configs when merchants have none configured</span>
+        <span class="feature-desc"
+          >Fallback connector configs when merchants have none configured</span
+        >
       </div>
     </div>
   </div>

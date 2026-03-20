@@ -1,9 +1,25 @@
 <script lang="ts">
   import { Pill, Table } from '@juspay/svelte-ui-components';
 
-  import type { ReferralProgram, ReferralCode, ReferralAnalytics, ReferralConversion } from '$lib/client/modules/referrals';
-  import { createProgram, createCode, fetchMerchantCodes, referralProgram, referralCodes } from '$lib/client/modules/referrals';
-  import { ReferralProgramForm, CreateCodeForm, ReferralAnalyticsCard, ConversionsList } from '$lib/client/modules/referrals/ui';
+  import type {
+    ReferralProgram,
+    ReferralCode,
+    ReferralAnalytics,
+    ReferralConversion
+  } from '$lib/client/modules/referrals';
+  import {
+    createProgram,
+    createCode,
+    fetchMerchantCodes,
+    referralProgram,
+    referralCodes
+  } from '$lib/client/modules/referrals';
+  import {
+    ReferralProgramForm,
+    CreateCodeForm,
+    ReferralAnalyticsCard,
+    ConversionsList
+  } from '$lib/client/modules/referrals/ui';
   import { currentMerchantId } from '$lib/client/modules/admin';
   import { toastStore } from '$lib/client/modules/foundation';
 
@@ -91,11 +107,7 @@
     >
       Program
     </button>
-    <button
-      class="tab"
-      class:tab-active={activeTab === 'codes'}
-      onclick={() => setTab('codes')}
-    >
+    <button class="tab" class:tab-active={activeTab === 'codes'} onclick={() => setTab('codes')}>
       Codes
     </button>
     <button
@@ -209,7 +221,9 @@
     background: none;
     border: none;
     border-bottom: 2px solid transparent;
-    transition: color var(--transition-fast), border-color var(--transition-fast);
+    transition:
+      color var(--transition-fast),
+      border-color var(--transition-fast);
     margin-bottom: -1px;
   }
 

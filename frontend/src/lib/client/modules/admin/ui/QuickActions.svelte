@@ -81,7 +81,9 @@
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     text-decoration: none;
-    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    transition:
+      border-color var(--transition-fast),
+      box-shadow var(--transition-fast);
   }
 
   .action-card:hover {

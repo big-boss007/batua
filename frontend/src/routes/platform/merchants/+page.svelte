@@ -55,7 +55,7 @@
     <Button text="+ Onboard Merchant" classes="btn-primary" onclick={handleOpenModal} />
   </div>
 
-  <MerchantTable merchants={merchants} />
+  <MerchantTable {merchants} />
 </div>
 
 {#if showOnboardModal}

@@ -148,15 +148,11 @@ function decodeReferralProgram(raw: unknown): ReferralProgramInfo {
   };
 }
 
-async function fetchMerchantBySlug(
-  slug: string
-): Promise<APIResult<StorefrontMerchant>> {
+async function fetchMerchantBySlug(slug: string): Promise<APIResult<StorefrontMerchant>> {
   return apiCaller.get(`/admin/merchants/by-slug/${slug}`, decodeMerchant);
 }
 
-async function lookupCustomer(
-  phone: string
-): Promise<APIResult<Array<CustomerIdentity>>> {
+async function lookupCustomer(phone: string): Promise<APIResult<Array<CustomerIdentity>>> {
   return apiCaller.get('/identity/customers', decodeCustomerList, { phone });
 }
 
@@ -170,9 +166,7 @@ async function lookupWallet(
   });
 }
 
-async function fetchBalance(
-  walletId: string
-): Promise<APIResult<CustomerBalance>> {
+async function fetchBalance(walletId: string): Promise<APIResult<CustomerBalance>> {
   return apiCaller.get(`/wallets/${walletId}/balance`, decodeBalance);
 }
 
@@ -189,21 +183,14 @@ async function fetchCustomerTier(
   merchantId: string,
   customerId: string
 ): Promise<APIResult<CustomerTierInfo>> {
-  return apiCaller.get(
-    `/loyalty/customers/${merchantId}/${customerId}`,
-    decodeTierInfo
-  );
+  return apiCaller.get(`/loyalty/customers/${merchantId}/${customerId}`, decodeTierInfo);
 }
 
-async function fetchGiftCard(
-  code: string
-): Promise<APIResult<GiftCardInfo>> {
+async function fetchGiftCard(code: string): Promise<APIResult<GiftCardInfo>> {
   return apiCaller.get(`/gift-cards/${code}`, decodeGiftCard);
 }
 
-async function fetchReferralCode(
-  code: string
-): Promise<APIResult<ReferralCodeInfo>> {
+async function fetchReferralCode(code: string): Promise<APIResult<ReferralCodeInfo>> {
   return apiCaller.get(`/referrals/codes/${code}`, decodeReferralCode);
 }
 
@@ -211,15 +198,10 @@ async function fetchCustomerReferralCode(
   merchantId: string,
   customerId: string
 ): Promise<APIResult<ReferralCodeInfo>> {
-  return apiCaller.get(
-    `/referrals/codes/customer/${merchantId}/${customerId}`,
-    decodeReferralCode
-  );
+  return apiCaller.get(`/referrals/codes/customer/${merchantId}/${customerId}`, decodeReferralCode);
 }
 
-async function fetchReferralProgram(
-  merchantId: string
-): Promise<APIResult<ReferralProgramInfo>> {
+async function fetchReferralProgram(merchantId: string): Promise<APIResult<ReferralProgramInfo>> {
   return apiCaller.get(`/referrals/programs/${merchantId}`, decodeReferralProgram);
 }
 

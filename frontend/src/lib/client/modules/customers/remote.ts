@@ -148,12 +148,14 @@ async function getCustomerDetail(
   merchantId: string,
   customerId: string
 ): Promise<APIResult<CustomerDetail>> {
-  const customerResult = await apiCaller.get(
-    `/identity/customers/${customerId}`,
-    decodeCustomer
-  );
+  const customerResult = await apiCaller.get(`/identity/customers/${customerId}`, decodeCustomer);
   if (customerResult.tag === 'error') {
-    return { tag: 'error', message: customerResult.message, status: customerResult.status, body: customerResult.body };
+    return {
+      tag: 'error',
+      message: customerResult.message,
+      status: customerResult.status,
+      body: customerResult.body
+    };
   }
   const customer = customerResult.data;
 
@@ -202,39 +204,25 @@ async function getCustomerDetail(
   };
 }
 
-async function fetchLoyaltyProgram(
-  merchantId: string
-): Promise<APIResult<LoyaltyProgram>> {
-  return apiCaller.get(
-    `/loyalty/programs/${merchantId}`,
-    decodeLoyaltyProgram
-  );
+async function fetchLoyaltyProgram(merchantId: string): Promise<APIResult<LoyaltyProgram>> {
+  return apiCaller.get(`/loyalty/programs/${merchantId}`, decodeLoyaltyProgram);
 }
 
-async function fetchTiers(
-  programId: string
-): Promise<APIResult<Array<LoyaltyTier>>> {
+async function fetchTiers(programId: string): Promise<APIResult<Array<LoyaltyTier>>> {
   return apiCaller.get(`/loyalty/programs/${programId}/tiers`, decodeTierList);
 }
 
 async function fetchTierDistribution(
   merchantId: string
 ): Promise<APIResult<Array<TierDistribution>>> {
-  return apiCaller.get(
-    `/loyalty/distribution/${merchantId}`,
-    decodeTierDistribution
-  );
+  return apiCaller.get(`/loyalty/distribution/${merchantId}`, decodeTierDistribution);
 }
 
 async function createProgram(
   _merchantId: string,
   body: { name: string; evaluation_criteria: string }
 ): Promise<APIResult<LoyaltyProgram>> {
-  return apiCaller.post(
-    '/loyalty/programs',
-    body,
-    decodeLoyaltyProgram
-  );
+  return apiCaller.post('/loyalty/programs', body, decodeLoyaltyProgram);
 }
 
 async function createTier(
@@ -247,24 +235,14 @@ async function createTier(
     benefits: Record<string, unknown>;
   }
 ): Promise<APIResult<LoyaltyTier>> {
-  return apiCaller.post(
-    '/loyalty/tiers',
-    body,
-    decodeLoyaltyTier
-  );
+  return apiCaller.post('/loyalty/tiers', body, decodeLoyaltyTier);
 }
 
-async function evaluateTier(
-  merchantId: string
-): Promise<APIResult<{ evaluated: number }>> {
-  return apiCaller.post(
-    `/loyalty/programs/${merchantId}/evaluate`,
-    {},
-    (raw: unknown) => {
-      const r = raw as Record<string, unknown>;
-      return { evaluated: (r['evaluated'] as number) ?? 0 };
-    }
-  );
+async function evaluateTier(merchantId: string): Promise<APIResult<{ evaluated: number }>> {
+  return apiCaller.post(`/loyalty/programs/${merchantId}/evaluate`, {}, (raw: unknown) => {
+    const r = raw as Record<string, unknown>;
+    return { evaluated: (r['evaluated'] as number) ?? 0 };
+  });
 }
 
 function decodeMerchantCustomerRow(raw: unknown): MerchantCustomerRow {

@@ -62,7 +62,11 @@
     <section class="tier-card">
       <h3 class="card-title">Loyalty Tier</h3>
       <div class="tier-info">
-        <TierBadge tierName={tier.tier_name} rank={tier.rank} multiplier={tier.earn_rate_multiplier} />
+        <TierBadge
+          tierName={tier.tier_name}
+          rank={tier.rank}
+          multiplier={tier.earn_rate_multiplier}
+        />
         {#if tier.progress_to_next}
           <div class="tier-progress-wrapper">
             <TierProgress progress={tier.progress_to_next} />
@@ -88,7 +92,9 @@
                 class:credit={entry.movement_type === 'credit'}
                 class:debit={entry.movement_type === 'debit'}
               >
-                {entry.movement_type === 'credit' ? '+' : '-'}{formatCurrencyINR(Math.abs(entry.currency_equivalent))}
+                {entry.movement_type === 'credit' ? '+' : '-'}{formatCurrencyINR(
+                  Math.abs(entry.currency_equivalent)
+                )}
               </span>
               <span class="transaction-date">{formatDateTime(entry.created_at)}</span>
             </div>

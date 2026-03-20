@@ -2,6 +2,7 @@ import { apiCaller } from '$lib/client/modules/foundation';
 import type { APIResult } from '$lib/client/modules/foundation';
 import type {
   LedgerResponse,
+  LedgerEntryDetail,
   RedemptionResponse,
   TransactionFilters,
   WalletBalance,
@@ -121,7 +122,26 @@ async function fetchMerchantTransactions(
   if (movementType !== null) {
     params['movement_type'] = movementType;
   }
-  return apiCaller.get(`/admin/merchants/${merchantId}/transactions`, decodeMerchantTransactions, params);
+  return apiCaller.get(
+    `/admin/merchants/${merchantId}/transactions`,
+    decodeMerchantTransactions,
+    params
+  );
 }
 
-export { fetchEntries, fetchBalance, fetchRedemptions, lookupWallet, fetchMerchantTransactions };
+function decodeLedgerEntryDetail(raw: unknown): LedgerEntryDetail {
+  return raw as LedgerEntryDetail;
+}
+
+async function fetchEntryDetail(entryId: string): Promise<APIResult<LedgerEntryDetail>> {
+  return apiCaller.get(`/entries/${entryId}`, decodeLedgerEntryDetail);
+}
+
+export {
+  fetchEntries,
+  fetchBalance,
+  fetchRedemptions,
+  lookupWallet,
+  fetchMerchantTransactions,
+  fetchEntryDetail
+};

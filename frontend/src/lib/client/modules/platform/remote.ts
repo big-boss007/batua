@@ -132,9 +132,7 @@ async function fetchMerchantStats(id: string): Promise<APIResult<MerchantStats>>
   return apiCaller.get(`/admin/merchants/${id}/stats`, decodeMerchantStats);
 }
 
-async function createMerchant(
-  data: Record<string, unknown>
-): Promise<APIResult<PlatformMerchant>> {
+async function createMerchant(data: Record<string, unknown>): Promise<APIResult<PlatformMerchant>> {
   return apiCaller.post('/admin/merchants', data, decodePlatformMerchant);
 }
 
@@ -145,10 +143,7 @@ async function updateMerchant(
   return apiCaller.put(`/admin/merchants/${id}`, data, decodePlatformMerchant);
 }
 
-async function updateMerchantPlan(
-  id: string,
-  plan: string
-): Promise<APIResult<PlatformMerchant>> {
+async function updateMerchantPlan(id: string, plan: string): Promise<APIResult<PlatformMerchant>> {
   return apiCaller.put(`/admin/merchants/${id}/plan`, { plan_tier: plan }, decodePlatformMerchant);
 }
 
@@ -156,9 +151,7 @@ async function fetchGeoPolicies(): Promise<APIResult<Array<GeoPolicy>>> {
   return apiCaller.get('/admin/geo-policies', decodeGeoPolicyList);
 }
 
-async function createGeoPolicy(
-  data: Record<string, unknown>
-): Promise<APIResult<GeoPolicy>> {
+async function createGeoPolicy(data: Record<string, unknown>): Promise<APIResult<GeoPolicy>> {
   return apiCaller.post('/admin/geo-policies', data, decodeGeoPolicy);
 }
 
@@ -166,9 +159,7 @@ async function fetchSystemHealth(): Promise<APIResult<SystemHealth>> {
   return apiCaller.get('/admin/system/health', decodeSystemHealth);
 }
 
-async function fetchRecentEvents(
-  limit: number = 10
-): Promise<APIResult<Array<RecentEvent>>> {
+async function fetchRecentEvents(limit: number = 10): Promise<APIResult<Array<RecentEvent>>> {
   return apiCaller.get('/admin/events/recent', decodeRecentEventList, {
     limit: String(limit)
   });

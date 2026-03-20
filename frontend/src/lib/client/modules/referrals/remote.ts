@@ -1,11 +1,6 @@
 import { apiCaller } from '$lib/client/modules/foundation';
 import type { APIResult } from '$lib/client/modules/foundation';
-import type {
-  ReferralProgram,
-  ReferralCode,
-  ReferralAnalytics,
-  ReferralConversion
-} from './types';
+import type { ReferralProgram, ReferralCode, ReferralAnalytics, ReferralConversion } from './types';
 
 function decodeProgram(raw: unknown): ReferralProgram {
   const r = raw as Record<string, unknown>;
@@ -59,9 +54,7 @@ function decodeConversion(raw: unknown): ReferralConversion {
     referee_id: (r['referee_id'] as string) ?? '',
     order_id: (r['order_id'] as string) ?? null,
     is_suspicious: (r['is_suspicious'] as boolean) ?? false,
-    fraud_signals: Array.isArray(r['fraud_signals'])
-      ? (r['fraud_signals'] as Array<string>)
-      : [],
+    fraud_signals: Array.isArray(r['fraud_signals']) ? (r['fraud_signals'] as Array<string>) : [],
     created_at: (r['created_at'] as string) ?? ''
   };
 }

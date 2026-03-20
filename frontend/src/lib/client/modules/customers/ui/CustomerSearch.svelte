@@ -57,11 +57,7 @@
 
 <div class="customer-search">
   <div class="search-input-wrapper">
-    <Input
-      value={query}
-      placeholder="Search by phone or external ID..."
-      onInput={handleInput}
-    />
+    <Input value={query} placeholder="Search by phone or external ID..." onInput={handleInput} />
     {#if loading}
       <span class="search-spinner"></span>
     {/if}

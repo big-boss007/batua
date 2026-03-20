@@ -1,7 +1,10 @@
 <script lang="ts">
   import type { FestiveTemplate } from '../types';
 
-  let { templates, onSelect }: {
+  let {
+    templates,
+    onSelect
+  }: {
     templates: Array<FestiveTemplate>;
     onSelect: (template: FestiveTemplate) => void;
   } = $props();
@@ -33,7 +36,11 @@
               <h3 class="template-name">{template.display_name}</h3>
               <span
                 class="category-tag"
-                style="color: {getCategoryColor(template.category)}; background: color-mix(in srgb, {getCategoryColor(template.category)} 12%, transparent)"
+                style="color: {getCategoryColor(
+                  template.category
+                )}; background: color-mix(in srgb, {getCategoryColor(
+                  template.category
+                )} 12%, transparent)"
               >
                 {template.category}
               </span>

@@ -1,6 +1,10 @@
 import type { PageLoad } from './$types';
 import { fetchProgram, fetchAnalytics, fetchConversions } from '$lib/client/modules/referrals';
-import type { ReferralProgram, ReferralAnalytics, ReferralConversion } from '$lib/client/modules/referrals';
+import type {
+  ReferralProgram,
+  ReferralAnalytics,
+  ReferralConversion
+} from '$lib/client/modules/referrals';
 
 export const load: PageLoad = async () => {
   const merchantId = 'default';

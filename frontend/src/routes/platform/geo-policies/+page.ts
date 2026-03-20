@@ -4,7 +4,6 @@ import type { GeoPolicy } from '$lib/client/modules/platform';
 
 export const load: PageLoad = async () => {
   const result = await fetchGeoPolicies();
-  const policies: GeoPolicy[] =
-    result.tag === 'success' ? result.data : [];
+  const policies: GeoPolicy[] = result.tag === 'success' ? result.data : [];
   return { policies };
 };

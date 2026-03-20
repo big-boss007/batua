@@ -7,27 +7,25 @@
     ReferralProgramInfo
   } from '$lib/client/modules/storefront';
 
-  let { data }: {
+  let {
+    data
+  }: {
     data: {
       merchant: StorefrontMerchant | null;
       referralCode: ReferralCodeInfo | null;
       program: ReferralProgramInfo | null;
       code: string;
-    }
+    };
   } = $props();
 
   let merchant = $derived(data.merchant);
   let referralCode = $derived(data.referralCode);
   let program = $derived(data.program);
 
-  let rewardAmount = $derived(
-    program !== null ? program.referee_reward_amount : 0
-  );
+  let rewardAmount = $derived(program !== null ? program.referee_reward_amount : 0);
 
   let shopUrl = $derived(
-    merchant !== null && merchant.domain !== null
-      ? `https://${merchant.domain}`
-      : '#'
+    merchant !== null && merchant.domain !== null ? `https://${merchant.domain}` : '#'
   );
 
   function handleShop() {
@@ -41,9 +39,7 @@
   {#if referralCode !== null && merchant !== null}
     <div class="referral-hero">
       <div class="referral-gift-icon">&#x1F381;</div>
-      <h2 class="referral-headline">
-        You've been invited!
-      </h2>
+      <h2 class="referral-headline">You've been invited!</h2>
       {#if rewardAmount > 0}
         <p class="referral-reward">
           Get <strong class="reward-amount">{formatCurrencyINR(rewardAmount)}</strong>
@@ -80,19 +76,13 @@
     </div>
 
     <div class="referral-cta">
-      <Button
-        text="Shop Now"
-        onclick={handleShop}
-        classes="btn-primary shop-now-btn"
-      />
+      <Button text="Shop Now" onclick={handleShop} classes="btn-primary shop-now-btn" />
     </div>
   {:else}
     <div class="referral-not-found">
       <div class="not-found-icon">?</div>
       <h2 class="not-found-title">Referral code not found</h2>
-      <p class="not-found-text">
-        This referral link may have expired or is invalid.
-      </p>
+      <p class="not-found-text">This referral link may have expired or is invalid.</p>
     </div>
   {/if}
 </div>

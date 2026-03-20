@@ -14,7 +14,12 @@
 
 <div class="stats-grid">
   {#each items as item}
-    <MetricCard label={item.label} value={item.value} metricType={item.metricType} icon={item.icon} />
+    <MetricCard
+      label={item.label}
+      value={item.value}
+      metricType={item.metricType}
+      icon={item.icon}
+    />
   {/each}
 </div>
 

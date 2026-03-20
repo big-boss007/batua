@@ -15,7 +15,9 @@
   const MOVEMENT_TYPES = ['in', 'out', 'held', 'across'];
 
   let bucketItems = $derived(BUCKET_TYPES.map((bt) => ({ id: bt, label: formatBucketType(bt) })));
-  let movementItems = $derived(MOVEMENT_TYPES.map((mt) => ({ id: mt, label: formatMovementType(mt).label })));
+  let movementItems = $derived(
+    MOVEMENT_TYPES.map((mt) => ({ id: mt, label: formatMovementType(mt).label }))
+  );
 
   let selectedBucket = $derived(filters.bucket_type ? [filters.bucket_type] : []);
   let selectedMovement = $derived(filters.movement_type ? [filters.movement_type] : []);
@@ -34,9 +36,7 @@
     onChange({ bucket_type: null, movement_type: null, page: 1, limit: filters.limit });
   }
 
-  let hasActiveFilters = $derived(
-    filters.bucket_type !== null || filters.movement_type !== null
-  );
+  let hasActiveFilters = $derived(filters.bucket_type !== null || filters.movement_type !== null);
 </script>
 
 <div class="filter-bar">

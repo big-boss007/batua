@@ -3,7 +3,11 @@
 
   import type { Rule } from '../types';
 
-  let { rules, onEdit, onToggle }: {
+  let {
+    rules,
+    onEdit,
+    onToggle
+  }: {
     rules: Array<Rule>;
     onEdit: (rule: Rule) => void;
     onToggle: (rule: Rule) => void;
@@ -47,7 +51,14 @@
         onclick={(checked) => onToggle(rules[rowIndex])}
       />
     {:else if colIndex === 6}
-      <Button text="Edit" classes="btn-ghost" onclick={(e) => { e.stopPropagation(); onEdit(rules[rowIndex]); }} />
+      <Button
+        text="Edit"
+        classes="btn-ghost"
+        onclick={(e) => {
+          e.stopPropagation();
+          onEdit(rules[rowIndex]);
+        }}
+      />
     {:else}
       {value}
     {/if}

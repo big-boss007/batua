@@ -1,5 +1,6 @@
 export type {
   LedgerEntry,
+  LedgerEntryDetail,
   WalletBalance,
   BucketBalance,
   RedemptionRequest,
@@ -10,7 +11,14 @@ export type {
   MerchantTransactionRow
 } from './types';
 
-export { fetchEntries, fetchBalance, fetchRedemptions, lookupWallet, fetchMerchantTransactions } from './remote';
+export {
+  fetchEntries,
+  fetchBalance,
+  fetchRedemptions,
+  lookupWallet,
+  fetchMerchantTransactions,
+  fetchEntryDetail
+} from './remote';
 
 export {
   transactionFilters,

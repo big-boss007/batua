@@ -43,9 +43,7 @@ function decodeTemplate(raw: unknown): NotificationTemplate {
   return raw as NotificationTemplate;
 }
 
-async function fetchWalletPolicies(
-  merchantId: string
-): Promise<APIResult<Array<WalletPolicy>>> {
+async function fetchWalletPolicies(merchantId: string): Promise<APIResult<Array<WalletPolicy>>> {
   return apiCaller.get(`/admin/wallet-policies/${merchantId}`, decodeWalletPolicies);
 }
 
@@ -60,9 +58,7 @@ async function updateWalletPolicy(
   );
 }
 
-async function fetchConnectors(
-  merchantId: string
-): Promise<APIResult<Array<Connector>>> {
+async function fetchConnectors(merchantId: string): Promise<APIResult<Array<Connector>>> {
   return apiCaller.get('/notifications/connectors', decodeConnectors, { merchant_id: merchantId });
 }
 
@@ -77,9 +73,7 @@ async function createConnector(
   );
 }
 
-async function fetchTemplates(
-  merchantId: string
-): Promise<APIResult<Array<NotificationTemplate>>> {
+async function fetchTemplates(merchantId: string): Promise<APIResult<Array<NotificationTemplate>>> {
   return apiCaller.get('/notifications/templates', decodeTemplates, { merchant_id: merchantId });
 }
 
@@ -113,11 +107,7 @@ async function updateMerchantProfile(
   id: string,
   data: { name?: string; domain?: string; slug?: string }
 ): Promise<APIResult<import('$lib/client/modules/admin').Merchant>> {
-  return apiCaller.put(
-    `/admin/merchants/${id}`,
-    data as Record<string, unknown>,
-    decodeMerchant
-  );
+  return apiCaller.put(`/admin/merchants/${id}`, data as Record<string, unknown>, decodeMerchant);
 }
 
 function decodeNotificationLog(raw: unknown): NotificationLog {

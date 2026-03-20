@@ -82,3 +82,14 @@ pub async fn get_balance_at(
 
     Ok(Json(balance))
 }
+
+#[tracing::instrument(skip(app_state))]
+pub async fn get_entry_detail(
+    State(app_state): State<AppState>,
+    Path(entry_id): Path<Uuid>,
+) -> Result<impl IntoResponse, AppError> {
+    let pool = app_state.db_reader.as_ref().unwrap_or(&app_state.db);
+    let detail = storage::get_entry_detail(pool, entry_id).await?;
+
+    Ok(Json(detail))
+}

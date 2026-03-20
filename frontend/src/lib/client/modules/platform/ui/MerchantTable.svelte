@@ -69,7 +69,7 @@
 
   <Table
     tableHeaders={headers}
-    tableData={tableData}
+    {tableData}
     sortable={true}
     sortableColumns={[0, 3, 4, 5]}
     onRowClick={handleRowClick}

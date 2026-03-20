@@ -1,7 +1,12 @@
 <script lang="ts">
   import type { FestiveTemplate, Rule, CreateCampaignFromTemplateRequest } from '../types';
 
-  let { template, rules, onSave, onCancel }: {
+  let {
+    template,
+    rules,
+    onSave,
+    onCancel
+  }: {
     template: FestiveTemplate;
     rules: Array<Rule>;
     onSave: (req: CreateCampaignFromTemplateRequest) => void;
@@ -21,7 +26,9 @@
   let dateError = $derived(
     new Date(endsAt) <= new Date(startsAt) ? 'End date must be after start date' : null
   );
-  let isValid = $derived(nameError === null && ruleError === null && dateError === null && multiplier > 0);
+  let isValid = $derived(
+    nameError === null && ruleError === null && dateError === null && multiplier > 0
+  );
 
   function todayISO(): string {
     return new Date().toISOString().split('T')[0];
@@ -48,7 +55,13 @@
   }
 </script>
 
-<form class="campaign-form" onsubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+<form
+  class="campaign-form"
+  onsubmit={(e) => {
+    e.preventDefault();
+    handleSubmit();
+  }}
+>
   <h2 class="form-title">Create Campaign</h2>
   <p class="form-subtitle">Based on: <strong>{template.display_name}</strong></p>
 
@@ -61,7 +74,9 @@
         class="field-input"
         class:field-error={nameError !== null && campaignName.length > 0}
         value={campaignName}
-        oninput={(e) => { campaignName = e.currentTarget.value; }}
+        oninput={(e) => {
+          campaignName = e.currentTarget.value;
+        }}
       />
       {#if nameError !== null && campaignName.length > 0}
         <span class="error-text">{nameError}</span>
@@ -77,7 +92,9 @@
           id="base-rule"
           class="field-input"
           value={baseRuleId}
-          onchange={(e) => { baseRuleId = e.currentTarget.value; }}
+          onchange={(e) => {
+            baseRuleId = e.currentTarget.value;
+          }}
         >
           {#each activeRules as r}
             <option value={r.id}>{r.name} ({r.rule_type})</option>
@@ -94,14 +111,18 @@
           type="number"
           class="field-input"
           value={multiplier}
-          oninput={(e) => { multiplier = Number(e.currentTarget.value); }}
+          oninput={(e) => {
+            multiplier = Number(e.currentTarget.value);
+          }}
           min="1"
           max="20"
           step="0.5"
         />
         <span class="multiplier-suffix">x rewards</span>
       </div>
-      <span class="field-hint">Default for {template.display_name}: {template.default_multiplier}x</span>
+      <span class="field-hint"
+        >Default for {template.display_name}: {template.default_multiplier}x</span
+      >
     </div>
 
     <div class="field-row">
@@ -112,7 +133,9 @@
           type="date"
           class="field-input"
           value={startsAt}
-          oninput={(e) => { startsAt = e.currentTarget.value; }}
+          oninput={(e) => {
+            startsAt = e.currentTarget.value;
+          }}
         />
       </div>
       <div class="field-group">
@@ -123,7 +146,9 @@
           class="field-input"
           class:field-error={dateError !== null}
           value={endsAt}
-          oninput={(e) => { endsAt = e.currentTarget.value; }}
+          oninput={(e) => {
+            endsAt = e.currentTarget.value;
+          }}
         />
         {#if dateError !== null}
           <span class="error-text">{dateError}</span>

@@ -5,8 +5,8 @@ use uuid::Uuid;
 use crate::error::AppError;
 
 use super::types::{
-    BucketBalance, BucketType, GetEntriesQuery, LedgerEntry, MovementType, NewLedgerEntry,
-    WalletBalance,
+    BucketBalance, BucketType, GetEntriesQuery, LedgerEntry, LedgerEntryDetail, MovementType,
+    NewLedgerEntry, WalletBalance,
 };
 
 #[tracing::instrument(skip(pool), err(Debug))]
@@ -363,4 +363,58 @@ pub async fn entry_exists_by_idempotency_key(
     .await?;
 
     Ok(row.is_some())
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn get_entry_detail(
+    pool: &PgPool,
+    entry_id: Uuid,
+) -> Result<LedgerEntryDetail, AppError> {
+    let detail: Option<LedgerEntryDetail> = sqlx::query_as(
+        r#"
+        SELECT
+            le.id,
+            le.wallet_id,
+            le.bucket_type::text AS bucket_type,
+            le.movement_type::text AS movement_type,
+            le.earning_unit,
+            le.currency_equivalent,
+            le.conversion_rate,
+            le.idempotency_key,
+            le.event_id,
+            le.rule_snapshot_id,
+            le.campaign_snapshot_id,
+            le.actor_type::text AS actor_type,
+            le.actor_id,
+            le.payment_reference,
+            le.transfer_id,
+            le.constraints,
+            le.expires_at,
+            le.created_at,
+            le.state::text AS state,
+            c.name AS customer_name,
+            c.phone AS customer_phone,
+            r.name AS rule_name,
+            camp.name AS campaign_name,
+            ev.event_type AS event_type,
+            linked.id AS linked_entry_id
+        FROM ledger_entries le
+        JOIN wallets w ON w.id = le.wallet_id
+        LEFT JOIN customers c ON c.id = w.customer_id
+        LEFT JOIN rule_snapshots rs ON rs.id = le.rule_snapshot_id
+        LEFT JOIN rules r ON r.id = rs.rule_id
+        LEFT JOIN campaign_snapshots cs ON cs.id = le.campaign_snapshot_id
+        LEFT JOIN campaigns camp ON camp.id = cs.campaign_id
+        LEFT JOIN events ev ON ev.id = le.event_id
+        LEFT JOIN ledger_entries linked
+            ON linked.transfer_id = le.transfer_id
+            AND linked.id != le.id
+        WHERE le.id = $1
+        "#,
+    )
+    .bind(entry_id)
+    .fetch_optional(pool)
+    .await?;
+
+    detail.ok_or_else(|| AppError::NotFound(format!("ledger entry {entry_id} not found")))
 }

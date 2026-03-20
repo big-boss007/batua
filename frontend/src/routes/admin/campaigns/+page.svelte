@@ -1,16 +1,12 @@
 <script lang="ts">
   import type { PageData } from './$types';
-  import type { FestiveTemplate, CreateCampaignFromTemplateRequest } from '$lib/client/modules/rules';
-  import {
-    campaignsStore,
-    createCampaignFromTemplate
+  import type {
+    FestiveTemplate,
+    CreateCampaignFromTemplateRequest
   } from '$lib/client/modules/rules';
+  import { campaignsStore, createCampaignFromTemplate } from '$lib/client/modules/rules';
   import { toastStore } from '$lib/client/modules/foundation';
-  import {
-    CampaignsList,
-    FestiveTemplateGrid,
-    CampaignForm
-  } from '$lib/client/modules/rules/ui';
+  import { CampaignsList, FestiveTemplateGrid, CampaignForm } from '$lib/client/modules/rules/ui';
 
   let { data }: { data: PageData } = $props();
 
@@ -59,14 +55,21 @@
 
   <section class="section">
     <h2 class="section-title">Festive Templates</h2>
-    <p class="section-description">Select a template to create a new campaign with pre-configured settings</p>
+    <p class="section-description">
+      Select a template to create a new campaign with pre-configured settings
+    </p>
     <FestiveTemplateGrid templates={data.templates} onSelect={handleSelectTemplate} />
   </section>
 
   {#if selectedTemplate !== null}
     <div class="modal-overlay" role="presentation" onclick={handleCancelCreate}>
       <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-      <div class="modal-panel" role="dialog" aria-label="Create campaign" onclick={(e) => e.stopPropagation()}>
+      <div
+        class="modal-panel"
+        role="dialog"
+        aria-label="Create campaign"
+        onclick={(e) => e.stopPropagation()}
+      >
         <CampaignForm
           template={selectedTemplate}
           rules={data.rules}

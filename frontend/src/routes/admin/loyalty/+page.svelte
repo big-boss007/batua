@@ -1,6 +1,10 @@
 <script lang="ts">
   import type { PageData } from './$types';
-  import type { LoyaltyProgram, LoyaltyTier, TierDistribution } from '$lib/client/modules/customers';
+  import type {
+    LoyaltyProgram,
+    LoyaltyTier,
+    TierDistribution
+  } from '$lib/client/modules/customers';
   import {
     createProgram,
     createTier,
@@ -98,11 +102,7 @@
     </div>
     {#if program}
       <div class="page-actions">
-        <button
-          class="btn-secondary"
-          onclick={handleEvaluate}
-          disabled={evaluating}
-        >
+        <button class="btn-secondary" onclick={handleEvaluate} disabled={evaluating}>
           {evaluating ? 'Evaluating...' : 'Evaluate Tiers'}
         </button>
       </div>
@@ -111,14 +111,14 @@
 
   <div class="loyalty-layout">
     <section class="program-section">
-      <LoyaltyProgramForm program={program} onSave={handleSaveProgram} />
+      <LoyaltyProgramForm {program} onSave={handleSaveProgram} />
     </section>
 
     {#if program}
       <section class="tiers-section">
         <div class="section-header">
           <h2 class="section-title">Tiers</h2>
-          <button class="btn-primary-sm" onclick={() => showTierForm = !showTierForm}>
+          <button class="btn-primary-sm" onclick={() => (showTierForm = !showTierForm)}>
             {showTierForm ? 'Cancel' : 'Add Tier'}
           </button>
         </div>
@@ -293,7 +293,9 @@
     color: var(--color-text);
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
-    transition: background var(--transition-fast), border-color var(--transition-fast);
+    transition:
+      background var(--transition-fast),
+      border-color var(--transition-fast);
   }
 
   .btn-secondary:hover:not(:disabled) {

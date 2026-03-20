@@ -7,9 +7,7 @@
   let { balance }: { balance: WalletBalance } = $props();
 
   let maxBucket = $derived(
-    balance.buckets.length > 0
-      ? Math.max(...balance.buckets.map((b) => b.displayed))
-      : 1
+    balance.buckets.length > 0 ? Math.max(...balance.buckets.map((b) => b.displayed)) : 1
   );
 </script>
 
@@ -38,7 +36,9 @@
             <div class="bucket-info">
               <span class="bucket-name">{formatBucketType(bucket.bucket_type)}</span>
               <span class="bucket-values">
-                {formatCurrencyINR(bucket.displayed)} displayed / {formatCurrencyINR(bucket.spendable)} spendable
+                {formatCurrencyINR(bucket.displayed)} displayed / {formatCurrencyINR(
+                  bucket.spendable
+                )} spendable
               </span>
             </div>
             <Progress value={maxBucket > 0 ? (bucket.displayed / maxBucket) * 100 : 0} />

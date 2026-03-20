@@ -107,7 +107,11 @@
     {/if}
   </div>
 
-  <button type="submit" class="save-button" disabled={capability === '' || vendor === '' || configError !== null}>
+  <button
+    type="submit"
+    class="save-button"
+    disabled={capability === '' || vendor === '' || configError !== null}
+  >
     {connector ? 'Update Connector' : 'Create Connector'}
   </button>
 </form>

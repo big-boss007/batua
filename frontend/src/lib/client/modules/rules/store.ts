@@ -14,9 +14,7 @@ function createRulesStore() {
       update((rules) => rules.map((r) => (r.id === updated.id ? updated : r)));
     },
     toggleRule(id: string) {
-      update((rules) =>
-        rules.map((r) => (r.id === id ? { ...r, is_active: !r.is_active } : r))
-      );
+      update((rules) => rules.map((r) => (r.id === id ? { ...r, is_active: !r.is_active } : r)));
     }
   };
 }

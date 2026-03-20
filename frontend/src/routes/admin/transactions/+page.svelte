@@ -1,8 +1,16 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
   import { Table, Pill, Select, Pagination, Shimmer } from '@juspay/svelte-ui-components';
-  import type { MerchantTransactionRow } from '$lib/client/modules/transactions';
-  import { fetchMerchantTransactions, formatBucketType, formatMovementType, formatState } from '$lib/client/modules/transactions';
+  import type {
+    MerchantTransactionRow,
+    LedgerEntryDetail
+  } from '$lib/client/modules/transactions';
+  import {
+    fetchMerchantTransactions,
+    fetchEntryDetail,
+    formatBucketType,
+    formatMovementType,
+    formatState
+  } from '$lib/client/modules/transactions';
   import { currentMerchantId } from '$lib/client/modules/admin';
   import { toastStore, formatCurrencyINR, formatDateTime } from '$lib/client/modules/foundation';
 
@@ -10,7 +18,9 @@
   const MOVEMENT_TYPES = ['in', 'out', 'held', 'across'];
 
   let bucketItems = $derived(BUCKET_TYPES.map((bt) => ({ id: bt, label: formatBucketType(bt) })));
-  let movementItems = $derived(MOVEMENT_TYPES.map((mt) => ({ id: mt, label: formatMovementType(mt).label })));
+  let movementItems = $derived(
+    MOVEMENT_TYPES.map((mt) => ({ id: mt, label: formatMovementType(mt).label }))
+  );
 
   let transactions = $state<Array<MerchantTransactionRow>>([]);
   let loading = $state(false);
@@ -21,6 +31,9 @@
   let currentPage = $state(1);
   let pageSize = 25;
   let debounceTimer: ReturnType<typeof setTimeout> | null = $state(null);
+
+  let selectedEntry = $state<LedgerEntryDetail | null>(null);
+  let loadingDetail = $state(false);
 
   const TABLE_HEADERS = ['Customer', 'Bucket', 'Movement', 'Amount', 'State', 'Date'];
 
@@ -34,19 +47,23 @@
   const STATE_PILL_CLASS: Record<string, string> = {
     completed: 'pill-success',
     approved: 'pill-success',
+    active: 'pill-success',
     pending: 'pill-warning',
     processing: 'pill-info',
     failed: 'pill-error',
     cancelled: 'pill-error',
     rejected: 'pill-error',
-    reversed: 'pill-info'
+    reversed: 'pill-info',
+    expired: 'pill-warning',
+    redeemed: 'pill-info'
   };
 
   let tableData = $derived(
     transactions.map((tx) => {
-      const customerLabel = tx.customer_name !== null
-        ? `${tx.customer_name} (${tx.customer_phone})`
-        : tx.customer_phone;
+      const customerLabel =
+        tx.customer_name !== null
+          ? `${tx.customer_name} (${tx.customer_phone})`
+          : tx.customer_phone;
       return [
         customerLabel,
         formatBucketType(tx.bucket_type),
@@ -58,9 +75,7 @@
     })
   );
 
-  let totalPages = $derived(
-    transactions.length < pageSize ? currentPage : currentPage + 1
-  );
+  let totalPages = $derived(transactions.length < pageSize ? currentPage : currentPage + 1);
 
   let selectedBucketValue = $derived(selectedBucket !== null ? [selectedBucket] : []);
   let selectedMovementValue = $derived(selectedMovement !== null ? [selectedMovement] : []);
@@ -76,10 +91,12 @@
       searchQuery = '';
       selectedBucket = null;
       selectedMovement = null;
+      selectedEntry = null;
       loadTransactions(id, null, null, null, 1);
     } else if (id === null) {
       merchantId = null;
       transactions = [];
+      selectedEntry = null;
     }
   });
 
@@ -146,11 +163,33 @@
     triggerLoad();
   }
 
-  function handleRowClick(rowIndex: number) {
+  async function handleRowClick(rowIndex: number) {
     const tx = transactions[rowIndex];
     if (tx === undefined) return;
-    const phone = tx.customer_phone;
-    goto(`/admin/customers?search=${encodeURIComponent(phone)}`);
+
+    loadingDetail = true;
+    selectedEntry = null;
+
+    const result = await fetchEntryDetail(tx.entry_id);
+    if (result.tag === 'success') {
+      selectedEntry = result.data;
+    } else {
+      toastStore.push({ message: result.message, level: 'error' });
+    }
+
+    loadingDetail = false;
+  }
+
+  function handleCloseDetail() {
+    selectedEntry = null;
+  }
+
+  function movementPillClass(movementType: string): string {
+    return MOVEMENT_PILL_CLASS[movementType.toLowerCase()] ?? '';
+  }
+
+  function statePillClass(state: string): string {
+    return STATE_PILL_CLASS[state.toLowerCase()] ?? '';
   }
 </script>
 
@@ -169,101 +208,271 @@
       <p class="empty-text">Select a merchant to view transactions</p>
     </div>
   {:else}
-    <div class="filters-section">
-      <div class="search-bar">
-        <input
-          class="search-input"
-          type="text"
-          placeholder="Search by phone number..."
-          value={searchQuery}
-          oninput={handleSearchInput}
-        />
-      </div>
+    <div class="transactions-layout">
+      <div class="list-panel">
+        <div class="filters-section">
+          <div class="search-bar">
+            <input
+              class="search-input"
+              type="text"
+              placeholder="Search by phone number..."
+              value={searchQuery}
+              oninput={handleSearchInput}
+            />
+          </div>
 
-      <div class="filter-row">
-        <div class="filter-group">
-          <span class="filter-label">Bucket Type</span>
-          <Select
-            placeholder="All buckets"
-            items={bucketItems}
-            value={selectedBucketValue}
-            onchange={handleBucketChange}
-          />
+          <div class="filter-row">
+            <div class="filter-group">
+              <span class="filter-label">Bucket Type</span>
+              <Select
+                placeholder="All buckets"
+                items={bucketItems}
+                value={selectedBucketValue}
+                onchange={handleBucketChange}
+              />
+            </div>
+
+            <div class="filter-group">
+              <span class="filter-label">Movement Type</span>
+              <Select
+                placeholder="All movements"
+                items={movementItems}
+                value={selectedMovementValue}
+                onchange={handleMovementChange}
+              />
+            </div>
+
+            {#if hasActiveFilters}
+              <button class="clear-btn" onclick={handleClearFilters}>Clear Filters</button>
+            {/if}
+          </div>
         </div>
 
-        <div class="filter-group">
-          <span class="filter-label">Movement Type</span>
-          <Select
-            placeholder="All movements"
-            items={movementItems}
-            value={selectedMovementValue}
-            onchange={handleMovementChange}
-          />
-        </div>
+        {#if loading}
+          <div class="shimmer-rows">
+            <Shimmer classes="shimmer-row" />
+            <Shimmer classes="shimmer-row" />
+            <Shimmer classes="shimmer-row" />
+            <Shimmer classes="shimmer-row" />
+            <Shimmer classes="shimmer-row" />
+          </div>
+        {:else}
+          <Table
+            tableHeaders={TABLE_HEADERS}
+            {tableData}
+            sortable={false}
+            onRowClick={handleRowClick}
+            --table-row-hover-background="var(--color-surface-2)"
+            --table-content-font-size="var(--font-size-sm)"
+          >
+            {#snippet cell(value, _rowIndex, colIndex)}
+              {#if colIndex === 2}
+                <Pill
+                  text={formatMovementType(String(value)).label}
+                  classes={MOVEMENT_PILL_CLASS[String(value).toLowerCase()] ?? ''}
+                />
+              {:else if colIndex === 4}
+                <Pill
+                  text={formatState(String(value)).label}
+                  classes={STATE_PILL_CLASS[String(value).toLowerCase()] ?? ''}
+                />
+              {:else}
+                {value}
+              {/if}
+            {/snippet}
+            {#snippet empty()}
+              <p class="table-empty">No transactions found</p>
+            {/snippet}
+          </Table>
 
-        {#if hasActiveFilters}
-          <button class="clear-btn" onclick={handleClearFilters}>Clear Filters</button>
+          {#if transactions.length > 0}
+            <div class="pagination-wrapper">
+              <Pagination {totalPages} {currentPage} onchange={handlePageChange} />
+            </div>
+          {/if}
         {/if}
       </div>
-    </div>
 
-    {#if loading}
-      <div class="shimmer-rows">
-        <Shimmer classes="shimmer-row" />
-        <Shimmer classes="shimmer-row" />
-        <Shimmer classes="shimmer-row" />
-        <Shimmer classes="shimmer-row" />
-        <Shimmer classes="shimmer-row" />
-      </div>
-    {:else}
-      <Table
-        tableHeaders={TABLE_HEADERS}
-        tableData={tableData}
-        sortable={false}
-        onRowClick={handleRowClick}
-        --table-row-hover-background="var(--color-surface-2)"
-        --table-content-font-size="var(--font-size-sm)"
-      >
-        {#snippet cell(value, _rowIndex, colIndex)}
-          {#if colIndex === 2}
-            <Pill
-              text={formatMovementType(String(value)).label}
-              classes={MOVEMENT_PILL_CLASS[String(value).toLowerCase()] ?? ''}
-            />
-          {:else if colIndex === 4}
-            <Pill
-              text={formatState(String(value)).label}
-              classes={STATE_PILL_CLASS[String(value).toLowerCase()] ?? ''}
-            />
-          {:else}
-            {value}
+      {#if loadingDetail || selectedEntry !== null}
+        <aside class="detail-panel">
+          {#if loadingDetail}
+            <div class="shimmer-detail">
+              <Shimmer classes="shimmer-detail-header" />
+              <Shimmer classes="shimmer-row" />
+              <Shimmer classes="shimmer-row" />
+              <Shimmer classes="shimmer-row" />
+              <Shimmer classes="shimmer-row" />
+            </div>
+          {:else if selectedEntry}
+            <div class="detail-header">
+              <h3 class="detail-title">Transaction Detail</h3>
+              <button class="close-btn" onclick={handleCloseDetail} aria-label="Close detail"
+                >&times;</button
+              >
+            </div>
+
+            <div class="detail-body">
+              <div class="detail-amount">
+                <Pill
+                  text={formatMovementType(selectedEntry.movement_type).label}
+                  classes={movementPillClass(selectedEntry.movement_type)}
+                />
+                <span class="amount">{formatCurrencyINR(selectedEntry.currency_equivalent)}</span>
+              </div>
+
+              {#if selectedEntry.customer_name !== null || selectedEntry.customer_phone !== null}
+                <div class="detail-row">
+                  <span class="label">Customer</span>
+                  <span class="value">
+                    {#if selectedEntry.customer_name !== null}
+                      {selectedEntry.customer_name}
+                      {#if selectedEntry.customer_phone !== null}
+                        ({selectedEntry.customer_phone})
+                      {/if}
+                    {:else}
+                      {selectedEntry.customer_phone}
+                    {/if}
+                  </span>
+                </div>
+              {/if}
+
+              <div class="detail-row">
+                <span class="label">Bucket</span>
+                <span class="value">
+                  <Pill text={formatBucketType(selectedEntry.bucket_type)} classes="pill-neutral" />
+                </span>
+              </div>
+
+              <div class="detail-row">
+                <span class="label">State</span>
+                <span class="value">
+                  <Pill
+                    text={formatState(selectedEntry.state).label}
+                    classes={statePillClass(selectedEntry.state)}
+                  />
+                </span>
+              </div>
+
+              <h4 class="section-heading">Cause</h4>
+
+              {#if selectedEntry.event_type !== null}
+                <div class="detail-row">
+                  <span class="label">Event</span>
+                  <span class="value">{selectedEntry.event_type}</span>
+                </div>
+              {/if}
+
+              {#if selectedEntry.rule_name !== null}
+                <div class="detail-row">
+                  <span class="label">Rule</span>
+                  <span class="value">{selectedEntry.rule_name}</span>
+                </div>
+              {/if}
+
+              {#if selectedEntry.campaign_name !== null}
+                <div class="detail-row">
+                  <span class="label">Campaign</span>
+                  <span class="value">{selectedEntry.campaign_name}</span>
+                </div>
+              {/if}
+
+              <div class="detail-row">
+                <span class="label">Actor</span>
+                <span class="value"
+                  >{selectedEntry.actor_type}{selectedEntry.actor_id !== null
+                    ? ` (${selectedEntry.actor_id})`
+                    : ''}</span
+                >
+              </div>
+
+              {#if selectedEntry.payment_reference !== null}
+                <div class="detail-row">
+                  <span class="label">Payment Ref</span>
+                  <span class="value mono">{selectedEntry.payment_reference}</span>
+                </div>
+              {/if}
+
+              <h4 class="section-heading">Amounts</h4>
+
+              <div class="detail-row">
+                <span class="label">Earning Unit</span>
+                <span class="value">{selectedEntry.earning_unit}</span>
+              </div>
+
+              <div class="detail-row">
+                <span class="label">Currency Equivalent</span>
+                <span class="value">{formatCurrencyINR(selectedEntry.currency_equivalent)}</span>
+              </div>
+
+              <div class="detail-row">
+                <span class="label">Conversion Rate</span>
+                <span class="value">{selectedEntry.conversion_rate}</span>
+              </div>
+
+              {#if selectedEntry.transfer_id !== null}
+                <h4 class="section-heading">Transfer</h4>
+
+                <div class="detail-row">
+                  <span class="label">Transfer ID</span>
+                  <span class="value mono">{selectedEntry.transfer_id}</span>
+                </div>
+
+                {#if selectedEntry.linked_entry_id !== null}
+                  <div class="detail-row">
+                    <span class="label">Linked Entry</span>
+                    <span class="value mono">{selectedEntry.linked_entry_id}</span>
+                  </div>
+                {/if}
+              {/if}
+
+              {#if Object.keys(selectedEntry.constraints ?? {}).length > 0}
+                <h4 class="section-heading">Constraints</h4>
+                <pre class="constraints-json">{JSON.stringify(
+                    selectedEntry.constraints,
+                    null,
+                    2
+                  )}</pre>
+              {/if}
+
+              {#if selectedEntry.expires_at !== null}
+                <div class="detail-row">
+                  <span class="label">Expires</span>
+                  <span class="value">{formatDateTime(selectedEntry.expires_at)}</span>
+                </div>
+              {/if}
+
+              <h4 class="section-heading">Metadata</h4>
+
+              <div class="detail-row">
+                <span class="label">Entry ID</span>
+                <span class="value mono small">{selectedEntry.id}</span>
+              </div>
+
+              <div class="detail-row">
+                <span class="label">Idempotency Key</span>
+                <span class="value mono small">{selectedEntry.idempotency_key}</span>
+              </div>
+
+              <div class="detail-row">
+                <span class="label">Created</span>
+                <span class="value">{formatDateTime(selectedEntry.created_at)}</span>
+              </div>
+            </div>
           {/if}
-        {/snippet}
-        {#snippet empty()}
-          <p class="table-empty">No transactions found</p>
-        {/snippet}
-      </Table>
-
-      {#if transactions.length > 0}
-        <div class="pagination-wrapper">
-          <Pagination
-            totalPages={totalPages}
-            currentPage={currentPage}
-            onchange={handlePageChange}
-          />
-        </div>
+        </aside>
       {/if}
-    {/if}
+    </div>
   {/if}
 </div>
 
 <style>
   .page {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
     gap: var(--space-6);
+    width: 100%;
   }
 
   .page-header {
@@ -281,6 +490,24 @@
   .page-subtitle {
     font-size: var(--font-size-sm);
     color: var(--color-text-muted);
+  }
+
+  .transactions-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+    align-items: start;
+  }
+
+  .transactions-layout:has(.detail-panel) {
+    grid-template-columns: 1fr 420px;
+  }
+
+  .list-panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    min-width: 0;
   }
 
   .filters-section {
@@ -396,5 +623,145 @@
     font-size: var(--font-size-sm);
     text-align: center;
     padding: var(--space-8);
+  }
+
+  .detail-panel {
+    position: sticky;
+    top: 72px;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+  }
+
+  .detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-4);
+  }
+
+  .detail-title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+  }
+
+  .close-btn {
+    background: none;
+    border: none;
+    font-size: var(--font-size-xl);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-sm);
+    line-height: 1;
+    transition: color var(--transition-fast);
+  }
+
+  .close-btn:hover {
+    color: var(--color-text);
+  }
+
+  .detail-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .detail-amount {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) 0;
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: var(--space-2);
+  }
+
+  .amount {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+  }
+
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-1) 0;
+    gap: var(--space-3);
+  }
+
+  .label {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    flex-shrink: 0;
+  }
+
+  .value {
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
+    text-align: right;
+    word-break: break-all;
+  }
+
+  .value.mono {
+    font-family: var(--font-mono, monospace);
+  }
+
+  .value.small {
+    font-size: var(--font-size-xs);
+  }
+
+  .section-heading {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: var(--space-4);
+    margin-bottom: var(--space-1);
+    padding-bottom: var(--space-1);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .constraints-json {
+    font-family: var(--font-mono, monospace);
+    font-size: var(--font-size-xs);
+    color: var(--color-text);
+    background: var(--color-surface-2, var(--color-bg));
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: var(--space-2) var(--space-3);
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+
+  .shimmer-detail {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4) 0;
+  }
+
+  :global(.shimmer-detail-header) {
+    --shimmer-width: 60%;
+    --shimmer-height: 24px;
+    --shimmer-border-radius: 4px;
+  }
+
+  @media (max-width: 960px) {
+    .transactions-layout,
+    .transactions-layout:has(.detail-panel) {
+      grid-template-columns: 1fr;
+    }
+
+    .detail-panel {
+      position: static;
+      max-height: none;
+    }
   }
 </style>

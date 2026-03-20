@@ -1,8 +1,10 @@
 <script lang="ts">
   import { formatDate } from '$lib/client/modules/foundation';
 
-  let { campaign }: {
-    campaign: { name: string; multiplier: number; ends_at: string }
+  let {
+    campaign
+  }: {
+    campaign: { name: string; multiplier: number; ends_at: string };
   } = $props();
 </script>
 

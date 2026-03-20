@@ -68,7 +68,7 @@
     }
 
     if (referralCode === null) {
-      error = 'You don\'t have a referral code yet. Make your first purchase to get one!';
+      error = "You don't have a referral code yet. Make your first purchase to get one!";
     }
 
     loading = false;
@@ -87,9 +87,7 @@
   {#if phone === null}
     <div class="referral-hero">
       <h2 class="referral-title">My Referrals</h2>
-      <p class="referral-subtitle">
-        Enter your phone number to view your referral code and stats
-      </p>
+      <p class="referral-subtitle">Enter your phone number to view your referral code and stats</p>
     </div>
     <PhoneInput onSubmit={handlePhoneSubmit} />
   {:else if loading}
@@ -102,9 +100,7 @@
     <div class="referral-empty">
       <div class="empty-icon">&#x1F91D;</div>
       <p class="empty-text">{error}</p>
-      <button class="empty-retry" onclick={handleChangePhone}>
-        Try a different number
-      </button>
+      <button class="empty-retry" onclick={handleChangePhone}> Try a different number </button>
     </div>
   {:else if referralCode !== null && merchant !== null}
     <div class="referral-phone-bar">

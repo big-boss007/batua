@@ -25,11 +25,7 @@
   }
 </script>
 
-<Table
-  tableHeaders={headers}
-  tableData={tableData}
-  sortable={false}
->
+<Table tableHeaders={headers} {tableData} sortable={false}>
   {#snippet cell(value, rowIndex, colIndex)}
     {#if colIndex === 3}
       <Pill text={String(value)} classes={stateClass(String(value))} />

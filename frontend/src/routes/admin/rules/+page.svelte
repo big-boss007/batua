@@ -37,9 +37,7 @@
   }
 
   async function loadPerformance(rules: Array<Rule>) {
-    const results = await Promise.all(
-      rules.map((r) => fetchRulePerformance(r.id))
-    );
+    const results = await Promise.all(rules.map((r) => fetchRulePerformance(r.id)));
     const map: Record<string, RulePerformance> = {};
     for (const result of results) {
       if (result.tag === 'success') {
@@ -145,7 +143,9 @@
     <section class="rules-section">
       {#if $rulesStore.length === 0}
         <div class="empty-rules">
-          <p class="empty-text">No rules configured yet. Create your first reward rule to get started.</p>
+          <p class="empty-text">
+            No rules configured yet. Create your first reward rule to get started.
+          </p>
         </div>
       {:else}
         <div class="rules-list">
@@ -163,7 +163,11 @@
                   <span class="rule-type-badge">{rule.rule_type}</span>
                   <span class="rule-event">{rule.config.event_type}</span>
                   <span class="rule-version">v{rule.version}</span>
-                  <span class="rule-status" class:status-active={rule.is_active} class:status-inactive={!rule.is_active}>
+                  <span
+                    class="rule-status"
+                    class:status-active={rule.is_active}
+                    class:status-inactive={!rule.is_active}
+                  >
                     {rule.is_active ? 'Active' : 'Inactive'}
                   </span>
                 </div>
@@ -343,7 +347,9 @@
     border-radius: var(--radius-md);
     padding: var(--space-1) var(--space-3);
     cursor: pointer;
-    transition: color var(--transition-fast), border-color var(--transition-fast);
+    transition:
+      color var(--transition-fast),
+      border-color var(--transition-fast);
   }
 
   .toggle-btn:hover {

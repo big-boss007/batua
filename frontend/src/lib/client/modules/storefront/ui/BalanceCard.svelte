@@ -20,9 +20,7 @@
   <div class="balance-amount">
     {formatCurrencyINR(balance.spendable_balance)}
   </div>
-  <p class="balance-subtitle">
-    Spendable balance
-  </p>
+  <p class="balance-subtitle">Spendable balance</p>
   {#if balance.displayed_balance !== balance.spendable_balance}
     <p class="balance-displayed">
       {formatCurrencyINR(balance.displayed_balance)} total (includes pending)
