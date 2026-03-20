@@ -10,6 +10,9 @@
   import {
     createProgram,
     createCode,
+    fetchProgram,
+    fetchAnalytics,
+    fetchConversions,
     fetchMerchantCodes,
     referralProgram,
     referralCodes
@@ -23,12 +26,10 @@
   import { currentMerchantId } from '$lib/client/modules/admin';
   import { toastStore } from '$lib/client/modules/foundation';
 
-  let { data } = $props();
-
-  let program = $state<ReferralProgram | null>(data.program);
+  let program = $state<ReferralProgram | null>(null);
   let codes = $state<Array<ReferralCode>>([]);
-  let analytics = $state<ReferralAnalytics | null>(data.analytics);
-  let conversions = $state<Array<ReferralConversion>>(data.conversions);
+  let analytics = $state<ReferralAnalytics | null>(null);
+  let conversions = $state<Array<ReferralConversion>>([]);
   let activeTab = $state<'program' | 'codes' | 'analytics' | 'conversions'>('program');
   let merchantId = $state<string | null>(null);
   let codesLoading = $state(false);
@@ -37,16 +38,23 @@
     const prevId = merchantId;
     merchantId = id;
     if (id !== null && id !== prevId) {
-      loadCodes(id);
+      loadData(id);
     }
   });
 
-  async function loadCodes(mId: string) {
+  async function loadData(mId: string) {
     codesLoading = true;
-    const result = await fetchMerchantCodes(mId, 1, 50);
-    if (result.tag === 'success') {
-      codes = result.data;
-    }
+    const [programResult, analyticsResult, conversionsResult, codesResult] = await Promise.all([
+      fetchProgram(mId),
+      fetchAnalytics(mId),
+      fetchConversions(mId),
+      fetchMerchantCodes(mId, 1, 50)
+    ]);
+
+    if (programResult.tag === 'success') program = programResult.data;
+    if (analyticsResult.tag === 'success') analytics = analyticsResult.data;
+    if (conversionsResult.tag === 'success') conversions = conversionsResult.data;
+    if (codesResult.tag === 'success') codes = codesResult.data;
     codesLoading = false;
   }
 

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import type { PageData } from './$types';
   import type {
     LoyaltyProgram,
     LoyaltyTier,
@@ -9,10 +8,12 @@
     createProgram,
     createTier,
     evaluateTier,
+    fetchLoyaltyProgram,
     fetchTiers,
     fetchTierDistribution,
     sortTiersByRank
   } from '$lib/client/modules/customers';
+  import { currentMerchantId } from '$lib/client/modules/admin';
   import { toastStore } from '$lib/client/modules/foundation';
   import {
     LoyaltyProgramForm,
@@ -21,18 +22,38 @@
     TierDistributionChart
   } from '$lib/client/modules/customers/ui';
 
-  let { data }: { data: PageData } = $props();
-
-  let program = $state<LoyaltyProgram | null>(data.program);
-  let tiers = $state<Array<LoyaltyTier>>(data.tiers);
-  let distribution = $state<Array<TierDistribution>>(data.distribution);
+  let program = $state<LoyaltyProgram | null>(null);
+  let tiers = $state<Array<LoyaltyTier>>([]);
+  let distribution = $state<Array<TierDistribution>>([]);
   let showTierForm = $state(false);
   let evaluating = $state(false);
+  let merchantId = $state<string | null>(null);
 
   let sortedTiers = $derived(sortTiersByRank(tiers));
 
+  currentMerchantId.subscribe((id) => {
+    const prevId = merchantId;
+    merchantId = id;
+    if (id !== null && id !== prevId) {
+      loadData(id);
+    }
+  });
+
+  async function loadData(mId: string) {
+    const [programResult, tiersResult, distributionResult] = await Promise.all([
+      fetchLoyaltyProgram(mId),
+      fetchTiers(mId),
+      fetchTierDistribution(mId)
+    ]);
+
+    program = programResult.tag === 'success' ? programResult.data : null;
+    tiers = tiersResult.tag === 'success' ? tiersResult.data : [];
+    distribution = distributionResult.tag === 'success' ? distributionResult.data : [];
+  }
+
   async function handleSaveProgram(formData: { name: string; evaluation_criteria: string }) {
-    const result = await createProgram('default', formData);
+    if (merchantId === null) return;
+    const result = await createProgram(merchantId, formData);
 
     if (result.tag === 'success') {
       program = result.data;
@@ -49,7 +70,8 @@
     earn_rate_multiplier: number;
     benefits: Record<string, unknown>;
   }) {
-    const result = await createTier('default', formData);
+    if (merchantId === null) return;
+    const result = await createTier(merchantId, formData);
 
     if (result.tag === 'success') {
       tiers = [...tiers, result.data];
@@ -61,9 +83,10 @@
   }
 
   async function handleEvaluate() {
+    if (merchantId === null) return;
     evaluating = true;
 
-    const result = await evaluateTier('default');
+    const result = await evaluateTier(merchantId);
 
     if (result.tag === 'success') {
       toastStore.push({
@@ -72,8 +95,8 @@
       });
 
       const [tiersResult, distResult] = await Promise.all([
-        fetchTiers('default'),
-        fetchTierDistribution('default')
+        fetchTiers(merchantId),
+        fetchTierDistribution(merchantId)
       ]);
 
       if (tiersResult.tag === 'success') {

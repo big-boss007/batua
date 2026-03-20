@@ -8,11 +8,16 @@
   import type { Merchant } from '$lib/client/modules/admin';
   import type {
     WalletPolicy,
+    Connector,
+    NotificationTemplate,
     UpdateWalletPolicyRequest,
     CreateConnectorRequest,
     UpdateTemplateRequest
   } from '$lib/client/modules/settings';
   import {
+    fetchWalletPolicies,
+    fetchConnectors,
+    fetchTemplates,
     updateWalletPolicy,
     createConnector,
     updateTemplate,
@@ -43,6 +48,10 @@
   let showConnectorForm = $state(false);
 
   let merchant = $state<Merchant | null>(null);
+  let mId = $state<string | null>(null);
+  let policies = $state<Array<WalletPolicy>>([]);
+  let connectors = $state<Array<Connector>>([]);
+  let templates = $state<Array<NotificationTemplate>>([]);
   let storeName = $state('');
   let storeDomain = $state('');
   let storeSlug = $state('');
@@ -56,6 +65,26 @@
       storeSlug = m.slug ?? '';
     }
   });
+
+  currentMerchantId.subscribe((id) => {
+    const prevId = mId;
+    mId = id;
+    if (id !== null && id !== prevId) {
+      loadSettingsData(id);
+    }
+  });
+
+  async function loadSettingsData(id: string) {
+    const [policiesResult, connectorsResult, templatesResult] = await Promise.all([
+      fetchWalletPolicies(id),
+      fetchConnectors(id),
+      fetchTemplates(id)
+    ]);
+
+    if (policiesResult.tag === 'success') policies = policiesResult.data;
+    if (connectorsResult.tag === 'success') connectors = connectorsResult.data;
+    if (templatesResult.tag === 'success') templates = templatesResult.data;
+  }
 
   let storefrontUrl = $derived(storeSlug ? `/s/${storeSlug}` : '');
 
@@ -82,8 +111,8 @@
   }
 
   async function handleCreateConnector(body: CreateConnectorRequest) {
-    const merchantId = new URL($page.url).searchParams.get('merchant') ?? '';
-    const result = await createConnector(merchantId, body);
+    if (mId === null) return;
+    const result = await createConnector(mId, body);
     if (result.tag === 'success') {
       connectorsStore.addConnector(result.data);
       showConnectorForm = false;
@@ -216,10 +245,10 @@
           }}
         />
       {:else}
-        <WalletPoliciesList policies={data.policies} onEdit={handleEditPolicy} />
+        <WalletPoliciesList policies={policies} onEdit={handleEditPolicy} />
       {/if}
     {:else if activeTab === 'connectors'}
-      <ConnectorsList connectors={data.connectors} />
+      <ConnectorsList connectors={connectors} />
       {#if showConnectorForm}
         <ConnectorForm onSave={handleCreateConnector} />
         <Button
@@ -239,11 +268,11 @@
         />
       {/if}
     {:else if activeTab === 'notifications'}
-      {#if data.templates.length === 0}
+      {#if templates.length === 0}
         <p class="empty-state">No notification templates configured.</p>
       {:else}
         <div class="templates-list">
-          {#each data.templates as template (template.id)}
+          {#each templates as template (template.id)}
             <NotificationTemplateEditor {template} onSave={handleSaveTemplate} />
           {/each}
         </div>

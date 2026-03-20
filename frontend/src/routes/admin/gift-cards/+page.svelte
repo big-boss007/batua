@@ -5,6 +5,7 @@
   import {
     issueGiftCard,
     bulkIssue,
+    fetchGiftCards,
     fetchGiftCardStats,
     giftCards
   } from '$lib/client/modules/gift-cards';
@@ -17,9 +18,7 @@
   import { currentMerchantId } from '$lib/client/modules/admin';
   import { toastStore, formatCurrencyINR } from '$lib/client/modules/foundation';
 
-  let { data } = $props();
-
-  let cards = $state<Array<GiftCard>>(data.cards);
+  let cards = $state<Array<GiftCard>>([]);
   let selectedCard = $state<GiftCard | null>(null);
   let stats = $state<GiftCardStats | null>(null);
   let merchantId = $state<string | null>(null);
@@ -33,14 +32,20 @@
     const prevId = merchantId;
     merchantId = id;
     if (id !== null && id !== prevId) {
-      loadStats(id);
+      loadData(id);
     }
   });
 
-  async function loadStats(mId: string) {
-    const result = await fetchGiftCardStats(mId);
-    if (result.tag === 'success') {
-      stats = result.data;
+  async function loadData(mId: string) {
+    const [cardsResult, statsResult] = await Promise.all([
+      fetchGiftCards(mId),
+      fetchGiftCardStats(mId)
+    ]);
+    if (cardsResult.tag === 'success') {
+      cards = cardsResult.data;
+    }
+    if (statsResult.tag === 'success') {
+      stats = statsResult.data;
     }
   }
 
@@ -68,7 +73,7 @@
       giftCards.add(result.data);
       toastStore.push({ message: 'Gift card issued', level: 'success' });
       activeTabIndex = 0;
-      if (merchantId !== null) loadStats(merchantId);
+      if (merchantId !== null) loadData(merchantId);
     } else {
       toastStore.push({ message: result.message, level: 'error' });
     }
@@ -81,7 +86,7 @@
       giftCards.addMany(result.data);
       toastStore.push({ message: `${result.data.length} gift cards issued`, level: 'success' });
       activeTabIndex = 0;
-      if (merchantId !== null) loadStats(merchantId);
+      if (merchantId !== null) loadData(merchantId);
     } else {
       toastStore.push({ message: result.message, level: 'error' });
     }

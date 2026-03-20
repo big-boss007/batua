@@ -1,25 +1,61 @@
 <script lang="ts">
-  import type { PageData } from './$types';
   import type {
     FestiveTemplate,
+    Rule,
+    Campaign,
     CreateCampaignFromTemplateRequest
   } from '$lib/client/modules/rules';
-  import { campaignsStore, createCampaignFromTemplate } from '$lib/client/modules/rules';
+  import {
+    campaignsStore,
+    createCampaignFromTemplate,
+    fetchCampaigns,
+    fetchFestiveTemplates,
+    fetchRules
+  } from '$lib/client/modules/rules';
+  import { currentMerchantId } from '$lib/client/modules/admin';
   import { toastStore } from '$lib/client/modules/foundation';
   import { CampaignsList, FestiveTemplateGrid, CampaignForm } from '$lib/client/modules/rules/ui';
 
-  let { data }: { data: PageData } = $props();
-
-  campaignsStore.set(data.campaigns);
-
+  let merchantId = $state<string | null>(null);
+  let templates = $state<Array<FestiveTemplate>>([]);
+  let rules = $state<Array<Rule>>([]);
   let selectedTemplate = $state<FestiveTemplate | null>(null);
+
+  campaignsStore.set([]);
+
+  currentMerchantId.subscribe((id) => {
+    const prevId = merchantId;
+    merchantId = id;
+    if (id !== null && id !== prevId) {
+      loadData(id);
+    }
+  });
+
+  async function loadData(id: string) {
+    const [campaignsResult, templatesResult, rulesResult] = await Promise.all([
+      fetchCampaigns(id),
+      fetchFestiveTemplates(),
+      fetchRules(id)
+    ]);
+
+    if (campaignsResult.tag === 'success') {
+      campaignsStore.set(campaignsResult.data);
+    }
+    if (templatesResult.tag === 'success') {
+      templates = templatesResult.data;
+    }
+    if (rulesResult.tag === 'success') {
+      rules = rulesResult.data;
+    }
+  }
 
   function handleSelectTemplate(template: FestiveTemplate) {
     selectedTemplate = template;
   }
 
   async function handleCreateCampaign(req: CreateCampaignFromTemplateRequest) {
-    const payload = { ...req, merchant_id: data.merchantId };
+    if (merchantId === null) return;
+    const payload = { ...req, merchant_id: merchantId };
     const result = await createCampaignFromTemplate(payload);
 
     if (result.tag === 'success') {
@@ -58,7 +94,7 @@
     <p class="section-description">
       Select a template to create a new campaign with pre-configured settings
     </p>
-    <FestiveTemplateGrid templates={data.templates} onSelect={handleSelectTemplate} />
+    <FestiveTemplateGrid {templates} onSelect={handleSelectTemplate} />
   </section>
 
   {#if selectedTemplate !== null}
@@ -72,7 +108,7 @@
       >
         <CampaignForm
           template={selectedTemplate}
-          rules={data.rules}
+          {rules}
           onSave={handleCreateCampaign}
           onCancel={handleCancelCreate}
         />

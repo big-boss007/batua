@@ -1,10 +1,10 @@
 <script lang="ts">
   import { Tabs, Table, Pill } from '@juspay/svelte-ui-components';
 
-  import type { PageData } from './$types';
-  import type { UpdateTemplateRequest, NotificationLog } from '$lib/client/modules/settings';
+  import type { NotificationTemplate, UpdateTemplateRequest, NotificationLog } from '$lib/client/modules/settings';
   import {
     updateTemplate,
+    fetchTemplates,
     templatesStore,
     fetchNotificationLogs
   } from '$lib/client/modules/settings';
@@ -12,10 +12,9 @@
   import { toastStore, formatDateTime } from '$lib/client/modules/foundation';
   import { NotificationTemplateEditor } from '$lib/client/modules/settings/ui';
 
-  let { data }: { data: PageData } = $props();
-
   let selectedId = $state<string | null>(null);
   let merchantId = $state<string | null>(null);
+  let templates = $state<Array<NotificationTemplate>>([]);
   let logs = $state<Array<NotificationLog>>([]);
   let logsLoading = $state(false);
 
@@ -25,23 +24,26 @@
   let activeTab = $derived(tabIds[activeTabIndex]);
 
   let selectedTemplate = $derived(
-    selectedId !== null ? (data.templates.find((t) => t.id === selectedId) ?? null) : null
+    selectedId !== null ? (templates.find((t) => t.id === selectedId) ?? null) : null
   );
 
   currentMerchantId.subscribe((id) => {
     const prevId = merchantId;
     merchantId = id;
     if (id !== null && id !== prevId) {
-      loadLogs(id);
+      loadData(id);
     }
   });
 
-  async function loadLogs(mId: string) {
+  async function loadData(mId: string) {
     logsLoading = true;
-    const result = await fetchNotificationLogs(mId, 1, 50);
-    if (result.tag === 'success') {
-      logs = result.data;
-    }
+    const [templatesResult, logsResult] = await Promise.all([
+      fetchTemplates(mId),
+      fetchNotificationLogs(mId, 1, 50)
+    ]);
+
+    if (templatesResult.tag === 'success') templates = templatesResult.data;
+    if (logsResult.tag === 'success') logs = logsResult.data;
     logsLoading = false;
   }
 
@@ -86,12 +88,12 @@
   />
 
   {#if activeTab === 'templates'}
-    {#if data.templates.length === 0}
+    {#if templates.length === 0}
       <p class="empty-state">No notification templates configured.</p>
     {:else}
       <div class="notifications-layout">
         <aside class="templates-sidebar">
-          {#each data.templates as template (template.id)}
+          {#each templates as template (template.id)}
             <button
               class="template-item"
               class:template-selected={selectedId === template.id}
