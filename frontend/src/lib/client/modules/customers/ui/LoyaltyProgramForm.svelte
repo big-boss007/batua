@@ -44,7 +44,7 @@
 
   <Input
     value={name}
-    label="Program Name"
+    label="Tier Program Name"
     placeholder="e.g. Rewards Club"
     onInput={(val) => {
       nameOverride = val;

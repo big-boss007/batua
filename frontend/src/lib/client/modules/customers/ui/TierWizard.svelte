@@ -276,7 +276,7 @@
           }
         }
 
-        toastStore.push({ message: 'Loyalty program activated!', level: 'success' });
+        toastStore.push({ message: 'Loyalty tiers activated!', level: 'success' });
       } else {
         if (existingProgram !== null) {
           const progResult = await updateProgram(existingProgram.id, {
@@ -322,7 +322,7 @@
           }
         }
 
-        toastStore.push({ message: 'Loyalty program updated!', level: 'success' });
+        toastStore.push({ message: 'Loyalty tiers updated!', level: 'success' });
       }
 
       onComplete();
@@ -348,11 +348,11 @@
     <div class="card">
       <div class="card-header">
         <div class="card-header-left">
-          <h2 class="card-title">{mode === 'fresh' ? 'Set Up Your Loyalty Program' : 'Update Program Settings'}</h2>
+          <h2 class="card-title">{mode === 'fresh' ? 'Set Up Your Tiers' : 'Update Tier Settings'}</h2>
           <p class="card-sub-inline">Configure how customers qualify for tiers</p>
         </div>
         <div class="step-pills">
-          <span class="step-pill active">1 Program</span>
+          <span class="step-pill active">1 Settings</span>
           <span class="step-pill">2 Tiers</span>
           <span class="step-pill">3 Review</span>
         </div>
@@ -362,7 +362,7 @@
         <div class="form-group">
           <Input
             value={programName}
-            label="Program Name"
+            label="Tier Program Name"
             placeholder="e.g. Rewards Club"
             onInput={(val) => {
               programName = val;
@@ -426,7 +426,7 @@
           </p>
         </div>
         <div class="step-pills">
-          <span class="step-pill done">1 Program</span>
+          <span class="step-pill done">1 Settings</span>
           <span class="step-pill active">2 Tiers</span>
           <span class="step-pill">3 Review</span>
         </div>
@@ -588,12 +588,12 @@
           <h2 class="card-title">{mode === 'fresh' ? 'Review & Activate' : 'Review Changes'}</h2>
           <p class="card-sub-inline">
             {mode === 'fresh'
-              ? 'Review your loyalty program before activating'
+              ? 'Review your tier configuration before activating'
               : "Here's what will change when you save"}
           </p>
         </div>
         <div class="step-pills">
-          <span class="step-pill done">1 Program</span>
+          <span class="step-pill done">1 Settings</span>
           <span class="step-pill done">2 Tiers</span>
           <span class="step-pill active">3 Review</span>
         </div>
@@ -617,10 +617,10 @@
       {/if}
 
       <div class="review-section">
-        <h3 class="review-heading">Program</h3>
+        <h3 class="review-heading">Settings</h3>
         <div class="review-grid">
           <div>
-            <span class="review-label">Program Name</span>
+            <span class="review-label">Tier Program Name</span>
             <span class="review-value">{programName}</span>
           </div>
           <div>
@@ -673,7 +673,7 @@
 
       {#if mode === 'fresh'}
         <div class="info-banner green">
-          <strong>What happens next:</strong> Your loyalty program will be created and tiers set up.
+          <strong>What happens next:</strong> Your tiers will be created and activated.
           Customers will be evaluated against these tiers when you run "Evaluate Tiers".
         </div>
       {:else}
@@ -687,7 +687,7 @@
       <div class="card-footer">
         <Button text="← Back to Tiers" classes="btn-ghost" onclick={() => (step = 2)} />
         <Button
-          text={saving ? 'Saving...' : mode === 'fresh' ? 'Activate Program' : 'Save Changes'}
+          text={saving ? 'Saving...' : mode === 'fresh' ? 'Activate Tiers' : 'Save Changes'}
           classes={mode === 'fresh' ? 'btn-success' : 'btn-primary'}
           disabled={saving}
           onclick={handleSave}

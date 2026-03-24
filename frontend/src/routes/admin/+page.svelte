@@ -42,12 +42,12 @@
 </script>
 
 <svelte:head>
-  <title>Wallet - Batua Admin</title>
+  <title>Overview - Batua Admin</title>
 </svelte:head>
 
 <div class="dashboard">
   <div class="dashboard-header">
-    <h1>Wallet</h1>
+    <h1>Overview</h1>
     <p class="subtitle">Overview of your wallet program</p>
   </div>
 

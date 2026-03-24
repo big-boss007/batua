@@ -13,7 +13,7 @@ pub fn router() -> Router<AppState> {
         .route("/referrals/programs", post(handler::create_program))
         .route(
             "/referrals/programs/{merchant_id}",
-            get(handler::get_program),
+            get(handler::get_program).put(handler::update_program),
         )
         .route("/referrals/codes", post(handler::create_code))
         .route("/referrals/codes/{code}", get(handler::get_code))

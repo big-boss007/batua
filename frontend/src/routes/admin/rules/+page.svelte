@@ -123,14 +123,14 @@
 </script>
 
 <svelte:head>
-  <title>Rules - Batua Admin</title>
+  <title>Earn Rules - Batua Admin</title>
 </svelte:head>
 
 <div class="rules-page">
   <header class="page-header">
     <div class="header-content">
-      <h1 class="page-title">Reward Rules</h1>
-      <p class="page-description">Configure how customers earn and burn rewards</p>
+      <h1 class="page-title">Earn Rules</h1>
+      <p class="page-description">Configure how customers earn and burn points</p>
     </div>
     <Button text="+ New Rule" classes="btn-primary" onclick={handleCreate} />
   </header>
@@ -144,7 +144,7 @@
       {#if $rulesStore.length === 0}
         <div class="empty-rules">
           <p class="empty-text">
-            No rules configured yet. Create your first reward rule to get started.
+            No earn rules configured yet. Create your first rule to get started.
           </p>
         </div>
       {:else}

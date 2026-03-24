@@ -4,10 +4,12 @@ export { referralProgram, referralCodes } from './store';
 export {
   fetchProgram,
   createProgram,
+  updateProgram,
   createCode,
   fetchCodeByCode,
   processConversion,
   fetchAnalytics,
   fetchConversions,
-  fetchMerchantCodes
+  fetchMerchantCodes,
+  resolveCustomerByPhone
 } from './remote';

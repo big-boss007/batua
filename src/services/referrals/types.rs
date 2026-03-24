@@ -59,6 +59,14 @@ pub struct CreateProgramRequest {
 }
 
 #[derive(Debug, Deserialize)]
+pub struct UpdateProgramRequest {
+    pub referrer_reward_amount: Option<f64>,
+    pub referee_reward_amount: Option<f64>,
+    pub max_referrals_per_customer: Option<Option<i32>>,
+    pub is_active: Option<bool>,
+}
+
+#[derive(Debug, Deserialize)]
 pub struct CreateCodeRequest {
     pub merchant_id: Uuid,
     pub customer_id: Uuid,

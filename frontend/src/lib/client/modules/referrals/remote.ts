@@ -71,11 +71,13 @@ async function fetchProgram(merchantId: string): Promise<APIResult<ReferralProgr
 }
 
 async function createProgram(
+  merchantId: string,
   program: Omit<ReferralProgram, 'id'>
 ): Promise<APIResult<ReferralProgram>> {
   return apiCaller.post(
     '/referrals/programs',
     {
+      merchant_id: merchantId,
       referrer_reward_amount: program.referrer_reward_amount,
       referee_reward_amount: program.referee_reward_amount,
       max_referrals_per_customer: program.max_referrals_per_customer,
@@ -85,7 +87,20 @@ async function createProgram(
   );
 }
 
+async function updateProgram(
+  merchantId: string,
+  updates: {
+    referrer_reward_amount?: number;
+    referee_reward_amount?: number;
+    max_referrals_per_customer?: number | null;
+    is_active?: boolean;
+  }
+): Promise<APIResult<ReferralProgram>> {
+  return apiCaller.put(`/referrals/programs/${merchantId}`, updates as Record<string, unknown>, decodeProgram);
+}
+
 async function createCode(params: {
+  merchant_id: string;
   customer_id: string;
   code: string | null;
   is_vanity: boolean;
@@ -95,6 +110,7 @@ async function createCode(params: {
   return apiCaller.post(
     '/referrals/codes',
     {
+      merchant_id: params.merchant_id,
       customer_id: params.customer_id,
       code: params.code,
       is_vanity: params.is_vanity,
@@ -102,6 +118,17 @@ async function createCode(params: {
       commission_rate: params.commission_rate
     },
     decodeCode
+  );
+}
+
+async function resolveCustomerByPhone(phone: string): Promise<APIResult<{ customer_id: string }>> {
+  return apiCaller.post(
+    '/identity/resolve',
+    { phone },
+    (raw: unknown) => {
+      const r = raw as Record<string, unknown>;
+      return { customer_id: (r['customer_id'] as string) ?? '' };
+    }
   );
 }
 
@@ -143,10 +170,12 @@ async function fetchMerchantCodes(
 export {
   fetchProgram,
   createProgram,
+  updateProgram,
   createCode,
   fetchCodeByCode,
   processConversion,
   fetchAnalytics,
   fetchConversions,
-  fetchMerchantCodes
+  fetchMerchantCodes,
+  resolveCustomerByPhone
 };

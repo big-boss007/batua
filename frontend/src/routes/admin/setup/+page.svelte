@@ -329,7 +329,7 @@
         </div>
       {:else if currentStep === 1}
         <div class="step-panel">
-          <h2 class="step-title">Create Your First Reward Rule</h2>
+          <h2 class="step-title">Create Your First Earn Rule</h2>
           <p class="step-description">How much cashback on prepaid orders?</p>
 
           <div class="form-group">

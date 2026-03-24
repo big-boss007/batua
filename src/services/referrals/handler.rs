@@ -10,7 +10,7 @@ use crate::services::identity;
 
 use super::helpers;
 use super::storage;
-use super::types::{CreateCodeRequest, CreateProgramRequest, PaginationQuery, ProcessReferralRequest};
+use super::types::{CreateCodeRequest, CreateProgramRequest, PaginationQuery, ProcessReferralRequest, UpdateProgramRequest};
 
 #[tracing::instrument(skip(app_state))]
 pub async fn create_program(
@@ -19,6 +19,16 @@ pub async fn create_program(
 ) -> impl IntoResponse {
     let program = storage::create_program(&app_state.db, &req).await?;
     Ok::<_, AppError>((StatusCode::CREATED, Json(program)))
+}
+
+#[tracing::instrument(skip(app_state))]
+pub async fn update_program(
+    State(app_state): State<AppState>,
+    Path(merchant_id): Path<Uuid>,
+    Json(req): Json<UpdateProgramRequest>,
+) -> impl IntoResponse {
+    let program = storage::update_program(&app_state.db, merchant_id, &req).await?;
+    Ok::<_, AppError>(Json(program))
 }
 
 #[tracing::instrument(skip(app_state))]

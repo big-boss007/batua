@@ -41,6 +41,41 @@ pub async fn create_program(
 }
 
 #[tracing::instrument(skip(pool), err(Debug))]
+pub async fn update_program(
+    pool: &PgPool,
+    merchant_id: Uuid,
+    req: &super::types::UpdateProgramRequest,
+) -> Result<ReferralProgram, AppError> {
+    let program = sqlx::query_as::<_, ReferralProgram>(
+        r#"
+        UPDATE referral_programs
+        SET referrer_reward_amount = COALESCE($2, referrer_reward_amount),
+            referee_reward_amount = COALESCE($3, referee_reward_amount),
+            max_referrals_per_customer = CASE WHEN $4 THEN $5 ELSE max_referrals_per_customer END,
+            is_active = COALESCE($6, is_active),
+            updated_at = now()
+        WHERE merchant_id = $1
+        RETURNING id, merchant_id,
+                  referrer_reward_amount::float8 AS referrer_reward_amount,
+                  referee_reward_amount::float8 AS referee_reward_amount,
+                  referrer_bucket_type, referee_bucket_type,
+                  max_referrals_per_customer, is_active, created_at, updated_at
+        "#,
+    )
+    .bind(merchant_id)
+    .bind(req.referrer_reward_amount)
+    .bind(req.referee_reward_amount)
+    .bind(req.max_referrals_per_customer.is_some())
+    .bind(req.max_referrals_per_customer.flatten())
+    .bind(req.is_active)
+    .fetch_one(pool)
+    .await
+    .map_err(AppError::Database)?;
+
+    Ok(program)
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
 pub async fn get_program(
     pool: &PgPool,
     merchant_id: Uuid,

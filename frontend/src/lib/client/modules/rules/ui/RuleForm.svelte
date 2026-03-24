@@ -138,7 +138,7 @@
     handleSubmit();
   }}
 >
-  <h2 class="form-title">{isEdit ? 'Edit Rule' : 'Create Reward Rule'}</h2>
+  <h2 class="form-title">{isEdit ? 'Edit Rule' : 'Create Earn Rule'}</h2>
 
   <section class="form-section">
     <div class="field-group">
