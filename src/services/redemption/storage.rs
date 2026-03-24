@@ -101,7 +101,11 @@ pub async fn get_wallet_policy(
 ) -> Result<Option<WalletPolicy>, AppError> {
     let row: Option<WalletPolicy> = sqlx::query_as(
         r#"
-        SELECT * FROM wallet_policies
+        SELECT id, merchant_id, bucket_type, min_redemption, step_size,
+               max_per_order_pct, max_per_order_fixed, stackable_with_discounts,
+               default_expiry_days, excluded_payment_methods,
+               is_active, created_at, updated_at
+        FROM wallet_policies
         WHERE merchant_id = $1 AND bucket_type = $2 AND is_active = true
         "#,
     )
@@ -120,7 +124,11 @@ pub async fn get_wallet_policies(
 ) -> Result<Vec<WalletPolicy>, AppError> {
     let rows: Vec<WalletPolicy> = sqlx::query_as(
         r#"
-        SELECT * FROM wallet_policies
+        SELECT id, merchant_id, bucket_type, min_redemption, step_size,
+               max_per_order_pct, max_per_order_fixed, stackable_with_discounts,
+               default_expiry_days, excluded_payment_methods,
+               is_active, created_at, updated_at
+        FROM wallet_policies
         WHERE merchant_id = $1 AND is_active = true
         ORDER BY bucket_type
         "#,

@@ -32,7 +32,15 @@ const BUCKET_LABELS: Record<string, string> = {
   referral_reward: 'Referral Reward',
   goodwill_credit: 'Goodwill Credit',
   membership_benefit: 'Membership Benefit',
-  refund_credit: 'Refund Credit'
+  refund_credit: 'Refund Credit',
+  EarnedCredit: 'Earned Credit',
+  CodPending: 'COD Pending',
+  GiftCard: 'Gift Card',
+  CustomerFunded: 'Customer Funded',
+  ReferralReward: 'Referral Reward',
+  GoodwillCredit: 'Goodwill Credit',
+  MembershipBenefit: 'Membership Benefit',
+  RefundCredit: 'Refund Credit'
 };
 
 function formatBucketType(bucket: string): string {

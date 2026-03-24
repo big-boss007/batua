@@ -5,3 +5,4 @@ export { default as TierProgress } from './TierProgress.svelte';
 export { default as LoyaltyProgramForm } from './LoyaltyProgramForm.svelte';
 export { default as TierForm } from './TierForm.svelte';
 export { default as TierDistributionChart } from './TierDistributionChart.svelte';
+export { default as TierWizard } from './TierWizard.svelte';

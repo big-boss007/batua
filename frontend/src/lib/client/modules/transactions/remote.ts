@@ -90,6 +90,7 @@ function decodeMerchantTransactionRow(raw: unknown): MerchantTransactionRow {
     customer_phone: (r['customer_phone'] as string) ?? '',
     bucket_type: (r['bucket_type'] as string) ?? '',
     movement_type: (r['movement_type'] as string) ?? '',
+    earning_unit: (r['earning_unit'] as number) ?? 0,
     currency_equivalent: (r['currency_equivalent'] as number) ?? 0,
     state: (r['state'] as string) ?? '',
     created_at: (r['created_at'] as string) ?? ''

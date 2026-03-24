@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Batua is a full-stack application with a Rust/Axum backend and SvelteKit frontend.
+Batua (Breeze Retention Suite) is a full-stack wallet/loyalty/gift-cards/referrals/campaigns/memberships SaaS platform for Indian Shopify D2C merchants. Rust/Axum backend, SvelteKit frontend, PostgreSQL database.
+
+Three interfaces: `/admin/*` (merchant admin), `/platform/*` (super-admin), `/s/{slug}` (customer storefront).
 
 ## Backend (Rust)
 
@@ -14,13 +16,18 @@ Batua is a full-stack application with a Rust/Axum backend and SvelteKit fronten
 - PostgreSQL via sqlx 0.8 (with optional reader replica), Redis
 - OpenTelemetry 0.31 (OTLP feature is `grpc-tonic`, not `tonic`)
 - sqlx 0.8 has built-in tracing — do not add a `"tracing"` feature flag
+- Database name: `batua`
 
 ### Commands
 
 ```bash
-cargo check          # Compile check
-cargo test           # All tests including tracing lint
-make generate-types  # Generate Rust structs from YAML specs
+cargo check                        # Compile check
+cargo test                         # All tests including tracing lint
+cargo run                          # Start backend on :3000
+make dev                           # Start backend (:3000) + frontend (:5174) together
+make reset-and-seed                # Drop/recreate DB, run migrations, seed data
+make reset-db                      # Drop/recreate DB + run migrations only
+psql -d batua -f migrations/X.sql  # Run a single migration
 ```
 
 ### Service Architecture
@@ -28,6 +35,8 @@ make generate-types  # Generate Rust structs from YAML specs
 Each service lives under `src/services/{service_name}/` with: `mod.rs`, `handler.rs`, `types.rs`, `storage.rs`, `helpers.rs`, and optional `middleware.rs`, `remote.rs`, `scheduler.rs`.
 
 When adding a new service: create directory → declare in `src/services/mod.rs` → merge router in `src/main.rs` → `get_router()`. Shared middleware goes in `src/helper.rs`.
+
+14 services: `admin`, `campaigns`, `cod`, `earn`, `events`, `gift_cards`, `identity`, `ledger`, `loyalty`, `notifications`, `redemption`, `referrals`, `rules`, `wallets`.
 
 ### Type Generation
 
@@ -73,12 +82,20 @@ Every endpoint must have documentation in `docs/` following the format in `docs/
 ### Commands
 
 ```bash
-# format, lint, and type-check before commits
+cd frontend
+npm run dev                          # Start dev server on :5173
+npm run build                        # Production build
+npx svelte-check --threshold error   # Type check (use this to verify before committing)
+npm run lint                         # ESLint
+npm run format                       # Prettier format
+npm run format:check                 # Check formatting without writing
 ```
 
 ### Module Structure
 
 Feature modules live at `src/lib/client/modules/<module-name>/` with: `index.ts` (barrel), `store.ts`, `remote.ts`, `utils.ts`, and `ui/` directory.
+
+11 modules: `foundation`, `admin`, `platform`, `transactions`, `customers`, `gift-cards`, `referrals`, `rules`, `settings`, `analytics`, `storefront`.
 
 - Import modules through their barrel (`index.ts`), never from internal files
 - `utils.ts` is private by default — promote to barrel only when needed
@@ -110,11 +127,18 @@ Feature modules live at `src/lib/client/modules/<module-name>/` with: `index.ts`
 
 ### Styling
 
-- Design tokens as CSS custom properties on `:root`
+- Design tokens as CSS custom properties on `:root` in `app.css`
 - Light/dark via `[data-theme="dark"]` attribute
 - Scoped `<style>` blocks in components; global styles only in root CSS
-- Check `@juspay/svelte-ui-components` before building custom components
-- Theme library components via CSS custom properties, don't fork them
+- **IMPORTANT**: Storefront (`/s/{slug}`) uses hardcoded hex colors (e.g. `#1a1d27`, `#2a2d3a`, `#4ade80`) not CSS variables — this is intentional for the card design
+
+### Component Library — MANDATORY CHECK
+
+**BLOCKING: Before writing ANY UI element, call `list_components` from Svelte UI Components MCP.** If the library has it (Button, Input, Select, Toggle, Pill, Progress, Table, Modal, Tabs, Pagination, Avatar, Tooltip, etc.), use it. Do not build custom versions.
+
+- Call `get_component_docs` for exact prop names, types, and CSS variables
+- **CAVEAT**: The Select component's actual TypeScript API (`items: SelectItem[]`, `value: string[]`, `onchange`) differs from MCP docs. Always check `node_modules/@juspay/svelte-ui-components/dist/{Component}/properties.d.ts` for the real types
+- Theme via CSS custom properties in `app.css` — global variant classes exist: `btn-primary`, `btn-secondary`, `btn-danger`, `btn-ghost`, `pill-success`, `pill-error`, `pill-warning`, `pill-info`, `pill-neutral`
 
 ### Import Order
 
@@ -135,15 +159,35 @@ Feature modules live at `src/lib/client/modules/<module-name>/` with: `index.ts`
 - Types: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`
 - Never amend or force-push without explicit permission
 
-### Planning (Skulls MCP)
+### Planning (Skulls MCP) — MANDATORY
 
-Every feature starts with a plan using Skulls MCP before writing code. Plans live in `plans/{feature-name}/` with numbered phase files and `checklist.md`. Unused phases are marked `SKIPPED`, not deleted.
+**BLOCKING REQUIREMENT: Do NOT write any code (Edit, Write) for a new feature, refactoring, or multi-file change until a plan exists in `plans/{feature-name}/`.**
+
+Workflow — every step is required:
+
+1. `init_planning` → `select_language` → `get_template` from Skulls MCP
+2. Create plan directory: `plans/{feature-name}/`
+3. Write all phase files (`00-overview.md` through template phases) + `checklist.md`
+4. Show the plan to the user and get explicit confirmation
+5. **ONLY THEN** start writing code
+6. Track progress against `checklist.md` during implementation
+
+Rules:
+- Plans live in `plans/{feature-name}/` with numbered phase files and `checklist.md`
+- Unused phases are marked `SKIPPED`, not deleted
+- This applies to features, refactors, migrations, and any work touching 3+ files
+- Bug fixes touching 1-2 files are exempt
+- If you catch yourself writing code without a plan, STOP and create the plan first
 
 ### MCP Servers
 
 - **Skulls MCP** — planning and scaffolding (`init_planning` → `select_language` → `get_template`)
 - **Svelte MCP** — framework docs; always run `svelte-autofixer` on Svelte code before finishing
 - **Svelte UI Components MCP** — `@juspay/svelte-ui-components` docs; check `list_components` before building custom UI
+
+### Testing Before Confirming
+
+Always verify features work end-to-end in the browser (via devtools, screenshots, or network requests) before telling the user it's done. Test interactive behaviors (collapse/expand, toggle, form submit) not just rendering. Check the user's URL/port matches your test server.
 
 ### No Redundant Comments
 

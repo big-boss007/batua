@@ -3,6 +3,21 @@
 
   import type { WalletPolicy } from '$lib/client/modules/settings';
 
+  const BUCKET_LABELS: Record<string, string> = {
+    EarnedCredit: 'Earned Credit',
+    CodPending: 'COD Pending',
+    GiftCard: 'Gift Card',
+    CustomerFunded: 'Customer Funded',
+    ReferralReward: 'Referral Reward',
+    GoodwillCredit: 'Goodwill Credit',
+    MembershipBenefit: 'Membership Benefit',
+    RefundCredit: 'Refund Credit'
+  };
+
+  function bucketLabel(bt: string): string {
+    return BUCKET_LABELS[bt] ?? bt;
+  }
+
   let {
     policies,
     onEdit
@@ -19,15 +34,13 @@
 </script>
 
 <div class="policies-list">
-  <h3 class="list-title">Wallet Policies</h3>
-
   {#if policies.length === 0}
     <p class="empty-state">No wallet policies configured.</p>
   {:else}
     {#each policies as policy (policy.id)}
       <div class="policy-item" class:expanded={expandedId === policy.id}>
         <button class="policy-header" onclick={() => toggleExpand(policy.id)}>
-          <span class="policy-bucket">{policy.bucket_type}</span>
+          <span class="policy-bucket">{bucketLabel(policy.bucket_type)}</span>
           <span class="policy-summary">
             {#if policy.default_expiry_days !== null}
               {policy.default_expiry_days}d expiry
@@ -47,13 +60,7 @@
               <div class="detail-item">
                 <span class="detail-label">Min Redemption</span>
                 <span class="detail-value">
-                  {policy.min_redemption !== null ? `${policy.min_redemption}p` : 'None'}
-                </span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Step Size</span>
-                <span class="detail-value">
-                  {policy.step_size !== null ? `${policy.step_size}p` : 'None'}
+                  {policy.min_redemption !== null ? policy.min_redemption : 'None'}
                 </span>
               </div>
               <div class="detail-item">
@@ -63,14 +70,10 @@
                 </span>
               </div>
               <div class="detail-item">
-                <span class="detail-label">Max Per Order (Fixed)</span>
+                <span class="detail-label">Max Per Order (cap)</span>
                 <span class="detail-value">
-                  {policy.max_per_order_fixed !== null ? `${policy.max_per_order_fixed}p` : 'None'}
+                  {policy.max_per_order_fixed !== null ? policy.max_per_order_fixed : 'None'}
                 </span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Transferable</span>
-                <Toggle checked={policy.is_transferable} text="" />
               </div>
             </div>
             <button class="edit-button" onclick={() => onEdit(policy)}>Edit Policy</button>

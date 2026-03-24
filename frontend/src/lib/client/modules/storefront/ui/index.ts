@@ -8,3 +8,4 @@ export { default as GiftCardStatus } from './GiftCardStatus.svelte';
 export { default as CampaignBanner } from './CampaignBanner.svelte';
 export { default as MerchantHeader } from './MerchantHeader.svelte';
 export { default as ShareButtons } from './ShareButtons.svelte';
+export { default as ProfileBar } from './ProfileBar.svelte';

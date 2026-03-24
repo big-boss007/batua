@@ -32,12 +32,14 @@ pub async fn create_rule(pool: &PgPool, req: &CreateRuleRequest) -> Result<Rule,
 pub async fn update_rule(
     pool: &PgPool,
     id: Uuid,
+    name: Option<&str>,
     config: &serde_json::Value,
 ) -> Result<Rule, AppError> {
     let rule = sqlx::query_as::<_, Rule>(
         r#"
         UPDATE rules
-        SET config = $2,
+        SET name = COALESCE($2, name),
+            config = $3,
             version = version + 1,
             updated_at = now()
         WHERE id = $1
@@ -45,6 +47,7 @@ pub async fn update_rule(
         "#,
     )
     .bind(id)
+    .bind(name)
     .bind(config)
     .fetch_optional(pool)
     .await?

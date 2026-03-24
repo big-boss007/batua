@@ -27,8 +27,10 @@ async function issueGiftCard(form: IssueGiftCardForm): Promise<APIResult<GiftCar
   return apiCaller.post(
     '/gift-cards/issue',
     {
+      merchant_id: form.merchant_id,
       amount: form.amount,
-      expires_at: form.expires_at
+      expires_at: form.expires_at,
+      actor_type: 'human'
     },
     decodeGiftCard
   );
@@ -37,7 +39,11 @@ async function issueGiftCard(form: IssueGiftCardForm): Promise<APIResult<GiftCar
 async function bulkIssue(form: BulkIssueForm): Promise<APIResult<Array<GiftCard>>> {
   return apiCaller.post(
     '/gift-cards/bulk-issue',
-    { cards: form.cards as unknown as Record<string, unknown>[] },
+    {
+      merchant_id: form.merchant_id,
+      batch_id: form.batch_id,
+      cards: form.cards as unknown as Record<string, unknown>[]
+    },
     decodeGiftCards
   );
 }

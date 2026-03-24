@@ -99,13 +99,16 @@ function decodeMerchant(raw: unknown): import('$lib/client/modules/admin').Merch
     plan_tier: (r['plan_tier'] as string) ?? null,
     currency: (r['currency'] as string) ?? 'INR',
     timezone: (r['timezone'] as string) ?? 'Asia/Kolkata',
-    is_active: (r['is_active'] as boolean) ?? false
+    is_active: (r['is_active'] as boolean) ?? false,
+    points_name: (r['points_name'] as string) ?? 'Points',
+    points_icon: (r['points_icon'] as string) ?? 'pts',
+    points_to_currency_rate: (r['points_to_currency_rate'] as number) ?? 1.0
   };
 }
 
 async function updateMerchantProfile(
   id: string,
-  data: { name?: string; domain?: string; slug?: string }
+  data: { name?: string; domain?: string; slug?: string; points_name?: string; points_icon?: string; points_to_currency_rate?: number }
 ): Promise<APIResult<import('$lib/client/modules/admin').Merchant>> {
   return apiCaller.put(`/admin/merchants/${id}`, data as Record<string, unknown>, decodeMerchant);
 }

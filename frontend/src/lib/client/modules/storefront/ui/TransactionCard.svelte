@@ -1,105 +1,110 @@
 <script lang="ts">
-  import { RelativeTime } from '@juspay/svelte-ui-components';
-  import { formatCurrencyINR } from '$lib/client/modules/foundation';
+  import {
+    formatCurrencyINR,
+    formatPoints,
+    isPointsBucket
+  } from '$lib/client/modules/foundation';
   import { formatBucketLabel, formatMovementLabel, getMovementPrefix } from '../utils';
-  import type { TransactionEntry } from '../types';
+  import type { TransactionEntry, StorefrontMerchant } from '../types';
 
-  let { entry }: { entry: TransactionEntry } = $props();
+  let {
+    entry,
+    merchant,
+    dateMeta = null,
+    runningBalance = null
+  }: {
+    entry: TransactionEntry;
+    merchant: StorefrontMerchant;
+    dateMeta?: string | null;
+    runningBalance?: number | null;
+  } = $props();
 
-  let icon = $derived.by(() => {
-    switch (entry.movement_type) {
-      case 'In':
-        return '+';
-      case 'Out':
-        return '-';
-      case 'Held':
-        return '\u23F3';
-      case 'Across':
-        return '\u21C4';
-      case 'Released':
-        return '+';
-      case 'Expired':
-        return '-';
-      default:
-        return '\u2022';
-    }
-  });
+  let isPoints = $derived(isPointsBucket(entry.bucket_type));
 
   let colorClass = $derived.by(() => {
-    switch (entry.movement_type) {
-      case 'In':
-      case 'Released':
-        return 'amount-positive';
-      case 'Out':
-      case 'Expired':
-        return 'amount-negative';
-      case 'Held':
-        return 'amount-held';
-      default:
-        return 'amount-neutral';
+    if (isPoints) {
+      return entry.movement_type === 'Out' || entry.movement_type === 'Expired'
+        ? 'indicator-debit'
+        : 'indicator-credit';
     }
+    return 'indicator-cash';
+  });
+
+  let amountColorClass = $derived.by(() => {
+    if (isPoints) {
+      return entry.movement_type === 'Out' || entry.movement_type === 'Expired'
+        ? 'amount-debit'
+        : 'amount-credit';
+    }
+    return 'amount-cash';
   });
 
   let prefix = $derived(getMovementPrefix(entry.movement_type));
+
+  let amountText = $derived.by(() => {
+    if (isPoints) {
+      return `${prefix}${formatPoints(Math.abs(entry.earning_unit), merchant.points_icon)}`;
+    }
+    return `${prefix}${formatCurrencyINR(Math.abs(entry.currency_equivalent))}`;
+  });
+
+  let hintText = $derived.by(() => {
+    if (isPoints) {
+      return `≈ ${formatCurrencyINR(Math.abs(entry.currency_equivalent))}`;
+    }
+    return 'cash';
+  });
+
+  let metaText = $derived.by(() => {
+    const bucket = formatBucketLabel(entry.bucket_type);
+    return dateMeta !== null ? `${bucket} · ${dateMeta}` : bucket;
+  });
 </script>
 
-<div class="tx-card">
-  <div class="tx-icon {colorClass}">{icon}</div>
+<div class="tx-item">
+  <div class="tx-indicator {colorClass}"></div>
   <div class="tx-details">
-    <span class="tx-type">{formatMovementLabel(entry.movement_type)}</span>
-    <span class="tx-bucket">{formatBucketLabel(entry.bucket_type)}</span>
+    <span class="tx-label">{formatMovementLabel(entry.movement_type)}</span>
+    <span class="tx-meta">{metaText}</span>
   </div>
   <div class="tx-right">
-    <span class="tx-amount {colorClass}">
-      {prefix}{formatCurrencyINR(Math.abs(entry.currency_equivalent))}
-    </span>
-    <span class="tx-time">
-      <RelativeTime date={entry.created_at} format="short" />
-    </span>
+    <span class="tx-amount {amountColorClass}">{amountText}</span>
+    <span class="tx-hint">{hintText}</span>
+    {#if runningBalance !== null}
+      <span class="tx-running">bal {formatCurrencyINR(runningBalance)}</span>
+    {/if}
   </div>
 </div>
 
 <style>
-  .tx-card {
+  .tx-item {
     display: flex;
     align-items: center;
-    gap: var(--space-3);
-    padding: var(--space-3) var(--space-4);
-    background: var(--color-surface);
-    border-radius: var(--radius-md);
-    transition: background var(--transition-fast);
+    gap: 16px;
+    padding: 14px 0;
   }
 
-  .tx-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    border-radius: var(--radius-full);
-    font-size: var(--font-size-md);
-    font-weight: var(--font-weight-bold);
+  .tx-item + .tx-item {
+    border-top: 1px solid #2a2d3a;
+  }
+
+  .tx-indicator {
+    width: 4px;
+    height: 32px;
+    border-radius: 2px;
     flex-shrink: 0;
   }
 
-  .tx-icon.amount-positive {
-    background: #dcfce7;
-    color: #166534;
+  .tx-indicator.indicator-credit {
+    background: #4ade80;
   }
 
-  .tx-icon.amount-negative {
-    background: #fef2f2;
-    color: #991b1b;
+  .tx-indicator.indicator-debit {
+    background: #f87171;
   }
 
-  .tx-icon.amount-held {
-    background: #fefce8;
-    color: #854d0e;
-  }
-
-  .tx-icon.amount-neutral {
-    background: var(--color-surface-2);
-    color: var(--color-text-muted);
+  .tx-indicator.indicator-cash {
+    background: #c4b5fd;
   }
 
   .tx-details {
@@ -109,15 +114,16 @@
     min-width: 0;
   }
 
-  .tx-type {
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-medium);
-    color: var(--color-text);
+  .tx-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #ffffff;
   }
 
-  .tx-bucket {
-    font-size: var(--font-size-xs);
-    color: var(--color-text-muted);
+  .tx-meta {
+    font-size: 11px;
+    color: #9ca3af;
+    margin-top: 2px;
   }
 
   .tx-right {
@@ -128,30 +134,34 @@
   }
 
   .tx-amount {
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-semibold);
+    font-size: 14px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
   }
 
-  .tx-amount.amount-positive {
-    color: var(--color-success);
+  .tx-amount.amount-credit {
+    color: #4ade80;
   }
 
-  .tx-amount.amount-negative {
-    color: var(--color-error);
+  .tx-amount.amount-debit {
+    color: #ffffff;
   }
 
-  .tx-amount.amount-held {
-    color: var(--color-warning);
+  .tx-amount.amount-cash {
+    color: #c4b5fd;
   }
 
-  .tx-amount.amount-neutral {
-    color: var(--color-text-muted);
+  .tx-hint {
+    font-size: 9px;
+    color: #6b7280;
+    margin-top: 1px;
+    font-variant-numeric: tabular-nums;
   }
 
-  .tx-time {
-    font-size: var(--font-size-xs);
-    color: var(--color-text-muted);
-    --relative-time-font-size: var(--font-size-xs);
-    --relative-time-color: var(--color-text-muted);
+  .tx-running {
+    font-size: 10px;
+    color: #9ca3af;
+    margin-top: 2px;
+    font-variant-numeric: tabular-nums;
   }
 </style>

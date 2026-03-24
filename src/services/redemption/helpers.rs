@@ -110,7 +110,6 @@ fn build_constraint_summary(policy: Option<&WalletPolicy>) -> serde_json::Value 
         "max_per_order_fixed": policy.max_per_order_fixed,
         "stackable_with_discounts": policy.stackable_with_discounts,
         "excluded_payment_methods": policy.excluded_payment_methods,
-        "excluded_collections": policy.excluded_collections,
     })
 }
 
@@ -173,6 +172,275 @@ pub fn validate_constraints(
     }
 
     Ok(validated)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use uuid::Uuid;
+
+    fn make_policy(bucket_type: BucketType) -> WalletPolicy {
+        WalletPolicy {
+            id: Uuid::new_v4(),
+            merchant_id: Uuid::new_v4(),
+            bucket_type,
+            min_redemption: None,
+            step_size: None,
+            max_per_order_pct: None,
+            max_per_order_fixed: None,
+            stackable_with_discounts: true,
+            default_expiry_days: None,
+            excluded_payment_methods: Vec::new(),
+            is_active: true,
+            created_at: chrono::Utc::now(),
+            updated_at: chrono::Utc::now(),
+        }
+    }
+
+    fn make_order_context(order_amount: f64, payment_method: Option<&str>) -> OrderContext {
+        OrderContext {
+            order_id: "order-1".to_string(),
+            order_amount,
+            payment_method: payment_method.map(|s| s.to_string()),
+            discount_codes: Vec::new(),
+        }
+    }
+
+    fn make_eligibility(total: f64, buckets: Vec<(BucketType, f64)>) -> RedemptionEligibility {
+        RedemptionEligibility {
+            total_eligible: total,
+            buckets: buckets
+                .into_iter()
+                .map(|(bt, amt)| BucketEligibility {
+                    bucket_type: bt,
+                    eligible_amount: amt,
+                    constraints: serde_json::json!({}),
+                })
+                .collect(),
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // evaluate_bucket_eligibility
+    // -----------------------------------------------------------------------
+
+    #[test]
+    fn bucket_eligibility_zero_spendable() {
+        let ctx = make_order_context(1000.0, None);
+        let policy = make_policy(BucketType::EarnedCredit);
+        assert!((evaluate_bucket_eligibility(&BucketType::EarnedCredit, 0.0, Some(&policy), &ctx)).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn bucket_eligibility_negative_spendable() {
+        let ctx = make_order_context(1000.0, None);
+        let policy = make_policy(BucketType::EarnedCredit);
+        assert!((evaluate_bucket_eligibility(&BucketType::EarnedCredit, -10.0, Some(&policy), &ctx)).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn bucket_eligibility_no_policy_returns_full() {
+        let ctx = make_order_context(1000.0, None);
+        let result = evaluate_bucket_eligibility(&BucketType::EarnedCredit, 500.0, None, &ctx);
+        assert!((result - 500.0).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn bucket_eligibility_inactive_policy() {
+        let ctx = make_order_context(1000.0, None);
+        let mut policy = make_policy(BucketType::EarnedCredit);
+        policy.is_active = false;
+        assert!((evaluate_bucket_eligibility(&BucketType::EarnedCredit, 500.0, Some(&policy), &ctx)).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn bucket_eligibility_excluded_payment_method_case_insensitive() {
+        let ctx = make_order_context(1000.0, Some("UPI"));
+        let mut policy = make_policy(BucketType::EarnedCredit);
+        policy.excluded_payment_methods = vec!["upi".to_string()];
+        assert!((evaluate_bucket_eligibility(&BucketType::EarnedCredit, 500.0, Some(&policy), &ctx)).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn bucket_eligibility_non_excluded_payment_method() {
+        let ctx = make_order_context(1000.0, Some("card"));
+        let mut policy = make_policy(BucketType::EarnedCredit);
+        policy.excluded_payment_methods = vec!["upi".to_string()];
+        let result = evaluate_bucket_eligibility(&BucketType::EarnedCredit, 500.0, Some(&policy), &ctx);
+        assert!(result > 0.0);
+    }
+
+    #[test]
+    fn bucket_eligibility_pct_cap() {
+        let ctx = make_order_context(1000.0, None);
+        let mut policy = make_policy(BucketType::EarnedCredit);
+        policy.max_per_order_pct = Some(10.0);
+        let result = evaluate_bucket_eligibility(&BucketType::EarnedCredit, 500.0, Some(&policy), &ctx);
+        assert!((result - 100.0).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn bucket_eligibility_fixed_cap() {
+        let ctx = make_order_context(1000.0, None);
+        let mut policy = make_policy(BucketType::EarnedCredit);
+        policy.max_per_order_fixed = Some(50.0);
+        let result = evaluate_bucket_eligibility(&BucketType::EarnedCredit, 500.0, Some(&policy), &ctx);
+        assert!((result - 50.0).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn bucket_eligibility_both_caps_pct_wins() {
+        let ctx = make_order_context(1000.0, None);
+        let mut policy = make_policy(BucketType::EarnedCredit);
+        policy.max_per_order_pct = Some(10.0); // 100
+        policy.max_per_order_fixed = Some(200.0);
+        let result = evaluate_bucket_eligibility(&BucketType::EarnedCredit, 500.0, Some(&policy), &ctx);
+        assert!((result - 100.0).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn bucket_eligibility_both_caps_fixed_wins() {
+        let ctx = make_order_context(1000.0, None);
+        let mut policy = make_policy(BucketType::EarnedCredit);
+        policy.max_per_order_pct = Some(50.0); // 500
+        policy.max_per_order_fixed = Some(200.0);
+        let result = evaluate_bucket_eligibility(&BucketType::EarnedCredit, 500.0, Some(&policy), &ctx);
+        assert!((result - 200.0).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn bucket_eligibility_spendable_less_than_cap() {
+        let ctx = make_order_context(1000.0, None);
+        let mut policy = make_policy(BucketType::EarnedCredit);
+        policy.max_per_order_pct = Some(100.0); // 1000
+        let result = evaluate_bucket_eligibility(&BucketType::EarnedCredit, 50.0, Some(&policy), &ctx);
+        assert!((result - 50.0).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn bucket_eligibility_no_payment_method_no_exclusion() {
+        let ctx = make_order_context(1000.0, None);
+        let mut policy = make_policy(BucketType::EarnedCredit);
+        policy.excluded_payment_methods = vec!["upi".to_string()];
+        let result = evaluate_bucket_eligibility(&BucketType::EarnedCredit, 500.0, Some(&policy), &ctx);
+        assert!(result > 0.0);
+    }
+
+    // -----------------------------------------------------------------------
+    // validate_constraints
+    // -----------------------------------------------------------------------
+
+    #[test]
+    fn constraints_zero_amount_rejected() {
+        let elig = make_eligibility(100.0, vec![(BucketType::EarnedCredit, 100.0)]);
+        assert!(validate_constraints(&elig, 0.0, &[], &[]).is_err());
+    }
+
+    #[test]
+    fn constraints_negative_amount_rejected() {
+        let elig = make_eligibility(100.0, vec![(BucketType::EarnedCredit, 100.0)]);
+        assert!(validate_constraints(&elig, -10.0, &[], &[]).is_err());
+    }
+
+    #[test]
+    fn constraints_exceeds_eligible_rejected() {
+        let elig = make_eligibility(100.0, vec![(BucketType::EarnedCredit, 100.0)]);
+        assert!(validate_constraints(&elig, 200.0, &[], &[]).is_err());
+    }
+
+    #[test]
+    fn constraints_exact_eligible_accepted() {
+        let elig = make_eligibility(100.0, vec![(BucketType::EarnedCredit, 100.0)]);
+        let result = validate_constraints(&elig, 100.0, &[], &[]);
+        assert!(result.is_ok());
+        assert!((result.unwrap() - 100.0).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn constraints_discount_not_stackable_rejected() {
+        let elig = make_eligibility(100.0, vec![(BucketType::EarnedCredit, 100.0)]);
+        let mut policy = make_policy(BucketType::EarnedCredit);
+        policy.stackable_with_discounts = false;
+        let codes = vec!["SALE10".to_string()];
+        assert!(validate_constraints(&elig, 50.0, &[policy], &codes).is_err());
+    }
+
+    #[test]
+    fn constraints_discount_stackable_accepted() {
+        let elig = make_eligibility(100.0, vec![(BucketType::EarnedCredit, 100.0)]);
+        let mut policy = make_policy(BucketType::EarnedCredit);
+        policy.stackable_with_discounts = true;
+        let codes = vec!["SALE10".to_string()];
+        assert!(validate_constraints(&elig, 50.0, &[policy], &codes).is_ok());
+    }
+
+    #[test]
+    fn constraints_below_min_redemption_rejected() {
+        let elig = make_eligibility(100.0, vec![(BucketType::EarnedCredit, 100.0)]);
+        let mut policy = make_policy(BucketType::EarnedCredit);
+        policy.min_redemption = Some(10.0);
+        assert!(validate_constraints(&elig, 5.0, &[policy], &[]).is_err());
+    }
+
+    #[test]
+    fn constraints_exact_min_redemption_accepted() {
+        let elig = make_eligibility(100.0, vec![(BucketType::EarnedCredit, 100.0)]);
+        let mut policy = make_policy(BucketType::EarnedCredit);
+        policy.min_redemption = Some(10.0);
+        let result = validate_constraints(&elig, 10.0, &[policy], &[]);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn constraints_step_size_snaps_down() {
+        let elig = make_eligibility(100.0, vec![(BucketType::EarnedCredit, 100.0)]);
+        let mut policy = make_policy(BucketType::EarnedCredit);
+        policy.step_size = Some(50.0);
+        let result = validate_constraints(&elig, 75.0, &[policy], &[]).unwrap();
+        assert!((result - 50.0).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn constraints_exact_step_multiple_unchanged() {
+        let elig = make_eligibility(100.0, vec![(BucketType::EarnedCredit, 100.0)]);
+        let mut policy = make_policy(BucketType::EarnedCredit);
+        policy.step_size = Some(50.0);
+        let result = validate_constraints(&elig, 100.0, &[policy], &[]).unwrap();
+        assert!((result - 100.0).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn constraints_step_eliminates_amount() {
+        let elig = make_eligibility(100.0, vec![(BucketType::EarnedCredit, 100.0)]);
+        let mut policy = make_policy(BucketType::EarnedCredit);
+        policy.step_size = Some(50.0);
+        assert!(validate_constraints(&elig, 25.0, &[policy], &[]).is_err());
+    }
+
+    #[test]
+    fn constraints_small_amount_with_step() {
+        let elig = make_eligibility(100.0, vec![(BucketType::EarnedCredit, 100.0)]);
+        let mut policy = make_policy(BucketType::EarnedCredit);
+        policy.step_size = Some(1.0);
+        let result = validate_constraints(&elig, 0.01, &[policy], &[]);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn constraints_empty_discount_codes_no_stackability_check() {
+        let elig = make_eligibility(100.0, vec![(BucketType::EarnedCredit, 100.0)]);
+        let mut policy = make_policy(BucketType::EarnedCredit);
+        policy.stackable_with_discounts = false;
+        let empty: Vec<String> = vec![];
+        assert!(validate_constraints(&elig, 50.0, &[policy], &empty).is_ok());
+    }
+
+    #[test]
+    fn constraints_no_policies_passthrough() {
+        let elig = make_eligibility(100.0, vec![(BucketType::EarnedCredit, 100.0)]);
+        let result = validate_constraints(&elig, 50.0, &[], &[]).unwrap();
+        assert!((result - 50.0).abs() < f64::EPSILON);
+    }
 }
 
 #[tracing::instrument(skip(pool), err(Debug))]

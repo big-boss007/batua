@@ -1,14 +1,34 @@
 <script lang="ts">
   import type { OverviewMetrics } from '$lib/client/modules/analytics';
-  import { formatCurrencyINR } from '$lib/client/modules/foundation';
+  import { formatCurrencyINR, formatPoints } from '$lib/client/modules/foundation';
 
-  let { metrics }: { metrics: OverviewMetrics } = $props();
+  let {
+    metrics,
+    pointsIcon = 'pts',
+    pointsRate = 1.0
+  }: {
+    metrics: OverviewMetrics;
+    pointsIcon?: string;
+    pointsRate?: number;
+  } = $props();
 
   let cards = $derived([
-    { label: 'Total Wallets', value: metrics.total_wallets.toLocaleString('en-IN') },
-    { label: 'Active Credits', value: formatCurrencyINR(metrics.total_active_credits) },
-    { label: 'Total Redeemed', value: formatCurrencyINR(metrics.total_redeemed) },
-    { label: 'Total Expired', value: formatCurrencyINR(metrics.total_expired) }
+    { label: 'Total Wallets', value: metrics.total_wallets.toLocaleString('en-IN'), sub: null },
+    {
+      label: 'Active Credits',
+      value: formatPoints(Math.round(metrics.total_active_credits / pointsRate), pointsIcon),
+      sub: '≈ ' + formatCurrencyINR(metrics.total_active_credits)
+    },
+    {
+      label: 'Total Redeemed',
+      value: formatPoints(Math.round(metrics.total_redeemed / pointsRate), pointsIcon),
+      sub: '≈ ' + formatCurrencyINR(metrics.total_redeemed)
+    },
+    {
+      label: 'Total Expired',
+      value: formatPoints(Math.round(metrics.total_expired / pointsRate), pointsIcon),
+      sub: '≈ ' + formatCurrencyINR(metrics.total_expired)
+    }
   ]);
 </script>
 
@@ -16,6 +36,9 @@
   {#each cards as card (card.label)}
     <div class="overview-card">
       <span class="card-value">{card.value}</span>
+      {#if card.sub !== null}
+        <span class="card-sub">{card.sub}</span>
+      {/if}
       <span class="card-label">{card.label}</span>
     </div>
   {/each}
@@ -49,6 +72,11 @@
     font-weight: var(--font-weight-bold);
     color: var(--color-text);
     line-height: var(--line-height-tight);
+  }
+
+  .card-sub {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
   }
 
   .card-label {

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { formatCurrencyINR } from '$lib/client/modules/foundation';
+  import { formatPoints } from '$lib/client/modules/foundation';
   import { toastStore } from '$lib/client/modules/foundation';
   import type { ReferralCodeInfo } from '../types';
   import ShareButtons from './ShareButtons.svelte';
@@ -7,11 +7,13 @@
   let {
     code,
     referralReward,
-    merchantName
+    merchantName,
+    pointsIcon = 'pts'
   }: {
     code: ReferralCodeInfo;
     referralReward: number;
     merchantName: string;
+    pointsIcon?: string;
   } = $props();
 
   let shareUrl = $derived(
@@ -20,7 +22,7 @@
       : ''
   );
   let shareText = $derived(
-    `Hey! Use my referral code ${code.code} at ${merchantName} and get ${formatCurrencyINR(referralReward)} in rewards!`
+    `Hey! Use my referral code ${code.code} at ${merchantName} and get ${formatPoints(referralReward, pointsIcon)} in rewards!`
   );
 
   function handleCopy() {
@@ -31,7 +33,7 @@
 <div class="referral-card">
   <h3 class="referral-title">Refer & Earn</h3>
   <p class="referral-subtitle">
-    Share your code and earn {formatCurrencyINR(referralReward)} for each referral
+    Share your code and earn {formatPoints(referralReward, pointsIcon)} for each referral
   </p>
 
   <div class="referral-code-box">

@@ -1,5 +1,5 @@
 mod handler;
-mod helpers;
+pub mod helpers;
 pub mod storage;
 pub mod types;
 
@@ -47,20 +47,8 @@ pub fn router() -> axum::Router<AppState> {
             get(handler::get_wheel_config),
         )
         .route(
-            "/earn/memberships/plans",
-            post(handler::create_membership_plan),
-        )
-        .route(
-            "/earn/memberships/plans/{merchant_id}",
-            get(handler::list_membership_plans),
-        )
-        .route(
-            "/earn/memberships/subscribe",
-            post(handler::subscribe_membership),
-        )
-        .route(
-            "/earn/memberships/renew",
-            post(handler::renew_membership),
+            "/earn/memberships/assign",
+            post(handler::assign_membership),
         )
         .route(
             "/earn/memberships/cancel/{membership_id}",
@@ -69,5 +57,13 @@ pub fn router() -> axum::Router<AppState> {
         .route(
             "/earn/memberships/status/{merchant_id}/{customer_id}",
             get(handler::membership_status),
+        )
+        .route(
+            "/earn/memberships/subscribers/{merchant_id}/enriched",
+            get(handler::list_subscribers_enriched),
+        )
+        .route(
+            "/earn/memberships/subscribers/{merchant_id}",
+            get(handler::list_subscribers),
         )
 }

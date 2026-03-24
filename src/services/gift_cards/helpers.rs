@@ -363,3 +363,76 @@ pub async fn redeem_gift_card(
 
     Ok(updated.to_response())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::collections::HashSet;
+
+    #[test]
+    fn gift_card_code_starts_with_prefix() {
+        let code = generate_gift_card_code();
+        assert!(code.starts_with("BRZE-"), "code must start with BRZE-, got {code}");
+    }
+
+    #[test]
+    fn gift_card_code_format() {
+        let code = generate_gift_card_code();
+        let parts: Vec<&str> = code.split('-').collect();
+        assert_eq!(parts.len(), 4, "must have 4 parts (prefix + 3 segments), got {code}");
+        assert_eq!(parts[0], "BRZE");
+        for &segment in &parts[1..] {
+            assert_eq!(segment.len(), 4, "each segment must be 4 chars, got {segment}");
+        }
+    }
+
+    #[test]
+    fn gift_card_code_no_ambiguous_chars() {
+        for _ in 0..100 {
+            let code = generate_gift_card_code();
+            let body = &code[5..];
+            for ch in body.chars() {
+                if ch == '-' {
+                    continue;
+                }
+                assert!(
+                    !['I', 'O', '0', '1'].contains(&ch),
+                    "code must not contain ambiguous char '{ch}', full code: {code}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn gift_card_codes_are_unique() {
+        let codes: HashSet<String> = (0..100).map(|_| generate_gift_card_code()).collect();
+        assert_eq!(codes.len(), 100, "100 generated codes must all be unique");
+    }
+
+    #[test]
+    fn parse_actor_type_valid() {
+        assert!(parse_actor_type("system").is_ok());
+        assert!(parse_actor_type("System").is_ok());
+        assert!(parse_actor_type("human").is_ok());
+        assert!(parse_actor_type("Human").is_ok());
+        assert!(parse_actor_type("automation").is_ok());
+        assert!(parse_actor_type("migration").is_ok());
+    }
+
+    #[test]
+    fn parse_actor_type_invalid() {
+        assert!(parse_actor_type("unknown").is_err());
+        assert!(parse_actor_type("").is_err());
+    }
+
+    #[test]
+    fn parse_expires_at_valid() {
+        assert!(parse_expires_at("2026-12-31T23:59:59Z").is_ok());
+    }
+
+    #[test]
+    fn parse_expires_at_invalid() {
+        assert!(parse_expires_at("not-a-date").is_err());
+        assert!(parse_expires_at("").is_err());
+    }
+}

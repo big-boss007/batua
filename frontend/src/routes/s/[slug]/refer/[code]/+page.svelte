@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Button } from '@juspay/svelte-ui-components';
-  import { formatCurrencyINR } from '$lib/client/modules/foundation';
+  import { formatCurrencyINR, formatPoints } from '$lib/client/modules/foundation';
   import type {
     StorefrontMerchant,
     ReferralCodeInfo,
@@ -42,7 +42,7 @@
       <h2 class="referral-headline">You've been invited!</h2>
       {#if rewardAmount > 0}
         <p class="referral-reward">
-          Get <strong class="reward-amount">{formatCurrencyINR(rewardAmount)}</strong>
+          Get <strong class="reward-amount">{formatPoints(rewardAmount, merchant?.points_icon ?? 'pts')}</strong>
           in rewards on your first order
         </p>
       {/if}
@@ -69,7 +69,7 @@
         <div class="how-step">
           <span class="step-number">3</span>
           <span class="step-text">
-            Get {formatCurrencyINR(rewardAmount)} credited to your wallet
+            Get {formatPoints(rewardAmount, merchant?.points_icon ?? 'pts')} credited to your wallet
           </span>
         </div>
       </div>

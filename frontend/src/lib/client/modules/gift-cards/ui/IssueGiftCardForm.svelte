@@ -1,43 +1,45 @@
 <script lang="ts">
+  import { Input, Button } from '@juspay/svelte-ui-components';
+
   let { onIssue }: { onIssue: (amount: number, expiresAt: string | null) => void } = $props();
 
-  let amount = $state(0);
+  let amount = $state('');
   let expiresAt = $state('');
   let isSubmitting = $state(false);
 
   function handleSubmit(event: SubmitEvent) {
     event.preventDefault();
-    if (amount <= 0 || isSubmitting) return;
+    if (Number(amount) <= 0 || !expiresAt || isSubmitting) return;
     isSubmitting = true;
-    onIssue(amount, expiresAt || null);
+    onIssue(Number(amount), expiresAt);
     isSubmitting = false;
-    amount = 0;
+    amount = '';
     expiresAt = '';
   }
 </script>
 
 <form class="form" onsubmit={handleSubmit}>
-  <div class="form-field">
-    <label class="label" for="gc-amount">Amount (₹)</label>
-    <input
-      id="gc-amount"
-      class="input"
-      type="number"
-      min="1"
-      bind:value={amount}
-      placeholder="e.g. 10000 for 100.00"
-      required
-    />
-  </div>
+  <Input
+    value={amount}
+    label="Amount (₹)"
+    dataType="number"
+    placeholder="e.g. 500"
+    onInput={(val) => {
+      amount = val;
+    }}
+  />
 
   <div class="form-field">
-    <label class="label" for="gc-expires">Expiry Date (optional)</label>
-    <input id="gc-expires" class="input" type="date" bind:value={expiresAt} />
+    <label class="label" for="gc-expires">Expiry Date</label>
+    <input id="gc-expires" class="date-input" type="date" bind:value={expiresAt} required />
   </div>
 
-  <button class="btn btn-primary" type="submit" disabled={amount <= 0 || isSubmitting}>
-    Issue Gift Card
-  </button>
+  <Button
+    text="Issue Gift Card"
+    classes="btn-primary"
+    disabled={Number(amount) <= 0 || !expiresAt || isSubmitting}
+    type="submit"
+  />
 </form>
 
 <style>
@@ -59,7 +61,7 @@
     color: var(--color-text-muted);
   }
 
-  .input {
+  .date-input {
     padding: var(--space-2) var(--space-3);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
@@ -69,36 +71,8 @@
     transition: border-color var(--transition-fast);
   }
 
-  .input:focus {
+  .date-input:focus {
     outline: none;
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 20%, transparent);
-  }
-
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--space-2) var(--space-4);
-    border: none;
-    border-radius: var(--radius-md);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
-    transition: background-color var(--transition-fast);
-    align-self: flex-start;
-  }
-
-  .btn-primary {
-    background: var(--color-primary);
-    color: #ffffff;
-  }
-
-  .btn-primary:hover:not(:disabled) {
-    background: var(--color-primary-hover);
-  }
-
-  .btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
   }
 </style>

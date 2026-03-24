@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Rule, RulePerformance, RewardRuleConfig } from '$lib/client/modules/rules';
-  import { Button, Modal } from '@juspay/svelte-ui-components';
+  import { Button } from '@juspay/svelte-ui-components';
   import {
     rulesStore,
     selectedRuleStore,
@@ -77,7 +77,7 @@
 
   async function handleSave(name: string, ruleType: string, config: RewardRuleConfig) {
     if (editingRule !== null) {
-      const result = await updateRule(editingRule.id, { config });
+      const result = await updateRule(editingRule.id, { name, config });
       if (result.tag === 'success') {
         rulesStore.updateRule(result.data);
         toastStore.push({ message: 'Rule updated successfully', level: 'success' });
@@ -185,22 +185,78 @@
   {/if}
 
   {#if showForm}
-    <Modal
-      header={{ text: editingRule ? 'Edit Rule' : 'New Rule' }}
-      classes="rules-modal"
-      onoverlayClick={closeForm}
-      onheaderRightImageClick={closeForm}
-    >
-      {#snippet content()}
-        <div style="padding: var(--space-4);">
+    <div class="modal-overlay" onclick={closeForm} onkeydown={(e) => { if (e.key === 'Escape') closeForm(); }} role="button" tabindex="-1">
+      <div class="modal-card" onclick={(e) => e.stopPropagation()} role="dialog">
+        <div class="modal-header">
+          <h3 class="modal-title">{editingRule ? 'Edit Rule' : 'New Rule'}</h3>
+          <button class="modal-close" onclick={closeForm}>&times;</button>
+        </div>
+        <div class="modal-body">
           <RuleForm rule={editingRule} onSave={handleSave} onCancel={closeForm} />
         </div>
-      {/snippet}
-    </Modal>
+      </div>
+    </div>
   {/if}
 </div>
 
 <style>
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: var(--z-modal, 400);
+  }
+
+  .modal-card {
+    background: var(--color-bg);
+    border-radius: var(--radius-lg);
+    width: 620px;
+    max-width: 90vw;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-4) var(--space-6);
+    border-bottom: 1px solid var(--color-border);
+    flex-shrink: 0;
+  }
+
+  .modal-title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: var(--font-size-xl);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-sm);
+    line-height: 1;
+  }
+
+  .modal-close:hover {
+    color: var(--color-text);
+    background: var(--color-surface-2);
+  }
+
+  .modal-body {
+    overflow-y: auto;
+    flex: 1;
+  }
+
   .rules-page {
     max-width: 1200px;
     margin: 0 auto;

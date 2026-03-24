@@ -5,11 +5,14 @@ export type {
   Condition,
   RewardAction,
   Campaign,
+  CampaignPerformance,
   FestiveTemplate,
   CampaignCalendarEntry,
+  CampaignStackingConfig,
   CreateRuleRequest,
   UpdateRuleRequest,
-  CreateCampaignFromTemplateRequest
+  CreateCampaignFromTemplateRequest,
+  CreateCampaignDirectRequest
 } from './types';
 
 export {
@@ -18,9 +21,13 @@ export {
   updateRule,
   fetchCampaigns,
   createCampaignFromTemplate,
+  createCampaignDirect,
+  deactivateCampaign,
   fetchFestiveTemplates,
   fetchCampaignCalendar,
-  fetchRulePerformance
+  fetchRulePerformance,
+  getCampaignConfig,
+  updateCampaignConfig
 } from './remote';
 
 export { rulesStore, campaignsStore, selectedRuleStore } from './store';

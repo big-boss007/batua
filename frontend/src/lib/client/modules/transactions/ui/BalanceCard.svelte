@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { WalletBalance } from '$lib/client/modules/transactions';
-  import { formatCurrencyINR } from '$lib/client/modules/foundation';
+  import { formatCurrencyINR, formatPoints, isPointsBucket } from '$lib/client/modules/foundation';
   import { formatBucketType } from '$lib/client/modules/transactions';
   import { Progress } from '@juspay/svelte-ui-components';
 
@@ -36,9 +36,9 @@
             <div class="bucket-info">
               <span class="bucket-name">{formatBucketType(bucket.bucket_type)}</span>
               <span class="bucket-values">
-                {formatCurrencyINR(bucket.displayed)} displayed / {formatCurrencyINR(
-                  bucket.spendable
-                )} spendable
+                {isPointsBucket(bucket.bucket_type)
+                  ? formatPoints(bucket.displayed, '★') + ' / ' + formatPoints(bucket.spendable, '★')
+                  : formatCurrencyINR(bucket.displayed) + ' / ' + formatCurrencyINR(bucket.spendable)}
               </span>
             </div>
             <Progress value={maxBucket > 0 ? (bucket.displayed / maxBucket) * 100 : 0} />

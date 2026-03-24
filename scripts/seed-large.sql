@@ -695,19 +695,19 @@ BEGIN
         INSERT INTO wallet_policies (
             merchant_id, bucket_type,
             min_redemption, max_per_order_pct, stackable_with_discounts,
-            default_conversion_rate, default_expiry_days, is_transferable
+            default_expiry_days
         ) VALUES (
             m_ids[i], 'earned_credit',
-            m_wp_min[i], m_wp_max_pct[i], true, 1.0, 180, false
+            m_wp_min[i], m_wp_max_pct[i], true, 180
         );
 
         INSERT INTO wallet_policies (
             merchant_id, bucket_type,
             min_redemption, max_per_order_pct, stackable_with_discounts,
-            default_conversion_rate, default_expiry_days, is_transferable
+            default_expiry_days
         ) VALUES (
             m_ids[i], 'cod_pending',
-            NULL, NULL, false, 1.0, NULL, false
+            NULL, NULL, false, NULL
         );
     END LOOP;
     RAISE NOTICE 'Created 20 wallet policies';

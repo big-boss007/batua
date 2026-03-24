@@ -9,16 +9,24 @@
   let { children }: { children: Snippet } = $props();
 
   const navItems: NavItem[] = [
-    { label: 'Dashboard', href: '/admin', icon: '\u25A6' },
-    { label: 'Rules', href: '/admin/rules', icon: '\u2699' },
+    { label: 'Wallet', href: '/admin', icon: '\u25A6' },
+    {
+      label: 'Loyalty',
+      href: '/admin/loyalty',
+      icon: '\u2665',
+      children: [
+        { label: 'Program & Tiers', href: '/admin/loyalty', icon: '' },
+        { label: 'Memberships', href: '/admin/memberships', icon: '' },
+        { label: 'Reward Rules', href: '/admin/rules', icon: '' },
+        { label: 'Campaigns', href: '/admin/campaigns', icon: '' }
+      ]
+    },
     { label: 'Transactions', href: '/admin/transactions', icon: '\u21C4' },
     { label: 'Customers', href: '/admin/customers', icon: '\u2616' },
-    { label: 'Loyalty', href: '/admin/loyalty', icon: '\u2665' },
-    { label: 'Campaigns', href: '/admin/campaigns', icon: '\u2691' },
     { label: 'Gift Cards', href: '/admin/gift-cards', icon: '\u2606' },
     { label: 'Referrals', href: '/admin/referrals', icon: '\u2192' },
-    { label: 'Notifications', href: '/admin/notifications', icon: '\u2709' },
     { label: 'Analytics', href: '/admin/analytics', icon: '\u2197' },
+    { label: 'Notifications', href: '/admin/notifications', icon: '\u2709' },
     { label: 'Settings', href: '/admin/settings', icon: '\u2638' }
   ];
 
@@ -180,6 +188,7 @@
     padding: var(--space-8);
     overflow-y: auto;
   }
+
 
   @media (max-width: 768px) {
     .mobile-toggle {

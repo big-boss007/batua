@@ -19,40 +19,40 @@
     position: sticky;
     top: 0;
     z-index: var(--z-sticky);
-    background: var(--color-bg);
+    background: #1a1d27;
   }
 
   .merchant-brand-bar {
     height: 3px;
-    background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
+    background: linear-gradient(90deg, #6366f1, #818cf8);
   }
 
   .merchant-header-content {
     display: flex;
     align-items: center;
-    gap: var(--space-3);
-    padding: var(--space-3) var(--space-4);
-    border-bottom: 1px solid var(--color-border);
+    gap: 10px;
+    padding: 14px 24px;
+    border-bottom: 1px solid #2a2d3a;
+    background: linear-gradient(90deg, rgba(99, 102, 241, 0.08), transparent);
   }
 
   .merchant-logo {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
-    border-radius: var(--radius-md);
-    background: var(--color-primary);
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: #6366f1;
     color: #ffffff;
-    font-size: var(--font-size-md);
-    font-weight: var(--font-weight-bold);
+    font-size: 12px;
+    font-weight: 700;
     flex-shrink: 0;
   }
 
   .merchant-name {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
-    line-height: var(--line-height-tight);
+    font-size: 14px;
+    font-weight: 600;
+    color: #ffffff;
   }
 </style>

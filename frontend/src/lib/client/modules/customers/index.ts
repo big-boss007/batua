@@ -1,6 +1,8 @@
 export type {
   Customer,
   CustomerDetail,
+  CustomerMembershipInfo,
+  CustomerReferralInfo,
   WalletSummary,
   CustomerTierInfo,
   TierProgress,
@@ -19,7 +21,10 @@ export {
   fetchTiers,
   fetchTierDistribution,
   createProgram,
+  updateProgram,
   createTier,
+  updateTier,
+  deleteTier,
   evaluateTier
 } from './remote';
 

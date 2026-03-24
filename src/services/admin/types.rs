@@ -14,6 +14,9 @@ pub struct Merchant {
     pub slug: Option<String>,
     pub geo_policy_id: Option<Uuid>,
     pub plan_tier: String,
+    pub points_name: String,
+    pub points_icon: String,
+    pub points_to_currency_rate: f64,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -36,6 +39,9 @@ pub struct UpdateMerchantRequest {
     pub is_active: Option<bool>,
     pub slug: Option<String>,
     pub plan_tier: Option<String>,
+    pub points_name: Option<String>,
+    pub points_icon: Option<String>,
+    pub points_to_currency_rate: Option<f64>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -101,7 +107,6 @@ pub struct WalletPolicyRequest {
     pub max_per_order_fixed: Option<f64>,
     pub stackable_with_discounts: Option<bool>,
     pub default_expiry_days: Option<i32>,
-    pub is_transferable: Option<bool>,
 }
 
 #[derive(Debug, Serialize)]
@@ -205,6 +210,7 @@ pub struct MerchantTransaction {
     pub customer_phone: String,
     pub bucket_type: String,
     pub movement_type: String,
+    pub earning_unit: f64,
     pub currency_equivalent: f64,
     pub state: String,
     pub created_at: DateTime<Utc>,

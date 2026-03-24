@@ -1,12 +1,25 @@
 <script lang="ts">
   import type { CodAnalytics } from '$lib/client/modules/analytics';
-  import { formatCurrencyINR } from '$lib/client/modules/foundation';
+  import { formatCurrencyINR, formatPoints } from '$lib/client/modules/foundation';
 
-  let { analytics }: { analytics: CodAnalytics } = $props();
+  let {
+    analytics,
+    pointsIcon = 'pts',
+    pointsRate = 1.0
+  }: {
+    analytics: CodAnalytics;
+    pointsIcon?: string;
+    pointsRate?: number;
+  } = $props();
 
-  let formattedPendingAmount = $derived(formatCurrencyINR(analytics.pending_amount));
-  let formattedReleasedAmount = $derived(formatCurrencyINR(analytics.released_amount));
-  let formattedCancelledAmount = $derived(formatCurrencyINR(analytics.cancelled_amount));
+  function fmtPts(val: number): string {
+    const pts = pointsRate > 0 ? Math.round(val / pointsRate) : val;
+    return formatPoints(pts, pointsIcon);
+  }
+
+  let formattedPendingAmount = $derived(fmtPts(analytics.pending_amount));
+  let formattedReleasedAmount = $derived(fmtPts(analytics.released_amount));
+  let formattedCancelledAmount = $derived(fmtPts(analytics.cancelled_amount));
 </script>
 
 <div class="cod-metrics">

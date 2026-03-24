@@ -5,8 +5,8 @@ use uuid::Uuid;
 use crate::error::AppError;
 
 use super::types::{
-    BucketBalance, BucketType, GetEntriesQuery, LedgerEntry, LedgerEntryDetail, MovementType,
-    NewLedgerEntry, WalletBalance,
+    BucketBalance, BucketType, ExpiringSoon, GetEntriesQuery, LedgerEntry, LedgerEntryDetail,
+    MovementType, NewLedgerEntry, WalletBalance,
 };
 
 #[tracing::instrument(skip(pool), err(Debug))]
@@ -336,13 +336,79 @@ fn build_wallet_balance(
 
     let displayed_balance: f64 = buckets.iter().map(|b| b.displayed).sum();
     let spendable_balance: f64 = buckets.iter().map(|b| b.spendable).sum();
+    let points_balance: f64 = buckets
+        .iter()
+        .filter(|b| b.bucket_type.is_points_bucket())
+        .map(|b| b.spendable)
+        .sum();
+    let cash_balance: f64 = buckets
+        .iter()
+        .filter(|b| !b.bucket_type.is_points_bucket())
+        .map(|b| b.spendable)
+        .sum();
 
     Ok(WalletBalance {
         wallet_id,
         displayed_balance,
         spendable_balance,
+        points_balance,
+        cash_balance,
         buckets,
     })
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn get_expiring_soon(
+    pool: &PgPool,
+    wallet_id: Uuid,
+) -> Result<Option<ExpiringSoon>, AppError> {
+    let row: Option<(f64, f64, i64)> = sqlx::query_as(
+        r#"
+        SELECT
+            COALESCE(SUM(earning_unit), 0)::float8,
+            COALESCE(SUM(currency_equivalent), 0)::float8,
+            COUNT(*)::int8
+        FROM ledger_entries
+        WHERE wallet_id = $1
+          AND state = 'active'
+          AND movement_type = 'in'
+          AND expires_at IS NOT NULL
+          AND expires_at > now()
+          AND expires_at <= now() + interval '30 days'
+        "#,
+    )
+    .bind(wallet_id)
+    .fetch_optional(pool)
+    .await?;
+
+    let nearest: Option<(i64,)> = sqlx::query_as(
+        r#"
+        SELECT EXTRACT(DAY FROM (MIN(expires_at) - now()))::int8
+        FROM ledger_entries
+        WHERE wallet_id = $1
+          AND state = 'active'
+          AND movement_type = 'in'
+          AND expires_at IS NOT NULL
+          AND expires_at > now()
+          AND expires_at <= now() + interval '30 days'
+        "#,
+    )
+    .bind(wallet_id)
+    .fetch_optional(pool)
+    .await?;
+
+    match (row, nearest) {
+        (Some((amount, currency, count)), _) if count > 0 => {
+            let days = nearest.and_then(|r| Some(r.0)).unwrap_or(30);
+            Ok(Some(ExpiringSoon {
+                amount,
+                currency,
+                days,
+                count,
+            }))
+        }
+        _ => Ok(None),
+    }
 }
 
 #[tracing::instrument(skip(pool), err(Debug))]

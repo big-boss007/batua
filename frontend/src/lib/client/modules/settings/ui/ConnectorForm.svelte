@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { Input, Select, Button } from '@juspay/svelte-ui-components';
+
   import type { Connector, CreateConnectorRequest } from '$lib/client/modules/settings';
 
   let {
@@ -12,21 +14,20 @@
   let capability = $state(connector?.capability ?? '');
   let vendor = $state(connector?.vendor ?? '');
   let configJson = $state(connector ? JSON.stringify(connector.config, null, 2) : '{}');
-  let priority = $state(connector?.priority ?? 1);
+  let priority = $state(String(connector?.priority ?? 1));
   let configError = $state<string | null>(null);
 
-  let capabilities = $derived([
-    'payment_gateway',
-    'sms',
-    'email',
-    'webhook',
-    'shipping',
-    'analytics'
-  ]);
+  const capabilityItems = [
+    { id: 'payment_gateway', label: 'Payment Gateway' },
+    { id: 'sms', label: 'SMS' },
+    { id: 'email', label: 'Email' },
+    { id: 'webhook', label: 'Webhook' },
+    { id: 'shipping', label: 'Shipping' },
+    { id: 'analytics', label: 'Analytics' }
+  ];
 
-  function handleConfigInput(event: Event) {
-    const target = event.target as HTMLTextAreaElement;
-    configJson = target.value;
+  function handleConfigInput(val: string) {
+    configJson = val;
     try {
       JSON.parse(configJson);
       configError = null;
@@ -49,7 +50,7 @@
       capability,
       vendor,
       config: parsedConfig,
-      priority
+      priority: Number(priority)
     });
   }
 </script>
@@ -59,61 +60,55 @@
 
   <div class="form-grid">
     <div class="form-field">
-      <label class="field-label" for="connector-capability">Capability</label>
-      <select id="connector-capability" class="field-select" bind:value={capability}>
-        <option value="" disabled>Select capability</option>
-        {#each capabilities as cap (cap)}
-          <option value={cap}>{cap.replace(/_/g, ' ')}</option>
-        {/each}
-      </select>
-    </div>
-
-    <div class="form-field">
-      <label class="field-label" for="connector-vendor">Vendor</label>
-      <input
-        id="connector-vendor"
-        class="field-input"
-        type="text"
-        bind:value={vendor}
-        placeholder="e.g. razorpay"
+      <span class="field-label">Capability</span>
+      <Select
+        items={capabilityItems}
+        value={capability ? [capability] : []}
+        placeholder="Select capability"
+        onchange={(val) => {
+          capability = val[0] ?? '';
+        }}
       />
     </div>
 
-    <div class="form-field">
-      <label class="field-label" for="connector-priority">Priority</label>
-      <input
-        id="connector-priority"
-        class="field-input"
-        type="number"
-        min="1"
-        bind:value={priority}
-      />
-    </div>
+    <Input
+      value={vendor}
+      label="Vendor"
+      placeholder="e.g. razorpay"
+      onInput={(val) => {
+        vendor = val;
+      }}
+    />
+
+    <Input
+      value={priority}
+      label="Priority"
+      dataType="number"
+      onInput={(val) => {
+        priority = val;
+      }}
+    />
   </div>
 
-  <div class="form-field config-field">
-    <label class="field-label" for="connector-config">Configuration (JSON)</label>
-    <textarea
-      id="connector-config"
-      class="field-textarea"
-      class:field-error={configError !== null}
+  <div class="config-field">
+    <Input
       value={configJson}
-      oninput={handleConfigInput}
-      rows="6"
-      spellcheck="false"
-    ></textarea>
-    {#if configError !== null}
-      <span class="error-text">{configError}</span>
-    {/if}
+      label="Configuration (JSON)"
+      useTextArea
+      onInput={(val) => {
+        handleConfigInput(val);
+      }}
+      onErrorMessage={configError}
+      classes="input-mono"
+    />
   </div>
 
-  <button
-    type="submit"
-    class="save-button"
+  <Button
+    text={connector ? 'Update Connector' : 'Create Connector'}
+    classes="btn-primary"
     disabled={capability === '' || vendor === '' || configError !== null}
-  >
-    {connector ? 'Update Connector' : 'Create Connector'}
-  </button>
+    type="submit"
+  />
 </form>
 
 <style>
@@ -138,14 +133,14 @@
     margin-bottom: var(--space-4);
   }
 
+  .config-field {
+    margin-bottom: var(--space-5);
+  }
+
   .form-field {
     display: flex;
     flex-direction: column;
     gap: var(--space-1);
-  }
-
-  .config-field {
-    margin-bottom: var(--space-5);
   }
 
   .field-label {
@@ -156,62 +151,8 @@
     letter-spacing: 0.04em;
   }
 
-  .field-input,
-  .field-select {
-    padding: var(--space-2) var(--space-3);
-    background: var(--color-bg);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    color: var(--color-text);
-    font-size: var(--font-size-sm);
-    transition: border-color var(--transition-fast);
-  }
-
-  .field-input:focus,
-  .field-select:focus,
-  .field-textarea:focus {
-    outline: none;
-    border-color: var(--color-primary);
-  }
-
-  .field-textarea {
-    padding: var(--space-3);
-    background: var(--color-bg);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    color: var(--color-text);
-    font-family: var(--font-mono);
-    font-size: var(--font-size-sm);
-    resize: vertical;
-    transition: border-color var(--transition-fast);
-  }
-
-  .field-error {
-    border-color: var(--color-error);
-  }
-
-  .error-text {
-    font-size: var(--font-size-xs);
-    color: var(--color-error);
-  }
-
-  .save-button {
-    padding: var(--space-2) var(--space-5);
-    background: var(--color-primary);
-    color: #ffffff;
-    border: none;
-    border-radius: var(--radius-md);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
-    transition: background var(--transition-fast);
-  }
-
-  .save-button:hover:not(:disabled) {
-    background: var(--color-primary-hover);
-  }
-
-  .save-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+  :global(.input-mono) {
+    --input-font-family: var(--font-mono);
+    --input-font-size: var(--font-size-sm);
   }
 </style>

@@ -8,7 +8,6 @@ export type WalletPolicy = {
   max_per_order_fixed: number | null;
   stackable_with_discounts: boolean;
   default_expiry_days: number | null;
-  is_transferable: boolean;
 };
 
 export type Connector = {
@@ -31,12 +30,10 @@ export type NotificationTemplate = {
 
 export type UpdateWalletPolicyRequest = {
   min_redemption: number | null;
-  step_size: number | null;
   max_per_order_pct: number | null;
   max_per_order_fixed: number | null;
   stackable_with_discounts: boolean;
   default_expiry_days: number | null;
-  is_transferable: boolean;
 };
 
 export type CreateConnectorRequest = {

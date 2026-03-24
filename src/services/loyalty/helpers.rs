@@ -318,3 +318,109 @@ pub async fn get_earn_multiplier(
 
     Ok(tier.earn_rate_multiplier)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use chrono::Utc;
+    use serde_json::json;
+    use uuid::Uuid;
+
+    fn make_tier(name: &str, rank: i32, threshold: f64) -> LoyaltyTier {
+        LoyaltyTier {
+            id: Uuid::new_v4(),
+            program_id: Uuid::new_v4(),
+            name: name.to_string(),
+            rank,
+            threshold,
+            earn_rate_multiplier: 1.0,
+            benefits: json!({}),
+            created_at: Utc::now(),
+        }
+    }
+
+    #[test]
+    fn tier_finds_highest_qualifying() {
+        let tiers = vec![
+            make_tier("Bronze", 1, 100.0),
+            make_tier("Silver", 2, 500.0),
+            make_tier("Gold", 3, 1000.0),
+        ];
+        let result = find_qualifying_tier(&tiers, 750.0);
+        assert!(result.is_some());
+        assert_eq!(result.unwrap().name, "Silver");
+    }
+
+    #[test]
+    fn tier_exact_boundary_matches() {
+        let tiers = vec![
+            make_tier("Bronze", 1, 100.0),
+            make_tier("Silver", 2, 500.0),
+            make_tier("Gold", 3, 1000.0),
+        ];
+        let result = find_qualifying_tier(&tiers, 1000.0);
+        assert!(result.is_some());
+        assert_eq!(result.unwrap().name, "Gold");
+    }
+
+    #[test]
+    fn tier_below_all_thresholds_returns_none() {
+        let tiers = vec![
+            make_tier("Bronze", 1, 100.0),
+            make_tier("Silver", 2, 500.0),
+            make_tier("Gold", 3, 1000.0),
+        ];
+        assert!(find_qualifying_tier(&tiers, 50.0).is_none());
+    }
+
+    #[test]
+    fn tier_exact_lowest_boundary() {
+        let tiers = vec![
+            make_tier("Bronze", 1, 100.0),
+            make_tier("Silver", 2, 500.0),
+            make_tier("Gold", 3, 1000.0),
+        ];
+        let result = find_qualifying_tier(&tiers, 100.0);
+        assert!(result.is_some());
+        assert_eq!(result.unwrap().name, "Bronze");
+    }
+
+    #[test]
+    fn tier_empty_tiers_returns_none() {
+        assert!(find_qualifying_tier(&[], 500.0).is_none());
+    }
+
+    #[test]
+    fn tier_just_below_boundary_returns_lower() {
+        let tiers = vec![
+            make_tier("Bronze", 1, 100.0),
+            make_tier("Silver", 2, 500.0),
+            make_tier("Gold", 3, 1000.0),
+        ];
+        let result = find_qualifying_tier(&tiers, 99.99);
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn tier_just_below_second_boundary() {
+        let tiers = vec![
+            make_tier("Bronze", 1, 100.0),
+            make_tier("Silver", 2, 500.0),
+            make_tier("Gold", 3, 1000.0),
+        ];
+        let result = find_qualifying_tier(&tiers, 499.99);
+        assert!(result.is_some());
+        assert_eq!(result.unwrap().name, "Bronze");
+    }
+
+    #[test]
+    fn tier_zero_threshold() {
+        let tiers = vec![
+            make_tier("Starter", 0, 0.0),
+            make_tier("Bronze", 1, 100.0),
+        ];
+        let result = find_qualifying_tier(&tiers, 0.0);
+        assert!(result.is_some());
+        assert_eq!(result.unwrap().name, "Starter");
+    }
+}

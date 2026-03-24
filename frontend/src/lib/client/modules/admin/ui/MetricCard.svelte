@@ -6,15 +6,37 @@
     label,
     value,
     metricType = 'number',
-    icon = null
+    icon = null,
+    pointsIcon = 'pts',
+    pointsRate = 1.0,
+    sub = null,
+    valueColor = null,
+    subColor = null
   }: {
     label: string;
     value: number;
     metricType?: MetricType;
     icon?: string | null;
+    pointsIcon?: string;
+    pointsRate?: number;
+    sub?: string | null;
+    valueColor?: string | null;
+    subColor?: string | null;
   } = $props();
 
-  let formattedValue = $derived(formatMetricValue(value, metricType));
+  let formattedValue = $derived.by(() => {
+    if (metricType === 'points') {
+      const pts = pointsRate > 0 ? Math.round(value / pointsRate) : value;
+      return `${pts.toLocaleString('en-IN')} ${pointsIcon}`;
+    }
+    return formatMetricValue(value, metricType);
+  });
+
+  let subText = $derived.by(() => {
+    if (sub !== null) return sub;
+    if (metricType === 'points') return `≈ ${formatMetricValue(value, 'currency')}`;
+    return null;
+  });
 </script>
 
 <div class="metric-card">
@@ -22,7 +44,10 @@
     <span class="metric-icon">{icon}</span>
   {/if}
   <div class="metric-content">
-    <span class="metric-value">{formattedValue}</span>
+    <span class="metric-value" style={valueColor ? `color: ${valueColor}` : ''}>{formattedValue}</span>
+    {#if subText !== null}
+      <span class="metric-sub" style={subColor ? `color: ${subColor}` : ''}>{subText}</span>
+    {/if}
     <span class="metric-label">{label}</span>
   </div>
 </div>
@@ -68,6 +93,11 @@
     font-weight: var(--font-weight-bold);
     color: var(--color-text);
     line-height: var(--line-height-tight);
+  }
+
+  .metric-sub {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
   }
 
   .metric-label {

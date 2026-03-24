@@ -72,6 +72,7 @@ export type MerchantTransactionRow = {
   customer_phone: string;
   bucket_type: string;
   movement_type: string;
+  earning_unit: number;
   currency_equivalent: number;
   state: string;
   created_at: string;

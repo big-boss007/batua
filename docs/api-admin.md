@@ -341,7 +341,6 @@ Configures redemption and earning policies for a specific bucket type.
 | max_per_order_fixed | number | no | null | Maximum fixed amount redeemable per order |
 | stackable_with_discounts | boolean | no | null | Whether credits can stack with discount codes |
 | default_expiry_days | integer | no | null | Default expiry in days for credits in this bucket |
-| is_transferable | boolean | no | null | Whether credits in this bucket can be transferred |
 
 ### Example Request
 
@@ -356,8 +355,7 @@ curl -X POST http://localhost:3000/admin/wallet-policies \
     "max_per_order_pct": 50.0,
     "max_per_order_fixed": 500.0,
     "stackable_with_discounts": false,
-    "default_expiry_days": 90,
-    "is_transferable": false
+    "default_expiry_days": 90
   }'
 ```
 
@@ -409,11 +407,8 @@ curl http://localhost:3000/admin/wallet-policies/a1b2c3d4-e5f6-7890-abcd-ef12345
     "max_per_order_pct": 50.0,
     "max_per_order_fixed": 500.0,
     "stackable_with_discounts": false,
-    "default_conversion_rate": 1.0,
     "default_expiry_days": 90,
-    "is_transferable": false,
     "excluded_payment_methods": [],
-    "excluded_collections": [],
     "is_active": true,
     "created_at": "2026-03-18T10:00:00Z",
     "updated_at": "2026-03-18T10:00:00Z"

@@ -5,6 +5,7 @@ use crate::error::AppError;
 
 use super::types::{
     CreateProgramRequest, CreateTierRequest, CustomerTier, LoyaltyProgram, LoyaltyTier,
+    UpdateTierRequest,
 };
 
 #[tracing::instrument(skip(pool), err(Debug))]
@@ -186,6 +187,55 @@ pub async fn get_tier_by_id(
     .await?;
 
     Ok(tier)
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn update_tier(
+    pool: &PgPool,
+    tier_id: Uuid,
+    req: &UpdateTierRequest,
+) -> Result<LoyaltyTier, AppError> {
+    let tier = sqlx::query_as::<_, LoyaltyTier>(
+        r#"
+        UPDATE loyalty_tiers
+        SET name = COALESCE($2, name),
+            rank = COALESCE($3, rank),
+            threshold = COALESCE($4, threshold),
+            earn_rate_multiplier = COALESCE($5, earn_rate_multiplier),
+            benefits = COALESCE($6, benefits)
+        WHERE id = $1
+        RETURNING id, program_id, name, rank,
+                  threshold::float8 AS threshold,
+                  earn_rate_multiplier::float8 AS earn_rate_multiplier,
+                  benefits, created_at
+        "#,
+    )
+    .bind(tier_id)
+    .bind(&req.name)
+    .bind(req.rank)
+    .bind(req.threshold)
+    .bind(req.earn_rate_multiplier)
+    .bind(&req.benefits)
+    .fetch_optional(pool)
+    .await?
+    .ok_or_else(|| AppError::NotFound(format!("tier {tier_id} not found")))?;
+
+    Ok(tier)
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn delete_tier(pool: &PgPool, tier_id: Uuid) -> Result<(), AppError> {
+    let rows = sqlx::query("DELETE FROM loyalty_tiers WHERE id = $1")
+        .bind(tier_id)
+        .execute(pool)
+        .await?
+        .rows_affected();
+
+    if rows == 0 {
+        return Err(AppError::NotFound(format!("tier {tier_id} not found")));
+    }
+
+    Ok(())
 }
 
 #[tracing::instrument(skip(pool), err(Debug))]

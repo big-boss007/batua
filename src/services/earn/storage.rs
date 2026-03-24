@@ -4,9 +4,8 @@ use uuid::Uuid;
 
 use crate::error::AppError;
 use super::types::{
-    AchievedMilestone, CreateMembershipPlanRequest, CreateMilestoneRequest,
-    CreateStreakConfigRequest, CustomerMembership, MembershipPlan, MilestoneConfig,
-    NewsletterSignupCount, SpinWheelConfig, SpinWheelSegment, StreakConfig,
+    AchievedMilestone, CreateMilestoneRequest, CreateStreakConfigRequest, CustomerMembership,
+    MilestoneConfig, NewsletterSignupCount, SpinWheelConfig, SpinWheelSegment, StreakConfig,
 };
 
 #[derive(Debug, sqlx::FromRow)]
@@ -336,7 +335,7 @@ pub async fn has_streak_achievement_in_window(
         FROM streak_achievements
         WHERE customer_id = $1
             AND streak_config_id = $2
-            AND window_start = $3
+            AND window_start::date = $3::date
         LIMIT 1
         "#,
     )
@@ -518,93 +517,23 @@ pub async fn record_spin_result(
 }
 
 #[tracing::instrument(skip(pool), err(Debug))]
-pub async fn create_membership_plan(
-    pool: &PgPool,
-    req: &CreateMembershipPlanRequest,
-) -> Result<MembershipPlan, AppError> {
-    let earn_rate_multiplier = req.earn_rate_multiplier.unwrap_or(1.5);
-    let benefits = req.benefits.clone().unwrap_or(serde_json::json!({}));
-
-    let plan = sqlx::query_as::<_, MembershipPlan>(
-        r#"
-        INSERT INTO membership_plans (merchant_id, name, plan_type, price, earn_rate_multiplier, benefits)
-        VALUES ($1, $2, $3, $4, $5, $6)
-        RETURNING *
-        "#,
-    )
-    .bind(req.merchant_id)
-    .bind(&req.name)
-    .bind(&req.plan_type)
-    .bind(req.price)
-    .bind(earn_rate_multiplier)
-    .bind(&benefits)
-    .fetch_one(pool)
-    .await?;
-
-    Ok(plan)
-}
-
-#[tracing::instrument(skip(pool), err(Debug))]
-pub async fn get_membership_plans(
-    pool: &PgPool,
-    merchant_id: Uuid,
-) -> Result<Vec<MembershipPlan>, AppError> {
-    let plans = sqlx::query_as::<_, MembershipPlan>(
-        r#"
-        SELECT id, merchant_id, name, plan_type, price, earn_rate_multiplier, benefits, is_active, created_at
-        FROM membership_plans
-        WHERE merchant_id = $1 AND is_active = true
-        ORDER BY price ASC
-        "#,
-    )
-    .bind(merchant_id)
-    .fetch_all(pool)
-    .await?;
-
-    Ok(plans)
-}
-
-#[tracing::instrument(skip(pool), err(Debug))]
-pub async fn get_membership_plan(
-    pool: &PgPool,
-    id: Uuid,
-) -> Result<MembershipPlan, AppError> {
-    let plan = sqlx::query_as::<_, MembershipPlan>(
-        r#"
-        SELECT id, merchant_id, name, plan_type, price, earn_rate_multiplier, benefits, is_active, created_at
-        FROM membership_plans
-        WHERE id = $1
-        "#,
-    )
-    .bind(id)
-    .fetch_one(pool)
-    .await
-    .map_err(|e| match e {
-        sqlx::Error::RowNotFound => AppError::NotFound(format!("membership plan {id} not found")),
-        other => AppError::Database(other),
-    })?;
-
-    Ok(plan)
-}
-
-#[tracing::instrument(skip(pool), err(Debug))]
 pub async fn subscribe_customer(
     pool: &PgPool,
     merchant_id: Uuid,
     customer_id: Uuid,
-    plan_id: Uuid,
+    tier_id: Uuid,
     expires_at: DateTime<Utc>,
 ) -> Result<CustomerMembership, AppError> {
     let membership = sqlx::query_as::<_, CustomerMembership>(
         r#"
-        INSERT INTO customer_memberships (merchant_id, customer_id, plan_id, status, expires_at)
+        INSERT INTO customer_memberships (merchant_id, customer_id, tier_id, status, expires_at)
         VALUES ($1, $2, $3, 'active', $4)
         RETURNING *
         "#,
     )
     .bind(merchant_id)
     .bind(customer_id)
-    .bind(plan_id)
+    .bind(tier_id)
     .bind(expires_at)
     .fetch_one(pool)
     .await?;
@@ -620,7 +549,7 @@ pub async fn get_customer_membership(
 ) -> Result<Option<CustomerMembership>, AppError> {
     let membership = sqlx::query_as::<_, CustomerMembership>(
         r#"
-        SELECT id, merchant_id, customer_id, plan_id, status, started_at, expires_at,
+        SELECT id, merchant_id, customer_id, tier_id, status, started_at, expires_at,
                renewed_count, cancelled_at, created_at
         FROM customer_memberships
         WHERE merchant_id = $1 AND customer_id = $2
@@ -643,7 +572,7 @@ pub async fn get_customer_membership_by_id(
 ) -> Result<CustomerMembership, AppError> {
     let membership = sqlx::query_as::<_, CustomerMembership>(
         r#"
-        SELECT id, merchant_id, customer_id, plan_id, status, started_at, expires_at,
+        SELECT id, merchant_id, customer_id, tier_id, status, started_at, expires_at,
                renewed_count, cancelled_at, created_at
         FROM customer_memberships
         WHERE id = $1
@@ -751,7 +680,7 @@ pub async fn get_expired_memberships(
 ) -> Result<Vec<CustomerMembership>, AppError> {
     let memberships = sqlx::query_as::<_, CustomerMembership>(
         r#"
-        SELECT id, merchant_id, customer_id, plan_id, status, started_at, expires_at,
+        SELECT id, merchant_id, customer_id, tier_id, status, started_at, expires_at,
                renewed_count, cancelled_at, created_at
         FROM customer_memberships
         WHERE status = 'active' AND expires_at < now()
@@ -761,4 +690,51 @@ pub async fn get_expired_memberships(
     .await?;
 
     Ok(memberships)
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn list_memberships_by_merchant(
+    pool: &PgPool,
+    merchant_id: Uuid,
+) -> Result<Vec<CustomerMembership>, AppError> {
+    let memberships = sqlx::query_as::<_, CustomerMembership>(
+        r#"
+        SELECT id, merchant_id, customer_id, tier_id, status, started_at, expires_at,
+               renewed_count, cancelled_at, created_at
+        FROM customer_memberships
+        WHERE merchant_id = $1
+        ORDER BY created_at DESC
+        "#,
+    )
+    .bind(merchant_id)
+    .fetch_all(pool)
+    .await?;
+
+    Ok(memberships)
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn list_enriched_memberships(
+    pool: &PgPool,
+    merchant_id: Uuid,
+) -> Result<Vec<super::types::EnrichedMembership>, AppError> {
+    let rows = sqlx::query_as::<_, super::types::EnrichedMembership>(
+        r#"
+        SELECT cm.id, cm.merchant_id, cm.customer_id, cm.tier_id, cm.status,
+               cm.started_at, cm.expires_at, cm.renewed_count, cm.cancelled_at, cm.created_at,
+               c.name AS customer_name, c.phone AS customer_phone,
+               lt.name AS tier_name,
+               lt.earn_rate_multiplier::float8 AS earn_rate_multiplier
+        FROM customer_memberships cm
+        JOIN customers c ON c.id = cm.customer_id
+        JOIN loyalty_tiers lt ON lt.id = cm.tier_id
+        WHERE cm.merchant_id = $1
+        ORDER BY cm.created_at DESC
+        "#,
+    )
+    .bind(merchant_id)
+    .fetch_all(pool)
+    .await?;
+
+    Ok(rows)
 }

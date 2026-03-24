@@ -23,7 +23,10 @@ function decodeMerchant(raw: unknown): Merchant {
     plan_tier: (r['plan_tier'] as string) ?? null,
     currency: (r['currency'] as string) ?? 'INR',
     timezone: (r['timezone'] as string) ?? 'Asia/Kolkata',
-    is_active: (r['is_active'] as boolean) ?? false
+    is_active: (r['is_active'] as boolean) ?? false,
+    points_name: (r['points_name'] as string) ?? 'Points',
+    points_icon: (r['points_icon'] as string) ?? 'pts',
+    points_to_currency_rate: (r['points_to_currency_rate'] as number) ?? 1.0
   };
 }
 

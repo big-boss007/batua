@@ -1,7 +1,15 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
+
   import { Input, Button, Shimmer } from '@juspay/svelte-ui-components';
-  import { fetchGiftCard } from '$lib/client/modules/storefront';
+
+  import {
+    fetchGiftCard,
+    customerPhone,
+    lookupCustomer
+  } from '$lib/client/modules/storefront';
   import type { GiftCardInfo } from '$lib/client/modules/storefront';
+  import { normalizePhoneE164 } from '$lib/client/modules/foundation';
   import { GiftCardStatus } from '$lib/client/modules/storefront/ui';
 
   let { data }: { data: { prefilledCode: string | null } } = $props();
@@ -11,6 +19,20 @@
   let error: string | null = $state(null);
   let card: GiftCardInfo | null = $state(null);
   let isValid = $state(false);
+  let customerId: string | null = $state(null);
+
+  customerPhone.subscribe((stored) => {
+    if (stored !== null && customerId === null) {
+      resolveCustomerId(stored);
+    }
+  });
+
+  async function resolveCustomerId(phone: string) {
+    const result = await lookupCustomer(phone);
+    if (result.tag === 'success' && result.data.length > 0) {
+      customerId = result.data[0].id;
+    }
+  }
 
   function handleStateChange(state: string) {
     isValid = state === 'Valid' || codeValue.trim().length >= 4;
@@ -44,6 +66,10 @@
     codeValue = '';
     card = null;
     error = null;
+  }
+
+  function handleClaimed() {
+    goto('../');
   }
 </script>
 
@@ -84,7 +110,7 @@
       {/if}
     </div>
   {:else}
-    <GiftCardStatus {card} />
+    <GiftCardStatus {card} {customerId} onClaimed={handleClaimed} />
     <div class="gift-check-actions">
       <button class="check-another" onclick={handleReset}> Check another card </button>
     </div>

@@ -5,7 +5,12 @@
     formatMovementType,
     formatState
   } from '$lib/client/modules/transactions';
-  import { formatCurrencyINR, formatDateTime } from '$lib/client/modules/foundation';
+  import {
+    formatCurrencyINR,
+    formatDateTime,
+    formatPoints,
+    isPointsBucket
+  } from '$lib/client/modules/foundation';
   import { Table, Pill, Pagination } from '@juspay/svelte-ui-components';
 
   let {
@@ -87,8 +92,8 @@
       { label: 'Date', sortKey: 'created_at' },
       { label: 'Bucket', sortKey: 'bucket_type' },
       { label: 'Movement', sortKey: 'movement_type' },
-      { label: 'Amount', sortKey: 'earning_unit' },
-      { label: 'Currency Equiv.', sortKey: null },
+      { label: 'Points / Cash', sortKey: 'earning_unit' },
+      { label: '₹ Value', sortKey: null },
       { label: 'State', sortKey: 'state' },
       { label: 'Actor', sortKey: null }
     ];
@@ -96,15 +101,21 @@
   });
 
   let tableData = $derived(
-    sortedEntries.map((entry) => [
+    sortedEntries.map((entry) => {
+      const pts = isPointsBucket(entry.bucket_type);
+      const prefix = entry.movement_type === 'In' || entry.movement_type === 'Held' ? '+' : entry.movement_type === 'Out' ? '-' : '';
+      const pointsCell = pts
+        ? `${prefix}${formatPoints(Math.abs(entry.earning_unit), '★')}`
+        : `${prefix}${formatCurrencyINR(Math.abs(entry.currency_equivalent))}`;
+      return [
       formatDateTime(entry.created_at),
       formatBucketType(entry.bucket_type),
       formatMovementType(entry.movement_type).label,
-      entry.earning_unit,
+      pointsCell,
       formatCurrencyINR(entry.currency_equivalent),
       formatState(entry.state).label,
       formatBucketType(entry.actor_type)
-    ])
+    ];})
   );
 </script>
 

@@ -1,4 +1,4 @@
-type MetricType = 'number' | 'currency' | 'percentage';
+type MetricType = 'number' | 'currency' | 'percentage' | 'points';
 
 const numberFormatter = new Intl.NumberFormat('en-IN');
 

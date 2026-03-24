@@ -10,10 +10,9 @@ use crate::error::AppError;
 use super::helpers;
 use super::storage;
 use super::types::{
-    CheckMilestonesRequest, CheckStreakRequest, CreateMembershipPlanRequest,
-    CreateMilestoneRequest, CreateStreakConfigRequest, CreateWheelRequest, ManualCreditRequest,
-    NewsletterSignupRequest, ProcessBirthdayBonusRequest, ProcessEarnRequest,
-    ProfileCompletionRequest, RenewRequest, SpinRequest, SubscribeRequest,
+    AssignMembershipRequest, CheckMilestonesRequest, CheckStreakRequest, CreateMilestoneRequest,
+    CreateStreakConfigRequest, CreateWheelRequest, ManualCreditRequest, NewsletterSignupRequest,
+    ProcessBirthdayBonusRequest, ProcessEarnRequest, ProfileCompletionRequest, SpinRequest,
 };
 
 #[tracing::instrument(skip(app_state))]
@@ -187,44 +186,17 @@ pub async fn spin_wheel(
 }
 
 #[tracing::instrument(skip(app_state))]
-pub async fn create_membership_plan(
+pub async fn assign_membership(
     State(app_state): State<AppState>,
-    Json(req): Json<CreateMembershipPlanRequest>,
+    Json(req): Json<AssignMembershipRequest>,
 ) -> impl IntoResponse {
-    let plan = storage::create_membership_plan(&app_state.db, &req).await?;
-    Ok::<_, AppError>((StatusCode::CREATED, Json(plan)))
-}
-
-#[tracing::instrument(skip(app_state))]
-pub async fn list_membership_plans(
-    State(app_state): State<AppState>,
-    Path(merchant_id): Path<Uuid>,
-) -> impl IntoResponse {
-    let plans = storage::get_membership_plans(&app_state.db, merchant_id).await?;
-    Ok::<_, AppError>((StatusCode::OK, Json(plans)))
-}
-
-#[tracing::instrument(skip(app_state))]
-pub async fn subscribe_membership(
-    State(app_state): State<AppState>,
-    Json(req): Json<SubscribeRequest>,
-) -> impl IntoResponse {
-    let result = helpers::subscribe_to_plan(&app_state.db, req).await?;
+    let result = helpers::assign_membership(&app_state.db, req).await?;
     let status = if result.is_new {
         StatusCode::CREATED
     } else {
         StatusCode::OK
     };
     Ok::<_, AppError>((status, Json(result)))
-}
-
-#[tracing::instrument(skip(app_state))]
-pub async fn renew_membership(
-    State(app_state): State<AppState>,
-    Json(req): Json<RenewRequest>,
-) -> impl IntoResponse {
-    let result = helpers::renew_membership(&app_state.db, req).await?;
-    Ok::<_, AppError>((StatusCode::OK, Json(result)))
 }
 
 #[tracing::instrument(skip(app_state))]
@@ -243,4 +215,23 @@ pub async fn membership_status(
 ) -> impl IntoResponse {
     let result = helpers::get_membership_status(&app_state.db, merchant_id, customer_id).await?;
     Ok::<_, AppError>((StatusCode::OK, Json(result)))
+}
+
+#[tracing::instrument(skip(app_state))]
+pub async fn list_subscribers(
+    State(app_state): State<AppState>,
+    Path(merchant_id): Path<Uuid>,
+) -> impl IntoResponse {
+    let memberships = storage::list_memberships_by_merchant(&app_state.db, merchant_id).await?;
+    Ok::<_, AppError>((StatusCode::OK, Json(memberships)))
+}
+
+#[tracing::instrument(skip(app_state))]
+pub async fn list_subscribers_enriched(
+    State(app_state): State<AppState>,
+    Path(merchant_id): Path<Uuid>,
+) -> impl IntoResponse {
+    let pool = app_state.db_reader.as_ref().unwrap_or(&app_state.db);
+    let memberships = storage::list_enriched_memberships(pool, merchant_id).await?;
+    Ok::<_, AppError>((StatusCode::OK, Json(memberships)))
 }

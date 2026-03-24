@@ -98,7 +98,9 @@
       <span class="phone-label">Your balance</span>
       <button class="phone-change" onclick={handleChangePhone}>Change number</button>
     </div>
-    <BalanceCard {balance} />
+    {#if merchant !== null}
+      <BalanceCard {balance} {merchant} />
+    {/if}
     <div class="balance-footer">
       <a href="." class="view-full-link">View full rewards dashboard</a>
     </div>

@@ -31,43 +31,61 @@
   {/if}
 </svelte:head>
 
-<div class="storefront-shell">
-  {#if merchant !== null}
-    <MerchantHeader {merchant} />
-    <main class="storefront-content">
-      {@render children()}
-    </main>
-  {:else}
-    <main class="storefront-content">
-      <div class="storefront-error">
-        <div class="error-icon">?</div>
-        <h2 class="error-title">Store not found</h2>
-        <p class="error-text">
-          We couldn't find a rewards program at this address. Please check the URL and try again.
-        </p>
-      </div>
-    </main>
-  {/if}
+<div class="storefront-page">
+  <div class="storefront-shell">
+    {#if merchant !== null}
+      <MerchantHeader {merchant} />
+      <main class="storefront-content">
+        {@render children()}
+      </main>
+    {:else}
+      <main class="storefront-content">
+        <div class="storefront-error">
+          <div class="error-icon">?</div>
+          <h2 class="error-title">Store not found</h2>
+          <p class="error-text">
+            We couldn't find a rewards program at this address. Please check the URL and try again.
+          </p>
+        </div>
+      </main>
+    {/if}
+  </div>
 </div>
 
 <style>
-  .storefront-shell {
-    max-width: 480px;
-    margin: 0 auto;
+  .storefront-page {
     min-height: 100vh;
-    background: var(--color-bg);
-    box-shadow: var(--shadow-lg);
+    background: #0f1117;
+    padding: 32px 16px 48px;
+  }
+
+  .storefront-shell {
+    max-width: 440px;
+    margin: 0 auto;
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    overflow: hidden;
   }
 
   @media (max-width: 480px) {
+    .storefront-page {
+      background: #0f1117;
+      padding: 0;
+    }
+
     .storefront-shell {
+      max-width: 100%;
+      border: none;
+      border-radius: 0;
       box-shadow: none;
+      min-height: 100vh;
     }
   }
 
   .storefront-content {
-    padding: var(--space-4);
-    padding-bottom: var(--space-12);
+    padding: 0;
   }
 
   .storefront-error {

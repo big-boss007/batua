@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { Pill } from '@juspay/svelte-ui-components';
+
   import type { ReferralConversion } from '$lib/client/modules/referrals';
   import { formatDateTime } from '$lib/client/modules/foundation';
 
@@ -31,11 +33,11 @@
               {#if conversion.fraud_signals.length > 0}
                 <div class="signal-list">
                   {#each conversion.fraud_signals as signal}
-                    <span class="badge badge-warning">{signal}</span>
+                    <Pill text={signal} classes="pill-warning" />
                   {/each}
                 </div>
               {:else}
-                <span class="badge badge-success">clean</span>
+                <Pill text="clean" classes="pill-success" />
               {/if}
             </td>
             <td class="nowrap">{formatDateTime(conversion.created_at)}</td>
@@ -98,24 +100,6 @@
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-1);
-  }
-
-  .badge {
-    display: inline-block;
-    padding: var(--space-1) var(--space-2);
-    border-radius: var(--radius-full);
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-medium);
-  }
-
-  .badge-warning {
-    color: var(--color-warning);
-    background: color-mix(in srgb, var(--color-warning) 12%, transparent);
-  }
-
-  .badge-success {
-    color: var(--color-success);
-    background: color-mix(in srgb, var(--color-success) 12%, transparent);
   }
 
   .empty-state {

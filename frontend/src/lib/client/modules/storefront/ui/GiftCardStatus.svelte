@@ -1,160 +1,346 @@
 <script lang="ts">
   import { Pill, Progress } from '@juspay/svelte-ui-components';
+
   import { formatCurrencyINR, formatDate } from '$lib/client/modules/foundation';
+  import { claimGiftCardForCustomer } from '$lib/client/modules/storefront';
   import type { GiftCardInfo } from '../types';
 
-  let { card }: { card: GiftCardInfo } = $props();
+  let {
+    card,
+    customerId = null,
+    onClaimed = null
+  }: {
+    card: GiftCardInfo;
+    customerId?: string | null;
+    onClaimed?: (() => void) | null;
+  } = $props();
 
-  let usedPercentage = $derived(
+  let claiming = $state(false);
+  let claimSuccess = $state(false);
+  let claimError = $state<string | null>(null);
+
+  let remainingPercentage = $derived(
     card.initial_amount > 0
-      ? ((card.initial_amount - card.current_amount) / card.initial_amount) * 100
+      ? ((card.current_amount / card.initial_amount) * 100)
       : 0
   );
 
-  let remainingPercentage = $derived(100 - usedPercentage);
+  let isExpired = $derived(
+    card.expires_at !== null && new Date(card.expires_at) < new Date()
+  );
+
+  let canClaim = $derived(
+    !card.is_claimed && card.is_active && !isExpired && customerId !== null
+  );
 
   let statusLabel = $derived.by(() => {
-    if (!card.is_active) return 'Expired';
+    if (!card.is_active || isExpired) return 'Expired';
     if (card.is_claimed) return 'Claimed';
     if (card.current_amount <= 0) return 'Used';
     return 'Active';
   });
 
   let statusClass = $derived.by(() => {
-    if (!card.is_active) return 'pill-error';
+    if (!card.is_active || isExpired) return 'pill-error';
     if (card.is_claimed) return 'pill-info';
     if (card.current_amount <= 0) return 'pill-neutral';
     return 'pill-success';
   });
 
-  let isExpired = $derived(card.expires_at !== null && new Date(card.expires_at) < new Date());
+  async function handleClaim() {
+    if (customerId === null || claiming) return;
+    claiming = true;
+    claimError = null;
+
+    const result = await claimGiftCardForCustomer(card.code, customerId);
+    if (result.tag === 'success') {
+      claimSuccess = true;
+    } else {
+      claimError = result.message;
+    }
+    claiming = false;
+  }
 </script>
 
-<div class="gift-card">
-  <div class="gift-card-header">
-    <h3 class="gift-card-title">Gift Card</h3>
-    <Pill text={statusLabel} classes={statusClass} />
-  </div>
-
-  <div class="gift-card-code-box">
-    <span class="gift-card-code">{card.code}</span>
-  </div>
-
-  <div class="gift-card-amounts">
-    <div class="amount-row">
-      <span class="amount-label">Initial</span>
-      <span class="amount-value">{formatCurrencyINR(card.initial_amount)}</span>
+{#if claimSuccess}
+  <div class="success-card">
+    <div class="success-icon">&#10003;</div>
+    <div class="success-title">Gift Card Claimed!</div>
+    <div class="success-amount">+{formatCurrencyINR(card.current_amount)}</div>
+    <div class="success-text">
+      Added to your gift card wallet balance.<br />
+      Use it at checkout on your next order.
     </div>
-    <div class="amount-row">
-      <span class="amount-label">Remaining</span>
-      <span class="amount-value amount-highlight">
-        {formatCurrencyINR(card.current_amount)}
-      </span>
+    {#if onClaimed !== null}
+      <button class="done-btn" onclick={onClaimed}>Back to Rewards</button>
+    {/if}
+  </div>
+{:else}
+  <div class="gc-card">
+    <div class="gc-header">
+      <h3 class="gc-title">Gift Card</h3>
+      <Pill text={statusLabel} classes={statusClass} />
     </div>
-  </div>
 
-  <div class="gift-card-progress">
-    <Progress value={remainingPercentage} classes="gift-progress-bar" />
-    <p class="progress-label">{Math.round(remainingPercentage)}% remaining</p>
-  </div>
+    <div class="gc-code-box">
+      <span class="gc-code">{card.code}</span>
+    </div>
 
-  {#if card.expires_at !== null}
-    <p class="gift-card-expiry" class:expired={isExpired}>
-      {isExpired ? 'Expired' : 'Expires'}
-      {formatDate(card.expires_at)}
-    </p>
-  {/if}
-</div>
+    <div class="gc-amounts">
+      <div class="gc-amount-item">
+        <span class="gc-amount-label">Balance</span>
+        <span class="gc-amount-value" class:balance={!isExpired}>
+          {formatCurrencyINR(card.current_amount)}
+        </span>
+      </div>
+      <div class="gc-amount-item">
+        <span class="gc-amount-label">Initial</span>
+        <span class="gc-amount-value">{formatCurrencyINR(card.initial_amount)}</span>
+      </div>
+    </div>
+
+    <div class="gc-progress">
+      <Progress value={remainingPercentage} classes={isExpired ? 'progress-expired' : 'progress-gc'} />
+      <p class="progress-label">{Math.round(remainingPercentage)}% remaining</p>
+    </div>
+
+    {#if card.expires_at !== null}
+      <p class="gc-expiry" class:expired={isExpired}>
+        {isExpired ? 'Expired' : 'Expires'} {formatDate(card.expires_at)}
+      </p>
+    {/if}
+
+    {#if canClaim}
+      <div class="gc-actions">
+        <button class="claim-btn" onclick={handleClaim} disabled={claiming}>
+          {claiming ? 'Claiming...' : `Claim ${formatCurrencyINR(card.current_amount)} to Wallet`}
+        </button>
+        <div class="claim-hint">Amount will be added to your gift card balance</div>
+      </div>
+    {:else if card.is_claimed}
+      <div class="claimed-info">Already in your wallet</div>
+    {/if}
+
+    {#if claimError !== null}
+      <div class="claim-error">{claimError}</div>
+    {/if}
+  </div>
+{/if}
 
 <style>
-  .gift-card {
-    background: var(--color-surface);
-    border-radius: var(--radius-lg);
-    padding: var(--space-5);
-    box-shadow: var(--shadow-sm);
+  .gc-card {
+    background: #1a1d27;
+    border-radius: 12px;
+    padding: 20px;
   }
 
-  .gift-card-header {
+  .gc-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: var(--space-4);
+    margin-bottom: 16px;
   }
 
-  .gift-card-title {
-    font-size: var(--font-size-md);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
+  .gc-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #ffffff;
   }
 
-  .gift-card-code-box {
+  .gc-code-box {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: var(--space-3) var(--space-4);
-    background: var(--color-surface-2);
-    border-radius: var(--radius-md);
-    margin-bottom: var(--space-4);
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid #2a2d3a;
+    border-radius: 10px;
+    margin-bottom: 20px;
   }
 
-  .gift-card-code {
-    font-family: var(--font-mono);
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
-    letter-spacing: 0.04em;
+  .gc-code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 18px;
+    font-weight: 600;
+    color: #ffffff;
+    letter-spacing: 0.05em;
   }
 
-  .gift-card-amounts {
+  .gc-amounts {
     display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-    margin-bottom: var(--space-4);
+    justify-content: center;
+    gap: 32px;
+    margin-bottom: 16px;
   }
 
-  .amount-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  .gc-amount-item {
+    text-align: center;
   }
 
-  .amount-label {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-muted);
+  .gc-amount-label {
+    display: block;
+    font-size: 11px;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
   }
 
-  .amount-value {
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-medium);
-    color: var(--color-text);
+  .gc-amount-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: #ffffff;
   }
 
-  .amount-highlight {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-primary);
+  .gc-amount-value.balance {
+    color: #4ade80;
   }
 
-  .gift-card-progress {
-    margin-bottom: var(--space-3);
+  .gc-progress {
+    margin-bottom: 12px;
   }
 
-  .gift-card-progress :global(.gift-progress-bar) {
-    --progress-track-height: 8px;
+  :global(.progress-gc) {
+    --progress-track-height: 6px;
+    --progress-bar-background: linear-gradient(90deg, #6366f1, #818cf8);
+    --progress-track-background: #2a2d3a;
+    --progress-track-border-radius: 3px;
+    --progress-bar-border-radius: 3px;
+  }
+
+  :global(.progress-expired) {
+    --progress-track-height: 6px;
+    --progress-bar-background: #f87171;
+    --progress-track-background: #2a2d3a;
+    --progress-track-border-radius: 3px;
+    --progress-bar-border-radius: 3px;
   }
 
   .progress-label {
-    font-size: var(--font-size-xs);
-    color: var(--color-text-muted);
-    margin-top: var(--space-1);
+    text-align: center;
+    font-size: 11px;
+    color: #9ca3af;
+    margin-top: 6px;
   }
 
-  .gift-card-expiry {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-muted);
+  .gc-expiry {
+    font-size: 12px;
+    color: #9ca3af;
+    text-align: center;
+    margin-bottom: 16px;
   }
 
-  .gift-card-expiry.expired {
-    color: var(--color-error);
+  .gc-expiry.expired {
+    color: #f87171;
+  }
+
+  .gc-actions {
+    margin-top: 8px;
+  }
+
+  .claim-btn {
+    width: 100%;
+    padding: 14px;
+    background: #4ade80;
+    color: #000000;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .claim-btn:hover:not(:disabled) {
+    background: #22c55e;
+  }
+
+  .claim-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .claim-hint {
+    text-align: center;
+    font-size: 11px;
+    color: #9ca3af;
+    margin-top: 8px;
+  }
+
+  .claimed-info {
+    text-align: center;
+    font-size: 13px;
+    color: #818cf8;
+    font-weight: 500;
+    padding: 8px 0;
+  }
+
+  .claim-error {
+    text-align: center;
+    font-size: 12px;
+    color: #f87171;
+    margin-top: 8px;
+    padding: 8px;
+    background: rgba(248, 113, 113, 0.1);
+    border-radius: 8px;
+  }
+
+  /* Success state */
+  .success-card {
+    background: #1a1d27;
+    border-radius: 12px;
+    padding: 32px 20px;
+    text-align: center;
+  }
+
+  .success-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: rgba(74, 222, 128, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    color: #4ade80;
+    margin: 0 auto 16px;
+  }
+
+  .success-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 4px;
+  }
+
+  .success-amount {
+    font-size: 32px;
+    font-weight: 700;
+    color: #4ade80;
+    margin-bottom: 8px;
+  }
+
+  .success-text {
+    font-size: 13px;
+    color: #9ca3af;
+    line-height: 1.5;
+    margin-bottom: 24px;
+  }
+
+  .done-btn {
+    width: 100%;
+    padding: 12px;
+    background: #6366f1;
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .done-btn:hover {
+    background: #4f46e5;
   }
 </style>

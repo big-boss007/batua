@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { Progress } from '@juspay/svelte-ui-components';
+
   import type { TierDistribution } from '$lib/client/modules/customers';
   import { getTierColor } from '$lib/client/modules/customers';
 
@@ -22,18 +24,15 @@
     </div>
 
     <div class="chart-bars">
-      {#each distribution as item, index (item.tier_name)}
+      {#each distribution as item, index (index)}
         <div class="bar-row">
           <span class="bar-label" style:color={getTierColor(index + 1)}>
             {item.tier_name}
           </span>
-          <div class="bar-track">
-            <div
-              class="bar-fill"
-              style:width="{maxCount > 0 ? (item.count / maxCount) * 100 : 0}%"
-              style:background={getTierColor(index + 1)}
-            ></div>
-          </div>
+          <Progress
+            value={maxCount > 0 ? (item.count / maxCount) * 100 : 0}
+            classes="progress-tier-{index}"
+          />
           <span class="bar-count">{item.count.toLocaleString('en-IN')}</span>
         </div>
       {/each}
@@ -93,25 +92,34 @@
     white-space: nowrap;
   }
 
-  .bar-track {
-    height: 24px;
-    background: var(--color-surface-2);
-    border-radius: var(--radius-sm);
-    overflow: hidden;
-  }
-
-  .bar-fill {
-    height: 100%;
-    border-radius: var(--radius-sm);
-    transition: width var(--transition-slow);
-    min-width: 2px;
-  }
-
   .bar-count {
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     color: var(--color-text);
     text-align: right;
     font-family: var(--font-mono);
+  }
+
+  :global([class^='progress-tier-']) {
+    --progress-track-height: 24px;
+    --progress-track-background: var(--color-surface-2);
+    --progress-track-border-radius: var(--radius-sm);
+    --progress-bar-border-radius: var(--radius-sm);
+  }
+
+  :global(.progress-tier-0) {
+    --progress-bar-background: #6366f1;
+  }
+  :global(.progress-tier-1) {
+    --progress-bar-background: #f59e0b;
+  }
+  :global(.progress-tier-2) {
+    --progress-bar-background: #10b981;
+  }
+  :global(.progress-tier-3) {
+    --progress-bar-background: #ef4444;
+  }
+  :global(.progress-tier-4) {
+    --progress-bar-background: #8b5cf6;
   }
 </style>

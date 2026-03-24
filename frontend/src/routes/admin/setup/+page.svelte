@@ -115,7 +115,6 @@
           calculation: 'percentage',
           value: prepaidPercent,
           max_amount: Number(maxCashbackPerOrder) > 0 ? Number(maxCashbackPerOrder) : null,
-          conversion_rate: null,
           expiry_days: 90
         }
       }
@@ -144,7 +143,6 @@
             calculation: 'percentage',
             value: codPercent,
             max_amount: Number(maxCashbackPerOrder) > 0 ? Number(maxCashbackPerOrder) : null,
-            conversion_rate: null,
             expiry_days: 90
           }
         }
@@ -177,8 +175,7 @@
         max_per_order_pct: Number(maxPerOrderPct),
         max_per_order_fixed: null,
         stackable_with_discounts: allowWithDiscounts,
-        default_expiry_days: 365,
-        is_transferable: false
+        default_expiry_days: 365
       },
       (raw: unknown) => raw
     );

@@ -10,11 +10,18 @@ export type GiftCard = {
 };
 
 export type IssueGiftCardForm = {
+  merchant_id: string;
   amount: number;
   expires_at: string | null;
 };
 
 export type BulkIssueForm = {
+  merchant_id: string;
+  batch_id: string;
+  cards: Array<{ amount: number; recipient_phone: string | null }>;
+};
+
+export type BulkIssueInput = {
   cards: Array<{ amount: number; recipient_phone: string | null }>;
 };
 

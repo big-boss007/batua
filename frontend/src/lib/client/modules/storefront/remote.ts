@@ -21,7 +21,10 @@ function decodeMerchant(raw: unknown): StorefrontMerchant {
     name: (r['name'] as string) ?? '',
     slug: (r['slug'] as string) ?? null,
     domain: (r['domain'] as string) ?? null,
-    currency: (r['currency'] as string) ?? 'INR'
+    currency: (r['currency'] as string) ?? 'INR',
+    points_name: (r['points_name'] as string) ?? 'Points',
+    points_icon: (r['points_icon'] as string) ?? 'pts',
+    points_to_currency_rate: (r['points_to_currency_rate'] as number) ?? 1.0
   };
 }
 
@@ -66,11 +69,25 @@ function decodeBalance(raw: unknown): CustomerBalance {
   const buckets: Array<BucketBalance> = Array.isArray(rawBuckets)
     ? rawBuckets.map(decodeBucket)
     : [];
+  const rawExpiring = r['expiring_soon'];
+  let expiring_soon = null;
+  if (rawExpiring !== null && rawExpiring !== undefined) {
+    const e = rawExpiring as Record<string, unknown>;
+    expiring_soon = {
+      amount: (e['amount'] as number) ?? 0,
+      currency: (e['currency'] as number) ?? 0,
+      days: (e['days'] as number) ?? 0,
+      count: (e['count'] as number) ?? 0
+    };
+  }
   return {
     wallet_id: (r['wallet_id'] as string) ?? '',
     displayed_balance: (r['displayed_balance'] as number) ?? 0,
     spendable_balance: (r['spendable_balance'] as number) ?? 0,
-    buckets
+    points_balance: (r['points_balance'] as number) ?? 0,
+    cash_balance: (r['cash_balance'] as number) ?? 0,
+    buckets,
+    expiring_soon
   };
 }
 
@@ -87,10 +104,11 @@ function decodeTierProgress(raw: unknown): TierProgress | null {
 
 function decodeTierInfo(raw: unknown): CustomerTierInfo {
   const r = raw as Record<string, unknown>;
+  const tier = (r['tier'] ?? {}) as Record<string, unknown>;
   return {
-    tier_name: (r['tier_name'] as string) ?? '',
-    rank: (r['rank'] as number) ?? 0,
-    earn_rate_multiplier: (r['earn_rate_multiplier'] as number) ?? 1,
+    tier_name: (tier['name'] as string) ?? (r['tier_name'] as string) ?? '',
+    rank: (tier['rank'] as number) ?? (r['rank'] as number) ?? 0,
+    earn_rate_multiplier: (tier['earn_rate_multiplier'] as number) ?? (r['earn_rate_multiplier'] as number) ?? 1,
     progress_to_next: decodeTierProgress(r['progress_to_next'] ?? null)
   };
 }
@@ -101,6 +119,7 @@ function decodeEntry(raw: unknown): TransactionEntry {
     id: (r['id'] as string) ?? '',
     bucket_type: (r['bucket_type'] as string) ?? '',
     movement_type: (r['movement_type'] as string) ?? '',
+    earning_unit: (r['earning_unit'] as number) ?? 0,
     currency_equivalent: (r['currency_equivalent'] as number) ?? 0,
     created_at: (r['created_at'] as string) ?? '',
     state: (r['state'] as string) ?? ''
@@ -190,6 +209,17 @@ async function fetchGiftCard(code: string): Promise<APIResult<GiftCardInfo>> {
   return apiCaller.get(`/gift-cards/${code}`, decodeGiftCard);
 }
 
+async function claimGiftCardForCustomer(
+  code: string,
+  customerId: string
+): Promise<APIResult<GiftCardInfo>> {
+  return apiCaller.post(
+    '/gift-cards/claim',
+    { code, customer_id: customerId },
+    decodeGiftCard
+  );
+}
+
 async function fetchReferralCode(code: string): Promise<APIResult<ReferralCodeInfo>> {
   return apiCaller.get(`/referrals/codes/${code}`, decodeReferralCode);
 }
@@ -213,6 +243,7 @@ export {
   fetchEntries,
   fetchCustomerTier,
   fetchGiftCard,
+  claimGiftCardForCustomer,
   fetchReferralCode,
   fetchCustomerReferralCode,
   fetchReferralProgram

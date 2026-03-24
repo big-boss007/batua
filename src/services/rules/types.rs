@@ -69,7 +69,6 @@ pub struct RewardAction {
     pub calculation: String,
     pub value: f64,
     pub max_amount: Option<f64>,
-    pub conversion_rate: Option<f64>,
     pub expiry_days: Option<i32>,
 }
 
@@ -109,6 +108,7 @@ pub struct CreateRuleRequest {
 
 #[derive(Debug, Deserialize)]
 pub struct UpdateRuleRequest {
+    pub name: Option<String>,
     pub config: serde_json::Value,
 }
 

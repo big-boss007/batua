@@ -11,8 +11,16 @@
     formatMovementType,
     formatState
   } from '$lib/client/modules/transactions';
-  import { currentMerchantId } from '$lib/client/modules/admin';
-  import { toastStore, formatCurrencyINR, formatDateTime } from '$lib/client/modules/foundation';
+  import { currentMerchant, currentMerchantId } from '$lib/client/modules/admin';
+  import type { Merchant } from '$lib/client/modules/admin';
+  import {
+    toastStore,
+    formatCurrencyINR,
+    formatDateTime,
+    formatPhone,
+    formatPoints,
+    isPointsBucket
+  } from '$lib/client/modules/foundation';
 
   const BUCKET_TYPES = ['earned_credit', 'cod_pending', 'gift_card', 'customer_funded', 'referral_reward', 'goodwill_credit', 'membership_benefit', 'refund_credit'];
   const MOVEMENT_TYPES = ['in', 'out', 'held', 'across'];
@@ -34,8 +42,15 @@
 
   let selectedEntry = $state<LedgerEntryDetail | null>(null);
   let loadingDetail = $state(false);
+  let merchant = $state<Merchant | null>(null);
 
-  const TABLE_HEADERS = ['Customer', 'Bucket', 'Movement', 'Amount', 'State', 'Date'];
+  currentMerchant.subscribe((m) => {
+    merchant = m;
+  });
+
+  let pIcon = $derived(merchant?.points_icon ?? 'pts');
+
+  const TABLE_HEADERS = ['Customer', 'Bucket', 'Movement', 'Points / Cash', '₹ Value', 'State', 'Date'];
 
   const MOVEMENT_PILL_CLASS: Record<string, string> = {
     in: 'pill-success',
@@ -62,12 +77,18 @@
     transactions.map((tx) => {
       const customerLabel =
         tx.customer_name !== null
-          ? `${tx.customer_name} (${tx.customer_phone})`
-          : tx.customer_phone;
+          ? `${tx.customer_name} (${formatPhone(tx.customer_phone)})`
+          : formatPhone(tx.customer_phone);
+      const pts = isPointsBucket(tx.bucket_type);
+      const prefix = tx.movement_type === 'in' || tx.movement_type === 'held' ? '+' : tx.movement_type === 'out' ? '-' : '';
+      const nativeCell = pts
+        ? `${prefix}${formatPoints(Math.abs(tx.earning_unit), pIcon)}`
+        : `${prefix}${formatCurrencyINR(Math.abs(tx.currency_equivalent))}`;
       return [
         customerLabel,
         formatBucketType(tx.bucket_type),
         tx.movement_type,
+        nativeCell,
         formatCurrencyINR(tx.currency_equivalent),
         tx.state,
         formatDateTime(tx.created_at)
@@ -209,7 +230,7 @@
     </div>
   {:else}
     <div class="transactions-layout">
-      <div class="list-panel">
+      <div>
         <div class="filters-section">
           <div class="search-bar">
             <input
@@ -265,13 +286,19 @@
             --table-row-hover-background="var(--color-surface-2)"
             --table-content-font-size="var(--font-size-sm)"
           >
-            {#snippet cell(value, _rowIndex, colIndex)}
+            {#snippet cell(value, rowIndex, colIndex)}
               {#if colIndex === 2}
                 <Pill
                   text={formatMovementType(String(value)).label}
                   classes={MOVEMENT_PILL_CLASS[String(value).toLowerCase()] ?? ''}
                 />
+              {:else if colIndex === 3}
+                <span class="cell-native" style="color: {isPointsBucket(transactions[rowIndex]?.bucket_type ?? '') ? (transactions[rowIndex]?.movement_type === 'out' ? 'var(--color-error)' : 'var(--color-success)') : 'var(--color-primary)'}; font-weight: 500; font-family: var(--font-mono);">
+                  {value}
+                </span>
               {:else if colIndex === 4}
+                <span style="font-family: var(--font-mono); color: var(--color-text-muted);">{value}</span>
+              {:else if colIndex === 5}
                 <Pill
                   text={formatState(String(value)).label}
                   classes={STATE_PILL_CLASS[String(value).toLowerCase()] ?? ''}
@@ -294,7 +321,13 @@
       </div>
 
       {#if loadingDetail || selectedEntry !== null}
-        <aside class="detail-panel">
+        <div class="modal-overlay" onclick={handleCloseDetail} onkeydown={(e) => { if (e.key === 'Escape') handleCloseDetail(); }} role="button" tabindex="-1">
+          <div class="modal-card" onclick={(e) => e.stopPropagation()} role="dialog">
+            <div class="modal-header">
+              <h3 class="modal-title">Transaction Detail</h3>
+              <button class="modal-close" onclick={handleCloseDetail}>&times;</button>
+            </div>
+            <div class="modal-body">
           {#if loadingDetail}
             <div class="shimmer-detail">
               <Shimmer classes="shimmer-detail-header" />
@@ -304,13 +337,6 @@
               <Shimmer classes="shimmer-row" />
             </div>
           {:else if selectedEntry}
-            <div class="detail-header">
-              <h3 class="detail-title">Transaction Detail</h3>
-              <button class="close-btn" onclick={handleCloseDetail} aria-label="Close detail"
-                >&times;</button
-              >
-            </div>
-
             <div class="detail-body">
               <div class="detail-amount">
                 <Pill
@@ -329,7 +355,7 @@
               {#if selectedEntry.customer_phone !== null}
                 <div class="detail-row">
                   <span class="label">Phone</span>
-                  <span class="value mono">{selectedEntry.customer_phone}</span>
+                  <span class="value mono">{formatPhone(selectedEntry.customer_phone)}</span>
                 </div>
               {/if}
               {#if selectedEntry.customer_email !== null}
@@ -462,13 +488,72 @@
               </div>
             </div>
           {/if}
-        </aside>
+            </div>
+          </div>
+        </div>
       {/if}
     </div>
   {/if}
 </div>
 
 <style>
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: var(--z-modal, 400);
+  }
+
+  .modal-card {
+    background: var(--color-bg);
+    border-radius: var(--radius-lg);
+    width: 560px;
+    max-width: 90vw;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-4) var(--space-6);
+    border-bottom: 1px solid var(--color-border);
+    flex-shrink: 0;
+  }
+
+  .modal-title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: var(--font-size-xl);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-sm);
+    line-height: 1;
+  }
+
+  .modal-close:hover {
+    color: var(--color-text);
+    background: var(--color-surface-2);
+  }
+
+  .modal-body {
+    padding: var(--space-6);
+    overflow-y: auto;
+    flex: 1;
+  }
   .page {
     max-width: 1400px;
     margin: 0 auto;
@@ -496,14 +581,9 @@
   }
 
   .transactions-layout {
-    display: grid;
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
     gap: var(--space-6);
-    align-items: start;
-  }
-
-  .transactions-layout:has(.detail-panel) {
-    grid-template-columns: 1fr 420px;
   }
 
   .list-panel {
@@ -628,46 +708,6 @@
     padding: var(--space-8);
   }
 
-  .detail-panel {
-    position: sticky;
-    top: 72px;
-    max-height: calc(100vh - 100px);
-    overflow-y: auto;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    padding: var(--space-4);
-  }
-
-  .detail-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--space-4);
-  }
-
-  .detail-title {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
-  }
-
-  .close-btn {
-    background: none;
-    border: none;
-    font-size: var(--font-size-xl);
-    color: var(--color-text-muted);
-    cursor: pointer;
-    padding: var(--space-1) var(--space-2);
-    border-radius: var(--radius-sm);
-    line-height: 1;
-    transition: color var(--transition-fast);
-  }
-
-  .close-btn:hover {
-    color: var(--color-text);
-  }
-
   .detail-body {
     display: flex;
     flex-direction: column;
@@ -756,15 +796,4 @@
     --shimmer-border-radius: 4px;
   }
 
-  @media (max-width: 960px) {
-    .transactions-layout,
-    .transactions-layout:has(.detail-panel) {
-      grid-template-columns: 1fr;
-    }
-
-    .detail-panel {
-      position: static;
-      max-height: none;
-    }
-  }
 </style>

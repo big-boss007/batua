@@ -1,111 +1,143 @@
 <script lang="ts">
+  import { Input, Button, Toggle } from '@juspay/svelte-ui-components';
+  import { isPointsBucket } from '$lib/client/modules/foundation';
+
   import type { WalletPolicy, UpdateWalletPolicyRequest } from '$lib/client/modules/settings';
+
+  const BUCKET_LABELS: Record<string, string> = {
+    EarnedCredit: 'Earned Credit',
+    CodPending: 'COD Pending',
+    GiftCard: 'Gift Card',
+    CustomerFunded: 'Customer Funded',
+    ReferralReward: 'Referral Reward',
+    GoodwillCredit: 'Goodwill Credit',
+    MembershipBenefit: 'Membership Benefit',
+    RefundCredit: 'Refund Credit'
+  };
+
+  const BUCKET_DESCRIPTIONS: Record<string, string> = {
+    EarnedCredit:
+      'Controls how earned loyalty credits can be redeemed at checkout — limits, caps, expiry, and discount stacking.',
+    CodPending: 'Policy for credits held pending COD delivery confirmation.',
+    GiftCard: 'Controls how gift card balances can be spent at checkout.',
+    CustomerFunded: 'Policy for customer-funded store credit balances.',
+    ReferralReward: 'Controls how referral reward credits can be redeemed.',
+    GoodwillCredit: 'Policy for goodwill credits issued by your team.',
+    MembershipBenefit: 'Policy for membership benefit credits.',
+    RefundCredit: 'Policy for refund credits issued to customers.'
+  };
 
   let {
     policy,
-    onSave
+    pointsIcon,
+    onSave,
+    onCancel
   }: {
     policy: WalletPolicy;
+    pointsIcon: string;
     onSave: (policyId: string, data: UpdateWalletPolicyRequest) => void;
+    onCancel: () => void;
   } = $props();
 
-  let minRedemption = $state(policy.min_redemption);
-  let stepSize = $state(policy.step_size);
-  let maxPerOrderPct = $state(policy.max_per_order_pct);
-  let maxPerOrderFixed = $state(policy.max_per_order_fixed);
+  let minRedemption = $state(String(policy.min_redemption ?? ''));
+  let maxPerOrderPct = $state(String(policy.max_per_order_pct ?? ''));
+  let maxPerOrderFixed = $state(String(policy.max_per_order_fixed ?? ''));
   let stackable = $state(policy.stackable_with_discounts);
-  let expiryDays = $state(policy.default_expiry_days);
-  let transferable = $state(policy.is_transferable);
+  let expiryDays = $state(String(policy.default_expiry_days ?? ''));
+  let isPoints = $derived(isPointsBucket(policy.bucket_type));
+  let unitIcon = $derived(isPoints ? pointsIcon : '₹');
+  let displayName = $derived(BUCKET_LABELS[policy.bucket_type] ?? policy.bucket_type);
+  let description = $derived(BUCKET_DESCRIPTIONS[policy.bucket_type] ?? '');
 
   function handleSubmit() {
     onSave(policy.id, {
-      min_redemption: minRedemption,
-      step_size: stepSize,
-      max_per_order_pct: maxPerOrderPct,
-      max_per_order_fixed: maxPerOrderFixed,
+      min_redemption: Number(minRedemption) || null,
+      max_per_order_pct: Number(maxPerOrderPct) || null,
+      max_per_order_fixed: Number(maxPerOrderFixed) || null,
       stackable_with_discounts: stackable,
-      default_expiry_days: expiryDays,
-      is_transferable: transferable
+      default_expiry_days: Number(expiryDays) || null
     });
   }
 </script>
 
 <form class="policy-form" onsubmit={handleSubmit}>
-  <h4 class="form-title">{policy.bucket_type}</h4>
+  <h4 class="form-title">{displayName}</h4>
+  {#if description}
+    <p class="form-desc">{description}</p>
+  {/if}
 
   <div class="form-grid">
     <div class="form-field">
-      <label class="field-label" for="min-redemption-{policy.id}">Min Redemption (₹)</label>
-      <input
-        id="min-redemption-{policy.id}"
-        class="field-input"
-        type="number"
-        bind:value={minRedemption}
+      <Input
+        value={minRedemption}
+        label={'Min Redemption (' + unitIcon + ')'}
+        dataType="number"
         placeholder="No minimum"
+        onInput={(val) => {
+          minRedemption = val;
+        }}
       />
+      <span class="field-hint">Customer must have at least this many to redeem</span>
     </div>
 
     <div class="form-field">
-      <label class="field-label" for="step-size-{policy.id}">Step Size (₹)</label>
-      <input
-        id="step-size-{policy.id}"
-        class="field-input"
-        type="number"
-        bind:value={stepSize}
-        placeholder="No step"
-      />
-    </div>
-
-    <div class="form-field">
-      <label class="field-label" for="max-pct-{policy.id}">Max Per Order (%)</label>
-      <input
-        id="max-pct-{policy.id}"
-        class="field-input"
-        type="number"
-        min="0"
-        max="100"
-        bind:value={maxPerOrderPct}
+      <Input
+        value={maxPerOrderPct}
+        label="Max Per Order (%)"
+        dataType="number"
         placeholder="No limit"
+        onInput={(val) => {
+          maxPerOrderPct = val;
+        }}
       />
+      <span class="field-hint">Max % of order value payable with credits</span>
     </div>
 
     <div class="form-field">
-      <label class="field-label" for="max-fixed-{policy.id}">Max Per Order Fixed (₹)</label>
-      <input
-        id="max-fixed-{policy.id}"
-        class="field-input"
-        type="number"
-        bind:value={maxPerOrderFixed}
+      <Input
+        value={maxPerOrderFixed}
+        label={'Max Per Order (' + unitIcon + ')'}
+        dataType="number"
         placeholder="No limit"
+        onInput={(val) => {
+          maxPerOrderFixed = val;
+        }}
       />
+      <span class="field-hint">Absolute cap on credits per order</span>
     </div>
 
     <div class="form-field">
-      <label class="field-label" for="expiry-{policy.id}">Default Expiry (days)</label>
-      <input
-        id="expiry-{policy.id}"
-        class="field-input"
-        type="number"
-        min="0"
-        bind:value={expiryDays}
+      <Input
+        value={expiryDays}
+        label="Default Expiry (days)"
+        dataType="number"
         placeholder="No expiry"
+        onInput={(val) => {
+          expiryDays = val;
+        }}
       />
+      <span class="field-hint">Credits expire this many days after earning</span>
     </div>
   </div>
 
   <div class="toggle-group">
-    <label class="toggle-field">
-      <input type="checkbox" class="toggle-input" bind:checked={stackable} />
+    <Toggle
+      text=""
+      checked={stackable}
+      onclick={(checked) => {
+        stackable = checked;
+      }}
+    />
+    <div class="toggle-text">
       <span class="toggle-label">Stackable with discounts</span>
-    </label>
-
-    <label class="toggle-field">
-      <input type="checkbox" class="toggle-input" bind:checked={transferable} />
-      <span class="toggle-label">Transferable</span>
-    </label>
+      <span class="toggle-desc">Allow credits alongside Shopify discount codes</span>
+    </div>
   </div>
 
-  <button type="submit" class="save-button">Save Policy</button>
+  <div class="form-actions">
+    <Button text="Cancel" classes="btn-ghost" onclick={onCancel} />
+    <Button text="Save Policy" classes="btn-primary" type="submit" />
+  </div>
 </form>
 
 <style>
@@ -118,10 +150,16 @@
 
   .form-title {
     font-size: var(--font-size-md);
-    font-weight: var(--font-weight-semibold);
+    font-weight: var(--font-weight-bold);
     color: var(--color-text);
+    margin-bottom: var(--space-1);
+  }
+
+  .form-desc {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    line-height: 1.5;
     margin-bottom: var(--space-5);
-    text-transform: capitalize;
   }
 
   .form-grid {
@@ -134,74 +172,42 @@
   .form-field {
     display: flex;
     flex-direction: column;
-    gap: var(--space-1);
   }
 
-  .field-label {
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-medium);
+  .field-hint {
+    font-size: 10px;
     color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-
-  .field-input {
-    padding: var(--space-2) var(--space-3);
-    background: var(--color-bg);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    color: var(--color-text);
-    font-size: var(--font-size-sm);
-    transition: border-color var(--transition-fast);
-  }
-
-  .field-input:focus {
-    outline: none;
-    border-color: var(--color-primary);
-  }
-
-  .field-input::placeholder {
-    color: var(--color-text-muted);
+    margin-top: 3px;
+    opacity: 0.7;
   }
 
   .toggle-group {
     display: flex;
-    gap: var(--space-6);
+    align-items: flex-start;
+    gap: var(--space-3);
     margin-bottom: var(--space-5);
   }
 
-  .toggle-field {
+  .toggle-text {
     display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    cursor: pointer;
-  }
-
-  .toggle-input {
-    width: 16px;
-    height: 16px;
-    accent-color: var(--color-primary);
-    cursor: pointer;
+    flex-direction: column;
+    gap: 2px;
   }
 
   .toggle-label {
     font-size: var(--font-size-sm);
-    color: var(--color-text);
     font-weight: var(--font-weight-medium);
+    color: var(--color-text);
   }
 
-  .save-button {
-    padding: var(--space-2) var(--space-5);
-    background: var(--color-primary);
-    color: #ffffff;
-    border: none;
-    border-radius: var(--radius-md);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
-    transition: background var(--transition-fast);
+  .toggle-desc {
+    font-size: 11px;
+    color: var(--color-text-muted);
   }
 
-  .save-button:hover {
-    background: var(--color-primary-hover);
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-2);
   }
 </style>

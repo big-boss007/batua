@@ -47,4 +47,41 @@ function normalizePhoneE164(phone: string, countryCode: string = '91'): string {
   return `+${countryCode}${digits}`;
 }
 
-export { formatCurrencyINR, formatDate, formatDateTime, normalizePhoneE164 };
+const POINTS_BUCKETS = new Set([
+  'earned_credit',
+  'cod_pending',
+  'referral_reward',
+  'goodwill_credit',
+  'membership_benefit',
+  'EarnedCredit',
+  'CodPending',
+  'ReferralReward',
+  'GoodwillCredit',
+  'MembershipBenefit'
+]);
+
+function isPointsBucket(bucketType: string): boolean {
+  return POINTS_BUCKETS.has(bucketType);
+}
+
+function formatPoints(value: number, icon: string): string {
+  return `${value.toLocaleString('en-IN')} ${icon}`;
+}
+
+function formatPhone(phone: string): string {
+  if (phone.startsWith('+91') && phone.length === 13) {
+    const digits = phone.slice(3);
+    return `+91 ${digits.slice(0, 5)} ${digits.slice(5)}`;
+  }
+  return phone;
+}
+
+export {
+  formatCurrencyINR,
+  formatDate,
+  formatDateTime,
+  normalizePhoneE164,
+  formatPhone,
+  formatPoints,
+  isPointsBucket
+};

@@ -4,13 +4,26 @@ export type StorefrontMerchant = {
   slug: string | null;
   domain: string | null;
   currency: string;
+  points_name: string;
+  points_icon: string;
+  points_to_currency_rate: number;
 };
 
 export type CustomerBalance = {
   wallet_id: string;
   displayed_balance: number;
   spendable_balance: number;
+  points_balance: number;
+  cash_balance: number;
   buckets: Array<BucketBalance>;
+  expiring_soon: ExpiringSoon | null;
+};
+
+export type ExpiringSoon = {
+  amount: number;
+  currency: number;
+  days: number;
+  count: number;
 };
 
 export type BucketBalance = {
@@ -38,6 +51,7 @@ export type TransactionEntry = {
   id: string;
   bucket_type: string;
   movement_type: string;
+  earning_unit: number;
   currency_equivalent: number;
   created_at: string;
   state: string;

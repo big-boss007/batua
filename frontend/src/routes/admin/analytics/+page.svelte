@@ -1,12 +1,18 @@
 <script lang="ts">
   import type { MerchantAnalytics } from '$lib/client/modules/analytics';
   import { fetchMerchantAnalytics } from '$lib/client/modules/analytics';
-  import { currentMerchantId } from '$lib/client/modules/admin';
-  import { formatCurrencyINR } from '$lib/client/modules/foundation';
+  import { currentMerchant, currentMerchantId } from '$lib/client/modules/admin';
+  import type { Merchant } from '$lib/client/modules/admin';
+  import { formatCurrencyINR, formatPoints } from '$lib/client/modules/foundation';
 
   let analytics = $state<MerchantAnalytics | null>(null);
   let loading = $state(false);
   let merchantId = $state<string | null>(null);
+  let merchant = $state<Merchant | null>(null);
+
+  currentMerchant.subscribe((m) => {
+    merchant = m;
+  });
 
   currentMerchantId.subscribe((id) => {
     const prevId = merchantId;
@@ -25,13 +31,21 @@
     loading = false;
   }
 
+  let pIcon = $derived(merchant?.points_icon ?? 'pts');
+  let pRate = $derived(merchant?.points_to_currency_rate ?? 1.0);
+
+  function fmtPts(val: number): string {
+    const pts = pRate > 0 ? Math.round(val / pRate) : val;
+    return formatPoints(pts, pIcon);
+  }
+
   let overviewCards = $derived(
     analytics !== null
       ? [
-          { label: 'Total Earned', value: formatCurrencyINR(analytics.total_earned) },
-          { label: 'Total Redeemed', value: formatCurrencyINR(analytics.total_redeemed) },
-          { label: 'Active Credits', value: formatCurrencyINR(analytics.active_credits) },
-          { label: 'Total Expired', value: formatCurrencyINR(analytics.total_expired) }
+          { label: 'Total Earned', value: fmtPts(analytics.total_earned), sub: '≈ ' + formatCurrencyINR(analytics.total_earned) },
+          { label: 'Total Redeemed', value: fmtPts(analytics.total_redeemed), sub: '≈ ' + formatCurrencyINR(analytics.total_redeemed) },
+          { label: 'Active Credits', value: fmtPts(analytics.active_credits), sub: '≈ ' + formatCurrencyINR(analytics.active_credits) },
+          { label: 'Total Expired', value: fmtPts(analytics.total_expired), sub: '≈ ' + formatCurrencyINR(analytics.total_expired) }
         ]
       : []
   );
@@ -113,6 +127,9 @@
         {#each overviewCards as card (card.label)}
           <div class="metric-card">
             <span class="card-value">{card.value}</span>
+            {#if card.sub}
+              <span class="card-sub">{card.sub}</span>
+            {/if}
             <span class="card-label">{card.label}</span>
           </div>
         {/each}

@@ -354,3 +354,13 @@ select {
     --pill-color: var(--color-text-muted);
   }
 }
+
+/* Modal overlay: escape overflow:auto and paint above sidebar/topbar */
+main:has([data-modal-overlay]) {
+  overflow: visible !important;
+}
+
+body:has([data-modal-overlay]) aside,
+body:has([data-modal-overlay]) .top-bar {
+  z-index: auto !important;
+}

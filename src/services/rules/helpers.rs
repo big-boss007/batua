@@ -91,7 +91,7 @@ pub fn calculate_reward(
     action: &RewardAction,
     context: &EvaluationContext,
 ) -> (f64, f64, f64) {
-    let conversion_rate = action.conversion_rate.unwrap_or(1.0);
+    let conversion_rate = 1.0;
 
     match action.calculation.as_str() {
         "percentage" => {
@@ -398,7 +398,6 @@ mod tests {
             calculation: "percentage".to_string(),
             value: 5.0,
             max_amount: None,
-            conversion_rate: Some(1.0),
             expiry_days: Some(90),
         };
         let (earning, currency, rate) = calculate_reward(&action, &ctx);
@@ -415,7 +414,6 @@ mod tests {
             calculation: "percentage".to_string(),
             value: 10.0,
             max_amount: Some(50.0),
-            conversion_rate: Some(1.0),
             expiry_days: None,
         };
         let (earning, _, _) = calculate_reward(&action, &ctx);
@@ -430,13 +428,12 @@ mod tests {
             calculation: "fixed".to_string(),
             value: 25.0,
             max_amount: None,
-            conversion_rate: Some(2.0),
             expiry_days: None,
         };
         let (earning, currency, rate) = calculate_reward(&action, &ctx);
         assert!((earning - 25.0).abs() < f64::EPSILON);
-        assert!((currency - 50.0).abs() < f64::EPSILON);
-        assert!((rate - 2.0).abs() < f64::EPSILON);
+        assert!((currency - 25.0).abs() < f64::EPSILON);
+        assert!((rate - 1.0).abs() < f64::EPSILON);
     }
 
     #[test]
@@ -447,7 +444,6 @@ mod tests {
             calculation: "tiered".to_string(),
             value: 10.0,
             max_amount: None,
-            conversion_rate: Some(1.0),
             expiry_days: None,
         };
         let (earning, currency, _) = calculate_reward(&action, &ctx);

@@ -7,7 +7,7 @@
   } from '$lib/client/modules/customers';
   import { getCustomerDetail, fetchMerchantCustomers } from '$lib/client/modules/customers';
   import { currentMerchantId } from '$lib/client/modules/admin';
-  import { toastStore, formatDate } from '$lib/client/modules/foundation';
+  import { toastStore, formatDate, formatPhone } from '$lib/client/modules/foundation';
   import { CustomerDetail } from '$lib/client/modules/customers/ui';
 
   let selectedDetail = $state<CustomerDetailType | null>(null);
@@ -26,7 +26,7 @@
   let tableData = $derived(
     customers.map((c) => [
       c.customer_name ?? 'Unnamed',
-      c.customer_phone,
+      formatPhone(c.customer_phone),
       c.customer_email ?? '-',
       formatDate(c.created_at)
     ])
@@ -123,67 +123,68 @@
     </div>
   {:else}
     <div class="customers-layout">
-      <div class="list-panel">
-        <div class="search-bar">
-          <input
-            class="search-input"
-            type="text"
-            placeholder="Search by name, phone, or email..."
-            value={searchQuery}
-            oninput={handleSearchInput}
-          />
-        </div>
-
-        {#if loadingList}
-          <div class="shimmer-rows">
-            <Shimmer classes="shimmer-row" />
-            <Shimmer classes="shimmer-row" />
-            <Shimmer classes="shimmer-row" />
-            <Shimmer classes="shimmer-row" />
-            <Shimmer classes="shimmer-row" />
-          </div>
-        {:else}
-          <Table
-            tableHeaders={TABLE_HEADERS}
-            {tableData}
-            sortable={false}
-            onRowClick={handleRowClick}
-            --table-row-hover-background="var(--color-surface-2)"
-            --table-content-font-size="var(--font-size-sm)"
-          >
-            {#snippet empty()}
-              <p class="table-empty">No customers found</p>
-            {/snippet}
-          </Table>
-
-          {#if customers.length > 0}
-            <div class="pagination-wrapper">
-              <Pagination {totalPages} {currentPage} onchange={handlePageChange} />
-            </div>
-          {/if}
-        {/if}
+      <div class="search-bar">
+        <input
+          class="search-input"
+          type="text"
+          placeholder="Search by name, phone, or email..."
+          value={searchQuery}
+          oninput={handleSearchInput}
+        />
       </div>
 
-      {#if loadingDetail || selectedDetail !== null}
-        <aside class="detail-panel">
-          {#if loadingDetail}
-            <div class="shimmer-detail">
-              <Shimmer classes="shimmer-detail-header" />
-              <Shimmer classes="shimmer-row" />
-              <Shimmer classes="shimmer-row" />
-              <Shimmer classes="shimmer-row" />
-            </div>
-          {:else if selectedDetail}
-            <div class="detail-header">
-              <button class="close-btn" onclick={handleCloseDetail} aria-label="Close detail">
-                &times;
-              </button>
-            </div>
-            <CustomerDetail detail={selectedDetail} />
-          {/if}
-        </aside>
+      {#if loadingList}
+        <div class="shimmer-rows">
+          <Shimmer classes="shimmer-row" />
+          <Shimmer classes="shimmer-row" />
+          <Shimmer classes="shimmer-row" />
+          <Shimmer classes="shimmer-row" />
+          <Shimmer classes="shimmer-row" />
+        </div>
+      {:else}
+        <Table
+          tableHeaders={TABLE_HEADERS}
+          {tableData}
+          sortable={false}
+          onRowClick={handleRowClick}
+          --table-row-hover-background="var(--color-surface-2)"
+          --table-content-font-size="var(--font-size-sm)"
+        >
+          {#snippet empty()}
+            <p class="table-empty">No customers found</p>
+          {/snippet}
+        </Table>
+
+        {#if customers.length > 0}
+          <div class="pagination-wrapper">
+            <Pagination {totalPages} {currentPage} onchange={handlePageChange} />
+          </div>
+        {/if}
       {/if}
     </div>
+
+    {#if loadingDetail || selectedDetail !== null}
+      <div class="modal-overlay" onclick={handleCloseDetail} onkeydown={(e) => { if (e.key === 'Escape') handleCloseDetail(); }} role="button" tabindex="-1">
+        <div class="modal-card" onclick={(e) => e.stopPropagation()} role="dialog">
+          <div class="modal-header">
+            <h3 class="modal-title">Customer Detail</h3>
+            <button class="modal-close" onclick={handleCloseDetail}>&times;</button>
+          </div>
+          <div class="modal-body">
+            {#if loadingDetail}
+              <div class="shimmer-detail">
+                <Shimmer classes="shimmer-detail-header" />
+                <Shimmer classes="shimmer-row" />
+                <Shimmer classes="shimmer-row" />
+                <Shimmer classes="shimmer-row" />
+              </div>
+            {:else if selectedDetail}
+              <CustomerDetail detail={selectedDetail} />
+            {/if}
+          </div>
+        </div>
+      </div>
+    {/if}
   {/if}
 </div>
 
@@ -215,17 +216,6 @@
   }
 
   .customers-layout {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: var(--space-6);
-    align-items: start;
-  }
-
-  .customers-layout:has(.detail-panel) {
-    grid-template-columns: 1fr 420px;
-  }
-
-  .list-panel {
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
@@ -258,24 +248,43 @@
     box-shadow: 0 0 0 2px rgba(124, 106, 255, 0.15);
   }
 
-  .detail-panel {
-    position: sticky;
-    top: 72px;
-    max-height: calc(100vh - 100px);
-    overflow-y: auto;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    padding: var(--space-4);
-  }
-
-  .detail-header {
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
     display: flex;
-    justify-content: flex-end;
-    margin-bottom: var(--space-2);
+    align-items: center;
+    justify-content: center;
+    z-index: var(--z-modal, 400);
   }
 
-  .close-btn {
+  .modal-card {
+    background: var(--color-bg);
+    border-radius: var(--radius-lg);
+    width: 600px;
+    max-width: 90vw;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-4) var(--space-6);
+    border-bottom: 1px solid var(--color-border);
+    flex-shrink: 0;
+  }
+
+  .modal-title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+  }
+
+  .modal-close {
     background: none;
     border: none;
     font-size: var(--font-size-xl);
@@ -284,11 +293,17 @@
     padding: var(--space-1) var(--space-2);
     border-radius: var(--radius-sm);
     line-height: 1;
-    transition: color var(--transition-fast);
   }
 
-  .close-btn:hover {
+  .modal-close:hover {
     color: var(--color-text);
+    background: var(--color-surface-2);
+  }
+
+  .modal-body {
+    padding: var(--space-6);
+    overflow-y: auto;
+    flex: 1;
   }
 
   .pagination-wrapper {
@@ -343,17 +358,5 @@
     font-size: var(--font-size-sm);
     text-align: center;
     padding: var(--space-8);
-  }
-
-  @media (max-width: 960px) {
-    .customers-layout,
-    .customers-layout:has(.detail-panel) {
-      grid-template-columns: 1fr;
-    }
-
-    .detail-panel {
-      position: static;
-      max-height: none;
-    }
   }
 </style>

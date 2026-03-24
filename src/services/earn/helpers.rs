@@ -10,6 +10,7 @@ use crate::services::identity;
 use crate::services::identity::types::ResolveIdentityRequest;
 use crate::services::ledger;
 use crate::services::ledger::types::{ActorType, BucketType, MovementType, NewLedgerEntry};
+use crate::services::loyalty;
 use crate::services::rules;
 use crate::services::rules::types::EvaluationContext;
 use crate::services::cod;
@@ -17,12 +18,12 @@ use crate::services::wallets;
 
 use super::storage;
 use super::types::{
-    ActiveStreak, BirthdayBonusEntry, BirthdayBonusResult, CreateWheelRequest, EarnEntry,
-    EarnResult, ManualCreditRequest, ManualCreditResult, MembershipStatus,
-    MilestoneAchievementEntry, MilestoneCheckResult, NewsletterSignupRequest,
-    NewsletterSignupResult, ProfileCompletionRequest, ProfileCompletionResult, RenewRequest,
-    SpinRequest, SpinResult, StreakAchievementEntry, StreakCheckResult, SubscribeRequest,
-    SubscribeResult, WheelWithSegments,
+    ActiveStreak, AssignMembershipRequest, AssignMembershipResult, BirthdayBonusEntry,
+    BirthdayBonusResult, CreateWheelRequest, EarnEntry, EarnResult, ManualCreditRequest,
+    ManualCreditResult, MembershipStatus, MilestoneAchievementEntry, MilestoneCheckResult,
+    NewsletterSignupRequest, NewsletterSignupResult, ProfileCompletionRequest,
+    ProfileCompletionResult, SpinRequest, SpinResult, StreakAchievementEntry, StreakCheckResult,
+    WheelWithSegments,
 };
 
 #[tracing::instrument(skip(pool), err(Debug))]
@@ -94,7 +95,21 @@ async fn do_process_earn(
 
     let context = build_evaluation_context(event, order_amount, payment_method, is_cod, is_first_order);
 
-    let eval_results = rules::helpers::evaluate_rules(pool, &context).await?;
+    let mut eval_results = rules::helpers::evaluate_rules(pool, &context).await?;
+
+    let loyalty_mult = loyalty::helpers::get_earn_multiplier(pool, event.merchant_id, customer.id).await.unwrap_or(1.0);
+    let membership_status = get_membership_status(pool, event.merchant_id, customer.id).await.unwrap_or_default();
+    let membership_mult = if membership_status.is_active { membership_status.earn_rate_multiplier } else { 1.0 };
+    let effective_mult = loyalty_mult.max(membership_mult);
+
+    if effective_mult > 1.0 {
+        for eval in &mut eval_results {
+            if eval.matched && eval.earning_unit > 0.0 {
+                eval.earning_unit *= effective_mult;
+                eval.currency_equivalent *= effective_mult;
+            }
+        }
+    }
 
     let mut entries_created = Vec::new();
 
@@ -920,82 +935,53 @@ pub async fn spin_wheel(pool: &PgPool, req: SpinRequest) -> Result<SpinResult, A
 }
 
 #[tracing::instrument(skip(pool), err(Debug))]
-pub async fn subscribe_to_plan(
+pub async fn assign_membership(
     pool: &PgPool,
-    req: SubscribeRequest,
-) -> Result<SubscribeResult, AppError> {
-    let plan = storage::get_membership_plan(pool, req.plan_id).await?;
+    req: AssignMembershipRequest,
+) -> Result<AssignMembershipResult, AppError> {
+    let tier = loyalty::storage::get_tier_by_id(pool, req.tier_id)
+        .await?
+        .ok_or_else(|| AppError::NotFound(format!("loyalty tier {} not found", req.tier_id)))?;
 
-    if !plan.is_active {
-        return Err(AppError::BadRequest(
-            "membership plan is not active".to_string(),
-        ));
+    let customer_tier = loyalty::storage::get_customer_tier(pool, req.customer_id, req.merchant_id).await?;
+    if let Some(ref ct) = customer_tier {
+        let earned_tier = loyalty::storage::get_tier_by_id(pool, ct.tier_id).await?;
+        if let Some(ref et) = earned_tier {
+            if et.rank >= tier.rank {
+                return Err(AppError::BadRequest(format!(
+                    "customer already has {} (rank {}), cannot assign {} (rank {})",
+                    et.name, et.rank, tier.name, tier.rank
+                )));
+            }
+        }
     }
 
     let existing = storage::get_customer_membership(pool, req.merchant_id, req.customer_id).await?;
     if let Some(ref membership) = existing {
-        if membership.status == "active" && membership.plan_id == req.plan_id {
-            return Ok(SubscribeResult {
+        if membership.status == "active" && membership.tier_id == req.tier_id {
+            return Ok(AssignMembershipResult {
                 membership: membership.clone(),
-                plan,
+                tier_name: tier.name.clone(),
+                earn_rate_multiplier: tier.earn_rate_multiplier,
                 is_new: false,
-                message: "already subscribed to this plan".to_string(),
+                message: "already assigned to this tier".to_string(),
             });
         }
     }
 
     let now = Utc::now();
-    let expires_at = match plan.plan_type.as_str() {
-        "annual" => now
-            .checked_add_days(Days::new(365))
-            .unwrap_or(now),
-        _ => now
-            .checked_add_days(Days::new(30))
-            .unwrap_or(now),
-    };
+    let expires_at = now.checked_add_days(Days::new(365)).unwrap_or(now);
 
     let membership =
-        storage::subscribe_customer(pool, req.merchant_id, req.customer_id, req.plan_id, expires_at)
+        storage::subscribe_customer(pool, req.merchant_id, req.customer_id, req.tier_id, expires_at)
             .await?;
 
-    Ok(SubscribeResult {
+    Ok(AssignMembershipResult {
         membership,
-        plan,
+        tier_name: tier.name,
+        earn_rate_multiplier: tier.earn_rate_multiplier,
         is_new: true,
-        message: "subscription created successfully".to_string(),
-    })
-}
-
-#[tracing::instrument(skip(pool), err(Debug))]
-pub async fn renew_membership(
-    pool: &PgPool,
-    req: RenewRequest,
-) -> Result<SubscribeResult, AppError> {
-    let membership = storage::get_customer_membership_by_id(pool, req.membership_id).await?;
-    let plan = storage::get_membership_plan(pool, membership.plan_id).await?;
-
-    let base = if membership.expires_at > Utc::now() {
-        membership.expires_at
-    } else {
-        Utc::now()
-    };
-
-    let new_expires_at = match plan.plan_type.as_str() {
-        "annual" => base
-            .checked_add_days(Days::new(365))
-            .unwrap_or(base),
-        _ => base
-            .checked_add_days(Days::new(30))
-            .unwrap_or(base),
-    };
-
-    let updated = storage::renew_membership(pool, req.membership_id, new_expires_at).await?;
-
-    Ok(SubscribeResult {
-        membership: updated,
-        plan,
-        is_new: false,
-        message: "membership renewed successfully".to_string(),
+        message: "membership assigned successfully".to_string(),
     })
 }
 
@@ -1008,41 +994,42 @@ pub async fn get_membership_status(
     let membership = storage::get_customer_membership(pool, merchant_id, customer_id).await?;
 
     let Some(membership) = membership else {
-        return Ok(MembershipStatus {
-            membership: None,
-            plan: None,
-            is_active: false,
-            days_remaining: 0,
-        });
+        return Ok(MembershipStatus::default());
     };
 
     if membership.status == "active" && membership.expires_at < Utc::now() {
         storage::expire_membership(pool, membership.id).await?;
-        let plan = storage::get_membership_plan(pool, membership.plan_id).await?;
+        let tier = loyalty::storage::get_tier_by_id(pool, membership.tier_id).await?;
         let expired = super::types::CustomerMembership {
             status: "expired".to_string(),
             ..membership
         };
         return Ok(MembershipStatus {
             membership: Some(expired),
-            plan: Some(plan),
+            tier_name: tier.map(|t| t.name),
+            earn_rate_multiplier: 1.0,
             is_active: false,
             days_remaining: 0,
         });
     }
 
-    let plan = storage::get_membership_plan(pool, membership.plan_id).await?;
+    let tier = loyalty::storage::get_tier_by_id(pool, membership.tier_id).await?;
     let is_active = membership.status == "active";
     let days_remaining = if is_active {
-        let dur = membership.expires_at - Utc::now();
-        dur.num_days().max(0)
+        (membership.expires_at - Utc::now()).num_days().max(0)
     } else {
         0
+    };
+    let multiplier = if is_active {
+        tier.as_ref().map(|t| t.earn_rate_multiplier).unwrap_or(1.0)
+    } else {
+        1.0
     };
 
     Ok(MembershipStatus {
         membership: Some(membership),
-        plan: Some(plan),
+        tier_name: tier.map(|t| t.name),
+        earn_rate_multiplier: multiplier,
         is_active,
         days_remaining,
     })
@@ -1054,4 +1041,172 @@ pub async fn cancel_membership_by_id(
     membership_id: Uuid,
 ) -> Result<super::types::CustomerMembership, AppError> {
     storage::cancel_membership(pool, membership_id).await
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::services::events::types::{ShopifyCustomer, ShopifyOrderPayload};
+    use uuid::Uuid;
+
+    fn make_payload(customer_phone: Option<&str>, order_phone: Option<&str>) -> ShopifyOrderPayload {
+        ShopifyOrderPayload {
+            id: 1,
+            order_number: 1001,
+            email: None,
+            phone: order_phone.map(|s| s.to_string()),
+            total_price: "1000.00".to_string(),
+            currency: "INR".to_string(),
+            financial_status: "paid".to_string(),
+            gateway: None,
+            payment_gateway_names: None,
+            customer: Some(ShopifyCustomer {
+                id: 1,
+                email: None,
+                phone: customer_phone.map(|s| s.to_string()),
+                first_name: None,
+                last_name: None,
+            }),
+            line_items: None,
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // parse_bucket_type
+    // -----------------------------------------------------------------------
+
+    #[test]
+    fn parse_bucket_type_snake_case() {
+        assert_eq!(parse_bucket_type("earned_credit").unwrap(), BucketType::EarnedCredit);
+        assert_eq!(parse_bucket_type("cod_pending").unwrap(), BucketType::CodPending);
+        assert_eq!(parse_bucket_type("gift_card").unwrap(), BucketType::GiftCard);
+        assert_eq!(parse_bucket_type("customer_funded").unwrap(), BucketType::CustomerFunded);
+        assert_eq!(parse_bucket_type("referral_reward").unwrap(), BucketType::ReferralReward);
+        assert_eq!(parse_bucket_type("goodwill_credit").unwrap(), BucketType::GoodwillCredit);
+        assert_eq!(parse_bucket_type("membership_benefit").unwrap(), BucketType::MembershipBenefit);
+        assert_eq!(parse_bucket_type("refund_credit").unwrap(), BucketType::RefundCredit);
+    }
+
+    #[test]
+    fn parse_bucket_type_pascal_case() {
+        assert_eq!(parse_bucket_type("EarnedCredit").unwrap(), BucketType::EarnedCredit);
+        assert_eq!(parse_bucket_type("CodPending").unwrap(), BucketType::CodPending);
+        assert_eq!(parse_bucket_type("GiftCard").unwrap(), BucketType::GiftCard);
+        assert_eq!(parse_bucket_type("CustomerFunded").unwrap(), BucketType::CustomerFunded);
+        assert_eq!(parse_bucket_type("ReferralReward").unwrap(), BucketType::ReferralReward);
+        assert_eq!(parse_bucket_type("GoodwillCredit").unwrap(), BucketType::GoodwillCredit);
+        assert_eq!(parse_bucket_type("MembershipBenefit").unwrap(), BucketType::MembershipBenefit);
+        assert_eq!(parse_bucket_type("RefundCredit").unwrap(), BucketType::RefundCredit);
+    }
+
+    #[test]
+    fn parse_bucket_type_unknown() {
+        assert!(parse_bucket_type("unknown").is_err());
+        assert!(parse_bucket_type("").is_err());
+    }
+
+    // -----------------------------------------------------------------------
+    // extract_customer_phone
+    // -----------------------------------------------------------------------
+
+    #[test]
+    fn phone_from_customer_object() {
+        let payload = make_payload(Some("+919876543210"), Some("+911234567890"));
+        assert_eq!(extract_customer_phone(&payload).unwrap(), "+919876543210");
+    }
+
+    #[test]
+    fn phone_fallback_to_order() {
+        let payload = make_payload(None, Some("+911234567890"));
+        assert_eq!(extract_customer_phone(&payload).unwrap(), "+911234567890");
+    }
+
+    #[test]
+    fn phone_empty_customer_falls_to_order() {
+        let payload = make_payload(Some(""), Some("+911234567890"));
+        assert_eq!(extract_customer_phone(&payload).unwrap(), "+911234567890");
+    }
+
+    #[test]
+    fn phone_none_everywhere_errors() {
+        let payload = make_payload(None, None);
+        assert!(extract_customer_phone(&payload).is_err());
+    }
+
+    #[test]
+    fn phone_empty_everywhere_errors() {
+        let payload = make_payload(Some(""), Some(""));
+        assert!(extract_customer_phone(&payload).is_err());
+    }
+
+    // -----------------------------------------------------------------------
+    // extract_customer_email
+    // -----------------------------------------------------------------------
+
+    #[test]
+    fn email_from_customer_object() {
+        let mut payload = make_payload(None, None);
+        payload.customer.as_mut().unwrap().email = Some("test@example.com".to_string());
+        assert_eq!(extract_customer_email(&payload).unwrap(), "test@example.com");
+    }
+
+    #[test]
+    fn email_fallback_to_order() {
+        let mut payload = make_payload(None, None);
+        payload.customer.as_mut().unwrap().email = None;
+        payload.email = Some("order@example.com".to_string());
+        assert_eq!(extract_customer_email(&payload).unwrap(), "order@example.com");
+    }
+
+    #[test]
+    fn email_empty_returns_none() {
+        let mut payload = make_payload(None, None);
+        payload.customer.as_mut().unwrap().email = Some("".to_string());
+        payload.email = Some("".to_string());
+        assert!(extract_customer_email(&payload).is_none());
+    }
+
+    // -----------------------------------------------------------------------
+    // extract_customer_name
+    // -----------------------------------------------------------------------
+
+    #[test]
+    fn name_from_first_and_last() {
+        let mut payload = make_payload(None, None);
+        payload.customer.as_mut().unwrap().first_name = Some("John".to_string());
+        payload.customer.as_mut().unwrap().last_name = Some("Doe".to_string());
+        assert_eq!(extract_customer_name(&payload).unwrap(), "John Doe");
+    }
+
+    #[test]
+    fn name_first_only() {
+        let mut payload = make_payload(None, None);
+        payload.customer.as_mut().unwrap().first_name = Some("John".to_string());
+        assert_eq!(extract_customer_name(&payload).unwrap(), "John");
+    }
+
+    #[test]
+    fn name_both_empty_returns_none() {
+        let payload = make_payload(None, None);
+        assert!(extract_customer_name(&payload).is_none());
+    }
+
+    // -----------------------------------------------------------------------
+    // generate_earn_idempotency_key
+    // -----------------------------------------------------------------------
+
+    #[test]
+    fn idempotency_key_with_rule_snapshot() {
+        let event_id = Uuid::parse_str("00000000-0000-0000-0000-000000000001").unwrap();
+        let rule_id = Uuid::parse_str("00000000-0000-0000-0000-000000000002").unwrap();
+        let key = generate_earn_idempotency_key(event_id, Some(rule_id));
+        assert_eq!(key, format!("earn:{event_id}:{rule_id}"));
+    }
+
+    #[test]
+    fn idempotency_key_without_rule_snapshot() {
+        let event_id = Uuid::parse_str("00000000-0000-0000-0000-000000000001").unwrap();
+        let key = generate_earn_idempotency_key(event_id, None);
+        assert_eq!(key, format!("earn:{event_id}"));
+    }
 }

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Input } from '@juspay/svelte-ui-components';
   import type { Customer } from '$lib/client/modules/customers';
-  import { formatDate } from '$lib/client/modules/foundation';
+  import { formatDate, formatPhone } from '$lib/client/modules/foundation';
 
   let {
     onSelect
@@ -70,7 +70,7 @@
           <button class="result-item" onclick={() => handleSelect(customer)}>
             <div class="result-main">
               <span class="result-name">{customer.name ?? 'Unnamed'}</span>
-              <span class="result-phone">{customer.phone}</span>
+              <span class="result-phone">{formatPhone(customer.phone)}</span>
             </div>
             <div class="result-meta">
               {#if customer.email}

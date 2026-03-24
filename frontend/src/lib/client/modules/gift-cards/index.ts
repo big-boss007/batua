@@ -1,4 +1,4 @@
-export type { GiftCard, GiftCardStats, IssueGiftCardForm, BulkIssueForm } from './types';
+export type { GiftCard, GiftCardStats, IssueGiftCardForm, BulkIssueForm, BulkIssueInput } from './types';
 
 export { giftCards } from './store';
 export {

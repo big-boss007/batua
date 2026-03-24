@@ -6,9 +6,11 @@ import type {
   Campaign,
   FestiveTemplate,
   CampaignCalendarEntry,
+  CampaignStackingConfig,
   CreateRuleRequest,
   UpdateRuleRequest,
-  CreateCampaignFromTemplateRequest
+  CreateCampaignFromTemplateRequest,
+  CreateCampaignDirectRequest
 } from './types';
 
 function decodeRules(raw: unknown): Array<Rule> {
@@ -101,4 +103,46 @@ function decodeRulePerformance(raw: unknown): RulePerformance {
 
 export async function fetchRulePerformance(ruleId: string): Promise<APIResult<RulePerformance>> {
   return apiCaller.get(`/rules/${ruleId}/performance`, decodeRulePerformance);
+}
+
+export async function createCampaignDirect(
+  req: CreateCampaignDirectRequest
+): Promise<APIResult<Campaign>> {
+  return apiCaller.post(
+    '/campaigns/create',
+    req as unknown as Record<string, unknown>,
+    decodeCampaign
+  );
+}
+
+export async function deactivateCampaign(campaignId: string): Promise<APIResult<Campaign>> {
+  return apiCaller.post(`/campaigns/${campaignId}/deactivate`, {}, decodeCampaign);
+}
+
+function decodeStackingConfig(raw: unknown): CampaignStackingConfig {
+  const r = raw as Record<string, unknown>;
+  return {
+    campaign_stacking_mode: (r['campaign_stacking_mode'] as string) ?? 'multiplicative',
+    max_campaign_multiplier: (r['max_campaign_multiplier'] as number) ?? 10.0
+  };
+}
+
+export async function getCampaignConfig(
+  merchantId: string
+): Promise<APIResult<CampaignStackingConfig>> {
+  return apiCaller.get(
+    `/admin/merchants/${merchantId}/campaign-config`,
+    decodeStackingConfig
+  );
+}
+
+export async function updateCampaignConfig(
+  merchantId: string,
+  config: CampaignStackingConfig
+): Promise<APIResult<CampaignStackingConfig>> {
+  return apiCaller.put(
+    `/admin/merchants/${merchantId}/campaign-config`,
+    config as unknown as Record<string, unknown>,
+    decodeStackingConfig
+  );
 }

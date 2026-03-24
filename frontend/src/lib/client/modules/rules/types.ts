@@ -26,7 +26,6 @@ export type RewardAction = {
   calculation: string;
   value: number;
   max_amount: number | null;
-  conversion_rate: number | null;
   expiry_days: number | null;
 };
 
@@ -35,10 +34,18 @@ export type Campaign = {
   merchant_id: string;
   name: string;
   campaign_type: string;
+  base_rule_id: string | null;
   multiplier: number | null;
   starts_at: string;
   ends_at: string;
   is_active: boolean;
+};
+
+export type CampaignPerformance = {
+  total_orders: number;
+  unique_customers: number;
+  extra_points_issued: number;
+  extra_value: number;
 };
 
 export type FestiveTemplate = {
@@ -58,6 +65,7 @@ export type CreateRuleRequest = {
 };
 
 export type UpdateRuleRequest = {
+  name?: string;
   config: RewardRuleConfig;
   is_active?: boolean;
 };
@@ -86,4 +94,18 @@ export type RulePerformance = {
   total_entries: number;
   total_value: number;
   unique_customers: number;
+};
+
+export type CreateCampaignDirectRequest = {
+  merchant_id: string;
+  name: string;
+  base_rule_id: string;
+  multiplier: number;
+  starts_at: string;
+  ends_at: string;
+};
+
+export type CampaignStackingConfig = {
+  campaign_stacking_mode: string;
+  max_campaign_multiplier: number;
 };

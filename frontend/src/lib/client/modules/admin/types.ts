@@ -15,6 +15,9 @@ export type Merchant = {
   currency: string;
   timezone: string;
   is_active: boolean;
+  points_name: string;
+  points_icon: string;
+  points_to_currency_rate: number;
 };
 
 export type MerchantDashboard = {
@@ -38,4 +41,5 @@ export type NavItem = {
   label: string;
   href: string;
   icon: string;
+  children?: NavItem[];
 };

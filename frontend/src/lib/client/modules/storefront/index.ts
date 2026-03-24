@@ -2,6 +2,7 @@ export type {
   StorefrontMerchant,
   CustomerBalance,
   BucketBalance,
+  ExpiringSoon,
   CustomerTierInfo,
   TierProgress,
   TransactionEntry,
@@ -21,6 +22,7 @@ export {
   fetchEntries,
   fetchCustomerTier,
   fetchGiftCard,
+  claimGiftCardForCustomer,
   fetchReferralCode,
   fetchCustomerReferralCode,
   fetchReferralProgram
@@ -34,5 +36,11 @@ export {
   formatBucketLabel,
   formatMovementLabel,
   getMovementPrefix,
-  maskPhone
+  maskPhone,
+  formatDateLabel,
+  groupEntriesByDate,
+  computeRunningBalances,
+  getInitials
 } from './utils';
+
+export type { DateGroup } from './utils';

@@ -3,6 +3,8 @@ import type { APIResult } from '$lib/client/modules/foundation';
 import type {
   Customer,
   CustomerDetail,
+  CustomerMembershipInfo,
+  CustomerReferralInfo,
   WalletSummary,
   CustomerTierInfo,
   TierProgress,
@@ -27,10 +29,11 @@ function decodeTierProgress(raw: unknown): TierProgress | null {
 function decodeCustomerTierInfo(raw: unknown): CustomerTierInfo | null {
   if (raw === null || raw === undefined) return null;
   const r = raw as Record<string, unknown>;
+  const tierObj = (r['tier'] ?? r) as Record<string, unknown>;
   return {
-    tier_name: (r['tier_name'] as string) ?? '',
-    rank: (r['rank'] as number) ?? 0,
-    earn_rate_multiplier: (r['earn_rate_multiplier'] as number) ?? 1,
+    tier_name: (tierObj['name'] as string) ?? (r['tier_name'] as string) ?? '',
+    rank: (tierObj['rank'] as number) ?? (r['rank'] as number) ?? 0,
+    earn_rate_multiplier: (tierObj['earn_rate_multiplier'] as number) ?? (r['earn_rate_multiplier'] as number) ?? 1,
     progress_to_next: decodeTierProgress(r['progress_to_next'] ?? null)
   };
 }
@@ -51,6 +54,7 @@ function decodeLedgerEntry(raw: unknown): LedgerEntrySummary {
     id: (r['id'] as string) ?? '',
     bucket_type: (r['bucket_type'] as string) ?? '',
     movement_type: (r['movement_type'] as string) ?? '',
+    earning_unit: (r['earning_unit'] as number) ?? 0,
     currency_equivalent: (r['currency_equivalent'] as number) ?? 0,
     created_at: (r['created_at'] as string) ?? ''
   };
@@ -82,6 +86,8 @@ function decodeCustomerDetail(raw: unknown): CustomerDetail {
     customer: decodeCustomer(r['customer'] ?? r),
     wallet: decodeWalletSummary(r['wallet'] ?? null),
     tier: decodeCustomerTierInfo(r['tier'] ?? null),
+    membership: null,
+    referral: null,
     recent_entries: Array.isArray(r['recent_entries'])
       ? (r['recent_entries'] as Array<unknown>).map(decodeLedgerEntry)
       : []
@@ -94,6 +100,7 @@ function decodeLoyaltyProgram(raw: unknown): LoyaltyProgram {
     id: (r['id'] as string) ?? '',
     name: (r['name'] as string) ?? '',
     evaluation_criteria: (r['evaluation_criteria'] as string) ?? '',
+    evaluation_period_days: (r['evaluation_period_days'] as number) ?? null,
     is_active: (r['is_active'] as boolean) ?? false
   };
 }
@@ -122,6 +129,12 @@ function decodeTierDistribution(raw: unknown): Array<TierDistribution> {
   const items = (r['distribution'] ?? r['data'] ?? raw) as Array<unknown>;
   if (!Array.isArray(items)) return [];
   return items.map((item) => {
+    if (Array.isArray(item)) {
+      return {
+        tier_name: String(item[0] ?? ''),
+        count: Number(item[1] ?? 0)
+      };
+    }
     const d = item as Record<string, unknown>;
     return {
       tier_name: (d['tier_name'] as string) ?? '',
@@ -197,9 +210,62 @@ async function getCustomerDetail(
     }
   }
 
+  let tier: CustomerTierInfo | null = null;
+  try {
+    const tierResult = await apiCaller.get(
+      `/loyalty/customers/${merchantId}/${customerId}`,
+      decodeCustomerTierInfo
+    );
+    if (tierResult.tag === 'success') {
+      tier = tierResult.data;
+    }
+  } catch {
+    // no tier
+  }
+
+  let membership: CustomerMembershipInfo | null = null;
+  try {
+    const memResult = await apiCaller.get(
+      `/earn/memberships/status/${merchantId}/${customerId}`,
+      (raw: unknown) => raw as Record<string, unknown>
+    );
+    if (memResult.tag === 'success' && memResult.data['is_active'] === true) {
+      const m = memResult.data;
+      const mem = m['membership'] as Record<string, unknown> | null;
+      membership = {
+        tier_name: (m['tier_name'] as string) ?? '',
+        earn_rate_multiplier: (m['earn_rate_multiplier'] as number) ?? 1,
+        status: 'active',
+        expires_at: (mem?.['expires_at'] as string) ?? '',
+        days_remaining: (m['days_remaining'] as number) ?? 0,
+        renewed_count: (mem?.['renewed_count'] as number) ?? 0
+      };
+    }
+  } catch {
+    // no membership
+  }
+
+  let referral: CustomerReferralInfo | null = null;
+  try {
+    const refResult = await apiCaller.get(
+      `/referrals/codes/customer/${merchantId}/${customerId}`,
+      (raw: unknown) => raw as Record<string, unknown>
+    );
+    if (refResult.tag === 'success' && refResult.data !== null) {
+      const r = refResult.data;
+      referral = {
+        code: (r['code'] as string) ?? null,
+        referrals_made: (r['conversions'] as number) ?? 0,
+        rewards_earned: (r['total_reward_value'] as number) ?? 0
+      };
+    }
+  } catch {
+    // no referral data
+  }
+
   return {
     tag: 'success',
-    data: { customer, wallet, tier: null, recent_entries: recentEntries },
+    data: { customer, wallet, tier, membership, referral, recent_entries: recentEntries },
     status: 200
   };
 }
@@ -219,14 +285,18 @@ async function fetchTierDistribution(
 }
 
 async function createProgram(
-  _merchantId: string,
+  merchantId: string,
   body: { name: string; evaluation_criteria: string }
 ): Promise<APIResult<LoyaltyProgram>> {
-  return apiCaller.post('/loyalty/programs', body, decodeLoyaltyProgram);
+  return apiCaller.post(
+    '/loyalty/programs',
+    { merchant_id: merchantId, ...body },
+    decodeLoyaltyProgram
+  );
 }
 
 async function createTier(
-  _merchantId: string,
+  programId: string,
   body: {
     name: string;
     rank: number;
@@ -235,7 +305,36 @@ async function createTier(
     benefits: Record<string, unknown>;
   }
 ): Promise<APIResult<LoyaltyTier>> {
-  return apiCaller.post('/loyalty/tiers', body, decodeLoyaltyTier);
+  return apiCaller.post('/loyalty/tiers', { program_id: programId, ...body }, decodeLoyaltyTier);
+}
+
+async function updateProgram(
+  programId: string,
+  body: {
+    name: string;
+    evaluation_criteria: string;
+    evaluation_period_days: number | null;
+    is_active: boolean;
+  }
+): Promise<APIResult<LoyaltyProgram>> {
+  return apiCaller.put(`/loyalty/programs/${programId}/update`, body, decodeLoyaltyProgram);
+}
+
+async function updateTier(
+  tierId: string,
+  body: {
+    name?: string;
+    rank?: number;
+    threshold?: number;
+    earn_rate_multiplier?: number;
+    benefits?: Record<string, unknown>;
+  }
+): Promise<APIResult<LoyaltyTier>> {
+  return apiCaller.put(`/loyalty/tiers/${tierId}`, body, decodeLoyaltyTier);
+}
+
+async function deleteTier(tierId: string): Promise<APIResult<null>> {
+  return apiCaller.delete(`/loyalty/tiers/${tierId}`, () => null);
 }
 
 async function evaluateTier(merchantId: string): Promise<APIResult<{ evaluated: number }>> {
@@ -286,6 +385,9 @@ export {
   fetchTiers,
   fetchTierDistribution,
   createProgram,
+  updateProgram,
   createTier,
+  updateTier,
+  deleteTier,
   evaluateTier
 };

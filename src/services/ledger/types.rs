@@ -90,6 +90,8 @@ pub struct WalletBalance {
     pub wallet_id: Uuid,
     pub displayed_balance: f64,
     pub spendable_balance: f64,
+    pub points_balance: f64,
+    pub cash_balance: f64,
     pub buckets: Vec<BucketBalance>,
 }
 
@@ -99,6 +101,27 @@ pub struct BucketBalance {
     pub displayed: f64,
     pub spendable: f64,
     pub count: i64,
+}
+
+#[derive(Debug, Serialize)]
+pub struct ExpiringSoon {
+    pub amount: f64,
+    pub currency: f64,
+    pub days: i64,
+    pub count: i64,
+}
+
+impl BucketType {
+    pub fn is_points_bucket(&self) -> bool {
+        matches!(
+            self,
+            BucketType::EarnedCredit
+                | BucketType::CodPending
+                | BucketType::ReferralReward
+                | BucketType::GoodwillCredit
+                | BucketType::MembershipBenefit
+        )
+    }
 }
 
 #[derive(Debug, Deserialize)]

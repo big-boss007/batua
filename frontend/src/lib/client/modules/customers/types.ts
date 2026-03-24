@@ -7,10 +7,27 @@ export type Customer = {
   created_at: string;
 };
 
+export type CustomerMembershipInfo = {
+  tier_name: string;
+  earn_rate_multiplier: number;
+  status: string;
+  expires_at: string;
+  days_remaining: number;
+  renewed_count: number;
+};
+
+export type CustomerReferralInfo = {
+  code: string | null;
+  referrals_made: number;
+  rewards_earned: number;
+};
+
 export type CustomerDetail = {
   customer: Customer;
   wallet: WalletSummary | null;
   tier: CustomerTierInfo | null;
+  membership: CustomerMembershipInfo | null;
+  referral: CustomerReferralInfo | null;
   recent_entries: Array<LedgerEntrySummary>;
 };
 
@@ -38,6 +55,7 @@ export type LedgerEntrySummary = {
   id: string;
   bucket_type: string;
   movement_type: string;
+  earning_unit: number;
   currency_equivalent: number;
   created_at: string;
 };
@@ -46,6 +64,7 @@ export type LoyaltyProgram = {
   id: string;
   name: string;
   evaluation_criteria: string;
+  evaluation_period_days: number | null;
   is_active: boolean;
 };
 

@@ -42,13 +42,13 @@
 </script>
 
 <svelte:head>
-  <title>Dashboard - Batua Admin</title>
+  <title>Wallet - Batua Admin</title>
 </svelte:head>
 
 <div class="dashboard">
   <div class="dashboard-header">
-    <h1>Dashboard</h1>
-    <p class="subtitle">Overview of your wallet and loyalty program</p>
+    <h1>Wallet</h1>
+    <p class="subtitle">Overview of your wallet program</p>
   </div>
 
   {#if merchantId === null}
@@ -65,42 +65,53 @@
       <Shimmer classes="shimmer-card" />
     </div>
   {:else if dashboard !== null}
+    {@const pIcon = merchant?.points_icon ?? 'pts'}
+    {@const pRate = merchant?.points_to_currency_rate ?? 1.0}
+    {@const pName = merchant?.points_name ?? 'Points'}
     <div class="metrics-grid">
       <MetricCard
         label="Active Customers"
         value={dashboard.active_customers}
         metricType="number"
-        icon="U"
       />
       <MetricCard
-        label="Active Credits"
+        label="Active {pName}"
         value={dashboard.active_credits}
-        metricType="currency"
-        icon="$"
+        metricType="points"
+        pointsIcon={pIcon}
+        pointsRate={pRate}
+        valueColor="var(--color-success)"
+        subColor="var(--color-primary)"
       />
       <MetricCard
         label="Total Earned"
         value={dashboard.total_earned}
-        metricType="currency"
-        icon="+"
+        metricType="points"
+        pointsIcon={pIcon}
+        pointsRate={pRate}
+        subColor="var(--color-text-muted)"
       />
       <MetricCard
         label="Total Redeemed"
         value={dashboard.total_redeemed}
-        metricType="currency"
-        icon="-"
+        metricType="points"
+        pointsIcon={pIcon}
+        pointsRate={pRate}
+        subColor="var(--color-text-muted)"
       />
       <MetricCard
         label="COD Pending"
         value={dashboard.total_cod_pending}
-        metricType="currency"
-        icon="C"
+        metricType="points"
+        pointsIcon={pIcon}
+        pointsRate={pRate}
+        valueColor="var(--color-warning)"
+        subColor="var(--color-text-muted)"
       />
       <MetricCard
         label="Redemptions"
         value={dashboard.redemption_count}
         metricType="number"
-        icon="#"
       />
     </div>
   {/if}
@@ -157,7 +168,7 @@
 
   .metrics-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: var(--space-4);
   }
 

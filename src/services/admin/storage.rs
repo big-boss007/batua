@@ -25,7 +25,7 @@ pub async fn create_merchant(
         INSERT INTO merchants (external_id, name, domain, currency, timezone, slug, plan_tier)
         VALUES ($1, $2, $3, $4, $5, $6, $7)
         RETURNING id, external_id, name, domain, currency, timezone, is_active,
-                  slug, geo_policy_id, plan_tier, created_at, updated_at
+                  slug, geo_policy_id, plan_tier, points_name, points_icon, points_to_currency_rate, created_at, updated_at
         "#,
     )
     .bind(&req.external_id)
@@ -55,7 +55,7 @@ pub async fn get_merchant(pool: &PgPool, id: Uuid) -> Result<Merchant, AppError>
     let merchant = sqlx::query_as::<_, Merchant>(
         r#"
         SELECT id, external_id, name, domain, currency, timezone, is_active,
-               slug, geo_policy_id, plan_tier, created_at, updated_at
+               slug, geo_policy_id, plan_tier, points_name, points_icon, points_to_currency_rate, created_at, updated_at
         FROM merchants
         WHERE id = $1
         "#,
@@ -76,7 +76,7 @@ pub async fn get_merchant_by_external_id(
     let merchant = sqlx::query_as::<_, Merchant>(
         r#"
         SELECT id, external_id, name, domain, currency, timezone, is_active,
-               slug, geo_policy_id, plan_tier, created_at, updated_at
+               slug, geo_policy_id, plan_tier, points_name, points_icon, points_to_currency_rate, created_at, updated_at
         FROM merchants
         WHERE external_id = $1
         "#,
@@ -93,7 +93,7 @@ pub async fn get_merchant_by_slug(pool: &PgPool, slug: &str) -> Result<Merchant,
     let merchant = sqlx::query_as::<_, Merchant>(
         r#"
         SELECT id, external_id, name, domain, currency, timezone, is_active,
-               slug, geo_policy_id, plan_tier, created_at, updated_at
+               slug, geo_policy_id, plan_tier, points_name, points_icon, points_to_currency_rate, created_at, updated_at
         FROM merchants
         WHERE slug = $1
         "#,
@@ -120,10 +120,13 @@ pub async fn update_merchant(
             is_active = COALESCE($4, is_active),
             slug = COALESCE($5, slug),
             plan_tier = COALESCE($6, plan_tier),
+            points_name = COALESCE($7, points_name),
+            points_icon = COALESCE($8, points_icon),
+            points_to_currency_rate = COALESCE($9, points_to_currency_rate),
             updated_at = now()
         WHERE id = $1
         RETURNING id, external_id, name, domain, currency, timezone, is_active,
-                  slug, geo_policy_id, plan_tier, created_at, updated_at
+                  slug, geo_policy_id, plan_tier, points_name, points_icon, points_to_currency_rate, created_at, updated_at
         "#,
     )
     .bind(id)
@@ -132,6 +135,9 @@ pub async fn update_merchant(
     .bind(req.is_active)
     .bind(&req.slug)
     .bind(&req.plan_tier)
+    .bind(&req.points_name)
+    .bind(&req.points_icon)
+    .bind(req.points_to_currency_rate)
     .fetch_optional(pool)
     .await?
     .ok_or_else(|| AppError::NotFound(format!("merchant {id} not found")))?;
@@ -150,7 +156,7 @@ pub async fn list_merchants(
     let merchants = sqlx::query_as::<_, Merchant>(
         r#"
         SELECT id, external_id, name, domain, currency, timezone, is_active,
-               slug, geo_policy_id, plan_tier, created_at, updated_at
+               slug, geo_policy_id, plan_tier, points_name, points_icon, points_to_currency_rate, created_at, updated_at
         FROM merchants
         ORDER BY created_at DESC
         LIMIT $1 OFFSET $2
@@ -171,16 +177,15 @@ pub async fn create_wallet_policy(
 ) -> Result<(), AppError> {
     let bucket_type = req.bucket_type.as_str();
     let stackable = req.stackable_with_discounts.unwrap_or(true);
-    let transferable = req.is_transferable.unwrap_or(false);
 
     sqlx::query(
         r#"
         INSERT INTO wallet_policies (
             merchant_id, bucket_type,
             min_redemption, step_size, max_per_order_pct, max_per_order_fixed,
-            stackable_with_discounts, default_expiry_days, is_transferable
+            stackable_with_discounts, default_expiry_days
         )
-        VALUES ($1, $2::bucket_type, $3, $4, $5, $6, $7, $8, $9)
+        VALUES ($1, $2::bucket_type, $3, $4, $5, $6, $7, $8)
         ON CONFLICT (merchant_id, bucket_type)
         DO UPDATE SET
             min_redemption = COALESCE(EXCLUDED.min_redemption, wallet_policies.min_redemption),
@@ -189,7 +194,6 @@ pub async fn create_wallet_policy(
             max_per_order_fixed = COALESCE(EXCLUDED.max_per_order_fixed, wallet_policies.max_per_order_fixed),
             stackable_with_discounts = EXCLUDED.stackable_with_discounts,
             default_expiry_days = COALESCE(EXCLUDED.default_expiry_days, wallet_policies.default_expiry_days),
-            is_transferable = EXCLUDED.is_transferable,
             updated_at = now()
         "#,
     )
@@ -201,7 +205,6 @@ pub async fn create_wallet_policy(
     .bind(req.max_per_order_fixed)
     .bind(stackable)
     .bind(req.default_expiry_days)
-    .bind(transferable)
     .execute(pool)
     .await?;
 
@@ -217,8 +220,7 @@ pub async fn get_wallet_policies(
         r#"
         SELECT id, merchant_id, bucket_type, min_redemption, step_size,
                max_per_order_pct, max_per_order_fixed, stackable_with_discounts,
-               default_conversion_rate, default_expiry_days, is_transferable,
-               excluded_payment_methods, excluded_collections,
+               default_expiry_days, excluded_payment_methods,
                is_active, created_at, updated_at
         FROM wallet_policies
         WHERE merchant_id = $1 AND is_active = true
@@ -447,7 +449,7 @@ pub async fn update_merchant_plan(
         SET plan_tier = $2, updated_at = now()
         WHERE id = $1
         RETURNING id, external_id, name, domain, currency, timezone, is_active,
-                  slug, geo_policy_id, plan_tier, created_at, updated_at
+                  slug, geo_policy_id, plan_tier, points_name, points_icon, points_to_currency_rate, created_at, updated_at
         "#,
     )
     .bind(id)
@@ -577,6 +579,7 @@ pub async fn list_merchant_transactions(
                c.phone AS customer_phone,
                le.bucket_type::text AS bucket_type,
                le.movement_type::text AS movement_type,
+               le.earning_unit,
                le.currency_equivalent,
                le.state::text AS state,
                le.created_at

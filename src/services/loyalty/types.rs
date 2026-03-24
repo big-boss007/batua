@@ -57,6 +57,23 @@ pub struct CreateTierRequest {
     pub benefits: serde_json::Value,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct UpdateProgramRequest {
+    pub name: String,
+    pub evaluation_criteria: String,
+    pub evaluation_period_days: Option<i32>,
+    pub is_active: bool,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct UpdateTierRequest {
+    pub name: Option<String>,
+    pub rank: Option<i32>,
+    pub threshold: Option<f64>,
+    pub earn_rate_multiplier: Option<f64>,
+    pub benefits: Option<serde_json::Value>,
+}
+
 #[derive(Debug, Serialize)]
 pub struct TierEvaluationResult {
     pub customer_id: Uuid,
