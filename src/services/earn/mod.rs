@@ -66,4 +66,16 @@ pub fn router() -> axum::Router<AppState> {
             "/earn/memberships/subscribers/{merchant_id}",
             get(handler::list_subscribers),
         )
+        .route(
+            "/earn/memberships/upgrade/{membership_id}",
+            post(handler::upgrade_membership),
+        )
+        .route(
+            "/earn/memberships/extend/{membership_id}",
+            post(handler::extend_membership),
+        )
+        .route(
+            "/earn/memberships/renew/{membership_id}",
+            post(handler::renew_membership),
+        )
 }

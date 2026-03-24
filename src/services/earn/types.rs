@@ -315,6 +315,16 @@ pub struct AssignMembershipResult {
     pub message: String,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct UpgradeMembershipRequest {
+    pub tier_id: Uuid,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct ExtendMembershipRequest {
+    pub days: i64,
+}
+
 #[derive(Debug, Default, Serialize)]
 pub struct MembershipStatus {
     pub membership: Option<CustomerMembership>,

@@ -1043,6 +1043,55 @@ pub async fn cancel_membership_by_id(
     storage::cancel_membership(pool, membership_id).await
 }
 
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn upgrade_membership(
+    pool: &PgPool,
+    membership_id: Uuid,
+    tier_id: Uuid,
+) -> Result<AssignMembershipResult, AppError> {
+    let _membership = storage::get_customer_membership_by_id(pool, membership_id).await?;
+
+    let tier = loyalty::storage::get_tier_by_id(pool, tier_id)
+        .await?
+        .ok_or_else(|| AppError::NotFound(format!("loyalty tier {tier_id} not found")))?;
+
+    let updated = storage::upgrade_membership_tier(pool, membership_id, tier_id).await?;
+
+    Ok(AssignMembershipResult {
+        membership: updated,
+        tier_name: tier.name,
+        earn_rate_multiplier: tier.earn_rate_multiplier,
+        is_new: false,
+        message: "membership tier upgraded successfully".to_string(),
+    })
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn extend_membership(
+    pool: &PgPool,
+    membership_id: Uuid,
+    days: i64,
+) -> Result<super::types::CustomerMembership, AppError> {
+    let membership = storage::get_customer_membership_by_id(pool, membership_id).await?;
+
+    let new_expires_at = membership.expires_at + chrono::Duration::days(days);
+
+    storage::renew_membership(pool, membership_id, new_expires_at).await
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn renew_membership(
+    pool: &PgPool,
+    membership_id: Uuid,
+) -> Result<super::types::CustomerMembership, AppError> {
+    let _membership = storage::get_customer_membership_by_id(pool, membership_id).await?;
+
+    let now = Utc::now();
+    let new_expires_at = now.checked_add_days(Days::new(365)).unwrap_or(now);
+
+    storage::renew_membership(pool, membership_id, new_expires_at).await
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

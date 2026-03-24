@@ -11,5 +11,8 @@ export {
   cancelMembership,
   listSubscribers,
   listSubscribersEnriched,
-  getMembershipStatus
+  getMembershipStatus,
+  upgradeMembership,
+  extendMembership,
+  renewMembership
 } from './remote';

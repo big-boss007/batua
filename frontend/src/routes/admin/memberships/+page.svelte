@@ -14,7 +14,10 @@
     assignMembership,
     cancelMembership,
     listSubscribersEnriched,
-    getMembershipStatus
+    getMembershipStatus,
+    upgradeMembership,
+    extendMembership,
+    renewMembership
   } from '$lib/client/modules/memberships';
   import { AssignForm } from '$lib/client/modules/memberships/ui';
 
@@ -51,6 +54,10 @@
   let selectedStatus = $state<MembershipStatus | null>(null);
   let detailLoading = $state(false);
   let selectedEarnedTier = $state<string | null>(null);
+  let modalMode = $state<'default' | 'cancel-confirm' | 'upgrade' | 'extend' | 'renew-confirm'>('default');
+  let selectedUpgradeTierId = $state('');
+  let extendDays = $state(365);
+  let actionLoading = $state(false);
 
   // Tabs
   const tabItems = ['Subscribers', 'Assign Membership'];
@@ -161,6 +168,9 @@
     selectedMembership = sub;
     selectedStatus = null;
     selectedEarnedTier = null;
+    modalMode = 'default';
+    selectedUpgradeTierId = '';
+    extendDays = 365;
     detailLoading = true;
     if (merchantId !== null) {
       const result = await getMembershipStatus(merchantId, sub.customer_id);
@@ -198,6 +208,78 @@
     } else {
       toastStore.push({ message: 'Failed to cancel membership', level: 'error' });
     }
+  }
+
+  async function handleUpgradeFromDetail() {
+    if (selectedMembership === null || !selectedUpgradeTierId) return;
+    actionLoading = true;
+    const result = await upgradeMembership(selectedMembership.id, selectedUpgradeTierId);
+    actionLoading = false;
+    if (result.tag === 'success') {
+      toastStore.push({ message: 'Membership upgraded', level: 'success' });
+      if (merchantId !== null) loadData(merchantId);
+      closeDetail();
+    } else {
+      toastStore.push({ message: 'Failed to upgrade membership', level: 'error' });
+    }
+  }
+
+  async function handleExtendFromDetail() {
+    if (selectedMembership === null || extendDays <= 0) return;
+    actionLoading = true;
+    const result = await extendMembership(selectedMembership.id, extendDays);
+    actionLoading = false;
+    if (result.tag === 'success') {
+      toastStore.push({ message: `Membership extended by ${extendDays} days`, level: 'success' });
+      if (merchantId !== null) loadData(merchantId);
+      closeDetail();
+    } else {
+      toastStore.push({ message: 'Failed to extend membership', level: 'error' });
+    }
+  }
+
+  async function handleRenewFromDetail() {
+    if (selectedMembership === null) return;
+    actionLoading = true;
+    const result = await renewMembership(selectedMembership.id);
+    actionLoading = false;
+    if (result.tag === 'success') {
+      toastStore.push({ message: 'Membership renewed for 1 year', level: 'success' });
+      if (merchantId !== null) loadData(merchantId);
+      closeDetail();
+    } else {
+      toastStore.push({ message: 'Failed to renew membership', level: 'error' });
+    }
+  }
+
+  async function handleReassignFromDetail() {
+    if (selectedMembership === null || merchantId === null || !selectedUpgradeTierId) return;
+    actionLoading = true;
+    const result = await assignMembership({
+      merchant_id: merchantId,
+      customer_id: selectedMembership.customer_id,
+      tier_id: selectedUpgradeTierId
+    });
+    actionLoading = false;
+    if (result.tag === 'success') {
+      toastStore.push({ message: 'Membership re-assigned', level: 'success' });
+      if (merchantId !== null) loadData(merchantId);
+      closeDetail();
+    } else {
+      toastStore.push({ message: 'Failed to re-assign membership', level: 'error' });
+    }
+  }
+
+  function computeExtendedExpiry(baseExpiry: string, days: number): string {
+    const date = new Date(baseExpiry);
+    date.setDate(date.getDate() + days);
+    return formatDate(date.toISOString());
+  }
+
+  function computeRenewExpiry(): string {
+    const date = new Date();
+    date.setFullYear(date.getFullYear() + 1);
+    return formatDate(date.toISOString());
   }
 
   async function handleCustomerLookup(phone: string) {
@@ -554,19 +636,102 @@
         {/if}
 
         <!-- Actions -->
-        <div class="detail-actions">
+        <div class="detail-actions" class:actions-dimmed={modalMode !== 'default'}>
           {#if status === 'expiring'}
-            <button class="action-btn action-renew">↻ Renew for 1 Year</button>
-            <button class="action-btn action-upgrade">⬆ Upgrade Tier</button>
-            <button class="action-btn action-cancel" onclick={handleCancelFromDetail}>Cancel</button>
+            <button class="action-btn action-renew" onclick={() => { modalMode = 'renew-confirm'; }}>↻ Renew for 1 Year</button>
+            <button class="action-btn action-upgrade" onclick={() => { modalMode = 'upgrade'; selectedUpgradeTierId = ''; }}>⬆ Upgrade Tier</button>
+            <button class="action-btn action-cancel" onclick={() => { modalMode = 'cancel-confirm'; }}>Cancel</button>
           {:else if status === 'active'}
-            <button class="action-btn action-upgrade">⬆ Upgrade Tier</button>
-            <button class="action-btn action-extend">+ Extend</button>
-            <button class="action-btn action-cancel" onclick={handleCancelFromDetail}>Cancel Membership</button>
+            <button class="action-btn action-upgrade" onclick={() => { modalMode = 'upgrade'; selectedUpgradeTierId = ''; }}>⬆ Upgrade Tier</button>
+            <button class="action-btn action-extend" onclick={() => { modalMode = 'extend'; extendDays = 365; }}>+ Extend</button>
+            <button class="action-btn action-cancel" onclick={() => { modalMode = 'cancel-confirm'; }}>Cancel Membership</button>
           {:else if status === 'cancelled'}
-            <button class="action-btn action-upgrade" style="border-color: var(--color-primary);">↻ Re-assign Membership</button>
+            <button class="action-btn action-upgrade" style="border-color: var(--color-primary);" onclick={() => { modalMode = 'upgrade'; selectedUpgradeTierId = ''; }}>↻ Re-assign Membership</button>
           {/if}
         </div>
+
+        <!-- Cancel confirmation -->
+        {#if modalMode === 'cancel-confirm'}
+          <div class="confirm-box confirm-danger">
+            <p class="confirm-text danger">Are you sure you want to cancel this membership? {selectedMembership.customer_name ?? 'This customer'} will lose their {selectedMembership.tier_name} tier ({selectedMembership.earn_rate_multiplier}x earn rate) and fall back to their earned tier. This cannot be undone.</p>
+            <div class="confirm-actions">
+              <button class="confirm-btn confirm-btn-danger" disabled={actionLoading} onclick={async () => { actionLoading = true; await handleCancelFromDetail(); actionLoading = false; modalMode = 'default'; }}>Yes, Cancel Membership</button>
+              <button class="confirm-btn confirm-btn-ghost" onclick={() => { modalMode = 'default'; }}>Keep Membership</button>
+            </div>
+          </div>
+        {/if}
+
+        <!-- Upgrade / Re-assign tier picker -->
+        {#if modalMode === 'upgrade'}
+          {@const currentTierId = selectedMembership?.tier_id ?? ''}
+          {@const currentTierRank = tiers.find((t) => t.id === currentTierId)?.rank ?? 0}
+          <div class="confirm-box confirm-info">
+            <div class="tier-select-row">
+              {#each tiers as tier (tier.id)}
+                {@const isCurrent = status !== 'cancelled' && tier.id === currentTierId}
+                {@const isLower = status !== 'cancelled' && tier.rank < currentTierRank}
+                <button
+                  class="tier-option"
+                  class:selected={selectedUpgradeTierId === tier.id}
+                  class:current={isCurrent}
+                  class:disabled={isCurrent || isLower}
+                  onclick={() => { selectedUpgradeTierId = tier.id; }}
+                >
+                  <div class="tier-option-name">{tier.name}{#if isCurrent} ✓{/if}</div>
+                  <div class="tier-option-mult">{tier.earn_rate_multiplier}x</div>
+                </button>
+              {/each}
+            </div>
+            <div class="confirm-actions">
+              {#if status === 'cancelled'}
+                <button class="confirm-btn confirm-btn-primary" disabled={!selectedUpgradeTierId || actionLoading} onclick={handleReassignFromDetail}>
+                  Assign {tiers.find((t) => t.id === selectedUpgradeTierId)?.name ?? ''} Membership
+                </button>
+              {:else}
+                <button class="confirm-btn confirm-btn-primary" disabled={!selectedUpgradeTierId || actionLoading} onclick={handleUpgradeFromDetail}>
+                  Upgrade to {tiers.find((t) => t.id === selectedUpgradeTierId)?.name ?? '...'}
+                </button>
+              {/if}
+              <button class="confirm-btn confirm-btn-ghost" onclick={() => { modalMode = 'default'; }}>Cancel</button>
+            </div>
+          </div>
+        {/if}
+
+        <!-- Extend input -->
+        {#if modalMode === 'extend'}
+          <div class="confirm-box confirm-success">
+            <div class="extend-input-row">
+              <span class="confirm-text success">Extend by</span>
+              <input
+                type="number"
+                class="extend-input"
+                min="1"
+                max="3650"
+                value={extendDays}
+                oninput={(e) => { extendDays = parseInt((e.target as HTMLInputElement).value) || 0; }}
+              />
+              <span class="confirm-text success">days</span>
+            </div>
+            {#if extendDays > 0}
+              <div class="extend-preview green">New expiry: {computeExtendedExpiry(selectedMembership.expires_at, extendDays)}</div>
+            {/if}
+            <div class="confirm-actions">
+              <button class="confirm-btn confirm-btn-success" disabled={extendDays <= 0 || actionLoading} onclick={handleExtendFromDetail}>Extend Membership</button>
+              <button class="confirm-btn confirm-btn-ghost" onclick={() => { modalMode = 'default'; }}>Cancel</button>
+            </div>
+          </div>
+        {/if}
+
+        <!-- Renew confirmation -->
+        {#if modalMode === 'renew-confirm'}
+          <div class="confirm-box confirm-success">
+            <p class="confirm-text success">Renew {selectedMembership.tier_name} membership for {selectedMembership.customer_name ?? 'this customer'}? This will extend by 1 year from today. New expiry: {computeRenewExpiry()}</p>
+            <div class="confirm-actions">
+              <button class="confirm-btn confirm-btn-success" disabled={actionLoading} onclick={handleRenewFromDetail}>Confirm Renewal</button>
+              <button class="confirm-btn confirm-btn-ghost" onclick={() => { modalMode = 'default'; }}>Not Now</button>
+            </div>
+          </div>
+        {/if}
       </div>
     </div>
   </div>
@@ -803,4 +968,56 @@
   .action-extend:hover { background: #f0fdf4; }
   .action-cancel { color: #ef4444; border-color: #fecaca; }
   .action-cancel:hover { background: #fef2f2; }
+
+  .confirm-box {
+    margin-top: 16px; padding: 14px; border-radius: 8px;
+    border: 1px solid; display: flex; flex-direction: column; gap: 10px;
+  }
+  .confirm-danger { border-color: #fecaca; background: #fff5f5; }
+  .confirm-success { border-color: #bbf7d0; background: #f0fdf4; }
+  .confirm-info { border-color: #c7d2fe; background: #f5f3ff; }
+  .confirm-text { font-size: 13px; line-height: 1.5; }
+  .confirm-text.danger { color: #991b1b; }
+  .confirm-text.success { color: #065f46; }
+  .confirm-text.info { color: #3730a3; }
+  .confirm-actions { display: flex; gap: 8px; }
+  .confirm-btn {
+    padding: 7px 16px; border-radius: 7px; font-size: 12px; font-weight: 600;
+    cursor: pointer; border: none;
+  }
+  .confirm-btn-danger { background: #ef4444; color: white; }
+  .confirm-btn-danger:hover { background: #dc2626; }
+  .confirm-btn-success { background: #22c55e; color: white; }
+  .confirm-btn-success:hover { background: #16a34a; }
+  .confirm-btn-primary { background: #6366f1; color: white; }
+  .confirm-btn-primary:hover { background: #4f46e5; }
+  .confirm-btn-ghost { background: white; color: #6b7280; border: 1px solid #d1d5db; }
+  .confirm-btn-ghost:hover { background: #f3f4f6; }
+
+  .tier-select-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .tier-option {
+    padding: 8px 14px; border: 2px solid #e5e7eb; border-radius: 8px;
+    cursor: pointer; text-align: center; font-size: 12px; background: white;
+    transition: all 0.15s; min-width: 80px;
+  }
+  .tier-option:hover:not(.disabled) { border-color: #c7d2fe; }
+  .tier-option.selected { border-color: #6366f1; background: #f5f3ff; }
+  .tier-option.current { border-color: #fef9c3; background: #fefce8; }
+  .tier-option.disabled { opacity: 0.4; pointer-events: none; }
+  .tier-option-name { font-weight: 600; color: #1a1a2e; }
+  .tier-option-mult { font-size: 11px; color: #6b7280; }
+
+  .extend-input-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .extend-input {
+    width: 80px; padding: 7px 10px; border: 1px solid #d1d5db; border-radius: 7px;
+    font-size: 13px; text-align: center; outline: none;
+  }
+  .extend-input:focus { border-color: #6366f1; }
+  .extend-preview {
+    font-size: 12px; padding: 8px 12px; border-radius: 6px; margin-bottom: 4px;
+  }
+  .extend-preview.green { color: #065f46; background: #ecfdf5; }
+  .extend-preview.blue { color: #3730a3; background: #eef2ff; }
+
+  .actions-dimmed { opacity: 0.4; pointer-events: none; }
 </style>

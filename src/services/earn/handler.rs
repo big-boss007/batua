@@ -11,8 +11,9 @@ use super::helpers;
 use super::storage;
 use super::types::{
     AssignMembershipRequest, CheckMilestonesRequest, CheckStreakRequest, CreateMilestoneRequest,
-    CreateStreakConfigRequest, CreateWheelRequest, ManualCreditRequest, NewsletterSignupRequest,
-    ProcessBirthdayBonusRequest, ProcessEarnRequest, ProfileCompletionRequest, SpinRequest,
+    CreateStreakConfigRequest, CreateWheelRequest, ExtendMembershipRequest, ManualCreditRequest,
+    NewsletterSignupRequest, ProcessBirthdayBonusRequest, ProcessEarnRequest,
+    ProfileCompletionRequest, SpinRequest, UpgradeMembershipRequest,
 };
 
 #[tracing::instrument(skip(app_state))]
@@ -234,4 +235,35 @@ pub async fn list_subscribers_enriched(
     let pool = app_state.db_reader.as_ref().unwrap_or(&app_state.db);
     let memberships = storage::list_enriched_memberships(pool, merchant_id).await?;
     Ok::<_, AppError>((StatusCode::OK, Json(memberships)))
+}
+
+#[tracing::instrument(skip(app_state))]
+pub async fn upgrade_membership(
+    State(app_state): State<AppState>,
+    Path(membership_id): Path<Uuid>,
+    Json(req): Json<UpgradeMembershipRequest>,
+) -> impl IntoResponse {
+    let result =
+        helpers::upgrade_membership(&app_state.db, membership_id, req.tier_id).await?;
+    Ok::<_, AppError>((StatusCode::OK, Json(result)))
+}
+
+#[tracing::instrument(skip(app_state))]
+pub async fn extend_membership(
+    State(app_state): State<AppState>,
+    Path(membership_id): Path<Uuid>,
+    Json(req): Json<ExtendMembershipRequest>,
+) -> impl IntoResponse {
+    let result =
+        helpers::extend_membership(&app_state.db, membership_id, req.days).await?;
+    Ok::<_, AppError>((StatusCode::OK, Json(result)))
+}
+
+#[tracing::instrument(skip(app_state))]
+pub async fn renew_membership(
+    State(app_state): State<AppState>,
+    Path(membership_id): Path<Uuid>,
+) -> impl IntoResponse {
+    let result = helpers::renew_membership(&app_state.db, membership_id).await?;
+    Ok::<_, AppError>((StatusCode::OK, Json(result)))
 }

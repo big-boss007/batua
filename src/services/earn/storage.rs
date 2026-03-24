@@ -714,6 +714,34 @@ pub async fn list_memberships_by_merchant(
 }
 
 #[tracing::instrument(skip(pool), err(Debug))]
+pub async fn upgrade_membership_tier(
+    pool: &PgPool,
+    membership_id: Uuid,
+    tier_id: Uuid,
+) -> Result<CustomerMembership, AppError> {
+    let membership = sqlx::query_as::<_, CustomerMembership>(
+        r#"
+        UPDATE customer_memberships
+        SET tier_id = $2
+        WHERE id = $1
+        RETURNING *
+        "#,
+    )
+    .bind(membership_id)
+    .bind(tier_id)
+    .fetch_one(pool)
+    .await
+    .map_err(|e| match e {
+        sqlx::Error::RowNotFound => {
+            AppError::NotFound(format!("membership {membership_id} not found"))
+        }
+        other => AppError::Database(other),
+    })?;
+
+    Ok(membership)
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
 pub async fn list_enriched_memberships(
     pool: &PgPool,
     merchant_id: Uuid,

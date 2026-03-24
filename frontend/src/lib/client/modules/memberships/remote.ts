@@ -119,10 +119,33 @@ async function getMembershipStatus(
   );
 }
 
+async function upgradeMembership(
+  membershipId: string,
+  tierId: string
+): Promise<APIResult<CustomerMembership>> {
+  return apiCaller.post(`/earn/memberships/upgrade/${membershipId}`, { tier_id: tierId }, decodeMembership);
+}
+
+async function extendMembership(
+  membershipId: string,
+  days: number
+): Promise<APIResult<CustomerMembership>> {
+  return apiCaller.post(`/earn/memberships/extend/${membershipId}`, { days }, decodeMembership);
+}
+
+async function renewMembership(
+  membershipId: string
+): Promise<APIResult<CustomerMembership>> {
+  return apiCaller.post(`/earn/memberships/renew/${membershipId}`, {}, decodeMembership);
+}
+
 export {
   assignMembership,
   cancelMembership,
   listSubscribers,
   listSubscribersEnriched,
-  getMembershipStatus
+  getMembershipStatus,
+  upgradeMembership,
+  extendMembership,
+  renewMembership
 };
