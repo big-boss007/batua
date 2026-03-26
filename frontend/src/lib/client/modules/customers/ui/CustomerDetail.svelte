@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Avatar, Pill } from '@juspay/svelte-ui-components';
-  import type { CustomerDetail as CustomerDetailType } from '$lib/client/modules/customers';
+  import type { CustomerDetail as CustomerDetailType, BucketBalance } from '$lib/client/modules/customers';
   import { formatMovementType, formatBucketType } from '$lib/client/modules/customers';
   import {
     formatCurrencyINR,
@@ -11,7 +11,7 @@
     isPointsBucket
   } from '$lib/client/modules/foundation';
 
-  let { detail }: { detail: CustomerDetailType } = $props();
+  let { detail, pointsIcon = '★', pointsRate = 1.0 }: { detail: CustomerDetailType; pointsIcon?: string; pointsRate?: number } = $props();
 
   let customer = $derived(detail.customer);
   let wallet = $derived(detail.wallet);
@@ -19,6 +19,36 @@
   let membership = $derived(detail.membership);
   let referral = $derived(detail.referral);
   let entries = $derived(detail.recent_entries);
+
+  let totalRedeemable = $derived(
+    wallet !== null ? wallet.points_balance * pointsRate + wallet.cash_balance : 0
+  );
+
+  let pointsCashBuckets = $derived.by(() => {
+    if (wallet === null) return [];
+    const POINTS_TYPES = new Set(['EarnedCredit', 'ReferralReward', 'GoodwillCredit', 'MembershipBenefit']);
+    return wallet.buckets.filter((b) => !POINTS_TYPES.has(b.bucket_type) && b.spendable > 0);
+  });
+
+  let pointsSubBuckets = $derived.by(() => {
+    if (wallet === null) return [];
+    const POINTS_TYPES = new Set(['EarnedCredit', 'ReferralReward', 'GoodwillCredit', 'MembershipBenefit']);
+    return wallet.buckets.filter((b) => POINTS_TYPES.has(b.bucket_type) && b.spendable > 0);
+  });
+
+  function bucketLabel(bt: string): string {
+    const map: Record<string, string> = {
+      EarnedCredit: 'Earned',
+      ReferralReward: 'Referral',
+      GoodwillCredit: 'Goodwill',
+      MembershipBenefit: 'Membership',
+      GiftCard: 'Gift Card',
+      RefundCredit: 'Refund',
+      CustomerFunded: 'Funded',
+      CodPending: 'COD'
+    };
+    return map[bt] ?? bt;
+  }
 
   let membershipExpiring = $derived(
     membership !== null && membership.days_remaining > 0 && membership.days_remaining <= 30
@@ -57,18 +87,32 @@
   {#if wallet}
     <section class="card">
       <h3 class="card-title">💰 Wallet</h3>
-      <div class="meta-grid meta-3">
-        <div>
-          <span class="meta-label">Points Balance</span>
-          <div class="wallet-val wallet-points">{formatPoints(wallet.displayed_balance, '★')}</div>
+      <div class="wd-total">
+        <span class="wd-total-value">{formatCurrencyINR(totalRedeemable)}</span>
+        <span class="wd-total-label">total redeemable</span>
+      </div>
+      <div class="wd-rows">
+        <div class="wd-row">
+          <div class="wd-row-left">
+            <span class="wd-dot" style="background: var(--color-primary);"></span>
+            <span class="wd-row-label">Points</span>
+          </div>
+          <div class="wd-row-right">
+            <span class="wd-row-value" style="color: var(--color-primary);">{formatPoints(wallet.points_balance, pointsIcon)}</span>
+            <span class="wd-row-equiv">worth {formatCurrencyINR(wallet.points_balance * pointsRate)}{#if pointsSubBuckets.length > 0}
+              &nbsp;&middot; {pointsSubBuckets.map((b) => `${bucketLabel(b.bucket_type)} ${Math.round(b.spendable)}`).join(' + ')}
+            {/if}</span>
+          </div>
         </div>
-        <div>
-          <span class="meta-label">Cash Balance</span>
-          <div class="wallet-val wallet-cash">{formatCurrencyINR(0)}</div>
-        </div>
-        <div>
-          <span class="meta-label">Total ₹ Value</span>
-          <div class="wallet-val">{formatCurrencyINR(wallet.spendable_balance)}</div>
+        <div class="wd-row">
+          <div class="wd-row-left">
+            <span class="wd-dot" style="background: var(--color-success);"></span>
+            <span class="wd-row-label">Cash</span>
+          </div>
+          <div class="wd-row-right">
+            <span class="wd-row-value" style="color: var(--color-success);">{formatCurrencyINR(wallet.cash_balance)}</span>
+            <span class="wd-row-equiv">{#if pointsCashBuckets.length > 0}{pointsCashBuckets.map((b) => `${bucketLabel(b.bucket_type)} ${formatCurrencyINR(b.spendable)}`).join(' + ')}{:else}No cash balance{/if}</span>
+          </div>
         </div>
       </div>
     </section>
@@ -252,10 +296,32 @@
   .meta-mono { font-family: var(--font-mono); }
   .meta-highlight { color: var(--color-primary); }
 
-  /* Wallet values */
-  .wallet-val { font-size: var(--font-size-lg); font-weight: var(--font-weight-bold); color: var(--color-text); margin-top: 2px; }
-  .wallet-points { color: var(--color-primary); }
-  .wallet-cash { color: var(--color-success); }
+  /* Wallet — Option D */
+  .wd-total {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    padding-bottom: var(--space-3);
+    margin-bottom: var(--space-3);
+    border-bottom: 1px solid var(--color-border);
+  }
+  .wd-total-value { font-size: var(--font-size-2xl); font-weight: 800; color: var(--color-text); }
+  .wd-total-label { font-size: var(--font-size-sm); color: var(--color-text-muted); font-weight: var(--font-weight-medium); }
+  .wd-rows { display: flex; flex-direction: column; gap: var(--space-2); }
+  .wd-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-2) var(--space-3);
+    background: var(--color-surface-2);
+    border-radius: var(--radius-md);
+  }
+  .wd-row-left { display: flex; align-items: center; gap: var(--space-2); }
+  .wd-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .wd-row-label { font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); color: var(--color-text); }
+  .wd-row-right { display: flex; flex-direction: column; align-items: flex-end; }
+  .wd-row-value { font-size: var(--font-size-base); font-weight: var(--font-weight-bold); }
+  .wd-row-equiv { font-size: 11px; color: var(--color-text-muted); }
 
   /* Shared tier row: badge + source/status */
   .tier-row { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }

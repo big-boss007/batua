@@ -6,13 +6,19 @@
     MerchantCustomerRow
   } from '$lib/client/modules/customers';
   import { getCustomerDetail, fetchMerchantCustomers } from '$lib/client/modules/customers';
-  import { currentMerchantId } from '$lib/client/modules/admin';
+  import { currentMerchant, currentMerchantId } from '$lib/client/modules/admin';
+  import type { Merchant } from '$lib/client/modules/admin';
   import { toastStore, formatDate, formatPhone } from '$lib/client/modules/foundation';
   import { CustomerDetail } from '$lib/client/modules/customers/ui';
 
   let selectedDetail = $state<CustomerDetailType | null>(null);
   let loadingDetail = $state(false);
   let merchantId = $state<string | null>(null);
+  let merchant = $state<Merchant | null>(null);
+
+  currentMerchant.subscribe((m) => {
+    merchant = m;
+  });
 
   let customers = $state<Array<MerchantCustomerRow>>([]);
   let loadingList = $state(false);
@@ -179,7 +185,7 @@
                 <Shimmer classes="shimmer-row" />
               </div>
             {:else if selectedDetail}
-              <CustomerDetail detail={selectedDetail} />
+              <CustomerDetail detail={selectedDetail} pointsIcon={merchant?.points_icon ?? '★'} pointsRate={merchant?.points_to_currency_rate ?? 1.0} />
             {/if}
           </div>
         </div>

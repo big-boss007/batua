@@ -51,7 +51,7 @@ pub async fn update_rule(
     Path(id): Path<Uuid>,
     Json(req): Json<UpdateRuleRequest>,
 ) -> impl IntoResponse {
-    let rule = storage::update_rule(&app_state.db, id, req.name.as_deref(), &req.config).await?;
+    let rule = storage::update_rule(&app_state.db, id, req.name.as_deref(), &req.config, req.is_active).await?;
     Ok::<_, AppError>(Json(rule))
 }
 

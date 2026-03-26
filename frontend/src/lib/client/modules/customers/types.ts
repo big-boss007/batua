@@ -31,10 +31,18 @@ export type CustomerDetail = {
   recent_entries: Array<LedgerEntrySummary>;
 };
 
+export type BucketBalance = {
+  bucket_type: string;
+  spendable: number;
+};
+
 export type WalletSummary = {
   id: string;
   displayed_balance: number;
   spendable_balance: number;
+  points_balance: number;
+  cash_balance: number;
+  buckets: Array<BucketBalance>;
 };
 
 export type CustomerTierInfo = {

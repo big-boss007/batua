@@ -110,6 +110,7 @@ pub struct CreateRuleRequest {
 pub struct UpdateRuleRequest {
     pub name: Option<String>,
     pub config: serde_json::Value,
+    pub is_active: Option<bool>,
 }
 
 #[derive(Debug, Deserialize)]

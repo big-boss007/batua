@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { page } from '$app/stores';
   import { Shimmer } from '@juspay/svelte-ui-components';
   import { normalizePhoneE164, formatCurrencyINR } from '$lib/client/modules/foundation';
   import {
@@ -35,6 +36,7 @@
   let { data }: { data: { merchant: StorefrontMerchant | null } } = $props();
 
   let merchant = $derived(data.merchant);
+  let basePath = $derived($page.url.pathname.replace(/\/$/, ''));
   let phone: string | null = $state(null);
   let loading = $state(false);
   let error: string | null = $state(null);
@@ -194,7 +196,7 @@
     <PhoneInput onSubmit={handlePhoneSubmit} />
 
     <div class="hub-quick-links">
-      <a href="gift-cards/check" class="quick-link">
+      <a href="{basePath}/gift-cards/check" class="quick-link">
         <span class="quick-link-icon">&#x1F381;</span>
         <span class="quick-link-text">Check Gift Card</span>
       </a>
@@ -291,8 +293,8 @@
 
     <div class="divider"></div>
     <div class="bottom-actions">
-      <a href="gift-cards/check" class="bottom-action">Gift Card</a>
-      <a href="refer" class="bottom-action bottom-action-primary">Refer & Earn</a>
+      <a href="{basePath}/gift-cards/check" class="bottom-action">Gift Card</a>
+      <a href="{basePath}/refer" class="bottom-action bottom-action-primary">Refer & Earn</a>
     </div>
   {/if}
 </div>

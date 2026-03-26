@@ -34,12 +34,14 @@ pub async fn update_rule(
     id: Uuid,
     name: Option<&str>,
     config: &serde_json::Value,
+    is_active: Option<bool>,
 ) -> Result<Rule, AppError> {
     let rule = sqlx::query_as::<_, Rule>(
         r#"
         UPDATE rules
         SET name = COALESCE($2, name),
             config = $3,
+            is_active = COALESCE($4, is_active),
             version = version + 1,
             updated_at = now()
         WHERE id = $1
@@ -49,6 +51,7 @@ pub async fn update_rule(
     .bind(id)
     .bind(name)
     .bind(config)
+    .bind(is_active)
     .fetch_optional(pool)
     .await?
     .ok_or_else(|| AppError::NotFound(format!("rule {id} not found")))?;
@@ -85,8 +88,7 @@ pub async fn get_active_rules(
         FROM rules
         WHERE merchant_id = $1
           AND rule_type = $2
-          AND is_active = true
-        ORDER BY created_at ASC
+        ORDER BY is_active DESC, created_at ASC
         "#,
     )
     .bind(merchant_id)

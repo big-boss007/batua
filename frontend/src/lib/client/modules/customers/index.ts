@@ -4,6 +4,7 @@ export type {
   CustomerMembershipInfo,
   CustomerReferralInfo,
   WalletSummary,
+  BucketBalance,
   CustomerTierInfo,
   TierProgress,
   LedgerEntrySummary,

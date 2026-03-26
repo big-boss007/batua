@@ -41,10 +41,17 @@ function decodeCustomerTierInfo(raw: unknown): CustomerTierInfo | null {
 function decodeWalletSummary(raw: unknown): WalletSummary | null {
   if (raw === null || raw === undefined) return null;
   const r = raw as Record<string, unknown>;
+  const rawBuckets = Array.isArray(r['buckets']) ? (r['buckets'] as Array<Record<string, unknown>>) : [];
   return {
     id: (r['id'] as string) ?? '',
     displayed_balance: (r['displayed_balance'] as number) ?? 0,
-    spendable_balance: (r['spendable_balance'] as number) ?? 0
+    spendable_balance: (r['spendable_balance'] as number) ?? 0,
+    points_balance: (r['points_balance'] as number) ?? 0,
+    cash_balance: (r['cash_balance'] as number) ?? 0,
+    buckets: rawBuckets.map((b) => ({
+      bucket_type: (b['bucket_type'] as string) ?? '',
+      spendable: (b['spendable'] as number) ?? 0
+    }))
   };
 }
 
@@ -189,10 +196,19 @@ async function getCustomerDetail(
         (raw: unknown) => raw as Record<string, unknown>
       );
       if (balanceResult.tag === 'success') {
+        const rawBuckets = Array.isArray(balanceResult.data['buckets'])
+          ? (balanceResult.data['buckets'] as Array<Record<string, unknown>>)
+          : [];
         wallet = {
           id: walletId,
           displayed_balance: (balanceResult.data['displayed_balance'] as number) ?? 0,
-          spendable_balance: (balanceResult.data['spendable_balance'] as number) ?? 0
+          spendable_balance: (balanceResult.data['spendable_balance'] as number) ?? 0,
+          points_balance: (balanceResult.data['points_balance'] as number) ?? 0,
+          cash_balance: (balanceResult.data['cash_balance'] as number) ?? 0,
+          buckets: rawBuckets.map((b) => ({
+            bucket_type: (b['bucket_type'] as string) ?? '',
+            spendable: (b['spendable'] as number) ?? 0
+          }))
         };
       }
 

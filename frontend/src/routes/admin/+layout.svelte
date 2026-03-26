@@ -41,7 +41,6 @@
         { label: 'Influencers', href: '/admin/influencers', icon: '' }
       ]
     },
-    { label: 'Analytics', href: '/admin/analytics', icon: '\u2197' },
     { label: 'Notifications', href: '/admin/notifications', icon: '\u2709' },
     { label: 'Settings', href: '/admin/settings', icon: '\u2638' }
   ];

@@ -3,6 +3,8 @@
 
   import { Input, Button, Shimmer } from '@juspay/svelte-ui-components';
 
+  import { browser } from '$app/environment';
+
   import {
     fetchGiftCard,
     customerPhone,
@@ -21,11 +23,12 @@
   let isValid = $state(false);
   let customerId: string | null = $state(null);
 
-  customerPhone.subscribe((stored) => {
-    if (stored !== null && customerId === null) {
-      resolveCustomerId(stored);
+  if (browser) {
+    const storedPhone = sessionStorage.getItem('batua-storefront-phone');
+    if (storedPhone !== null) {
+      resolveCustomerId(storedPhone);
     }
-  });
+  }
 
   async function resolveCustomerId(phone: string) {
     const result = await lookupCustomer(phone);
