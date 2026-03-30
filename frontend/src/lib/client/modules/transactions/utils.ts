@@ -9,14 +9,14 @@ type StateHint = {
 };
 
 const BUCKET_LABELS: Record<string, string> = {
-  earned_credit: 'Earned Credit',
-  cod_pending: 'COD Pending',
+  earned_credit: 'Reward Points',
+  cod_pending: 'COD Pending Points',
   gift_card: 'Gift Card',
   customer_funded: 'Customer Funded',
-  referral_reward: 'Referral Reward',
-  goodwill_credit: 'Goodwill Credit',
+  referral_reward: 'Referral Points',
+  goodwill_credit: 'Courtesy Points',
   membership_benefit: 'Membership Benefit',
-  refund_credit: 'Refund Credit'
+  refund_credit: 'Store Credit'
 };
 
 function formatBucketType(bucketType: string): string {

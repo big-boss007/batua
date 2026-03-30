@@ -25,22 +25,22 @@ function formatMovementType(movement: string): string {
 }
 
 const BUCKET_LABELS: Record<string, string> = {
-  earned_credit: 'Earned Credit',
-  cod_pending: 'COD Pending',
+  earned_credit: 'Reward Points',
+  cod_pending: 'COD Pending Points',
   gift_card: 'Gift Card',
   customer_funded: 'Customer Funded',
-  referral_reward: 'Referral Reward',
-  goodwill_credit: 'Goodwill Credit',
+  referral_reward: 'Referral Points',
+  goodwill_credit: 'Courtesy Points',
   membership_benefit: 'Membership Benefit',
-  refund_credit: 'Refund Credit',
-  EarnedCredit: 'Earned Credit',
-  CodPending: 'COD Pending',
+  refund_credit: 'Store Credit',
+  EarnedCredit: 'Reward Points',
+  CodPending: 'COD Pending Points',
   GiftCard: 'Gift Card',
   CustomerFunded: 'Customer Funded',
-  ReferralReward: 'Referral Reward',
-  GoodwillCredit: 'Goodwill Credit',
+  ReferralReward: 'Referral Points',
+  GoodwillCredit: 'Courtesy Points',
   MembershipBenefit: 'Membership Benefit',
-  RefundCredit: 'Refund Credit'
+  RefundCredit: 'Store Credit'
 };
 
 function formatBucketType(bucket: string): string {

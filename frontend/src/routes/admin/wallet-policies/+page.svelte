@@ -206,7 +206,7 @@
     {/if}
 
     <div class="section-divider"></div>
-    <div class="section-label">Global Bucket Policies</div>
+    <div class="section-label">Wallet Policies</div>
   {/if}
 
   <div class="policies-constrained">

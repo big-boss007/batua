@@ -5,26 +5,26 @@
   import type { WalletPolicy, UpdateWalletPolicyRequest } from '$lib/client/modules/settings';
 
   const BUCKET_LABELS: Record<string, string> = {
-    EarnedCredit: 'Earned Credit',
-    CodPending: 'COD Pending',
+    EarnedCredit: 'Reward Points',
+    CodPending: 'COD Pending Points',
     GiftCard: 'Gift Card',
     CustomerFunded: 'Customer Funded',
-    ReferralReward: 'Referral Reward',
-    GoodwillCredit: 'Goodwill Credit',
+    ReferralReward: 'Referral Points',
+    GoodwillCredit: 'Courtesy Points',
     MembershipBenefit: 'Membership Benefit',
-    RefundCredit: 'Refund Credit'
+    RefundCredit: 'Store Credit'
   };
 
   const BUCKET_DESCRIPTIONS: Record<string, string> = {
     EarnedCredit:
-      'Controls how earned loyalty credits can be redeemed at checkout — limits, caps, expiry, and discount stacking.',
-    CodPending: 'Policy for credits held pending COD delivery confirmation.',
+      'Controls how reward points can be redeemed at checkout — limits, caps, expiry, and discount stacking.',
+    CodPending: 'Policy for points held pending COD delivery confirmation.',
     GiftCard: 'Controls how gift card balances can be spent at checkout.',
     CustomerFunded: 'Policy for customer-funded store credit balances.',
-    ReferralReward: 'Controls how referral reward credits can be redeemed.',
-    GoodwillCredit: 'Policy for goodwill credits issued by your team.',
+    ReferralReward: 'Controls how referral points can be redeemed.',
+    GoodwillCredit: 'Policy for courtesy points issued by your team.',
     MembershipBenefit: 'Policy for membership benefit credits.',
-    RefundCredit: 'Policy for refund credits issued to customers.'
+    RefundCredit: 'Policy for store credits (goodwill, refund, token of apology etc.) issued to customers.'
   };
 
   let {

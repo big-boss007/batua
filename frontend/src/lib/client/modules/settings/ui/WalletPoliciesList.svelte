@@ -3,15 +3,17 @@
 
   import type { WalletPolicy } from '$lib/client/modules/settings';
 
+  import { isPointsBucket } from '$lib/client/modules/foundation';
+
   const BUCKET_LABELS: Record<string, string> = {
-    EarnedCredit: 'Earned Credit',
-    CodPending: 'COD Pending',
+    EarnedCredit: 'Reward Points',
+    CodPending: 'COD Pending Points',
     GiftCard: 'Gift Card',
     CustomerFunded: 'Customer Funded',
-    ReferralReward: 'Referral Reward',
-    GoodwillCredit: 'Goodwill Credit',
+    ReferralReward: 'Referral Points',
+    GoodwillCredit: 'Courtesy Points',
     MembershipBenefit: 'Membership Benefit',
-    RefundCredit: 'Refund Credit'
+    RefundCredit: 'Store Credit'
   };
 
   function bucketLabel(bt: string): string {
@@ -28,6 +30,9 @@
 
   let expandedId = $state<string | null>(null);
 
+  let pointsPolicies = $derived(policies.filter((p) => isPointsBucket(p.bucket_type)));
+  let cashPolicies = $derived(policies.filter((p) => !isPointsBucket(p.bucket_type)));
+
   function toggleExpand(id: string) {
     expandedId = expandedId === id ? null : id;
   }
@@ -37,50 +42,113 @@
   {#if policies.length === 0}
     <p class="empty-state">No wallet policies configured.</p>
   {:else}
-    {#each policies as policy (policy.id)}
-      <div class="policy-item" class:expanded={expandedId === policy.id}>
-        <button class="policy-header" onclick={() => toggleExpand(policy.id)}>
-          <span class="policy-bucket">{bucketLabel(policy.bucket_type)}</span>
-          <span class="policy-summary">
-            {#if policy.default_expiry_days !== null}
-              {policy.default_expiry_days}d expiry
-            {:else}
-              No expiry
-            {/if}
-          </span>
-          <span class="policy-stackable">
-            <Toggle checked={policy.stackable_with_discounts} text="Stackable" />
-          </span>
-          <span class="expand-icon">{expandedId === policy.id ? '-' : '+'}</span>
-        </button>
+    {#if pointsPolicies.length > 0}
+      <div class="category-section">
+        <div class="category-header">
+          <span class="category-label">Points Buckets</span>
+          <span class="category-badge badge-points">Points</span>
+          <span class="category-line"></span>
+        </div>
+        {#each pointsPolicies as policy (policy.id)}
+          <div class="policy-item" class:expanded={expandedId === policy.id}>
+            <button class="policy-header" onclick={() => toggleExpand(policy.id)}>
+              <span class="policy-bucket">{bucketLabel(policy.bucket_type)}</span>
+              <span class="policy-summary">
+                {#if policy.default_expiry_days !== null}
+                  {policy.default_expiry_days}d expiry
+                {:else}
+                  No expiry
+                {/if}
+              </span>
+              <span class="policy-stackable">
+                <Toggle checked={policy.stackable_with_discounts} text="Stackable" />
+              </span>
+              <span class="expand-icon">{expandedId === policy.id ? '-' : '+'}</span>
+            </button>
 
-        {#if expandedId === policy.id}
-          <div class="policy-details">
-            <div class="detail-grid">
-              <div class="detail-item">
-                <span class="detail-label">Min Redemption</span>
-                <span class="detail-value">
-                  {policy.min_redemption !== null ? policy.min_redemption : 'None'}
-                </span>
+            {#if expandedId === policy.id}
+              <div class="policy-details">
+                <div class="detail-grid">
+                  <div class="detail-item">
+                    <span class="detail-label">Min Redemption</span>
+                    <span class="detail-value">
+                      {policy.min_redemption !== null ? policy.min_redemption : 'None'}
+                    </span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">Max Per Order (%)</span>
+                    <span class="detail-value">
+                      {policy.max_per_order_pct !== null ? `${policy.max_per_order_pct}%` : 'None'}
+                    </span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">Max Per Order (cap)</span>
+                    <span class="detail-value">
+                      {policy.max_per_order_fixed !== null ? policy.max_per_order_fixed : 'None'}
+                    </span>
+                  </div>
+                </div>
+                <button class="edit-button" onclick={() => onEdit(policy)}>Edit Policy</button>
               </div>
-              <div class="detail-item">
-                <span class="detail-label">Max Per Order (%)</span>
-                <span class="detail-value">
-                  {policy.max_per_order_pct !== null ? `${policy.max_per_order_pct}%` : 'None'}
-                </span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Max Per Order (cap)</span>
-                <span class="detail-value">
-                  {policy.max_per_order_fixed !== null ? policy.max_per_order_fixed : 'None'}
-                </span>
-              </div>
-            </div>
-            <button class="edit-button" onclick={() => onEdit(policy)}>Edit Policy</button>
+            {/if}
           </div>
-        {/if}
+        {/each}
       </div>
-    {/each}
+    {/if}
+
+    {#if cashPolicies.length > 0}
+      <div class="category-section">
+        <div class="category-header">
+          <span class="category-label">Cash Buckets</span>
+          <span class="category-badge badge-cash">Cash</span>
+          <span class="category-line"></span>
+        </div>
+        {#each cashPolicies as policy (policy.id)}
+          <div class="policy-item" class:expanded={expandedId === policy.id}>
+            <button class="policy-header" onclick={() => toggleExpand(policy.id)}>
+              <span class="policy-bucket">{bucketLabel(policy.bucket_type)}</span>
+              <span class="policy-summary">
+                {#if policy.default_expiry_days !== null}
+                  {policy.default_expiry_days}d expiry
+                {:else}
+                  No expiry
+                {/if}
+              </span>
+              <span class="policy-stackable">
+                <Toggle checked={policy.stackable_with_discounts} text="Stackable" />
+              </span>
+              <span class="expand-icon">{expandedId === policy.id ? '-' : '+'}</span>
+            </button>
+
+            {#if expandedId === policy.id}
+              <div class="policy-details">
+                <div class="detail-grid">
+                  <div class="detail-item">
+                    <span class="detail-label">Min Redemption</span>
+                    <span class="detail-value">
+                      {policy.min_redemption !== null ? policy.min_redemption : 'None'}
+                    </span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">Max Per Order (%)</span>
+                    <span class="detail-value">
+                      {policy.max_per_order_pct !== null ? `${policy.max_per_order_pct}%` : 'None'}
+                    </span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">Max Per Order (cap)</span>
+                    <span class="detail-value">
+                      {policy.max_per_order_fixed !== null ? policy.max_per_order_fixed : 'None'}
+                    </span>
+                  </div>
+                </div>
+                <button class="edit-button" onclick={() => onEdit(policy)}>Edit Policy</button>
+              </div>
+            {/if}
+          </div>
+        {/each}
+      </div>
+    {/if}
   {/if}
 </div>
 
@@ -201,5 +269,50 @@
 
   .edit-button:hover {
     background: var(--color-primary-hover);
+  }
+
+  .category-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .category-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .category-label {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+  }
+
+  .category-badge {
+    font-size: 11px;
+    font-weight: var(--font-weight-semibold);
+    padding: 2px 10px;
+    border-radius: 100px;
+    white-space: nowrap;
+  }
+
+  .badge-points {
+    background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+    color: var(--color-primary);
+  }
+
+  .badge-cash {
+    background: color-mix(in srgb, var(--color-success) 12%, transparent);
+    color: var(--color-success);
+  }
+
+  .category-line {
+    flex: 1;
+    height: 1px;
+    background: var(--color-border);
   }
 </style>
