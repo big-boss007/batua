@@ -4,6 +4,20 @@ use uuid::Uuid;
 
 use crate::services::ledger::types::BucketType;
 
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::Type, PartialEq)]
+#[serde(rename_all = "snake_case")]
+#[sqlx(type_name = "text", rename_all = "snake_case")]
+pub enum CodeCreationTrigger {
+    OnRegistration,
+    OnFirstPurchase,
+}
+
+impl Default for CodeCreationTrigger {
+    fn default() -> Self {
+        Self::OnRegistration
+    }
+}
+
 #[derive(Debug, Clone, Serialize, sqlx::FromRow)]
 pub struct ReferralProgram {
     pub id: Uuid,
@@ -14,6 +28,7 @@ pub struct ReferralProgram {
     pub referee_bucket_type: BucketType,
     pub max_referrals_per_customer: Option<i32>,
     pub is_active: bool,
+    pub code_creation_trigger: CodeCreationTrigger,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -56,6 +71,7 @@ pub struct CreateProgramRequest {
     pub referrer_reward_amount: f64,
     pub referee_reward_amount: f64,
     pub max_referrals_per_customer: Option<i32>,
+    pub code_creation_trigger: Option<CodeCreationTrigger>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -64,6 +80,7 @@ pub struct UpdateProgramRequest {
     pub referee_reward_amount: Option<f64>,
     pub max_referrals_per_customer: Option<Option<i32>>,
     pub is_active: Option<bool>,
+    pub code_creation_trigger: Option<CodeCreationTrigger>,
 }
 
 #[derive(Debug, Deserialize)]

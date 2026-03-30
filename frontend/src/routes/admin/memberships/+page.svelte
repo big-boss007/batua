@@ -1,12 +1,13 @@
 <script lang="ts">
-  import { Tabs, Shimmer, Input, Select, Pagination } from '@juspay/svelte-ui-components';
+  import { Tabs, Shimmer, Input, Select, Pagination, Pill, Progress, Modal } from '@juspay/svelte-ui-components';
   import { currentMerchantId } from '$lib/client/modules/admin';
   import {
     toastStore,
     formatDateTime,
     formatDate,
     formatPhone,
-    normalizePhoneE164
+    normalizePhoneE164,
+    MODAL_CLOSE_ICON
   } from '$lib/client/modules/foundation';
   import { lookupCustomer } from '$lib/client/modules/storefront';
   import type { EnrichedMembership, MembershipStatus } from '$lib/client/modules/memberships';
@@ -399,22 +400,24 @@
       {:else}
         <div class="table-card">
           <div class="filters-bar">
-            <input
-              class="filter-input"
-              placeholder="Search by name or phone..."
+            <Input
               value={searchQuery}
-              oninput={(e) => { searchQuery = (e.target as HTMLInputElement).value; currentPage = 1; }}
+              placeholder="Search by name or phone..."
+              onInput={(val) => { searchQuery = val; currentPage = 1; }}
+              classes="filter-input"
             />
-            <select class="filter-select" onchange={(e) => { filterTier = (e.target as HTMLSelectElement).value; currentPage = 1; }}>
-              {#each tierFilterItems as item}
-                <option value={item.id} selected={filterTier === item.id}>{item.label}</option>
-              {/each}
-            </select>
-            <select class="filter-select" onchange={(e) => { filterStatus = (e.target as HTMLSelectElement).value; currentPage = 1; }}>
-              {#each statusFilterItems as item}
-                <option value={item.id} selected={filterStatus === item.id}>{item.label}</option>
-              {/each}
-            </select>
+            <Select
+              items={tierFilterItems}
+              value={[filterTier]}
+              onchange={(vals) => { filterTier = vals[0] ?? 'all'; currentPage = 1; }}
+              classes="filter-select"
+            />
+            <Select
+              items={statusFilterItems}
+              value={[filterStatus]}
+              onchange={(vals) => { filterStatus = vals[0] ?? 'all'; currentPage = 1; }}
+              classes="filter-select"
+            />
             <span class="filter-count">
               {#if filtered.length === subscribers.length}
                 {filtered.length} memberships
@@ -451,12 +454,13 @@
                         <span class="cell-phone">{formatPhone(sub.customer_phone)}</span>
                       </div>
                     </td>
-                    <td><span class="tier-badge {tierColorClass(sub.tier_name)}">{sub.tier_name}</span></td>
-                    <td><span class="mult-badge">{sub.earn_rate_multiplier}x</span></td>
+                    <td><Pill text={sub.tier_name} classes="tier-pill {tierColorClass(sub.tier_name)}" /></td>
+                    <td><Pill text="{sub.earn_rate_multiplier}x" classes="pill-neutral mult-pill" /></td>
                     <td>
-                      <span class="status-pill s-{status}">
-                        {status === 'active' ? 'Active' : status === 'expiring' ? 'Expiring Soon' : status === 'cancelled' ? 'Cancelled' : 'Expired'}
-                      </span>
+                      <Pill
+                        text={status === 'active' ? 'Active' : status === 'expiring' ? 'Expiring Soon' : status === 'cancelled' ? 'Cancelled' : 'Expired'}
+                        classes={status === 'active' ? 'pill-success' : status === 'expiring' ? 'pill-warning' : status === 'cancelled' || status === 'expired' ? 'pill-error' : 'pill-neutral'}
+                      />
                     </td>
                     <td><span class="cell-date">{formatDate(sub.started_at)}</span></td>
                     <td>
@@ -482,13 +486,7 @@
             {#if totalPages > 1}
               <div class="pagination-bar">
                 <span class="pagination-info">Showing {(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, filtered.length)} of {filtered.length} memberships</span>
-                <div class="page-btns">
-                  <button class="page-btn" disabled={currentPage <= 1} onclick={() => { currentPage = currentPage - 1; }}>‹</button>
-                  {#each Array.from({ length: totalPages }, (_, i) => i + 1) as p}
-                    <button class="page-btn" class:active={currentPage === p} onclick={() => { currentPage = p; }}>{p}</button>
-                  {/each}
-                  <button class="page-btn" disabled={currentPage >= totalPages} onclick={() => { currentPage = currentPage + 1; }}>›</button>
-                </div>
+                <Pagination {totalPages} {currentPage} onchange={(p) => { currentPage = p; }} />
               </div>
             {/if}
           {/if}
@@ -517,54 +515,55 @@
 <!-- Detail Modal                               -->
 <!-- ═══════════════════════════════════════════ -->
 {#if selectedMembership !== null}
-  {@const status = memberStatus(selectedMembership)}
-  {@const days = daysRemaining(selectedMembership.expires_at)}
-  {@const progressPct = status === 'active' || status === 'expiring' ? Math.min(100, Math.max(0, (days / 365) * 100)) : 0}
-
-  <div class="modal-overlay" onclick={closeDetail} onkeydown={(e) => { if (e.key === 'Escape') closeDetail(); }} role="button" tabindex="-1">
-    <div class="modal-panel" onclick={(e) => e.stopPropagation()} role="dialog">
-      <div class="modal-header">
-        <span class="modal-title">Membership Details</span>
-        <button class="modal-close" onclick={closeDetail}>&times;</button>
-      </div>
+  <Modal
+    size="large"
+    showOverlay={true}
+    header={{ text: 'Membership Details', rightImage: MODAL_CLOSE_ICON }}
+    onclose={closeDetail}
+    onoverlayClick={closeDetail}
+    onheaderRightImageClick={closeDetail}
+  >
+    {#snippet content()}
+      {#if selectedMembership !== null}
+      {@const ms = selectedMembership}
+      {@const st = memberStatus(ms)}
+      {@const d = daysRemaining(ms.expires_at)}
+      {@const pPct = st === 'active' || st === 'expiring' ? Math.min(100, Math.max(0, (d / 365) * 100)) : 0}
       <div class="modal-body">
-        <!-- Customer header -->
         <div class="detail-header">
           <div class="detail-customer">
-            <span class="detail-name">{selectedMembership.customer_name ?? 'Unnamed'}</span>
-            <span class="detail-phone">{formatPhone(selectedMembership.customer_phone)}</span>
+            <span class="detail-name">{ms.customer_name ?? 'Unnamed'}</span>
+            <span class="detail-phone">{formatPhone(ms.customer_phone)}</span>
           </div>
-          <span class="status-pill s-{status}">
-            {status === 'active' ? 'Active' : status === 'expiring' ? 'Expiring Soon' : status === 'cancelled' ? 'Cancelled' : 'Expired'}
-          </span>
+          <Pill
+            text={st === 'active' ? 'Active' : st === 'expiring' ? 'Expiring Soon' : st === 'cancelled' ? 'Cancelled' : 'Expired'}
+            classes={st === 'active' ? 'pill-success' : st === 'expiring' ? 'pill-warning' : st === 'cancelled' || st === 'expired' ? 'pill-error' : 'pill-neutral'}
+          />
         </div>
 
-        <!-- Expiring warning banner -->
-        {#if status === 'expiring'}
+        {#if st === 'expiring'}
           <div class="detail-banner amber">
-            <strong>Expires in {days} days.</strong> Renew to keep this customer at {selectedMembership.tier_name} with {selectedMembership.earn_rate_multiplier}x earn rate.
+            <strong>Expires in {d} days.</strong> Renew to keep this customer at {ms.tier_name} with {ms.earn_rate_multiplier}x earn rate.
           </div>
         {/if}
 
-        <!-- Cancelled banner -->
-        {#if status === 'cancelled'}
+        {#if st === 'cancelled'}
           <div class="detail-banner red">
-            Membership was cancelled on <strong>{selectedMembership.cancelled_at ? formatDate(selectedMembership.cancelled_at) : 'unknown'}</strong>. The customer has fallen back to their earned tier.
+            Membership was cancelled on <strong>{ms.cancelled_at ? formatDate(ms.cancelled_at) : 'unknown'}</strong>. The customer has fallen back to their earned tier.
           </div>
         {/if}
 
-        <!-- Detail grid -->
         <div class="detail-grid">
-          {#if status === 'cancelled'}
+          {#if st === 'cancelled'}
             <div class="detail-field">
               <span class="detail-label">Tier (was)</span>
-              <span class="detail-value strikethrough muted"><span class="tier-badge {tierColorClass(selectedMembership.tier_name)}" style="opacity: 0.5;">{selectedMembership.tier_name}</span></span>
+              <span class="detail-value strikethrough muted"><Pill text={ms.tier_name} classes="tier-pill {tierColorClass(ms.tier_name)} pill-faded" /></span>
             </div>
             <div class="detail-field">
               <span class="detail-label">Current Earned Tier</span>
               <span class="detail-value">
                 {#if selectedEarnedTier}
-                  <span class="tier-badge {tierColorClass(selectedEarnedTier)}">{selectedEarnedTier}</span>
+                  <Pill text={selectedEarnedTier} classes="tier-pill {tierColorClass(selectedEarnedTier)}" />
                 {:else}
                   <span class="muted">None</span>
                 {/if}
@@ -573,87 +572,76 @@
           {:else}
             <div class="detail-field">
               <span class="detail-label">Tier</span>
-              <span class="detail-value"><span class="tier-badge {tierColorClass(selectedMembership.tier_name)}">{selectedMembership.tier_name}</span></span>
+              <span class="detail-value"><Pill text={ms.tier_name} classes="tier-pill {tierColorClass(ms.tier_name)}" /></span>
             </div>
             <div class="detail-field">
               <span class="detail-label">Multiplier</span>
-              <span class="detail-value mono">{selectedMembership.earn_rate_multiplier}x</span>
+              <span class="detail-value mono">{ms.earn_rate_multiplier}x</span>
             </div>
           {/if}
           <div class="detail-field">
             <span class="detail-label">Started</span>
-            <span class="detail-value">{formatDate(selectedMembership.started_at)}</span>
+            <span class="detail-value">{formatDate(ms.started_at)}</span>
           </div>
           <div class="detail-field">
-            <span class="detail-label">{status === 'cancelled' ? 'Cancelled' : 'Expires'}</span>
-            <span class="detail-value" class:warn={status === 'expiring'} class:error={status === 'cancelled'}>
-              {#if status === 'cancelled'}
-                {selectedMembership.cancelled_at ? formatDate(selectedMembership.cancelled_at) : '—'}
+            <span class="detail-label">{st === 'cancelled' ? 'Cancelled' : 'Expires'}</span>
+            <span class="detail-value" class:warn={st === 'expiring'} class:error={st === 'cancelled'}>
+              {#if st === 'cancelled'}
+                {ms.cancelled_at ? formatDate(ms.cancelled_at) : '—'}
               {:else}
-                {formatDate(selectedMembership.expires_at)}
+                {formatDate(ms.expires_at)}
               {/if}
             </span>
           </div>
           <div class="detail-field">
             <span class="detail-label">Renewed</span>
-            <span class="detail-value">{selectedMembership.renewed_count} {selectedMembership.renewed_count === 1 ? 'time' : 'times'}</span>
+            <span class="detail-value">{ms.renewed_count} {ms.renewed_count === 1 ? 'time' : 'times'}</span>
           </div>
-          {#if status === 'expiring' && selectedEarnedTier}
+          {#if st === 'expiring' && selectedEarnedTier}
             <div class="detail-field">
               <span class="detail-label">Earned Tier (fallback)</span>
-              <span class="detail-value"><span class="tier-badge {tierColorClass(selectedEarnedTier)}" style="font-size: 10px;">{selectedEarnedTier}</span></span>
+              <span class="detail-value"><Pill text={selectedEarnedTier} classes="tier-pill {tierColorClass(selectedEarnedTier)} pill-sm" /></span>
             </div>
           {/if}
-          {#if status === 'cancelled'}
+          {#if st === 'cancelled'}
             <div class="detail-field">
               <span class="detail-label">Was set to expire</span>
-              <span class="detail-value strikethrough muted">{formatDate(selectedMembership.expires_at)}</span>
+              <span class="detail-value strikethrough muted">{formatDate(ms.expires_at)}</span>
             </div>
           {/if}
         </div>
 
-        <!-- Progress bar (active/expiring only) -->
-        {#if status === 'active' || status === 'expiring'}
+        {#if st === 'active' || st === 'expiring'}
           <div class="detail-progress">
             <div class="detail-progress-label">
               <span>Time remaining</span>
-              <span class="detail-progress-value" class:warn={status === 'expiring'}>{days} days left</span>
+              <span class="detail-progress-value" class:warn={st === 'expiring'}>{d} days left</span>
             </div>
-            <div class="detail-progress-bar">
-              <div
-                class="detail-progress-fill"
-                class:green={status === 'active'}
-                class:amber={status === 'expiring'}
-                style="width: {progressPct}%;"
-              ></div>
-            </div>
+            <Progress value={pPct} classes={st === 'active' ? 'progress-green' : st === 'expiring' ? 'progress-amber' : ''} />
           </div>
         {/if}
 
-        <!-- Loading status -->
         {#if detailLoading}
           <Shimmer classes="shimmer-detail" />
         {/if}
 
-        <!-- Actions -->
         <div class="detail-actions" class:actions-dimmed={modalMode !== 'default'}>
-          {#if status === 'expiring'}
+          {#if st === 'expiring'}
             <button class="action-btn action-renew" onclick={() => { modalMode = 'renew-confirm'; }}>↻ Renew for 1 Year</button>
             <button class="action-btn action-upgrade" onclick={() => { modalMode = 'upgrade'; selectedUpgradeTierId = ''; }}>⬆ Upgrade Tier</button>
             <button class="action-btn action-cancel" onclick={() => { modalMode = 'cancel-confirm'; }}>Cancel</button>
-          {:else if status === 'active'}
+          {:else if st === 'active'}
             <button class="action-btn action-upgrade" onclick={() => { modalMode = 'upgrade'; selectedUpgradeTierId = ''; }}>⬆ Upgrade Tier</button>
             <button class="action-btn action-extend" onclick={() => { modalMode = 'extend'; extendDays = 365; }}>+ Extend</button>
             <button class="action-btn action-cancel" onclick={() => { modalMode = 'cancel-confirm'; }}>Cancel Membership</button>
-          {:else if status === 'cancelled'}
+          {:else if st === 'cancelled'}
             <button class="action-btn action-upgrade" style="border-color: var(--color-primary);" onclick={() => { modalMode = 'upgrade'; selectedUpgradeTierId = ''; }}>↻ Re-assign Membership</button>
           {/if}
         </div>
 
-        <!-- Cancel confirmation -->
         {#if modalMode === 'cancel-confirm'}
           <div class="confirm-box confirm-danger">
-            <p class="confirm-text danger">Are you sure you want to cancel this membership? {selectedMembership.customer_name ?? 'This customer'} will lose their {selectedMembership.tier_name} tier ({selectedMembership.earn_rate_multiplier}x earn rate) and fall back to their earned tier. This cannot be undone.</p>
+            <p class="confirm-text danger">Are you sure you want to cancel this membership? {ms.customer_name ?? 'This customer'} will lose their {ms.tier_name} tier ({ms.earn_rate_multiplier}x earn rate) and fall back to their earned tier. This cannot be undone.</p>
             <div class="confirm-actions">
               <button class="confirm-btn confirm-btn-danger" disabled={actionLoading} onclick={async () => { actionLoading = true; await handleCancelFromDetail(); actionLoading = false; modalMode = 'default'; }}>Yes, Cancel Membership</button>
               <button class="confirm-btn confirm-btn-ghost" onclick={() => { modalMode = 'default'; }}>Keep Membership</button>
@@ -661,15 +649,14 @@
           </div>
         {/if}
 
-        <!-- Upgrade / Re-assign tier picker -->
         {#if modalMode === 'upgrade'}
-          {@const currentTierId = selectedMembership?.tier_id ?? ''}
+          {@const currentTierId = ms.tier_id ?? ''}
           {@const currentTierRank = tiers.find((t) => t.id === currentTierId)?.rank ?? 0}
           <div class="confirm-box confirm-info">
             <div class="tier-select-row">
               {#each tiers as tier (tier.id)}
-                {@const isCurrent = status !== 'cancelled' && tier.id === currentTierId}
-                {@const isLower = status !== 'cancelled' && tier.rank < currentTierRank}
+                {@const isCurrent = st !== 'cancelled' && tier.id === currentTierId}
+                {@const isLower = st !== 'cancelled' && tier.rank < currentTierRank}
                 <button
                   class="tier-option"
                   class:selected={selectedUpgradeTierId === tier.id}
@@ -683,7 +670,7 @@
               {/each}
             </div>
             <div class="confirm-actions">
-              {#if status === 'cancelled'}
+              {#if st === 'cancelled'}
                 <button class="confirm-btn confirm-btn-primary" disabled={!selectedUpgradeTierId || actionLoading} onclick={handleReassignFromDetail}>
                   Assign {tiers.find((t) => t.id === selectedUpgradeTierId)?.name ?? ''} Membership
                 </button>
@@ -697,7 +684,6 @@
           </div>
         {/if}
 
-        <!-- Extend input -->
         {#if modalMode === 'extend'}
           <div class="confirm-box confirm-success">
             <div class="extend-input-row">
@@ -713,7 +699,7 @@
               <span class="confirm-text success">days</span>
             </div>
             {#if extendDays > 0}
-              <div class="extend-preview green">New expiry: {computeExtendedExpiry(selectedMembership.expires_at, extendDays)}</div>
+              <div class="extend-preview green">New expiry: {computeExtendedExpiry(ms.expires_at, extendDays)}</div>
             {/if}
             <div class="confirm-actions">
               <button class="confirm-btn confirm-btn-success" disabled={extendDays <= 0 || actionLoading} onclick={handleExtendFromDetail}>Extend Membership</button>
@@ -722,10 +708,9 @@
           </div>
         {/if}
 
-        <!-- Renew confirmation -->
         {#if modalMode === 'renew-confirm'}
           <div class="confirm-box confirm-success">
-            <p class="confirm-text success">Renew {selectedMembership.tier_name} membership for {selectedMembership.customer_name ?? 'this customer'}? This will extend by 1 year from today. New expiry: {computeRenewExpiry()}</p>
+            <p class="confirm-text success">Renew {ms.tier_name} membership for {ms.customer_name ?? 'this customer'}? This will extend by 1 year from today. New expiry: {computeRenewExpiry()}</p>
             <div class="confirm-actions">
               <button class="confirm-btn confirm-btn-success" disabled={actionLoading} onclick={handleRenewFromDetail}>Confirm Renewal</button>
               <button class="confirm-btn confirm-btn-ghost" onclick={() => { modalMode = 'default'; }}>Not Now</button>
@@ -733,8 +718,9 @@
           </div>
         {/if}
       </div>
-    </div>
-  </div>
+      {/if}
+    {/snippet}
+  </Modal>
 {/if}
 
 <style>
@@ -772,29 +758,8 @@
     border-bottom: 1px solid var(--color-border);
   }
 
-  .filter-input {
-    flex: 1;
-    max-width: 260px;
-    padding: 8px 12px;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    font-size: var(--font-size-sm);
-    color: var(--color-text);
-    outline: none;
-    background: var(--color-surface);
-  }
-  .filter-input:focus { border-color: var(--color-primary); }
-  .filter-input::placeholder { color: var(--color-text-muted); }
-
-  .filter-select {
-    padding: 8px 12px;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    font-size: var(--font-size-sm);
-    color: var(--color-text);
-    background: var(--color-surface);
-    outline: none;
-  }
+  :global(.filter-input) { flex: 1; max-width: 260px; }
+  :global(.filter-select) { min-width: 140px; }
 
   .filter-count { font-size: var(--font-size-xs); color: var(--color-text-muted); margin-left: auto; white-space: nowrap; }
 
@@ -820,32 +785,14 @@
   .cell-name { font-weight: var(--font-weight-medium); color: var(--color-text); }
   .cell-phone { font-size: 11px; color: var(--color-text-muted); font-family: var(--font-mono); }
 
-  .tier-badge {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: var(--font-weight-semibold);
-  }
-  .t-bronze { background: #fef3c7; color: #92400e; }
-  .t-silver { background: #f3f4f6; color: #374151; }
-  .t-gold { background: #fef9c3; color: #854d0e; }
-  .t-plat { background: #ede9fe; color: #5b21b6; }
-  .t-default { background: var(--color-surface-2); color: var(--color-text); }
-
-  .status-pill {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: var(--font-weight-semibold);
-  }
-  .s-active { background: #d1fae5; color: #065f46; }
-  .s-expiring { background: #fef3c7; color: #92400e; }
-  .s-cancelled { background: #fee2e2; color: #991b1b; }
-  .s-expired { background: #f3f4f6; color: #6b7280; }
-
-  .mult-badge { font-size: 11px; font-weight: var(--font-weight-semibold); color: var(--color-text-muted); font-family: var(--font-mono); }
+  :global(.tier-pill.t-bronze) { --pill-bg: #fef3c7; --pill-color: #92400e; }
+  :global(.tier-pill.t-silver) { --pill-bg: #f3f4f6; --pill-color: #374151; }
+  :global(.tier-pill.t-gold) { --pill-bg: #fef9c3; --pill-color: #854d0e; }
+  :global(.tier-pill.t-plat) { --pill-bg: #ede9fe; --pill-color: #5b21b6; }
+  :global(.tier-pill.t-default) { --pill-bg: var(--color-surface-2); --pill-color: var(--color-text); }
+  :global(.tier-pill.pill-faded) { opacity: 0.5; }
+  :global(.tier-pill.pill-sm) { font-size: 10px; }
+  :global(.mult-pill) { font-family: var(--font-mono); }
   .cell-date { font-size: var(--font-size-xs); color: var(--color-text); }
   .cell-sub { font-size: 11px; color: var(--color-text-muted); }
   .cell-sub.warn, .cell-date.warn { color: #f59e0b; font-weight: var(--font-weight-medium); }
@@ -855,7 +802,6 @@
   .error { color: #ef4444; }
   .mono { font-family: var(--font-mono); }
 
-  /* ── Pagination ── */
   .pagination-bar {
     display: flex;
     align-items: center;
@@ -866,17 +812,6 @@
     color: var(--color-text-muted);
   }
   .pagination-info { font-size: var(--font-size-xs); }
-  .page-btns { display: flex; gap: 4px; }
-  .page-btn {
-    width: 28px; height: 28px;
-    display: flex; align-items: center; justify-content: center;
-    border: 1px solid var(--color-border); border-radius: 6px;
-    background: var(--color-surface); cursor: pointer;
-    font-size: var(--font-size-xs); color: var(--color-text);
-  }
-  .page-btn.active { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
-  .page-btn:hover:not(.active) { background: var(--color-surface-2); }
-  .page-btn:disabled { opacity: 0.4; cursor: default; }
 
   /* ── Empty state ── */
   .empty-state {
@@ -895,26 +830,6 @@
   :global(.shimmer-table) { --shimmer-width: 100%; --shimmer-height: 48px; --shimmer-border-radius: 8px; }
   :global(.shimmer-detail) { --shimmer-width: 100%; --shimmer-height: 60px; --shimmer-border-radius: 8px; }
 
-  /* ── Modal ── */
-  .modal-overlay {
-    position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4);
-    display: flex; align-items: center; justify-content: center; z-index: var(--z-modal, 400);
-  }
-  .modal-panel {
-    background: var(--color-bg); border-radius: var(--radius-lg);
-    width: 520px; max-width: 90vw; max-height: 85vh;
-    box-shadow: var(--shadow-lg); display: flex; flex-direction: column;
-  }
-  .modal-header {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: var(--space-4) var(--space-5); border-bottom: 1px solid var(--color-border);
-  }
-  .modal-title { font-size: var(--font-size-md); font-weight: var(--font-weight-semibold); color: var(--color-text); }
-  .modal-close {
-    background: none; border: none; font-size: 20px; color: var(--color-text-muted);
-    cursor: pointer; padding: 2px 6px; border-radius: var(--radius-sm); line-height: 1;
-  }
-  .modal-close:hover { color: var(--color-text); background: var(--color-surface-2); }
   .modal-body { padding: var(--space-5); overflow-y: auto; flex: 1; }
 
   /* ── Detail modal content ── */
@@ -948,10 +863,8 @@
   }
   .detail-progress-value { font-weight: var(--font-weight-medium); color: var(--color-text); }
   .detail-progress-value.warn { color: #f59e0b; }
-  .detail-progress-bar { height: 6px; border-radius: 3px; background: var(--color-border); overflow: hidden; }
-  .detail-progress-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
-  .detail-progress-fill.green { background: #22c55e; }
-  .detail-progress-fill.amber { background: #f59e0b; }
+  :global(.progress-green) { --progress-fill-color: #22c55e; }
+  :global(.progress-amber) { --progress-fill-color: #f59e0b; }
 
   .detail-actions { display: flex; gap: 8px; flex-wrap: wrap; }
   .action-btn {

@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Rule, RulePerformance, RewardRuleConfig } from '$lib/client/modules/rules';
-  import { Button } from '@juspay/svelte-ui-components';
+  import { Button, Pill, Modal, Toggle } from '@juspay/svelte-ui-components';
+
   import {
     rulesStore,
     selectedRuleStore,
@@ -10,7 +11,7 @@
     fetchRulePerformance
   } from '$lib/client/modules/rules';
   import { currentMerchantId } from '$lib/client/modules/admin';
-  import { toastStore, formatCurrencyINR } from '$lib/client/modules/foundation';
+  import { toastStore, formatCurrencyINR, MODAL_CLOSE_ICON } from '$lib/client/modules/foundation';
   import { RulesList, RuleForm } from '$lib/client/modules/rules/ui';
 
   rulesStore.set([]);
@@ -160,22 +161,18 @@
                   {/if}
                 </div>
                 <div class="rule-meta">
-                  <span class="rule-type-badge">{rule.rule_type}</span>
+                  <Pill text={rule.rule_type} classes="pill-info" />
                   <span class="rule-event">{rule.config.event_type}</span>
                   <span class="rule-version">v{rule.version}</span>
-                  <span
-                    class="rule-status"
-                    class:status-active={rule.is_active}
-                    class:status-inactive={!rule.is_active}
-                  >
-                    {rule.is_active ? 'Active' : 'Inactive'}
-                  </span>
+                  <Pill text={rule.is_active ? 'Active' : 'Inactive'} classes={rule.is_active ? 'pill-success' : 'pill-neutral'} />
                 </div>
               </button>
               <div class="rule-actions">
-                <button class="toggle-btn" onclick={() => handleToggle(rule)}>
-                  {rule.is_active ? 'Deactivate' : 'Activate'}
-                </button>
+                <Toggle
+                  checked={rule.is_active}
+                  classes="rule-toggle"
+                  onclick={() => handleToggle(rule)}
+                />
               </div>
             </div>
           {/each}
@@ -185,82 +182,18 @@
   {/if}
 
   {#if showForm}
-    <div class="modal-overlay" onclick={closeForm} onkeydown={(e) => { if (e.key === 'Escape') closeForm(); }} role="button" tabindex="-1">
-      <div class="modal-card" onclick={(e) => e.stopPropagation()} role="dialog">
-        <div class="modal-header">
-          <h3 class="modal-title">{editingRule ? 'Edit Rule' : 'New Rule'}</h3>
-          <button class="modal-close" onclick={closeForm}>&times;</button>
-        </div>
-        <div class="modal-body">
-          <RuleForm rule={editingRule} onSave={handleSave} onCancel={closeForm} />
-        </div>
-      </div>
-    </div>
+    <Modal header={{ text: editingRule ? 'Edit Rule' : 'New Rule', rightImage: MODAL_CLOSE_ICON }} size="fit-content" onclose={closeForm} onoverlayClick={closeForm} onheaderRightImageClick={closeForm}>
+      {#snippet content()}
+        <RuleForm rule={editingRule} onSave={handleSave} onCancel={closeForm} />
+      {/snippet}
+    </Modal>
   {/if}
 </div>
 
 <style>
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: var(--z-modal, 400);
-  }
-
-  .modal-card {
-    background: var(--color-bg);
-    border-radius: var(--radius-lg);
-    width: 620px;
-    max-width: 90vw;
-    max-height: 85vh;
-    display: flex;
-    flex-direction: column;
-    box-shadow: var(--shadow-lg);
-  }
-
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--space-4) var(--space-6);
-    border-bottom: 1px solid var(--color-border);
-    flex-shrink: 0;
-  }
-
-  .modal-title {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
-  }
-
-  .modal-close {
-    background: none;
-    border: none;
-    font-size: var(--font-size-xl);
-    color: var(--color-text-muted);
-    cursor: pointer;
-    padding: var(--space-1) var(--space-2);
-    border-radius: var(--radius-sm);
-    line-height: 1;
-  }
-
-  .modal-close:hover {
-    color: var(--color-text);
-    background: var(--color-surface-2);
-  }
-
-  .modal-body {
-    overflow-y: auto;
-    flex: 1;
-  }
-
   .rules-page {
     max-width: 1200px;
     margin: 0 auto;
-    padding: var(--space-6) var(--space-8);
   }
 
   .page-header {
@@ -311,7 +244,7 @@
   }
 
   .rule-row:hover {
-    background: var(--color-surface);
+    background: var(--color-surface-2);
   }
 
   .rule-row-main {
@@ -353,15 +286,6 @@
     flex-shrink: 0;
   }
 
-  .rule-type-badge {
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-medium);
-    color: var(--color-info);
-    background: color-mix(in srgb, var(--color-info) 12%, transparent);
-    padding: var(--space-1) var(--space-2);
-    border-radius: var(--radius-full);
-  }
-
   .rule-event {
     font-size: var(--font-size-xs);
     color: var(--color-text-muted);
@@ -373,44 +297,17 @@
     font-family: var(--font-mono);
   }
 
-  .rule-status {
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-semibold);
-    padding: var(--space-1) var(--space-2);
-    border-radius: var(--radius-full);
-  }
-
-  .status-active {
-    color: var(--color-success);
-    background: color-mix(in srgb, var(--color-success) 12%, transparent);
-  }
-
-  .status-inactive {
-    color: var(--color-text-muted);
-    background: var(--color-surface-2);
-  }
-
   .rule-actions {
     padding-right: var(--space-4);
   }
 
-  .toggle-btn {
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-medium);
-    color: var(--color-text-muted);
-    background: none;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: var(--space-1) var(--space-3);
-    cursor: pointer;
-    transition:
-      color var(--transition-fast),
-      border-color var(--transition-fast);
-  }
-
-  .toggle-btn:hover {
-    color: var(--color-text);
-    border-color: var(--color-text-muted);
+  :global(.rule-toggle) {
+    --slider-checked-color: var(--color-primary);
+    --slider-unchecked-color: var(--color-border);
+    --toggle-switch-width: 36px;
+    --toggle-switch-height: 20px;
+    --toggle-ball-width: 16px;
+    --toggle-ball-height: 16px;
   }
 
   .empty-state {

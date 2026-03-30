@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { Table, Pagination, Shimmer } from '@juspay/svelte-ui-components';
+  import { Table, Pagination, Shimmer, Modal } from '@juspay/svelte-ui-components';
+  import type { Snippet } from 'svelte';
   import type {
     Customer,
     CustomerDetail as CustomerDetailType,
@@ -8,7 +9,7 @@
   import { getCustomerDetail, fetchMerchantCustomers } from '$lib/client/modules/customers';
   import { currentMerchant, currentMerchantId } from '$lib/client/modules/admin';
   import type { Merchant } from '$lib/client/modules/admin';
-  import { toastStore, formatDate, formatPhone } from '$lib/client/modules/foundation';
+  import { toastStore, formatDate, formatPhone, MODAL_CLOSE_ICON } from '$lib/client/modules/foundation';
   import { CustomerDetail } from '$lib/client/modules/customers/ui';
 
   let selectedDetail = $state<CustomerDetailType | null>(null);
@@ -170,26 +171,20 @@
     </div>
 
     {#if loadingDetail || selectedDetail !== null}
-      <div class="modal-overlay" onclick={handleCloseDetail} onkeydown={(e) => { if (e.key === 'Escape') handleCloseDetail(); }} role="button" tabindex="-1">
-        <div class="modal-card" onclick={(e) => e.stopPropagation()} role="dialog">
-          <div class="modal-header">
-            <h3 class="modal-title">Customer Detail</h3>
-            <button class="modal-close" onclick={handleCloseDetail}>&times;</button>
-          </div>
-          <div class="modal-body">
-            {#if loadingDetail}
-              <div class="shimmer-detail">
-                <Shimmer classes="shimmer-detail-header" />
-                <Shimmer classes="shimmer-row" />
-                <Shimmer classes="shimmer-row" />
-                <Shimmer classes="shimmer-row" />
-              </div>
-            {:else if selectedDetail}
-              <CustomerDetail detail={selectedDetail} pointsIcon={merchant?.points_icon ?? '★'} pointsRate={merchant?.points_to_currency_rate ?? 1.0} />
-            {/if}
-          </div>
-        </div>
-      </div>
+      <Modal header={{ text: 'Customer Detail', rightImage: MODAL_CLOSE_ICON }} size="fit-content" onclose={handleCloseDetail} onoverlayClick={handleCloseDetail} onheaderRightImageClick={handleCloseDetail}>
+        {#snippet content()}
+          {#if loadingDetail}
+            <div class="shimmer-detail">
+              <Shimmer classes="shimmer-detail-header" />
+              <Shimmer classes="shimmer-row" />
+              <Shimmer classes="shimmer-row" />
+              <Shimmer classes="shimmer-row" />
+            </div>
+          {:else if selectedDetail}
+            <CustomerDetail detail={selectedDetail} pointsIcon={merchant?.points_icon ?? '★'} pointsRate={merchant?.points_to_currency_rate ?? 1.0} />
+          {/if}
+        {/snippet}
+      </Modal>
     {/if}
   {/if}
 </div>
@@ -252,64 +247,6 @@
     outline: none;
     border-color: var(--color-primary);
     box-shadow: 0 0 0 2px rgba(124, 106, 255, 0.15);
-  }
-
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: var(--z-modal, 400);
-  }
-
-  .modal-card {
-    background: var(--color-bg);
-    border-radius: var(--radius-lg);
-    width: 600px;
-    max-width: 90vw;
-    max-height: 85vh;
-    display: flex;
-    flex-direction: column;
-    box-shadow: var(--shadow-lg);
-  }
-
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--space-4) var(--space-6);
-    border-bottom: 1px solid var(--color-border);
-    flex-shrink: 0;
-  }
-
-  .modal-title {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
-  }
-
-  .modal-close {
-    background: none;
-    border: none;
-    font-size: var(--font-size-xl);
-    color: var(--color-text-muted);
-    cursor: pointer;
-    padding: var(--space-1) var(--space-2);
-    border-radius: var(--radius-sm);
-    line-height: 1;
-  }
-
-  .modal-close:hover {
-    color: var(--color-text);
-    background: var(--color-surface-2);
-  }
-
-  .modal-body {
-    padding: var(--space-6);
-    overflow-y: auto;
-    flex: 1;
   }
 
   .pagination-wrapper {

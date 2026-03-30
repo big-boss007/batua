@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { Button } from '@juspay/svelte-ui-components';
+  import { Button, Modal } from '@juspay/svelte-ui-components';
 
   import type { GiftCard } from '$lib/client/modules/gift-cards';
-  import { formatCurrencyINR, formatDate } from '$lib/client/modules/foundation';
+  import { formatCurrencyINR, formatDate, MODAL_CLOSE_ICON } from '$lib/client/modules/foundation';
 
   let {
     amount,
@@ -64,10 +64,13 @@
   }
 </script>
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
-<div class="overlay" onclick={issuedCard === null ? onCancel : undefined}>
-  <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div class="modal" onclick={(e) => e.stopPropagation()}>
+<Modal
+  size="fit-content"
+  onclose={onCancel}
+  onoverlayClick={issuedCard === null ? onCancel : undefined}
+  classes="gc-confirmation-modal"
+>
+  {#snippet content()}
     {#if issuedCard === null}
       <h2 class="modal-title">Confirm Gift Card</h2>
       <p class="modal-subtitle">Review before issuing</p>
@@ -143,31 +146,18 @@
         <Button text="Done" classes="btn-confirm" onclick={onCancel} />
       {/if}
     </div>
-  </div>
-</div>
+  {/snippet}
+</Modal>
 
 <style>
-  .overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
+  :global(.gc-confirmation-modal) {
+    --modal-max-width: 500px;
   }
 
-  .modal {
-    background: var(--color-bg);
-    border-radius: var(--radius-lg);
-    padding: var(--space-6);
-    display: flex;
+  :global(.gc-confirmation-modal .slot-content) {
     flex-direction: column;
     align-items: center;
     gap: var(--space-5);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    max-width: 500px;
-    width: 100%;
   }
 
   .modal-title {

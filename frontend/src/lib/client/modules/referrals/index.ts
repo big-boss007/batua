@@ -1,4 +1,4 @@
-export type { ReferralProgram, ReferralCode, ReferralAnalytics, ReferralConversion } from './types';
+export type { ReferralProgram, ReferralCode, ReferralAnalytics, ReferralConversion, CodeCreationTrigger } from './types';
 
 export { referralProgram, referralCodes } from './store';
 export {

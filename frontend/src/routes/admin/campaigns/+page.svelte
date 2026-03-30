@@ -18,6 +18,7 @@
     getCampaignConfig,
     updateCampaignConfig
   } from '$lib/client/modules/rules';
+  import { Button } from '@juspay/svelte-ui-components';
   import { currentMerchantId } from '$lib/client/modules/admin';
   import { toastStore } from '$lib/client/modules/foundation';
   import {
@@ -145,7 +146,10 @@
 </svelte:head>
 
 <div class="campaigns-page">
-  <p class="page-desc">Boost engagement with festive and seasonal reward campaigns</p>
+  <header class="page-header">
+    <h1 class="page-title">Campaigns</h1>
+    <p class="page-subtitle">Boost engagement with festive and seasonal reward campaigns</p>
+  </header>
 
   {#if activeCampaign !== null && activeCampaign.multiplier !== null}
     <div class="earn-banner-wrapper">
@@ -162,8 +166,8 @@
     <div class="section-header">
       <h2 class="section-title">Active & Upcoming Campaigns</h2>
       <div class="section-actions">
-        <button class="btn btn-secondary btn-sm" onclick={() => { showSettingsModal = true; }}>Settings</button>
-        <button class="btn btn-primary btn-sm" onclick={() => { showCreateModal = true; }}>+ Create Campaign</button>
+        <Button text="Settings" classes="btn-secondary btn-sm" onclick={() => { showSettingsModal = true; }} />
+        <Button text="+ Create Campaign" classes="btn-primary btn-sm" onclick={() => { showCreateModal = true; }} />
       </div>
     </div>
     <CampaignsList campaigns={$campaignsStore} {rules} onSelect={handleSelectCampaign} />
@@ -227,13 +231,24 @@
   .campaigns-page {
     max-width: 1200px;
     margin: 0 auto;
-    padding: var(--space-6) var(--space-8);
   }
 
-  .page-desc {
+  .page-header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    margin-bottom: var(--space-5);
+  }
+
+  .page-title {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+  }
+
+  .page-subtitle {
     font-size: var(--font-size-sm);
     color: var(--color-text-muted);
-    margin-bottom: var(--space-5);
   }
 
   .earn-banner-wrapper {
@@ -268,37 +283,28 @@
     margin-bottom: var(--space-4);
   }
 
-  .btn {
-    padding: var(--space-2) var(--space-4);
-    border-radius: var(--radius-md);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    border: none;
-    font-family: inherit;
+  :global(.btn-primary) {
+    --button-color: var(--color-primary);
+    --button-text-color: #ffffff;
+    --button-border-radius: var(--radius-md);
+    --button-font-size: var(--font-size-sm);
+    --button-font-weight: var(--font-weight-medium);
+    --button-hover-color: var(--color-primary-hover);
   }
 
-  .btn-primary {
-    background: var(--color-primary);
-    color: white;
+  :global(.btn-secondary) {
+    --button-color: var(--color-surface);
+    --button-text-color: var(--color-text);
+    --button-border: 1px solid var(--color-border);
+    --button-border-radius: var(--radius-md);
+    --button-font-size: var(--font-size-sm);
+    --button-font-weight: var(--font-weight-medium);
+    --button-hover-color: var(--color-surface-2);
   }
 
-  .btn-primary:hover { background: var(--color-primary-hover); }
-
-  .btn-secondary {
-    background: var(--color-surface);
-    color: var(--color-text);
-    border: 1px solid var(--color-border);
-  }
-
-  .btn-secondary:hover { background: var(--color-surface-2); }
-
-  .btn-sm {
-    padding: var(--space-1) var(--space-3);
-    font-size: var(--font-size-sm);
+  :global(.btn-sm) {
+    --button-padding: var(--space-1) var(--space-3);
+    --button-font-size: var(--font-size-sm);
   }
 
   .modal-overlay {

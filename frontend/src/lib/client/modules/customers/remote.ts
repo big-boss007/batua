@@ -271,8 +271,8 @@ async function getCustomerDetail(
       const r = refResult.data;
       referral = {
         code: (r['code'] as string) ?? null,
-        referrals_made: (r['conversions'] as number) ?? 0,
-        rewards_earned: (r['total_reward_value'] as number) ?? 0
+        referrals_made: (r['total_conversions'] as number) ?? 0,
+        rewards_earned: (r['total_referrals'] as number) ?? 0
       };
     }
   } catch {

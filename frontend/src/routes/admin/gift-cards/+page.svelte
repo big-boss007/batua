@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Tabs, Table, Pill, Shimmer } from '@juspay/svelte-ui-components';
+  import { Tabs, Table, Pill, Shimmer, Modal } from '@juspay/svelte-ui-components';
 
   import type { GiftCard, GiftCardStats, BulkIssueInput } from '$lib/client/modules/gift-cards';
   import {
@@ -16,7 +16,8 @@
     GiftCardConfirmation
   } from '$lib/client/modules/gift-cards/ui';
   import { currentMerchant, currentMerchantId } from '$lib/client/modules/admin';
-  import { toastStore, formatCurrencyINR, formatDateTime } from '$lib/client/modules/foundation';
+  import { MetricCard } from '$lib/client/modules/admin/ui';
+  import { toastStore, formatCurrencyINR, formatDateTime, MODAL_CLOSE_ICON } from '$lib/client/modules/foundation';
 
   let cards = $state<Array<GiftCard>>([]);
   let selectedCard = $state<GiftCard | null>(null);
@@ -38,11 +39,15 @@
   const TABLE_HEADERS = ['Code', 'Amount', 'Balance', 'Status', 'Created'];
 
   const STATUS_PILL_CLASS: Record<string, string> = {
-    active: 'pill-gc-success',
-    claimed: 'pill-gc-info',
-    expired: 'pill-gc-warning',
-    inactive: 'pill-gc-neutral'
+    active: 'pill-success',
+    claimed: 'pill-info',
+    expired: 'pill-warning',
+    inactive: 'pill-neutral'
   };
+
+  function capitalize(s: string): string {
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
 
   function cardStatus(card: GiftCard): string {
     if (!card.is_active) return 'inactive';
@@ -169,15 +174,13 @@
 <div class="page">
   <header class="page-header">
     <h1 class="page-title">Gift Cards</h1>
+    <p class="page-subtitle">Issue and manage gift cards for your customers</p>
   </header>
 
   {#if statCards.length > 0}
     <div class="stats-row">
       {#each statCards as stat (stat.label)}
-        <div class="stat-card">
-          <span class="stat-value">{stat.value}</span>
-          <span class="stat-label">{stat.label}</span>
-        </div>
+        <MetricCard label={stat.label} displayValue={stat.value} size="compact" />
       {/each}
     </div>
   {/if}
@@ -213,7 +216,7 @@
               <code class="code-cell">{value}</code>
             {:else if colIndex === 3}
               <Pill
-                text={String(value)}
+                text={capitalize(String(value))}
                 classes={STATUS_PILL_CLASS[String(value)] ?? ''}
               />
             {:else}
@@ -228,17 +231,18 @@
     </div>
 
     {#if selectedCard !== null}
-      <div class="modal-overlay" onclick={handleCloseDetail} onkeydown={(e) => { if (e.key === 'Escape') handleCloseDetail(); }} role="button" tabindex="-1">
-        <div class="modal-card" onclick={(e) => e.stopPropagation()} role="dialog">
-          <div class="modal-header">
-            <h3 class="modal-title">Gift Card Detail</h3>
-            <button class="modal-close" onclick={handleCloseDetail}>&times;</button>
-          </div>
-          <div class="modal-body">
-            <GiftCardDetail card={selectedCard} />
-          </div>
-        </div>
-      </div>
+      {@const card = selectedCard}
+      <Modal
+        header={{ text: 'Gift Card Detail', rightImage: MODAL_CLOSE_ICON }}
+        size="fit-content"
+        onclose={handleCloseDetail}
+        onoverlayClick={handleCloseDetail}
+        onheaderRightImageClick={handleCloseDetail}
+      >
+        {#snippet content()}
+          <GiftCardDetail card={card} />
+        {/snippet}
+      </Modal>
     {/if}
   {:else if activeTab === 'issue'}
     <div class="form-section">
@@ -269,13 +273,12 @@
     flex-direction: column;
     gap: var(--space-6);
     width: 100%;
-    padding: var(--space-8);
   }
 
   .page-header {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: var(--space-1);
   }
 
   .page-title {
@@ -284,39 +287,15 @@
     color: var(--color-text);
   }
 
+  .page-subtitle {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+  }
+
   .stats-row {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: var(--space-3);
-  }
-
-  .stat-card {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-1);
-    padding: var(--space-4) var(--space-5);
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
-    transition: box-shadow var(--transition-fast);
-  }
-
-  .stat-card:hover {
-    box-shadow: var(--shadow-md);
-  }
-
-  .stat-value {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
-    line-height: var(--line-height-tight);
-  }
-
-  .stat-label {
-    font-size: var(--font-size-xs);
-    color: var(--color-text-muted);
-    font-weight: var(--font-weight-medium);
   }
 
   .cards-list {
@@ -340,64 +319,6 @@
     padding: var(--space-8);
   }
 
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: var(--z-modal, 400);
-  }
-
-  .modal-card {
-    background: var(--color-bg);
-    border-radius: var(--radius-lg);
-    width: 560px;
-    max-width: 90vw;
-    max-height: 85vh;
-    display: flex;
-    flex-direction: column;
-    box-shadow: var(--shadow-lg);
-  }
-
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--space-4) var(--space-6);
-    border-bottom: 1px solid var(--color-border);
-    flex-shrink: 0;
-  }
-
-  .modal-title {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
-  }
-
-  .modal-close {
-    background: none;
-    border: none;
-    font-size: var(--font-size-xl);
-    color: var(--color-text-muted);
-    cursor: pointer;
-    padding: var(--space-1) var(--space-2);
-    border-radius: var(--radius-sm);
-    line-height: 1;
-  }
-
-  .modal-close:hover {
-    color: var(--color-text);
-    background: var(--color-surface-2);
-  }
-
-  .modal-body {
-    padding: var(--space-6);
-    overflow-y: auto;
-    flex: 1;
-  }
-
   .form-section {
     max-width: 480px;
   }
@@ -415,24 +336,5 @@
     --shimmer-border-radius: 4px;
   }
 
-  :global(.pill-gc-success) {
-    --pill-color: var(--color-success);
-    --pill-bg: color-mix(in srgb, var(--color-success) 12%, transparent);
-  }
-
-  :global(.pill-gc-info) {
-    --pill-color: var(--color-info, #3b82f6);
-    --pill-bg: color-mix(in srgb, var(--color-info, #3b82f6) 12%, transparent);
-  }
-
-  :global(.pill-gc-warning) {
-    --pill-color: var(--color-warning, #f59e0b);
-    --pill-bg: color-mix(in srgb, var(--color-warning, #f59e0b) 12%, transparent);
-  }
-
-  :global(.pill-gc-neutral) {
-    --pill-color: var(--color-text-muted);
-    --pill-bg: var(--color-surface-2);
-  }
 
 </style>

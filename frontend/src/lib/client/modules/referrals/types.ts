@@ -1,9 +1,12 @@
+export type CodeCreationTrigger = 'on_registration' | 'on_first_purchase';
+
 export type ReferralProgram = {
   id: string;
   referrer_reward_amount: number;
   referee_reward_amount: number;
   max_referrals_per_customer: number | null;
   is_active: boolean;
+  code_creation_trigger: CodeCreationTrigger;
 };
 
 export type ReferralCode = {

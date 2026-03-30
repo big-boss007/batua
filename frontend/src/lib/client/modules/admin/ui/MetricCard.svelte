@@ -4,8 +4,10 @@
 
   let {
     label,
-    value,
+    value = 0,
+    displayValue = null,
     metricType = 'number',
+    size = 'default',
     icon = null,
     pointsIcon = 'pts',
     pointsRate = 1.0,
@@ -14,8 +16,10 @@
     subColor = null
   }: {
     label: string;
-    value: number;
+    value?: number;
+    displayValue?: string | null;
     metricType?: MetricType;
+    size?: 'default' | 'compact';
     icon?: string | null;
     pointsIcon?: string;
     pointsRate?: number;
@@ -25,6 +29,7 @@
   } = $props();
 
   let formattedValue = $derived.by(() => {
+    if (displayValue !== null) return displayValue;
     if (metricType === 'points') {
       const pts = pointsRate > 0 ? Math.round(value / pointsRate) : value;
       return `${pts.toLocaleString('en-IN')} ${pointsIcon}`;
@@ -39,7 +44,7 @@
   });
 </script>
 
-<div class="metric-card">
+<div class="metric-card" class:compact={size === 'compact'}>
   {#if icon}
     <span class="metric-icon">{icon}</span>
   {/if}
@@ -67,6 +72,25 @@
 
   .metric-card:hover {
     box-shadow: var(--shadow-md);
+  }
+
+  .metric-card.compact {
+    padding: var(--space-4);
+    gap: var(--space-3);
+  }
+
+  .metric-card.compact .metric-value {
+    font-size: var(--font-size-xl);
+  }
+
+  .metric-card.compact .metric-label {
+    font-size: var(--font-size-xs);
+  }
+
+  .metric-card.compact .metric-icon {
+    width: 32px;
+    height: 32px;
+    font-size: var(--font-size-md);
   }
 
   .metric-icon {

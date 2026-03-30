@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { Table, Pill, Select, Pagination, Shimmer } from '@juspay/svelte-ui-components';
+  import { Table, Pill, Select, Pagination, Shimmer, Modal } from '@juspay/svelte-ui-components';
+  import type { Snippet } from 'svelte';
   import type {
     MerchantTransactionRow,
     LedgerEntryDetail
@@ -19,7 +20,8 @@
     formatDateTime,
     formatPhone,
     formatPoints,
-    isPointsBucket
+    isPointsBucket,
+    MODAL_CLOSE_ICON
   } from '$lib/client/modules/foundation';
 
   const BUCKET_TYPES = ['earned_credit', 'cod_pending', 'gift_card', 'customer_funded', 'referral_reward', 'goodwill_credit', 'membership_benefit', 'refund_credit'];
@@ -321,239 +323,176 @@
       </div>
 
       {#if loadingDetail || selectedEntry !== null}
-        <div class="modal-overlay" onclick={handleCloseDetail} onkeydown={(e) => { if (e.key === 'Escape') handleCloseDetail(); }} role="button" tabindex="-1">
-          <div class="modal-card" onclick={(e) => e.stopPropagation()} role="dialog">
-            <div class="modal-header">
-              <h3 class="modal-title">Transaction Detail</h3>
-              <button class="modal-close" onclick={handleCloseDetail}>&times;</button>
-            </div>
-            <div class="modal-body">
-          {#if loadingDetail}
-            <div class="shimmer-detail">
-              <Shimmer classes="shimmer-detail-header" />
-              <Shimmer classes="shimmer-row" />
-              <Shimmer classes="shimmer-row" />
-              <Shimmer classes="shimmer-row" />
-              <Shimmer classes="shimmer-row" />
-            </div>
-          {:else if selectedEntry}
-            <div class="detail-body">
-              <div class="detail-amount">
-                <Pill
-                  text={formatMovementType(selectedEntry.movement_type).label}
-                  classes={movementPillClass(selectedEntry.movement_type)}
-                />
-                <span class="amount">{formatCurrencyINR(selectedEntry.currency_equivalent)}</span>
+        <Modal header={{ text: 'Transaction Detail', rightImage: MODAL_CLOSE_ICON }} size="fit-content" onclose={handleCloseDetail} onoverlayClick={handleCloseDetail} onheaderRightImageClick={handleCloseDetail}>
+          {#snippet content()}
+            {#if loadingDetail}
+              <div class="shimmer-detail">
+                <Shimmer classes="shimmer-detail-header" />
+                <Shimmer classes="shimmer-row" />
+                <Shimmer classes="shimmer-row" />
+                <Shimmer classes="shimmer-row" />
+                <Shimmer classes="shimmer-row" />
               </div>
-
-              {#if selectedEntry.customer_name !== null}
-                <div class="detail-row">
-                  <span class="label">Customer</span>
-                  <span class="value">{selectedEntry.customer_name}</span>
-                </div>
-              {/if}
-              {#if selectedEntry.customer_phone !== null}
-                <div class="detail-row">
-                  <span class="label">Phone</span>
-                  <span class="value mono">{formatPhone(selectedEntry.customer_phone)}</span>
-                </div>
-              {/if}
-              {#if selectedEntry.customer_email !== null}
-                <div class="detail-row">
-                  <span class="label">Email</span>
-                  <span class="value">{selectedEntry.customer_email}</span>
-                </div>
-              {/if}
-
-              <div class="detail-row">
-                <span class="label">Bucket</span>
-                <span class="value">
-                  <Pill text={formatBucketType(selectedEntry.bucket_type)} classes="pill-neutral" />
-                </span>
-              </div>
-
-              <div class="detail-row">
-                <span class="label">State</span>
-                <span class="value">
+            {:else if selectedEntry}
+              <div class="detail-body">
+                <div class="detail-amount">
                   <Pill
-                    text={formatState(selectedEntry.state).label}
-                    classes={statePillClass(selectedEntry.state)}
+                    text={formatMovementType(selectedEntry.movement_type).label}
+                    classes={movementPillClass(selectedEntry.movement_type)}
                   />
-                </span>
-              </div>
-
-              <h4 class="section-heading">Cause</h4>
-
-              {#if selectedEntry.event_type !== null}
-                <div class="detail-row">
-                  <span class="label">Event</span>
-                  <span class="value">{selectedEntry.event_type}</span>
-                </div>
-              {/if}
-
-              {#if selectedEntry.rule_name !== null}
-                <div class="detail-row">
-                  <span class="label">Rule</span>
-                  <span class="value">{selectedEntry.rule_name}</span>
-                </div>
-              {/if}
-
-              {#if selectedEntry.campaign_name !== null}
-                <div class="detail-row">
-                  <span class="label">Campaign</span>
-                  <span class="value">{selectedEntry.campaign_name}</span>
-                </div>
-              {/if}
-
-              <div class="detail-row">
-                <span class="label">Actor</span>
-                <span class="value"
-                  >{selectedEntry.actor_type}{selectedEntry.actor_id !== null
-                    ? ` (${selectedEntry.actor_id})`
-                    : ''}</span
-                >
-              </div>
-
-              {#if selectedEntry.payment_reference !== null}
-                <div class="detail-row">
-                  <span class="label">Payment Ref</span>
-                  <span class="value mono">{selectedEntry.payment_reference}</span>
-                </div>
-              {/if}
-
-              <h4 class="section-heading">Amounts</h4>
-
-              <div class="detail-row">
-                <span class="label">Earning Unit</span>
-                <span class="value">{selectedEntry.earning_unit}</span>
-              </div>
-
-              <div class="detail-row">
-                <span class="label">Currency Equivalent</span>
-                <span class="value">{formatCurrencyINR(selectedEntry.currency_equivalent)}</span>
-              </div>
-
-              <div class="detail-row">
-                <span class="label">Conversion Rate</span>
-                <span class="value">{selectedEntry.conversion_rate}</span>
-              </div>
-
-              {#if selectedEntry.transfer_id !== null}
-                <h4 class="section-heading">Transfer</h4>
-
-                <div class="detail-row">
-                  <span class="label">Transfer ID</span>
-                  <span class="value mono">{selectedEntry.transfer_id}</span>
+                  <span class="amount">{formatCurrencyINR(selectedEntry.currency_equivalent)}</span>
                 </div>
 
-                {#if selectedEntry.linked_entry_id !== null}
+                {#if selectedEntry.customer_name !== null}
                   <div class="detail-row">
-                    <span class="label">Linked Entry</span>
-                    <span class="value mono">{selectedEntry.linked_entry_id}</span>
+                    <span class="label">Customer</span>
+                    <span class="value">{selectedEntry.customer_name}</span>
                   </div>
                 {/if}
-              {/if}
+                {#if selectedEntry.customer_phone !== null}
+                  <div class="detail-row">
+                    <span class="label">Phone</span>
+                    <span class="value mono">{formatPhone(selectedEntry.customer_phone)}</span>
+                  </div>
+                {/if}
+                {#if selectedEntry.customer_email !== null}
+                  <div class="detail-row">
+                    <span class="label">Email</span>
+                    <span class="value">{selectedEntry.customer_email}</span>
+                  </div>
+                {/if}
 
-              {#if Object.keys(selectedEntry.constraints ?? {}).length > 0}
-                <h4 class="section-heading">Constraints</h4>
-                <pre class="constraints-json">{JSON.stringify(
-                    selectedEntry.constraints,
-                    null,
-                    2
-                  )}</pre>
-              {/if}
-
-              {#if selectedEntry.expires_at !== null}
                 <div class="detail-row">
-                  <span class="label">Expires</span>
-                  <span class="value">{formatDateTime(selectedEntry.expires_at)}</span>
+                  <span class="label">Bucket</span>
+                  <span class="value">
+                    <Pill text={formatBucketType(selectedEntry.bucket_type)} classes="pill-neutral" />
+                  </span>
                 </div>
-              {/if}
 
-              <h4 class="section-heading">Metadata</h4>
+                <div class="detail-row">
+                  <span class="label">State</span>
+                  <span class="value">
+                    <Pill
+                      text={formatState(selectedEntry.state).label}
+                      classes={statePillClass(selectedEntry.state)}
+                    />
+                  </span>
+                </div>
 
-              <div class="detail-row">
-                <span class="label">Entry ID</span>
-                <span class="value mono small">{selectedEntry.id}</span>
+                <h4 class="section-heading">Cause</h4>
+
+                {#if selectedEntry.event_type !== null}
+                  <div class="detail-row">
+                    <span class="label">Event</span>
+                    <span class="value">{selectedEntry.event_type}</span>
+                  </div>
+                {/if}
+
+                {#if selectedEntry.rule_name !== null}
+                  <div class="detail-row">
+                    <span class="label">Rule</span>
+                    <span class="value">{selectedEntry.rule_name}</span>
+                  </div>
+                {/if}
+
+                {#if selectedEntry.campaign_name !== null}
+                  <div class="detail-row">
+                    <span class="label">Campaign</span>
+                    <span class="value">{selectedEntry.campaign_name}</span>
+                  </div>
+                {/if}
+
+                <div class="detail-row">
+                  <span class="label">Actor</span>
+                  <span class="value"
+                    >{selectedEntry.actor_type}{selectedEntry.actor_id !== null
+                      ? ` (${selectedEntry.actor_id})`
+                      : ''}</span
+                  >
+                </div>
+
+                {#if selectedEntry.payment_reference !== null}
+                  <div class="detail-row">
+                    <span class="label">Payment Ref</span>
+                    <span class="value mono">{selectedEntry.payment_reference}</span>
+                  </div>
+                {/if}
+
+                <h4 class="section-heading">Amounts</h4>
+
+                <div class="detail-row">
+                  <span class="label">Earning Unit</span>
+                  <span class="value">{selectedEntry.earning_unit}</span>
+                </div>
+
+                <div class="detail-row">
+                  <span class="label">Currency Equivalent</span>
+                  <span class="value">{formatCurrencyINR(selectedEntry.currency_equivalent)}</span>
+                </div>
+
+                <div class="detail-row">
+                  <span class="label">Conversion Rate</span>
+                  <span class="value">{selectedEntry.conversion_rate}</span>
+                </div>
+
+                {#if selectedEntry.transfer_id !== null}
+                  <h4 class="section-heading">Transfer</h4>
+
+                  <div class="detail-row">
+                    <span class="label">Transfer ID</span>
+                    <span class="value mono">{selectedEntry.transfer_id}</span>
+                  </div>
+
+                  {#if selectedEntry.linked_entry_id !== null}
+                    <div class="detail-row">
+                      <span class="label">Linked Entry</span>
+                      <span class="value mono">{selectedEntry.linked_entry_id}</span>
+                    </div>
+                  {/if}
+                {/if}
+
+                {#if Object.keys(selectedEntry.constraints ?? {}).length > 0}
+                  <h4 class="section-heading">Constraints</h4>
+                  <pre class="constraints-json">{JSON.stringify(
+                      selectedEntry.constraints,
+                      null,
+                      2
+                    )}</pre>
+                {/if}
+
+                {#if selectedEntry.expires_at !== null}
+                  <div class="detail-row">
+                    <span class="label">Expires</span>
+                    <span class="value">{formatDateTime(selectedEntry.expires_at)}</span>
+                  </div>
+                {/if}
+
+                <h4 class="section-heading">Metadata</h4>
+
+                <div class="detail-row">
+                  <span class="label">Entry ID</span>
+                  <span class="value mono small">{selectedEntry.id}</span>
+                </div>
+
+                <div class="detail-row">
+                  <span class="label">Idempotency Key</span>
+                  <span class="value mono small">{selectedEntry.idempotency_key}</span>
+                </div>
+
+                <div class="detail-row">
+                  <span class="label">Created</span>
+                  <span class="value">{formatDateTime(selectedEntry.created_at)}</span>
+                </div>
               </div>
-
-              <div class="detail-row">
-                <span class="label">Idempotency Key</span>
-                <span class="value mono small">{selectedEntry.idempotency_key}</span>
-              </div>
-
-              <div class="detail-row">
-                <span class="label">Created</span>
-                <span class="value">{formatDateTime(selectedEntry.created_at)}</span>
-              </div>
-            </div>
-          {/if}
-            </div>
-          </div>
-        </div>
+            {/if}
+          {/snippet}
+        </Modal>
       {/if}
     </div>
   {/if}
 </div>
 
 <style>
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: var(--z-modal, 400);
-  }
-
-  .modal-card {
-    background: var(--color-bg);
-    border-radius: var(--radius-lg);
-    width: 560px;
-    max-width: 90vw;
-    max-height: 85vh;
-    display: flex;
-    flex-direction: column;
-    box-shadow: var(--shadow-lg);
-  }
-
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--space-4) var(--space-6);
-    border-bottom: 1px solid var(--color-border);
-    flex-shrink: 0;
-  }
-
-  .modal-title {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
-  }
-
-  .modal-close {
-    background: none;
-    border: none;
-    font-size: var(--font-size-xl);
-    color: var(--color-text-muted);
-    cursor: pointer;
-    padding: var(--space-1) var(--space-2);
-    border-radius: var(--radius-sm);
-    line-height: 1;
-  }
-
-  .modal-close:hover {
-    color: var(--color-text);
-    background: var(--color-surface-2);
-  }
-
-  .modal-body {
-    padding: var(--space-6);
-    overflow-y: auto;
-    flex: 1;
-  }
   .page {
     max-width: 1400px;
     margin: 0 auto;

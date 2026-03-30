@@ -68,7 +68,7 @@
     }
 
     if (referralCode === null) {
-      error = "You don't have a referral code yet. Make your first purchase to get one!";
+      error = "You don't have a referral code yet. Ask the store to create one for you!";
     }
 
     loading = false;

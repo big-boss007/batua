@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { Button, Input, Slider, Stepper, Toggle } from '@juspay/svelte-ui-components';
+  import { Button, Input, Slider, Stepper, Toggle, Pill } from '@juspay/svelte-ui-components';
   import type { StepperProperties } from '@juspay/svelte-ui-components';
   import type { Merchant } from '$lib/client/modules/admin';
   import { currentMerchant, currentMerchantId } from '$lib/client/modules/admin';
@@ -482,19 +482,19 @@
               <p class="preset-label">Recommended tiers</p>
               <div class="tiers-list">
                 <div class="tier-item">
-                  <span class="tier-badge tier-bronze">Bronze</span>
+                  <Pill text="Bronze" classes="tier-badge tier-bronze" />
                   <span class="tier-detail">Rs. 0+ spend &middot; 1x rewards</span>
                 </div>
                 <div class="tier-item">
-                  <span class="tier-badge tier-silver">Silver</span>
+                  <Pill text="Silver" classes="tier-badge tier-silver" />
                   <span class="tier-detail">Rs. 2,000+ spend &middot; 1.25x rewards</span>
                 </div>
                 <div class="tier-item">
-                  <span class="tier-badge tier-gold">Gold</span>
+                  <Pill text="Gold" classes="tier-badge tier-gold" />
                   <span class="tier-detail">Rs. 5,000+ spend &middot; 1.5x rewards</span>
                 </div>
                 <div class="tier-item">
-                  <span class="tier-badge tier-platinum">Platinum</span>
+                  <Pill text="Platinum" classes="tier-badge tier-platinum" />
                   <span class="tier-detail">Rs. 15,000+ spend &middot; 2x rewards</span>
                 </div>
               </div>
@@ -792,7 +792,7 @@
     border-radius: var(--radius-md);
   }
 
-  .tier-badge {
+  :global(.tier-badge) {
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-semibold);
     padding: 2px 10px;
@@ -800,42 +800,42 @@
     white-space: nowrap;
   }
 
-  .tier-bronze {
+  :global(.tier-bronze) {
     background: #f5e6d3;
     color: #8b5e3c;
   }
 
-  .tier-silver {
+  :global(.tier-silver) {
     background: #e8e8e8;
     color: #555555;
   }
 
-  .tier-gold {
+  :global(.tier-gold) {
     background: #fdf3d7;
     color: #92742e;
   }
 
-  .tier-platinum {
+  :global(.tier-platinum) {
     background: #e8eaf6;
     color: #3949ab;
   }
 
-  :global([data-theme='dark']) .tier-bronze {
+  :global([data-theme='dark'] .tier-bronze) {
     background: #3d2b1a;
     color: #d4a574;
   }
 
-  :global([data-theme='dark']) .tier-silver {
+  :global([data-theme='dark'] .tier-silver) {
     background: #2a2a2a;
     color: #b0b0b0;
   }
 
-  :global([data-theme='dark']) .tier-gold {
+  :global([data-theme='dark'] .tier-gold) {
     background: #3d3414;
     color: #ddc35e;
   }
 
-  :global([data-theme='dark']) .tier-platinum {
+  :global([data-theme='dark'] .tier-platinum) {
     background: #1a1e3d;
     color: #7986cb;
   }

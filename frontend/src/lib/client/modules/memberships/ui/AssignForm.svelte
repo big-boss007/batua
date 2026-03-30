@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { Button, Input } from '@juspay/svelte-ui-components';
+  import { Button, Input, Select, Loader, Shimmer, Modal } from '@juspay/svelte-ui-components';
+  import { MODAL_CLOSE_ICON } from '$lib/client/modules/foundation';
 
   type TierOption = {
     id: string;
@@ -79,6 +80,13 @@
     selectedTier !== null && customer !== null
       ? selectedTier.earn_rate_multiplier - customer.currentTierMultiplier
       : 0
+  );
+
+  let tierItems = $derived(
+    tiers.map((t) => ({
+      id: t.id,
+      label: `${t.name} (Rank ${t.rank}, ${t.earn_rate_multiplier}x)${customer !== null && t.rank === customer.currentTierRank ? ' — current' : ''}`
+    }))
   );
 
   let canAssign = $derived(
@@ -176,7 +184,7 @@
         </div>
       {/if}
       <div class="spinner-wrap">
-        <div class="spinner"></div>
+        <Loader />
         <span class="spinner-text">Assigning {selectedTier?.name ?? ''} membership...</span>
       </div>
     </div>
@@ -214,10 +222,10 @@
     <!-- Lookup loading -->
     {#if lookingUp}
       <div class="preview-card">
-        <div class="skeleton" style="width: 140px; height: 14px; margin-bottom: 10px;"></div>
+        <Shimmer classes="shimmer-name" />
         <div style="display: flex; gap: 12px;">
-          <div class="skeleton" style="width: 100px; height: 12px;"></div>
-          <div class="skeleton" style="width: 80px; height: 12px;"></div>
+          <Shimmer classes="shimmer-meta" />
+          <Shimmer classes="shimmer-meta-sm" />
         </div>
       </div>
     {/if}
@@ -255,14 +263,12 @@
       <div class="form-grid">
         <div class="form-field">
           <label class="form-label">Assign Tier</label>
-          <select class="native-select" bind:value={selectedTierId}>
-            <option value="" disabled>Select tier...</option>
-            {#each tiers as tier}
-              <option value={tier.id}>
-                {tier.name} (Rank {tier.rank}, {tier.earn_rate_multiplier}x){tier.rank === customer.currentTierRank ? ' — current' : ''}
-              </option>
-            {/each}
-          </select>
+          <Select
+            items={tierItems}
+            value={selectedTierId ? [selectedTierId] : []}
+            onchange={(vals) => { selectedTierId = vals[0] ?? ''; }}
+            placeholder="Select tier..."
+          />
         </div>
       </div>
 
@@ -326,20 +332,15 @@
 
 <!-- Confirmation modal -->
 {#if showConfirm && selectedTier !== null && customer !== null}
-  <div
-    class="modal-overlay"
-    role="button"
-    tabindex="-1"
-    onclick={() => (showConfirm = false)}
-    onkeydown={(e) => { if (e.key === 'Escape') showConfirm = false; }}
+  <Modal
+    size="medium"
+    showOverlay={true}
+    header={{ text: isFirstAssignment ? 'Confirm Assignment' : isUpgrade ? 'Confirm Upgrade' : 'Confirm Downgrade', rightImage: MODAL_CLOSE_ICON }}
+    onclose={() => (showConfirm = false)}
+    onoverlayClick={() => (showConfirm = false)}
+    onheaderRightImageClick={() => (showConfirm = false)}
   >
-    <div class="modal-panel" role="dialog" onclick={(e) => e.stopPropagation()}>
-      <div class="modal-header">
-        <h3 class="modal-title">
-          {isFirstAssignment ? 'Confirm Assignment' : isUpgrade ? 'Confirm Upgrade' : 'Confirm Downgrade'}
-        </h3>
-        <button class="modal-close" onclick={() => (showConfirm = false)}>&times;</button>
-      </div>
+    {#snippet content()}
       <div class="modal-body">
         <p class="modal-text">
           You are about to {isFirstAssignment ? 'assign' : isUpgrade ? 'upgrade' : 'downgrade'}
@@ -365,8 +366,8 @@
           onclick={handleConfirm}
         />
       </div>
-    </div>
-  </div>
+    {/snippet}
+  </Modal>
 {/if}
 
 <style>
@@ -425,16 +426,6 @@
     padding-top: var(--space-2);
   }
 
-  .native-select {
-    padding: var(--space-2) var(--space-3);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    background: var(--color-surface);
-    color: var(--color-text);
-    font-size: var(--font-size-base);
-    font-family: var(--font-sans);
-    width: 100%;
-  }
 
   /* Customer preview */
   .preview-card {
@@ -676,36 +667,15 @@
     padding: var(--space-6) 0;
   }
 
-  .spinner {
-    width: 24px;
-    height: 24px;
-    border: 3px solid var(--color-border);
-    border-top-color: var(--color-primary, #6366f1);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
 
   .spinner-text {
     font-size: var(--font-size-sm);
     color: var(--color-text-muted);
   }
 
-  /* Skeleton */
-  .skeleton {
-    background: linear-gradient(90deg, var(--color-surface) 25%, var(--color-border) 50%, var(--color-surface) 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
-    border-radius: var(--radius-sm);
-  }
-
-  @keyframes shimmer {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-  }
+  :global(.shimmer-name) { --shimmer-width: 140px; --shimmer-height: 14px; margin-bottom: 10px; }
+  :global(.shimmer-meta) { --shimmer-width: 100px; --shimmer-height: 12px; }
+  :global(.shimmer-meta-sm) { --shimmer-width: 80px; --shimmer-height: 12px; }
 
   /* Empty */
   .empty-prompt {
@@ -717,59 +687,7 @@
     border-radius: var(--radius-md);
   }
 
-  /* Modal */
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.4);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: var(--z-modal, 400);
-  }
-
-  .modal-panel {
-    background: var(--color-bg, white);
-    border-radius: var(--radius-lg);
-    width: 440px;
-    max-width: 90vw;
-    box-shadow: var(--shadow-lg, 0 20px 60px rgba(0, 0, 0, 0.15));
-    display: flex;
-    flex-direction: column;
-  }
-
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--space-4) var(--space-5);
-    border-bottom: 1px solid var(--color-border);
-  }
-
-  .modal-title {
-    font-size: var(--font-size-md);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
-  }
-
-  .modal-close {
-    background: none;
-    border: none;
-    font-size: var(--font-size-xl);
-    color: var(--color-text-muted);
-    cursor: pointer;
-    padding: var(--space-1) var(--space-2);
-    border-radius: var(--radius-sm);
-    line-height: 1;
-  }
-
-  .modal-close:hover {
-    color: var(--color-text);
-    background: var(--color-surface-2);
-  }
-
   .modal-body {
-    padding: var(--space-5);
   }
 
   .modal-text {
@@ -791,6 +709,5 @@
     justify-content: flex-end;
     gap: var(--space-3);
     padding: var(--space-4) var(--space-5);
-    border-top: 1px solid var(--color-border);
   }
 </style>

@@ -26,7 +26,8 @@
       referrer_reward_amount: Number(referrerReward),
       referee_reward_amount: Number(refereeReward),
       max_referrals_per_customer: hasMaxLimit ? Number(maxReferrals) : null,
-      is_active: isActive
+      is_active: isActive,
+      code_creation_trigger: program?.code_creation_trigger ?? 'on_registration'
     });
     isSubmitting = false;
   }

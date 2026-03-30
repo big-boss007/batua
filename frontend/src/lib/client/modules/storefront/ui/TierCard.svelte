@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { Progress } from '@juspay/svelte-ui-components';
+
   import type { CustomerTierInfo } from '../types';
 
   let {
@@ -86,18 +88,14 @@
             <span class="earn-label">{earnLabel}</span>
             <span class="earn-hint-text">{earnHint}</span>
           </div>
-          <div class="progress-track">
-            <div class="progress-fill" style="width: {percentage}%"></div>
-          </div>
+          <Progress value={percentage} classes="tier-progress" />
           <div class="progress-labels">
             <span>{tier.progress_to_next.current_value.toLocaleString('en-IN')} {icon}</span>
             <span class="progress-total">{tier.progress_to_next.threshold.toLocaleString('en-IN')}</span>
           </div>
         </div>
       {:else}
-        <div class="progress-track">
-          <div class="progress-fill" style="width: {percentage}%"></div>
-        </div>
+        <Progress value={percentage} classes="tier-progress" />
         <div class="progress-labels">
           <span>{tier.progress_to_next.current_value.toLocaleString('en-IN')} {icon}</span>
           <span class="progress-total">{tier.progress_to_next.threshold.toLocaleString('en-IN')}</span>
@@ -202,19 +200,13 @@
     color: #9ca3af;
   }
 
-  .progress-track {
-    width: 100%;
-    height: 6px;
-    background: #2a2d3a;
-    border-radius: 3px;
-    overflow: hidden;
+  :global(.tier-progress) {
+    --progress-track-height: 6px;
+    --progress-bar-background: linear-gradient(90deg, #6366f1, #818cf8);
+    --progress-track-background: #2a2d3a;
+    --progress-track-border-radius: 3px;
+    --progress-bar-border-radius: 3px;
     margin-bottom: 6px;
-  }
-
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #6366f1, #818cf8);
-    border-radius: 3px;
   }
 
   .progress-labels {

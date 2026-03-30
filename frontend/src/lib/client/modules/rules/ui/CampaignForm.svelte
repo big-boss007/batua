@@ -6,6 +6,7 @@
     CreateCampaignFromTemplateRequest,
     CreateCampaignDirectRequest
   } from '../types';
+  import { Button, Input, Select } from '@juspay/svelte-ui-components';
 
   let {
     template = null,
@@ -108,15 +109,12 @@
 
   <section class="form-section">
     <div class="field-group">
-      <label class="field-label" for="campaign-name">Campaign Name</label>
-      <input
-        id="campaign-name"
-        type="text"
-        class="field-input"
-        class:field-error={nameError !== null && campaignName.length > 0}
-        placeholder="e.g. Weekend Double Points"
+      <Input
         value={campaignName}
-        oninput={(e) => { campaignName = e.currentTarget.value; }}
+        label="Campaign Name"
+        placeholder="e.g. Weekend Double Points"
+        onInput={(val) => { campaignName = val; }}
+        classes="field-input{nameError !== null && campaignName.length > 0 ? ' field-error' : ''}"
       />
     </div>
 
@@ -124,15 +122,10 @@
       <div class="field-group">
         <label class="field-label" for="multiplier">Multiplier</label>
         <div class="multiplier-input-row">
-          <input
-            id="multiplier"
-            type="number"
-            class="field-input multiplier-field"
-            value={multiplier}
-            oninput={(e) => { multiplier = Number(e.currentTarget.value); }}
-            min="1"
-            max="20"
-            step="0.5"
+          <Input
+            value={String(multiplier)}
+            onInput={(val) => { multiplier = Number(val) || 1; }}
+            classes="field-input multiplier-field"
           />
           <span class="multiplier-suffix">x</span>
         </div>
@@ -148,16 +141,12 @@
         {#if activeRules.length === 0}
           <p class="no-rules-text">No active rules. Create a rule first.</p>
         {:else}
-          <select
-            id="base-rule"
-            class="field-input"
-            value={baseRuleId}
-            onchange={(e) => { baseRuleId = e.currentTarget.value; }}
-          >
-            {#each activeRules as r}
-              <option value={r.id}>{r.name} ({r.rule_type})</option>
-            {/each}
-          </select>
+          <Select
+            items={activeRules.map((r) => ({ id: r.id, label: `${r.name} (${r.rule_type})` }))}
+            value={[baseRuleId]}
+            onchange={(vals) => { baseRuleId = vals[0] ?? ''; }}
+            classes="field-input"
+          />
           <span class="field-hint">Multiplier applies when this rule fires</span>
         {/if}
       </div>
@@ -165,24 +154,19 @@
 
     <div class="field-row">
       <div class="field-group">
-        <label class="field-label" for="starts-at">Start Date</label>
-        <input
-          id="starts-at"
-          type="date"
-          class="field-input"
+        <Input
           value={startsAt}
-          oninput={(e) => { startsAt = e.currentTarget.value; }}
+          label="Start Date"
+          onInput={(val) => { startsAt = val; }}
+          classes="field-input"
         />
       </div>
       <div class="field-group">
-        <label class="field-label" for="ends-at">End Date</label>
-        <input
-          id="ends-at"
-          type="date"
-          class="field-input"
-          class:field-error={dateError !== null}
+        <Input
           value={endsAt}
-          oninput={(e) => { endsAt = e.currentTarget.value; }}
+          label="End Date"
+          onInput={(val) => { endsAt = val; }}
+          classes="field-input{dateError !== null ? ' field-error' : ''}"
         />
         {#if dateError !== null}
           <span class="error-text">{dateError}</span>
@@ -227,10 +211,13 @@
   {/if}
 
   <div class="form-actions">
-    <button type="button" class="btn-cancel" onclick={onCancel}>Cancel</button>
-    <button type="submit" class="btn-save" disabled={!isValid}>
-      {overlappingCampaign() !== null ? 'Create Anyway' : isTemplate && template ? `Create ${template.display_name} Campaign` : 'Create Campaign'}
-    </button>
+    <Button text="Cancel" onclick={onCancel} classes="btn-secondary" />
+    <Button
+      text={overlappingCampaign() !== null ? 'Create Anyway' : isTemplate && template ? `Create ${template.display_name} Campaign` : 'Create Campaign'}
+      onclick={handleSubmit}
+      disabled={!isValid}
+      classes="btn-primary"
+    />
   </div>
 </form>
 
@@ -292,9 +279,4 @@
   .overlap-note { margin-top: var(--space-2); }
 
   .form-actions { display: flex; justify-content: flex-end; gap: var(--space-3); padding-top: var(--space-4); border-top: 1px solid var(--color-border); }
-  .btn-cancel { padding: var(--space-2) var(--space-5); font-size: var(--font-size-base); font-weight: var(--font-weight-medium); color: var(--color-text-muted); background: none; border: 1px solid var(--color-border); border-radius: var(--radius-md); cursor: pointer; }
-  .btn-cancel:hover { color: var(--color-text); border-color: var(--color-text-muted); }
-  .btn-save { padding: var(--space-2) var(--space-5); font-size: var(--font-size-base); font-weight: var(--font-weight-medium); color: white; background: var(--color-primary); border: none; border-radius: var(--radius-md); cursor: pointer; }
-  .btn-save:hover:not(:disabled) { background: var(--color-primary-hover); }
-  .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
 </style>

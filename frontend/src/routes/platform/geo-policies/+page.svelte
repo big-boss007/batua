@@ -3,7 +3,7 @@
   import type { PageData } from './$types';
   import type { GeoPolicy } from '$lib/client/modules/platform';
   import { createGeoPolicy } from '$lib/client/modules/platform';
-  import { toastStore } from '$lib/client/modules/foundation';
+  import { toastStore, MODAL_CLOSE_ICON } from '$lib/client/modules/foundation';
   import { GeoPolicyTable, GeoPolicyForm } from '$lib/client/modules/platform/ui';
   import { invalidateAll } from '$app/navigation';
 
@@ -58,7 +58,9 @@
 
 {#if showCreateModal}
   <Modal
-    header={{ text: 'Create Geo Policy' }}
+    header={{ text: 'Create Geo Policy', rightImage: MODAL_CLOSE_ICON }}
+    size="fit-content"
+    onheaderRightImageClick={handleCloseModal}
     footer={{
       primaryButton: { text: 'Create Policy', enable: !createLoading },
       secondaryButton: { text: 'Cancel' }

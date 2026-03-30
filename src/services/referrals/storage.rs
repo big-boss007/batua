@@ -4,8 +4,8 @@ use uuid::Uuid;
 use crate::error::AppError;
 
 use super::types::{
-    CreateCodeRequest, CreateProgramRequest, ReferralAnalytics, ReferralCode, ReferralConversion,
-    ReferralProgram,
+    CodeCreationTrigger, CreateCodeRequest, CreateProgramRequest, ReferralAnalytics, ReferralCode,
+    ReferralConversion, ReferralProgram,
 };
 
 #[tracing::instrument(skip(pool), err(Debug))]
@@ -13,21 +13,28 @@ pub async fn create_program(
     pool: &PgPool,
     req: &CreateProgramRequest,
 ) -> Result<ReferralProgram, AppError> {
+    let trigger = req.code_creation_trigger.clone().unwrap_or_default();
+    let trigger_str = match trigger {
+        CodeCreationTrigger::OnRegistration => "on_registration",
+        CodeCreationTrigger::OnFirstPurchase => "on_first_purchase",
+    };
+
     let program = sqlx::query_as::<_, ReferralProgram>(
         r#"
-        INSERT INTO referral_programs (merchant_id, referrer_reward_amount, referee_reward_amount, max_referrals_per_customer)
-        VALUES ($1, $2, $3, $4)
+        INSERT INTO referral_programs (merchant_id, referrer_reward_amount, referee_reward_amount, max_referrals_per_customer, code_creation_trigger)
+        VALUES ($1, $2, $3, $4, $5)
         RETURNING id, merchant_id,
                   referrer_reward_amount::float8 AS referrer_reward_amount,
                   referee_reward_amount::float8 AS referee_reward_amount,
                   referrer_bucket_type, referee_bucket_type,
-                  max_referrals_per_customer, is_active, created_at, updated_at
+                  max_referrals_per_customer, is_active, code_creation_trigger, created_at, updated_at
         "#,
     )
     .bind(req.merchant_id)
     .bind(req.referrer_reward_amount)
     .bind(req.referee_reward_amount)
     .bind(req.max_referrals_per_customer)
+    .bind(trigger_str)
     .fetch_one(pool)
     .await
     .map_err(|e| match e {
@@ -46,6 +53,11 @@ pub async fn update_program(
     merchant_id: Uuid,
     req: &super::types::UpdateProgramRequest,
 ) -> Result<ReferralProgram, AppError> {
+    let trigger_str: Option<&str> = req.code_creation_trigger.as_ref().map(|t| match t {
+        CodeCreationTrigger::OnRegistration => "on_registration",
+        CodeCreationTrigger::OnFirstPurchase => "on_first_purchase",
+    });
+
     let program = sqlx::query_as::<_, ReferralProgram>(
         r#"
         UPDATE referral_programs
@@ -53,13 +65,14 @@ pub async fn update_program(
             referee_reward_amount = COALESCE($3, referee_reward_amount),
             max_referrals_per_customer = CASE WHEN $4 THEN $5 ELSE max_referrals_per_customer END,
             is_active = COALESCE($6, is_active),
+            code_creation_trigger = COALESCE($7, code_creation_trigger),
             updated_at = now()
         WHERE merchant_id = $1
         RETURNING id, merchant_id,
                   referrer_reward_amount::float8 AS referrer_reward_amount,
                   referee_reward_amount::float8 AS referee_reward_amount,
                   referrer_bucket_type, referee_bucket_type,
-                  max_referrals_per_customer, is_active, created_at, updated_at
+                  max_referrals_per_customer, is_active, code_creation_trigger, created_at, updated_at
         "#,
     )
     .bind(merchant_id)
@@ -68,6 +81,7 @@ pub async fn update_program(
     .bind(req.max_referrals_per_customer.is_some())
     .bind(req.max_referrals_per_customer.flatten())
     .bind(req.is_active)
+    .bind(trigger_str)
     .fetch_one(pool)
     .await
     .map_err(AppError::Database)?;
@@ -86,7 +100,7 @@ pub async fn get_program(
                referrer_reward_amount::float8 AS referrer_reward_amount,
                referee_reward_amount::float8 AS referee_reward_amount,
                referrer_bucket_type, referee_bucket_type,
-               max_referrals_per_customer, is_active, created_at, updated_at
+               max_referrals_per_customer, is_active, code_creation_trigger, created_at, updated_at
         FROM referral_programs
         WHERE merchant_id = $1
         "#,
@@ -325,7 +339,7 @@ pub async fn get_referral_analytics(
     let total_conversions = code_stats.total_conversions.unwrap_or(0);
 
     let conversion_rate = if total_referrals > 0 {
-        total_conversions as f64 / total_referrals as f64
+        (total_conversions as f64 / total_referrals as f64) * 100.0
     } else {
         0.0
     };
@@ -388,4 +402,23 @@ pub async fn list_merchant_referral_codes(
     .await?;
 
     Ok(codes)
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn get_active_program_trigger(
+    pool: &PgPool,
+    merchant_id: Uuid,
+) -> Result<Option<CodeCreationTrigger>, AppError> {
+    let row: Option<(CodeCreationTrigger,)> = sqlx::query_as(
+        r#"
+        SELECT code_creation_trigger
+        FROM referral_programs
+        WHERE merchant_id = $1 AND is_active = true
+        "#,
+    )
+    .bind(merchant_id)
+    .fetch_optional(pool)
+    .await?;
+
+    Ok(row.map(|r| r.0))
 }

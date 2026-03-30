@@ -2,6 +2,7 @@
   import type { Rule, RewardRuleConfig, Condition, RewardAction } from '../types';
   import { currentMerchant } from '$lib/client/modules/admin';
   import type { Merchant } from '$lib/client/modules/admin';
+  import { Button, Input, Select } from '@juspay/svelte-ui-components';
 
   let {
     rule = null,
@@ -142,34 +143,23 @@
 
   <section class="form-section">
     <div class="field-group">
-      <label class="field-label" for="rule-name">Rule Name</label>
-      <input
-        id="rule-name"
-        type="text"
-        class="field-input"
-        class:field-error={nameError !== null && name.length > 0}
+      <Input
         value={name}
-        oninput={(e) => {
-          name = e.currentTarget.value;
-        }}
+        label="Rule Name"
         placeholder="e.g. 10% Points Back on Orders"
+        onInput={(val) => { name = val; }}
+        classes="field-input{nameError !== null && name.length > 0 ? ' field-error' : ''}"
       />
     </div>
 
     <div class="field-group">
-      <label class="field-label" for="event-type">Trigger Event</label>
-      <select
-        id="event-type"
-        class="field-input"
-        value={eventType}
-        onchange={(e) => {
-          eventType = e.currentTarget.value;
-        }}
-      >
-        {#each EVENT_TYPES as et}
-          <option value={et.value}>{et.label}</option>
-        {/each}
-      </select>
+      <label class="field-label">Trigger Event</label>
+      <Select
+        items={EVENT_TYPES.map((et) => ({ id: et.value, label: et.label }))}
+        value={[eventType]}
+        onchange={(vals) => { eventType = vals[0] ?? ''; }}
+        classes="field-input"
+      />
       <span class="field-hint">When should this rule fire?</span>
     </div>
   </section>
@@ -187,35 +177,27 @@
     {#each conditions as condition, index (index)}
       <div class="condition-row">
         <div class="field-group condition-field">
-          <select
-            class="field-input"
-            value={condition.field}
-            onchange={(e) => updateConditionField(index, e.currentTarget.value)}
-          >
-            <option value="">Select field...</option>
-            {#each CONDITION_FIELDS as cf}
-              <option value={cf.value}>{cf.label}</option>
-            {/each}
-          </select>
+          <Select
+            items={[{ id: '', label: 'Select field...' }, ...CONDITION_FIELDS.map((cf) => ({ id: cf.value, label: cf.label }))]}
+            value={[condition.field]}
+            onchange={(vals) => updateConditionField(index, vals[0] ?? '')}
+            classes="field-input"
+          />
         </div>
         <div class="field-group condition-operator">
-          <select
-            class="field-input"
-            value={condition.operator}
-            onchange={(e) => updateConditionOperator(index, e.currentTarget.value)}
-          >
-            {#each OPERATORS as op}
-              <option value={op.value}>{op.label}</option>
-            {/each}
-          </select>
+          <Select
+            items={OPERATORS.map((op) => ({ id: op.value, label: op.label }))}
+            value={[condition.operator]}
+            onchange={(vals) => updateConditionOperator(index, vals[0] ?? '')}
+            classes="field-input"
+          />
         </div>
         <div class="field-group condition-value">
-          <input
-            type="text"
-            class="field-input"
+          <Input
             value={String(condition.value)}
-            oninput={(e) => updateConditionValue(index, e.currentTarget.value)}
+            onInput={(val) => updateConditionValue(index, val)}
             placeholder="value"
+            classes="field-input"
           />
         </div>
         <button type="button" class="remove-btn" onclick={() => removeCondition(index)}>×</button>
@@ -228,34 +210,23 @@
 
     <div class="field-row">
       <div class="field-group">
-        <label class="field-label" for="calculation">Type</label>
-        <select
-          id="calculation"
-          class="field-input"
-          value={calculation}
-          onchange={(e) => {
-            calculation = e.currentTarget.value;
-          }}
-        >
-          <option value="percentage">Percentage of order</option>
-          <option value="fixed">Fixed amount</option>
-        </select>
+        <label class="field-label">Type</label>
+        <Select
+          items={[{ id: 'percentage', label: 'Percentage of order' }, { id: 'fixed', label: 'Fixed amount' }]}
+          value={[calculation]}
+          onchange={(vals) => { calculation = vals[0] ?? 'percentage'; }}
+          classes="field-input"
+        />
       </div>
       <div class="field-group">
         <label class="field-label" for="action-value">
           {calculation === 'percentage' ? 'Earn Rate' : 'Reward'}
         </label>
         <div class="inline-field">
-          <input
-            id="action-value"
-            type="number"
-            class="field-input inline-input"
-            value={actionValue}
-            oninput={(e) => {
-              actionValue = Number(e.currentTarget.value);
-            }}
-            min="0"
-            step={calculation === 'percentage' ? '0.1' : '1'}
+          <Input
+            value={String(actionValue)}
+            onInput={(val) => { actionValue = Number(val) || 0; }}
+            classes="field-input inline-input"
           />
           <span class="inline-suffix">{calculation === 'percentage' ? '%' : pIcon}</span>
         </div>
@@ -266,18 +237,12 @@
       <div class="field-group" class:field-disabled={calculation !== 'percentage'}>
         <label class="field-label" for="max-amount">Max per order</label>
         <div class="inline-field">
-          <input
-            id="max-amount"
-            type="number"
-            class="field-input inline-input"
-            value={calculation === 'percentage' ? (maxAmount ?? '') : ''}
-            oninput={(e) => {
-              const val = e.currentTarget.value;
-              maxAmount = val === '' ? null : Number(val);
-            }}
-            min="0"
+          <Input
+            value={calculation === 'percentage' ? (maxAmount !== null ? String(maxAmount) : '') : ''}
+            onInput={(val) => { maxAmount = val === '' ? null : Number(val); }}
             placeholder={calculation === 'percentage' ? 'No cap' : 'N/A'}
-            disabled={calculation !== 'percentage'}
+            disable={calculation !== 'percentage'}
+            classes="field-input inline-input"
           />
           <span class="inline-suffix">{pIcon}</span>
         </div>
@@ -286,18 +251,11 @@
       <div class="field-group">
         <label class="field-label" for="expiry-days">Points expire after</label>
         <div class="inline-field">
-          <input
-            id="expiry-days"
-            type="number"
-            class="field-input inline-input"
-            value={expiryDays ?? ''}
-            oninput={(e) => {
-              const val = e.currentTarget.value;
-              expiryDays = val === '' ? null : Number(val);
-            }}
-            min="0"
-            step="1"
+          <Input
+            value={expiryDays !== null ? String(expiryDays) : ''}
+            onInput={(val) => { expiryDays = val === '' ? null : Number(val); }}
             placeholder="Never"
+            classes="field-input inline-input"
           />
           <span class="inline-suffix">days</span>
         </div>
@@ -314,10 +272,8 @@
   </section>
 
   <div class="form-actions">
-    <button type="button" class="btn-cancel" onclick={onCancel}>Cancel</button>
-    <button type="submit" class="btn-save" disabled={!isValid}>
-      {isEdit ? 'Update Rule' : 'Create Rule'}
-    </button>
+    <Button text="Cancel" onclick={onCancel} classes="btn-secondary" />
+    <Button text={isEdit ? 'Update Rule' : 'Create Rule'} onclick={handleSubmit} disabled={!isValid} classes="btn-primary" />
   </div>
 </form>
 
@@ -497,39 +453,4 @@
     border-top: 1px solid var(--color-border);
   }
 
-  .btn-cancel {
-    padding: var(--space-2) var(--space-5);
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-medium);
-    color: var(--color-text-muted);
-    background: none;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    transition: all var(--transition-fast);
-  }
-
-  .btn-cancel:hover {
-    color: var(--color-text);
-    border-color: var(--color-text-muted);
-  }
-
-  .btn-save {
-    padding: var(--space-2) var(--space-5);
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-medium);
-    color: white;
-    background: var(--color-primary);
-    border: none;
-    border-radius: var(--radius-md);
-    transition: all var(--transition-fast);
-  }
-
-  .btn-save:hover:not(:disabled) {
-    background: var(--color-primary-hover);
-  }
-
-  .btn-save:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
 </style>

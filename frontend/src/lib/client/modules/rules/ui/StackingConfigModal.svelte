@@ -1,5 +1,7 @@
 <script lang="ts">
   import type { CampaignStackingConfig } from '../types';
+  import { Modal, Input } from '@juspay/svelte-ui-components';
+  import { MODAL_CLOSE_ICON } from '$lib/client/modules/foundation';
 
   let {
     config,
@@ -54,15 +56,18 @@
   }
 </script>
 
-<!-- svelte-ignore a11y_click_events_have_key_events -->
-<div class="modal-overlay" role="presentation" onclick={onCancel}>
-  <!-- svelte-ignore a11y_click_events_have_key_events -->
-  <div class="modal-panel" role="dialog" aria-label="Campaign settings" tabindex="-1" onclick={(e) => e.stopPropagation()}>
-    <div class="modal-header">
-      <span class="modal-title">Campaign Settings</span>
-      <button class="modal-close" onclick={onCancel}>&times;</button>
-    </div>
-
+<Modal
+  size="medium"
+  header={{ text: 'Campaign Settings', rightImage: MODAL_CLOSE_ICON }}
+  onclose={onCancel}
+  onoverlayClick={onCancel}
+  onheaderRightImageClick={onCancel}
+  footer={{
+    primaryButton: { text: 'Save Settings', onclick: handleSave },
+    secondaryButton: { text: 'Cancel', onclick: onCancel }
+  }}
+>
+  {#snippet content()}
     <div class="modal-body">
       <div class="config-section">
         <div class="config-title">Multiplier Stacking Mode</div>
@@ -98,13 +103,10 @@
             <div class="config-sublabel">Cap the total multiplier regardless of stacking mode</div>
           </div>
           <div class="cap-input-row">
-            <input
-              class="cap-input"
-              type="number"
-              value={maxMultiplier}
-              oninput={(e) => { maxMultiplier = Number(e.currentTarget.value); }}
-              min="1"
-              max="50"
+            <Input
+              value={String(maxMultiplier)}
+              onInput={(val) => { maxMultiplier = Number(val) || 1; }}
+              classes="cap-input"
             />
             <span class="cap-suffix">x</span>
           </div>
@@ -115,72 +117,14 @@
         <strong>Note:</strong> When multiple campaigns overlap on the same rule, the campaign with the higher multiplier automatically wins. This is a platform-level safety rule and cannot be changed.
       </div>
     </div>
-
-    <div class="modal-footer">
-      <button class="btn-cancel" onclick={onCancel}>Cancel</button>
-      <button class="btn-save" onclick={handleSave}>Save Settings</button>
-    </div>
-  </div>
-</div>
+  {/snippet}
+</Modal>
 
 <style>
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    padding-top: var(--space-12);
-    z-index: var(--z-modal);
-    overflow-y: auto;
-  }
-
-  .modal-panel {
-    background: var(--color-bg);
-    border-radius: var(--radius-lg);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
-    width: 560px;
-    max-width: 100%;
-    overflow: hidden;
-  }
-
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--space-4) var(--space-5);
-    border-bottom: 1px solid var(--color-border);
-  }
-
-  .modal-title {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-  }
-
-  .modal-close {
-    background: none;
-    border: none;
-    font-size: 20px;
-    color: var(--color-text-muted);
-    cursor: pointer;
-    padding: 2px 6px;
-    border-radius: var(--radius-sm);
-  }
-
   .modal-body {
-    padding: var(--space-5);
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
-  }
-
-  .modal-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: var(--space-3);
-    padding: var(--space-3) var(--space-5);
-    border-top: 1px solid var(--color-border);
   }
 
   .config-section {
@@ -331,31 +275,4 @@
 
   .info-note strong { color: var(--color-text); }
 
-  .btn-cancel {
-    padding: var(--space-2) var(--space-5);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
-    color: var(--color-text-muted);
-    background: none;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    font-family: inherit;
-  }
-
-  .btn-cancel:hover { color: var(--color-text); border-color: var(--color-text-muted); }
-
-  .btn-save {
-    padding: var(--space-2) var(--space-5);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
-    color: white;
-    background: var(--color-primary);
-    border: none;
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    font-family: inherit;
-  }
-
-  .btn-save:hover { background: var(--color-primary-hover); }
 </style>

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Pill, Progress } from '@juspay/svelte-ui-components';
+  import { Pill, Progress, Button } from '@juspay/svelte-ui-components';
 
   import { formatCurrencyINR, formatDate } from '$lib/client/modules/foundation';
   import { claimGiftCardForCustomer } from '$lib/client/modules/storefront';
@@ -72,7 +72,7 @@
       Use it at checkout on your next order.
     </div>
     {#if onClaimed !== null}
-      <button class="done-btn" onclick={onClaimed}>Back to Rewards</button>
+      <Button text="Back to Rewards" classes="done-btn" onclick={onClaimed} />
     {/if}
   </div>
 {:else}
@@ -112,9 +112,12 @@
 
     {#if canClaim}
       <div class="gc-actions">
-        <button class="claim-btn" onclick={handleClaim} disabled={claiming}>
-          {claiming ? 'Claiming...' : `Claim ${formatCurrencyINR(card.current_amount)} to Wallet`}
-        </button>
+        <Button
+          text={claiming ? 'Claiming...' : `Claim ${formatCurrencyINR(card.current_amount)} to Wallet`}
+          classes="claim-btn"
+          disabled={claiming}
+          onclick={handleClaim}
+        />
         <div class="claim-hint">Amount will be added to your gift card balance</div>
       </div>
     {:else if card.is_claimed}
@@ -238,26 +241,16 @@
     margin-top: 8px;
   }
 
-  .claim-btn {
-    width: 100%;
-    padding: 14px;
-    background: #4ade80;
-    color: #000000;
-    border: none;
-    border-radius: 10px;
-    font-size: 15px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-
-  .claim-btn:hover:not(:disabled) {
-    background: #22c55e;
-  }
-
-  .claim-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+  :global(.claim-btn) {
+    --button-width: 100%;
+    --button-padding: 14px;
+    --button-color: #4ade80;
+    --button-text-color: #000000;
+    --button-border: none;
+    --button-border-radius: 10px;
+    --button-font-size: 15px;
+    --button-font-weight: 700;
+    --button-hover-color: #22c55e;
   }
 
   .claim-hint {
@@ -327,20 +320,15 @@
     margin-bottom: 24px;
   }
 
-  .done-btn {
-    width: 100%;
-    padding: 12px;
-    background: #6366f1;
-    color: #ffffff;
-    border: none;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-
-  .done-btn:hover {
-    background: #4f46e5;
+  :global(.done-btn) {
+    --button-width: 100%;
+    --button-padding: 12px;
+    --button-color: #6366f1;
+    --button-text-color: #ffffff;
+    --button-border: none;
+    --button-border-radius: 10px;
+    --button-font-size: 14px;
+    --button-font-weight: 600;
+    --button-hover-color: #4f46e5;
   }
 </style>

@@ -76,6 +76,9 @@ function formatPhone(phone: string): string {
   return phone;
 }
 
+const MODAL_CLOSE_ICON =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M18 6L6 18M6 6l12 12'/%3E%3C/svg%3E";
+
 export {
   formatCurrencyINR,
   formatDate,
@@ -83,5 +86,6 @@ export {
   normalizePhoneE164,
   formatPhone,
   formatPoints,
-  isPointsBucket
+  isPointsBucket,
+  MODAL_CLOSE_ICON
 };

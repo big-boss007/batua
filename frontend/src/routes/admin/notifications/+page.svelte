@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Tabs, Table, Pill } from '@juspay/svelte-ui-components';
+  import { Tabs, Table, Pill, Button } from '@juspay/svelte-ui-components';
 
   import type { NotificationTemplate, UpdateTemplateRequest, NotificationLog } from '$lib/client/modules/settings';
   import {
@@ -77,6 +77,7 @@
 <div class="notifications-page">
   <header class="page-header">
     <h1 class="page-title">Notifications</h1>
+    <p class="page-subtitle">Manage notification templates and delivery logs</p>
   </header>
 
   <Tabs
@@ -94,23 +95,18 @@
       <div class="notifications-layout">
         <aside class="templates-sidebar">
           {#each templates as template (template.id)}
-            <button
-              class="template-item"
-              class:template-selected={selectedId === template.id}
+            <Button
+              classes="template-item{selectedId === template.id ? ' template-selected' : ''}"
               onclick={() => (selectedId = template.id)}
             >
-              <span class="template-item-name">{template.name}</span>
-              <div class="template-item-meta">
-                <span class="template-item-channel">{template.channel}</span>
-                <span
-                  class="template-item-status"
-                  class:status-active={template.is_active}
-                  class:status-inactive={!template.is_active}
-                >
-                  {template.is_active ? 'Active' : 'Inactive'}
-                </span>
-              </div>
-            </button>
+              {#snippet children()}
+                <span class="template-item-name">{template.name}</span>
+                <div class="template-item-meta">
+                  <span class="template-item-channel">{template.channel}</span>
+                  <Pill text={template.is_active ? 'Active' : 'Inactive'} classes={template.is_active ? 'pill-success' : 'pill-neutral'} />
+                </div>
+              {/snippet}
+            </Button>
           {/each}
         </aside>
 
@@ -144,10 +140,10 @@
               <Pill
                 text={String(value)}
                 classes={String(value) === 'sent'
-                  ? 'pill-log-success'
+                  ? 'pill-success'
                   : String(value) === 'failed'
-                    ? 'pill-log-error'
-                    : 'pill-log-default'}
+                    ? 'pill-error'
+                    : 'pill-neutral'}
               />
             {:else}
               {value}
@@ -167,19 +163,24 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-6);
-    padding: var(--space-8);
     max-width: 1200px;
   }
 
   .page-header {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    gap: var(--space-1);
   }
 
   .page-title {
     font-size: var(--font-size-2xl);
     font-weight: var(--font-weight-bold);
     color: var(--color-text);
+  }
+
+  .page-subtitle {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
   }
 
   .empty-state {
@@ -207,27 +208,23 @@
     overflow-y: auto;
   }
 
-  .template-item {
+  :global(.template-item) {
+    --button-color: transparent;
+    --button-text-color: var(--color-text);
+    --button-border: 1px solid transparent;
+    --button-border-radius: var(--radius-md);
+    --button-padding: var(--space-3) var(--space-4);
+    --button-hover-color: var(--color-surface-2);
     display: flex;
     flex-direction: column;
     gap: var(--space-1);
-    padding: var(--space-3) var(--space-4);
-    background: none;
-    border: 1px solid transparent;
-    border-radius: var(--radius-md);
     text-align: left;
-    transition:
-      background var(--transition-fast),
-      border-color var(--transition-fast);
+    width: 100%;
   }
 
-  .template-item:hover {
-    background: var(--color-surface-2);
-  }
-
-  .template-selected {
-    background: var(--color-surface-2);
-    border-color: var(--color-primary);
+  :global(.template-selected) {
+    --button-color: var(--color-surface-2);
+    --button-border: 1px solid var(--color-primary);
   }
 
   .template-item-name {
@@ -246,19 +243,6 @@
     font-size: var(--font-size-xs);
     color: var(--color-text-muted);
     text-transform: uppercase;
-  }
-
-  .template-item-status {
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-semibold);
-  }
-
-  .status-active {
-    color: var(--color-success);
-  }
-
-  .status-inactive {
-    color: var(--color-text-muted);
   }
 
   .editor-panel {
@@ -290,18 +274,4 @@
     color: var(--color-text);
   }
 
-  :global(.pill-log-success) {
-    --pill-color: var(--color-success);
-    --pill-bg: color-mix(in srgb, var(--color-success) 12%, transparent);
-  }
-
-  :global(.pill-log-error) {
-    --pill-color: var(--color-error);
-    --pill-bg: color-mix(in srgb, var(--color-error) 12%, transparent);
-  }
-
-  :global(.pill-log-default) {
-    --pill-color: var(--color-text-muted);
-    --pill-bg: var(--color-surface-2);
-  }
 </style>

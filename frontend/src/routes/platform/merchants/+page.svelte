@@ -3,7 +3,7 @@
   import type { PageData } from './$types';
   import type { PlatformMerchant } from '$lib/client/modules/platform';
   import { createMerchant } from '$lib/client/modules/platform';
-  import { toastStore } from '$lib/client/modules/foundation';
+  import { toastStore, MODAL_CLOSE_ICON } from '$lib/client/modules/foundation';
   import { MerchantTable, OnboardForm } from '$lib/client/modules/platform/ui';
   import { invalidateAll } from '$app/navigation';
 
@@ -60,7 +60,9 @@
 
 {#if showOnboardModal}
   <Modal
-    header={{ text: 'Onboard New Merchant' }}
+    header={{ text: 'Onboard New Merchant', rightImage: MODAL_CLOSE_ICON }}
+    size="fit-content"
+    onheaderRightImageClick={handleCloseModal}
     footer={{
       primaryButton: { text: 'Create Merchant', enable: !onboardLoading },
       secondaryButton: { text: 'Cancel' }

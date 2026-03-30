@@ -1,6 +1,12 @@
 import { apiCaller } from '$lib/client/modules/foundation';
 import type { APIResult } from '$lib/client/modules/foundation';
-import type { ReferralProgram, ReferralCode, ReferralAnalytics, ReferralConversion } from './types';
+import type {
+  ReferralProgram,
+  ReferralCode,
+  ReferralAnalytics,
+  ReferralConversion,
+  CodeCreationTrigger
+} from './types';
 
 function decodeProgram(raw: unknown): ReferralProgram {
   const r = raw as Record<string, unknown>;
@@ -9,7 +15,8 @@ function decodeProgram(raw: unknown): ReferralProgram {
     referrer_reward_amount: (r['referrer_reward_amount'] as number) ?? 0,
     referee_reward_amount: (r['referee_reward_amount'] as number) ?? 0,
     max_referrals_per_customer: (r['max_referrals_per_customer'] as number) ?? null,
-    is_active: (r['is_active'] as boolean) ?? false
+    is_active: (r['is_active'] as boolean) ?? false,
+    code_creation_trigger: ((r['code_creation_trigger'] as string) ?? 'on_registration') as CodeCreationTrigger
   };
 }
 
@@ -81,7 +88,8 @@ async function createProgram(
       referrer_reward_amount: program.referrer_reward_amount,
       referee_reward_amount: program.referee_reward_amount,
       max_referrals_per_customer: program.max_referrals_per_customer,
-      is_active: program.is_active
+      is_active: program.is_active,
+      code_creation_trigger: program.code_creation_trigger
     },
     decodeProgram
   );
@@ -94,6 +102,7 @@ async function updateProgram(
     referee_reward_amount?: number;
     max_referrals_per_customer?: number | null;
     is_active?: boolean;
+    code_creation_trigger?: CodeCreationTrigger;
   }
 ): Promise<APIResult<ReferralProgram>> {
   return apiCaller.put(`/referrals/programs/${merchantId}`, updates as Record<string, unknown>, decodeProgram);

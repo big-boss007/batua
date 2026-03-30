@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Button, Input, Select } from '@juspay/svelte-ui-components';
+  import { Button, Input, Select, Banner } from '@juspay/svelte-ui-components';
 
   import type { LoyaltyProgram, LoyaltyTier } from '$lib/client/modules/customers';
   import {
@@ -337,10 +337,7 @@
 
 <div class="wizard">
   {#if mode === 'reconfigure'}
-    <div class="info-banner amber">
-      <strong>Reconfigure mode:</strong> Your current settings are pre-filled. No changes are saved until
-      you confirm on the final step.
-    </div>
+    <Banner text="Reconfigure mode: Your current settings are pre-filled. No changes are saved until you confirm on the final step." classes="info-banner amber" />
   {/if}
 
   <!-- STEP 1: Program -->
@@ -672,15 +669,9 @@
       </div>
 
       {#if mode === 'fresh'}
-        <div class="info-banner green">
-          <strong>What happens next:</strong> Your tiers will be created and activated.
-          Customers will be evaluated against these tiers when you run "Evaluate Tiers".
-        </div>
+        <Banner text='What happens next: Your tiers will be created and activated. Customers will be evaluated against these tiers when you run "Evaluate Tiers".' classes="info-banner green" />
       {:else}
-        <div class="info-banner amber">
-          <strong>Note:</strong> Existing customers will keep their current tier until the next evaluation.
-          Run "Evaluate Tiers" after saving to reassign customers based on the new thresholds.
-        </div>
+        <Banner text='Note: Existing customers will keep their current tier until the next evaluation. Run "Evaluate Tiers" after saving to reassign customers based on the new thresholds.' classes="info-banner amber" />
       {/if}
 
       </div>
@@ -803,21 +794,20 @@
     align-items: center;
   }
 
-  /* Info banners */
-  .info-banner {
+  :global(.info-banner) {
     padding: var(--space-3) var(--space-4);
     border-radius: var(--radius-md);
     font-size: var(--font-size-sm);
     line-height: 1.5;
   }
 
-  .info-banner.green {
+  :global(.info-banner.green) {
     background: #f0fdf4;
     border: 1px solid #bbf7d0;
     color: #166534;
   }
 
-  .info-banner.amber {
+  :global(.info-banner.amber) {
     background: #fffbeb;
     border: 1px solid #fde68a;
     color: #92400e;

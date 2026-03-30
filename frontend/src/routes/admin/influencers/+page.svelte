@@ -1,10 +1,11 @@
 <script lang="ts">
-  import { Button, Input, Pill } from '@juspay/svelte-ui-components';
+  import { Button, Input, Pill, Table } from '@juspay/svelte-ui-components';
 
   import type { ReferralCode } from '$lib/client/modules/referrals';
   import { createCode, fetchMerchantCodes, resolveCustomerByPhone } from '$lib/client/modules/referrals';
   import type { Merchant } from '$lib/client/modules/admin';
   import { currentMerchant, currentMerchantId } from '$lib/client/modules/admin';
+  import { MetricCard } from '$lib/client/modules/admin/ui';
   import { toastStore } from '$lib/client/modules/foundation';
 
   let codes = $state<Array<ReferralCode>>([]);
@@ -24,6 +25,17 @@
   let creatorCodes = $derived(codes.filter((c) => c.is_creator));
 
   let totalConversions = $derived(creatorCodes.reduce((sum, c) => sum + c.total_conversions, 0));
+
+  const TABLE_HEADERS = ['Influencer', 'Code', 'Commission', 'Conversions', 'Status'];
+  let tableData = $derived(
+    creatorCodes.map((code) => [
+      formatMobile(code.customer_id),
+      code.code,
+      `${code.commission_rate ?? 0}%`,
+      code.total_conversions,
+      code.is_active ? 'Active' : 'Inactive'
+    ])
+  );
 
   currentMerchant.subscribe((m) => {
     merchant = m;
@@ -120,26 +132,29 @@
     </div>
 
     <div class="metrics-row">
-      <div class="metric-card"><span class="metric-val">{creatorCodes.length}</span><span class="metric-label">Active Influencers</span></div>
-      <div class="metric-card"><span class="metric-val">{totalConversions}</span><span class="metric-label">Total Conversions</span></div>
+      <MetricCard label="Active Influencers" value={creatorCodes.length} size="compact" />
+      <MetricCard label="Total Conversions" value={totalConversions} size="compact" />
     </div>
 
-    <div class="table-wrapper">
-      <table class="data-table">
-        <thead><tr><th>Influencer</th><th>Code</th><th>Commission</th><th>Conversions</th><th>Status</th></tr></thead>
-        <tbody>
-          {#each creatorCodes as code (code.id)}
-            <tr>
-              <td><div class="influencer-mobile">{formatMobile(code.customer_id)}</div></td>
-              <td><code class="code-mono">{code.code}</code></td>
-              <td class="text-bold">{code.commission_rate ?? 0}%</td>
-              <td class="text-bold">{code.total_conversions}</td>
-              <td><Pill text={code.is_active ? 'Active' : 'Inactive'} classes={code.is_active ? 'pill-success' : 'pill-neutral'} /></td>
-            </tr>
-          {/each}
-        </tbody>
-      </table>
-    </div>
+    <Table
+      tableHeaders={TABLE_HEADERS}
+      {tableData}
+      sortable={false}
+      --table-row-hover-background="var(--color-surface-2)"
+      --table-content-font-size="var(--font-size-sm)"
+    >
+      {#snippet cell(value, _rowIndex, colIndex)}
+        {#if colIndex === 1}
+          <code class="code-mono">{value}</code>
+        {:else if colIndex === 2 || colIndex === 3}
+          <span class="text-bold">{value}</span>
+        {:else if colIndex === 4}
+          <Pill text={String(value)} classes={value === 'Active' ? 'pill-success' : 'pill-neutral'} />
+        {:else}
+          {value}
+        {/if}
+      {/snippet}
+    </Table>
   {/if}
 
   <!-- ADD INFLUENCER MODAL -->
@@ -204,19 +219,9 @@
   .empty-desc { font-size: var(--font-size-sm); color: var(--color-text-muted); max-width: 380px; margin: 0 auto var(--space-6); line-height: 1.6; }
 
   .metrics-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-4); max-width: 400px; }
-  .metric-card { padding: var(--space-4); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); }
-  .metric-val { font-size: var(--font-size-xl); font-weight: var(--font-weight-bold); color: var(--color-text); display: block; }
-  .metric-label { font-size: var(--font-size-xs); color: var(--color-text-muted); font-weight: var(--font-weight-medium); margin-top: 2px; display: block; }
-
-  .table-wrapper { border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; }
-  .data-table { width: 100%; border-collapse: collapse; font-size: var(--font-size-sm); }
-  .data-table th { text-align: left; padding: var(--space-3) var(--space-4); font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold); color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.04em; background: var(--color-surface); border-bottom: 1px solid var(--color-border); }
-  .data-table td { padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-border); }
-  .data-table tr:last-child td { border-bottom: none; }
 
   .code-mono { font-family: var(--font-mono); font-size: var(--font-size-xs); padding: 2px 8px; background: var(--color-surface-2); border-radius: var(--radius-sm); font-weight: var(--font-weight-semibold); }
 
-  .influencer-mobile { font-size: var(--font-size-sm); color: var(--color-text); }
   .text-bold { font-weight: var(--font-weight-semibold); }
 
   /* Modal */

@@ -173,16 +173,16 @@
 </script>
 
 <svelte:head>
-  <title>Tiers - Batua Admin</title>
+  <title>VIP Tiers - Batua Admin</title>
 </svelte:head>
 
 <div class="loyalty-page">
   {#if shouldShowWizard && merchantId !== null}
     <header class="page-header">
       <div class="page-header-left">
-        <h1 class="page-title">Tiers</h1>
+        <h1 class="page-title">VIP Tiers</h1>
         <p class="page-subtitle">
-          {program === null ? 'Set up your loyalty tiers in a few easy steps' : 'Reconfigure your loyalty tiers'}
+          {program === null ? 'Set up your VIP tiers in a few easy steps' : 'Reconfigure your VIP tiers'}
         </p>
       </div>
     </header>
@@ -198,8 +198,8 @@
   {:else if program !== null}
     <header class="page-header">
       <div class="page-header-left">
-        <h1 class="page-title">Tiers</h1>
-        <p class="page-subtitle">Manage your tiers and customer distribution</p>
+        <h1 class="page-title">VIP Tiers</h1>
+        <p class="page-subtitle">Manage your VIP tiers and customer distribution</p>
       </div>
       <div class="page-actions">
         {#if evaluateResult !== null}

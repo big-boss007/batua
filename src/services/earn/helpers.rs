@@ -11,6 +11,8 @@ use crate::services::identity::types::ResolveIdentityRequest;
 use crate::services::ledger;
 use crate::services::ledger::types::{ActorType, BucketType, MovementType, NewLedgerEntry};
 use crate::services::loyalty;
+use crate::services::referrals;
+use crate::services::referrals::types::CodeCreationTrigger;
 use crate::services::rules;
 use crate::services::rules::types::EvaluationContext;
 use crate::services::cod;
@@ -84,7 +86,7 @@ async fn do_process_earn(
         name: customer_name,
         external_id: None,
     };
-    let (customer, _is_new) = identity::storage::resolve_or_create(pool, &resolve_req).await?;
+    let (customer, is_new) = identity::storage::resolve_or_create(pool, &resolve_req).await?;
 
     let wallet =
         wallets::storage::get_or_create_wallet(pool, event.merchant_id, customer.id).await?;
@@ -92,6 +94,8 @@ async fn do_process_earn(
     let order_stats =
         storage::get_customer_order_stats(pool, event.merchant_id, customer.id).await?;
     let is_first_order = order_stats.is_none();
+
+    maybe_auto_create_referral_code(pool, event.merchant_id, customer.id, customer.name.as_deref(), is_new, is_first_order).await;
 
     let context = build_evaluation_context(event, order_amount, payment_method, is_cod, is_first_order);
 
@@ -186,6 +190,49 @@ async fn do_process_earn(
         entries_created,
         is_cod,
     })
+}
+
+async fn maybe_auto_create_referral_code(
+    pool: &PgPool,
+    merchant_id: Uuid,
+    customer_id: Uuid,
+    customer_name: Option<&str>,
+    is_new: bool,
+    is_first_order: bool,
+) {
+    let trigger = match referrals::storage::get_active_program_trigger(pool, merchant_id).await {
+        Ok(Some(t)) => t,
+        _ => return,
+    };
+
+    let should_create = match trigger {
+        CodeCreationTrigger::OnRegistration => is_new,
+        CodeCreationTrigger::OnFirstPurchase => is_first_order,
+    };
+
+    if !should_create {
+        return;
+    }
+
+    if let Ok(Some(_)) =
+        referrals::storage::get_customer_referral_code(pool, merchant_id, customer_id).await
+    {
+        return;
+    }
+
+    let code = referrals::helpers::generate_referral_code(customer_name);
+    let req = referrals::types::CreateCodeRequest {
+        merchant_id,
+        customer_id,
+        code: None,
+        is_vanity: customer_name.is_some(),
+        is_creator: false,
+        commission_rate: None,
+    };
+
+    if let Err(e) = referrals::storage::create_referral_code(pool, &req, &code).await {
+        tracing::warn!(error = ?e, %merchant_id, %customer_id, "failed to auto-create referral code");
+    }
 }
 
 #[tracing::instrument(skip(pool), err(Debug))]

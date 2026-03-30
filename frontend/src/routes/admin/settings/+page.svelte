@@ -164,6 +164,7 @@
 <div class="settings-page">
   <header class="page-header">
     <h1 class="page-title">Settings</h1>
+    <p class="page-subtitle">Configure your store, integrations, and notifications</p>
   </header>
 
   <Tabs
@@ -242,31 +243,35 @@
                       </div>
                     </div>
                     <div class="link-actions">
-                      <button
-                        class="icon-btn"
-                        class:copied={copiedLink === link.path}
+                      <Button
+                        classes="icon-btn{copiedLink === link.path ? ' copied' : ''}"
                         onclick={() => handleCopyLink(link.path, link.name)}
-                        aria-label={copiedLink === link.path ? 'Copied' : 'Copy link'}
-                        title={copiedLink === link.path ? 'Copied!' : 'Copy link'}
                       >
-                        {#if copiedLink === link.path}
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="20 6 9 17 4 12"/>
-                          </svg>
-                        {:else}
+                        {#snippet children()}
+                          {#if copiedLink === link.path}
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                              <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                          {:else}
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                              <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+                            </svg>
+                          {/if}
+                        {/snippet}
+                      </Button>
+                      <Button
+                        classes="icon-btn"
+                        onclick={() => handleOpenLink(link.path)}
+                      >
+                        {#snippet children()}
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+                            <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+                            <polyline points="15 3 21 3 21 9"/>
+                            <line x1="10" y1="14" x2="21" y2="3"/>
                           </svg>
-                        {/if}
-                      </button>
-                      <button class="icon-btn" onclick={() => handleOpenLink(link.path)} aria-label="Open in new tab" title="Open in new tab">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
-                          <polyline points="15 3 21 3 21 9"/>
-                          <line x1="10" y1="14" x2="21" y2="3"/>
-                        </svg>
-                      </button>
+                        {/snippet}
+                      </Button>
                     </div>
                   </div>
                 {/each}
@@ -316,19 +321,24 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-6);
-    padding: var(--space-8);
     max-width: 1200px;
   }
 
   .page-header {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    gap: var(--space-1);
   }
 
   .page-title {
     font-size: var(--font-size-2xl);
     font-weight: var(--font-weight-bold);
     color: var(--color-text);
+  }
+
+  .page-subtitle {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
   }
 
   .tab-content {
@@ -468,30 +478,26 @@
     flex-shrink: 0;
   }
 
-  .icon-btn {
+  :global(.icon-btn) {
+    --button-color: transparent;
+    --button-text-color: var(--color-text-muted);
+    --button-border: 1px solid var(--color-border);
+    --button-border-radius: var(--radius-sm);
+    --button-padding: 0;
+    --button-hover-color: transparent;
+    --button-hover-text-color: var(--color-primary);
+    --button-hover-border: 1px solid var(--color-primary);
+    width: 32px;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
-    padding: 0;
-    background: none;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    color: var(--color-text-muted);
-    cursor: pointer;
-    transition: all var(--transition-fast);
   }
 
-  .icon-btn:hover {
-    color: var(--color-primary);
-    border-color: var(--color-primary);
-  }
-
-  .icon-btn.copied {
-    color: var(--color-success);
-    border-color: var(--color-success);
-    background: color-mix(in srgb, var(--color-success) 8%, transparent);
+  :global(.icon-btn.copied) {
+    --button-text-color: var(--color-success);
+    --button-border: 1px solid var(--color-success);
+    --button-color: color-mix(in srgb, var(--color-success) 8%, transparent);
   }
 
   @media (max-width: 768px) {

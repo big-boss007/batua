@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
-  import { ThemeSwitcher } from '@juspay/svelte-ui-components';
+  import { ThemeSwitcher, Pill } from '@juspay/svelte-ui-components';
   import { sidebarStore, themeStore } from '$lib/client/modules/foundation';
   import type { NavItem } from '$lib/client/modules/admin';
   import { currentMerchant, fetchMerchants, getCurrentMerchantId } from '$lib/client/modules/admin';
@@ -24,7 +24,7 @@
       icon: '\u2665',
       children: [
         { label: 'Earn Rules', href: '/admin/rules', icon: '' },
-        { label: 'Tiers', href: '/admin/loyalty', icon: '' },
+        { label: 'VIP Tiers', href: '/admin/loyalty', icon: '' },
         { label: 'Memberships', href: '/admin/memberships', icon: '' },
         { label: 'Campaigns', href: '/admin/campaigns', icon: '' }
       ]
@@ -113,7 +113,7 @@
         </button>
         <span class="merchant-name">Merchant Admin</span>
         {#if merchantName}
-          <span class="merchant-name-badge">{merchantName}</span>
+          <Pill text={merchantName} classes="pill-neutral" />
         {/if}
       </div>
       <div class="top-bar-right">
@@ -187,15 +187,6 @@
     font-size: var(--font-size-md);
     font-weight: var(--font-weight-semibold);
     color: var(--color-text);
-  }
-
-  .merchant-name-badge {
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
-    color: var(--color-primary);
-    background: var(--color-surface-2);
-    padding: var(--space-1) var(--space-3);
-    border-radius: var(--radius-full, 9999px);
   }
 
   .content {

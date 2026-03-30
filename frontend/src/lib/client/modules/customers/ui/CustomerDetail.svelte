@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Avatar, Pill } from '@juspay/svelte-ui-components';
+  import { Avatar, Pill, Progress } from '@juspay/svelte-ui-components';
   import type { CustomerDetail as CustomerDetailType, BucketBalance } from '$lib/client/modules/customers';
   import { formatMovementType, formatBucketType } from '$lib/client/modules/customers';
   import {
@@ -132,7 +132,7 @@
             <span class="progress-label">Progress to {tier.progress_to_next.next_tier_name}</span>
             <span class="progress-value">{Math.round(tier.progress_to_next.percentage)}%</span>
           </div>
-          <div class="progress-track"><div class="progress-fill fill-purple" style="width: {tier.progress_to_next.percentage}%;"></div></div>
+          <Progress value={tier.progress_to_next.percentage} classes="progress-bar-purple" />
           <div class="progress-footer">
             <span>₹{tier.progress_to_next.current_value.toLocaleString('en-IN')}</span>
             <span>₹{tier.progress_to_next.threshold.toLocaleString('en-IN')}</span>
@@ -203,14 +203,7 @@
           <span class="progress-label">Time remaining</span>
           <span class="progress-value" class:progress-value-warn={membershipExpiring}>{membership.days_remaining} days</span>
         </div>
-        <div class="progress-track">
-          <div
-            class="progress-fill"
-            class:fill-green={!membershipExpiring}
-            class:fill-amber={membershipExpiring}
-            style="width: {Math.min(100, (membership.days_remaining / 365) * 100)}%;"
-          ></div>
-        </div>
+        <Progress value={Math.min(100, (membership.days_remaining / 365) * 100)} classes={membershipExpiring ? 'progress-bar-amber' : 'progress-bar-green'} />
       </div>
     {:else}
       <span class="no-data">No active membership</span>
@@ -341,11 +334,9 @@
   .progress-label { font-size: var(--font-size-xs); color: var(--color-text-muted); }
   .progress-value { font-size: var(--font-size-xs); font-weight: var(--font-weight-medium); color: var(--color-text); }
   .progress-value-warn { color: #f59e0b; }
-  .progress-track { height: 6px; border-radius: 3px; background: var(--color-border); overflow: hidden; }
-  .progress-fill { height: 100%; border-radius: 3px; }
-  .fill-purple { background: var(--color-primary); }
-  .fill-green { background: var(--color-success); }
-  .fill-amber { background: #f59e0b; }
+  :global(.progress-bar-purple) { --progress-fill-color: var(--color-primary); --progress-height: 6px; --progress-border-radius: 3px; --progress-background-color: var(--color-border); }
+  :global(.progress-bar-green) { --progress-fill-color: var(--color-success); --progress-height: 6px; --progress-border-radius: 3px; --progress-background-color: var(--color-border); }
+  :global(.progress-bar-amber) { --progress-fill-color: #f59e0b; --progress-height: 6px; --progress-border-radius: 3px; --progress-background-color: var(--color-border); }
   .progress-footer { display: flex; justify-content: space-between; margin-top: 3px; font-size: 10px; color: var(--color-text-muted); }
 
   /* Effective tier callout */

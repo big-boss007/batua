@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Input } from '@juspay/svelte-ui-components';
+  import { Input, Loader } from '@juspay/svelte-ui-components';
   import type { Customer } from '$lib/client/modules/customers';
   import { formatDate, formatPhone } from '$lib/client/modules/foundation';
 
@@ -59,7 +59,9 @@
   <div class="search-input-wrapper">
     <Input value={query} placeholder="Search by phone or external ID..." onInput={handleInput} />
     {#if loading}
-      <span class="search-spinner"></span>
+      <div class="search-spinner-wrapper">
+        <Loader classes="search-spinner" />
+      </div>
     {/if}
   </div>
 
@@ -100,21 +102,16 @@
     align-items: center;
   }
 
-  .search-spinner {
+  .search-spinner-wrapper {
     position: absolute;
     right: var(--space-3);
-    width: 16px;
-    height: 16px;
-    border: 2px solid var(--color-border);
-    border-top-color: var(--color-primary);
-    border-radius: 50%;
-    animation: spin 0.6s linear infinite;
+    display: flex;
+    align-items: center;
   }
 
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
+  :global(.search-spinner) {
+    --loader-width: 16px;
+    --loader-height: 16px;
   }
 
   .search-results {

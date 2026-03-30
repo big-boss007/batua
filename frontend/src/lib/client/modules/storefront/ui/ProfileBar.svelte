@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { Avatar, Button } from '@juspay/svelte-ui-components';
+
   import { getInitials } from '../utils';
 
   let {
@@ -20,7 +22,7 @@
 
 <div class="greeting">
   <div class="greeting-left">
-    <div class="avatar">{getInitials(name)}</div>
+    <Avatar alt={name} name={getInitials(name)} classes="profile-avatar" />
     <div>
       <div class="greeting-text">Welcome back,</div>
       <div class="customer-name">{name}</div>
@@ -38,7 +40,7 @@
     </div>
   </div>
   {#if onSwitch !== null}
-    <button class="switch-btn" onclick={onSwitch}>Switch</button>
+    <Button text="Switch" classes="switch-btn" onclick={onSwitch} />
   {/if}
 </div>
 
@@ -55,17 +57,12 @@
     gap: 14px;
   }
 
-  .avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #6366f1, #818cf8);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    font-size: 16px;
-    color: #ffffff;
+  :global(.profile-avatar) {
+    --avatar-background: linear-gradient(135deg, #6366f1, #818cf8);
+    --avatar-color: #ffffff;
+    --avatar-size: 48px;
+    --avatar-font-size: 16px;
+    --avatar-font-weight: 600;
     flex-shrink: 0;
   }
 
@@ -101,20 +98,15 @@
     font-weight: 500;
   }
 
-  .switch-btn {
-    font-size: 12px;
-    color: #818cf8;
-    background: none;
-    border: 1px solid #2a2d3a;
-    padding: 5px 14px;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: all 0.2s;
+  :global(.switch-btn) {
+    --button-font-size: 12px;
+    --button-text-color: #818cf8;
+    --button-color: transparent;
+    --button-border: 1px solid #2a2d3a;
+    --button-padding: 5px 14px;
+    --button-border-radius: 20px;
+    --button-hover-color: rgba(99, 102, 241, 0.1);
+    --button-hover-text-color: #818cf8;
     flex-shrink: 0;
-  }
-
-  .switch-btn:hover {
-    border-color: #6366f1;
-    background: rgba(99, 102, 241, 0.1);
   }
 </style>

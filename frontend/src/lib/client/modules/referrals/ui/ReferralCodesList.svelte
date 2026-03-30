@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { Pill } from '@juspay/svelte-ui-components';
+
   import type { ReferralCode } from '$lib/client/modules/referrals';
 
   let { codes }: { codes: Array<ReferralCode> } = $props();
@@ -29,22 +31,20 @@
             <td>
               <div class="type-badges">
                 {#if code.is_vanity}
-                  <span class="badge badge-info">vanity</span>
+                  <Pill text="vanity" classes="pill-info" />
                 {/if}
                 {#if code.is_creator}
-                  <span class="badge badge-primary">creator</span>
+                  <Pill text="creator" classes="pill-info" />
                 {/if}
                 {#if !code.is_vanity && !code.is_creator}
-                  <span class="badge badge-muted">auto</span>
+                  <Pill text="auto" classes="pill-neutral" />
                 {/if}
               </div>
             </td>
             <td>{code.total_referrals}</td>
             <td>{code.total_conversions}</td>
             <td>
-              <span class="badge {code.is_active ? 'badge-success' : 'badge-muted'}">
-                {code.is_active ? 'active' : 'inactive'}
-              </span>
+              <Pill text={code.is_active ? 'Active' : 'Inactive'} classes={code.is_active ? 'pill-success' : 'pill-neutral'} />
             </td>
           </tr>
         {/each}
@@ -104,34 +104,6 @@
   .type-badges {
     display: flex;
     gap: var(--space-1);
-  }
-
-  .badge {
-    display: inline-block;
-    padding: var(--space-1) var(--space-2);
-    border-radius: var(--radius-full);
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-medium);
-  }
-
-  .badge-success {
-    color: var(--color-success);
-    background: color-mix(in srgb, var(--color-success) 12%, transparent);
-  }
-
-  .badge-info {
-    color: var(--color-info);
-    background: color-mix(in srgb, var(--color-info) 12%, transparent);
-  }
-
-  .badge-primary {
-    color: var(--color-primary);
-    background: color-mix(in srgb, var(--color-primary) 12%, transparent);
-  }
-
-  .badge-muted {
-    color: var(--color-text-muted);
-    background: var(--color-surface-2);
   }
 
   .empty-state {

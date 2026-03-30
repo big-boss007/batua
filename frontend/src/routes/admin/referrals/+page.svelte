@@ -1,11 +1,12 @@
 <script lang="ts">
-  import { Button, Input, Toggle, Pill } from '@juspay/svelte-ui-components';
+  import { Button, Input, Toggle, Pill, Table, Radio } from '@juspay/svelte-ui-components';
 
   import type {
     ReferralProgram,
     ReferralCode,
     ReferralAnalytics,
-    ReferralConversion
+    ReferralConversion,
+    CodeCreationTrigger
   } from '$lib/client/modules/referrals';
   import {
     createProgram,
@@ -18,6 +19,7 @@
   } from '$lib/client/modules/referrals';
   import type { Merchant } from '$lib/client/modules/admin';
   import { currentMerchant, currentMerchantId } from '$lib/client/modules/admin';
+  import { MetricCard } from '$lib/client/modules/admin/ui';
   import { toastStore } from '$lib/client/modules/foundation';
 
   type ViewMode = 'empty' | 'setup' | 'dashboard';
@@ -37,9 +39,32 @@
   let maxReferrals = $state('10');
   let hasMaxLimit = $state(true);
   let isActive = $state(true);
+  let codeCreationTrigger = $state<CodeCreationTrigger>('on_registration');
 
   let pointsName = $derived(merchant?.points_name ?? 'Points');
   let pointsIcon = $derived(merchant?.points_icon ?? 'pts');
+
+  const CODES_HEADERS = ['Code', 'Mobile', 'Type', 'Conversions', 'Status'];
+  let codesTableData = $derived(
+    codes.map((code) => [
+      code.code,
+      formatMobile(code.customer_id),
+      code.is_creator ? 'Creator' : 'Standard',
+      code.total_conversions,
+      code.is_active ? 'Active' : 'Inactive'
+    ])
+  );
+
+  const CONVERSIONS_HEADERS = ['Referrer', 'Referee', 'Order', 'Status', 'Date'];
+  let conversionsTableData = $derived(
+    conversions.slice(0, 10).map((conv) => [
+      formatMobile(conv.referrer_id),
+      formatMobile(conv.referee_id),
+      conv.order_id ?? '—',
+      conv.fraud_signals.length > 0 ? conv.fraud_signals.join('|') : 'Clean',
+      formatDate(conv.created_at)
+    ])
+  );
 
   let viewMode = $derived.by((): ViewMode => {
     if (loading) return 'empty';
@@ -84,6 +109,7 @@
       hasMaxLimit = program.max_referrals_per_customer !== null;
       maxReferrals = String(program.max_referrals_per_customer ?? 10);
       isActive = program.is_active;
+      codeCreationTrigger = program.code_creation_trigger ?? 'on_registration';
     }
     showSetup = true;
   }
@@ -100,7 +126,8 @@
       referrer_reward_amount: Number(referrerReward),
       referee_reward_amount: Number(refereeReward),
       max_referrals_per_customer: hasMaxLimit ? Number(maxReferrals) : null,
-      is_active: isActive
+      is_active: isActive,
+      code_creation_trigger: codeCreationTrigger
     };
 
     const result = program !== null
@@ -227,6 +254,39 @@
 
           <div class="config-divider"></div>
 
+          <div class="trigger-section">
+            <span class="trigger-section-label">When should referral codes be created?</span>
+            <div class="trigger-options">
+              <label class="trigger-option" class:selected={codeCreationTrigger === 'on_registration'}>
+                <Radio name="code_trigger" value="on_registration" selectedValue={codeCreationTrigger} onchange={(val) => { codeCreationTrigger = val as CodeCreationTrigger; }} />
+                <div>
+                  <span class="trigger-option-title">On registration <Pill text="Default" classes="pill-info trigger-default-pill" /></span>
+                  <span class="trigger-option-desc">Every new customer gets a referral code when they first interact with your store</span>
+                </div>
+              </label>
+              <label class="trigger-option" class:selected={codeCreationTrigger === 'on_first_purchase'}>
+                <Radio name="code_trigger" value="on_first_purchase" selectedValue={codeCreationTrigger} onchange={(val) => { codeCreationTrigger = val as CodeCreationTrigger; }} />
+                <div>
+                  <span class="trigger-option-title">On first purchase</span>
+                  <span class="trigger-option-desc">Referral code is created only after the customer completes their first order</span>
+                </div>
+              </label>
+            </div>
+            {#if codeCreationTrigger === 'on_registration'}
+              <div class="trigger-advice registration">
+                <strong>Maximises referral reach</strong>
+                Every new customer gets a code immediately and can start referring friends right away. Some codes may go unused if customers don't engage further.
+              </div>
+            {:else}
+              <div class="trigger-advice first-purchase">
+                <strong>Only active buyers get codes</strong>
+                Codes are created after a customer's first order, ensuring only engaged buyers can refer. Customers won't be able to share their code until they've purchased.
+              </div>
+            {/if}
+          </div>
+
+          <div class="config-divider"></div>
+
           <Toggle text="Program active" checked={isActive} onclick={(checked) => { isActive = checked; }} />
 
           <div class="config-actions">
@@ -258,21 +318,22 @@
 
     <div class="status-bar" class:inactive={!program?.is_active}>
       <span class="status-text">
-        <span class="status-dot"></span>
-        {program?.is_active ? 'Active' : 'Paused'} — Referrer: {program?.referrer_reward_amount} {pointsIcon} · Referee: {program?.referee_reward_amount} {pointsIcon}
+        <Pill text={program?.is_active ? 'Active' : 'Paused'} classes={program?.is_active ? 'pill-success' : 'pill-error'} />
+        <span class="status-summary">Referrer: {program?.referrer_reward_amount} {pointsIcon} · Referee: {program?.referee_reward_amount} {pointsIcon}</span>
         {#if program?.max_referrals_per_customer !== null}
           · Max {program?.max_referrals_per_customer}/customer
         {/if}
+        · Codes: {program?.code_creation_trigger === 'on_first_purchase' ? 'on first purchase' : 'on registration'}
       </span>
       <Button text={program?.is_active ? 'Pause' : 'Resume'} classes={program?.is_active ? 'btn-danger-sm' : 'btn-success-sm'} onclick={handleToggleActive} />
     </div>
 
     {#if analytics !== null}
       <div class="metrics-row">
-        <div class="metric-card"><span class="metric-val">{analytics.total_codes}</span><span class="metric-label">Total Codes</span></div>
-        <div class="metric-card"><span class="metric-val">{analytics.total_referrals}</span><span class="metric-label">Referrals</span></div>
-        <div class="metric-card"><span class="metric-val">{analytics.total_conversions}</span><span class="metric-label">Conversions</span></div>
-        <div class="metric-card"><span class="metric-val">{analytics.conversion_rate > 0 ? `${analytics.conversion_rate.toFixed(1)}%` : '0%'}</span><span class="metric-label">Conversion Rate</span></div>
+        <MetricCard label="Total Codes" value={analytics.total_codes} size="compact" />
+        <MetricCard label="Referrals" value={analytics.total_referrals} size="compact" />
+        <MetricCard label="Conversions" value={analytics.total_conversions} size="compact" />
+        <MetricCard label="Conversion Rate" displayValue={analytics.conversion_rate > 0 ? `${analytics.conversion_rate.toFixed(1)}%` : '0%'} size="compact" />
       </div>
     {/if}
 
@@ -280,60 +341,59 @@
       <span class="section-title">All Referral Codes</span>
       <span class="section-count">{codes.length} codes</span>
     </div>
-    {#if codes.length > 0}
-      <div class="table-wrapper">
-        <table class="data-table">
-          <thead><tr><th>Code</th><th>Mobile</th><th>Type</th><th>Conversions</th><th>Status</th></tr></thead>
-          <tbody>
-            {#each codes as code (code.id)}
-              <tr>
-                <td><code class="code-mono">{code.code}</code></td>
-                <td class="text-muted">{formatMobile(code.customer_id)}</td>
-                <td>
-                  {#if code.is_creator}
-                    <Pill text="Creator" classes="pill-info" />
-                  {:else}
-                    <Pill text="Standard" classes="pill-neutral" />
-                  {/if}
-                </td>
-                <td class="text-bold">{code.total_conversions}</td>
-                <td><Pill text={code.is_active ? 'Active' : 'Inactive'} classes={code.is_active ? 'pill-success' : 'pill-neutral'} /></td>
-              </tr>
-            {/each}
-          </tbody>
-        </table>
-      </div>
-    {:else}
-      <div class="empty-section">No referral codes yet. Codes are auto-generated when customers share from the storefront.</div>
-    {/if}
+    <Table
+      tableHeaders={CODES_HEADERS}
+      tableData={codesTableData}
+      sortable={false}
+      --table-row-hover-background="var(--color-surface-2)"
+      --table-content-font-size="var(--font-size-sm)"
+    >
+      {#snippet cell(value, _rowIndex, colIndex)}
+        {#if colIndex === 0}
+          <code class="code-mono">{value}</code>
+        {:else if colIndex === 1}
+          <span class="text-muted">{value}</span>
+        {:else if colIndex === 2}
+          <Pill text={String(value)} classes={value === 'Creator' ? 'pill-info' : 'pill-neutral'} />
+        {:else if colIndex === 3}
+          <span class="text-bold">{value}</span>
+        {:else if colIndex === 4}
+          <Pill text={String(value)} classes={value === 'Active' ? 'pill-success' : 'pill-neutral'} />
+        {:else}
+          {value}
+        {/if}
+      {/snippet}
+      {#snippet empty()}
+        <p class="table-empty">No referral codes yet. Codes are auto-generated when customers share from the storefront.</p>
+      {/snippet}
+    </Table>
 
     {#if conversions.length > 0}
       <div class="table-divider"></div>
       <div class="section-header"><span class="section-title">Recent Conversions</span></div>
-      <div class="table-wrapper">
-        <table class="data-table">
-          <thead><tr><th>Referrer</th><th>Referee</th><th>Order</th><th>Status</th><th>Date</th></tr></thead>
-          <tbody>
-            {#each conversions.slice(0, 10) as conv (conv.id)}
-              <tr class:suspicious-row={conv.is_suspicious}>
-                <td>{formatMobile(conv.referrer_id)}</td>
-                <td>{formatMobile(conv.referee_id)}</td>
-                <td>{conv.order_id ?? '—'}</td>
-                <td>
-                  {#if conv.fraud_signals.length > 0}
-                    {#each conv.fraud_signals as signal}
-                      <Pill text={signal} classes="pill-warning" />
-                    {/each}
-                  {:else}
-                    <Pill text="Clean" classes="pill-success" />
-                  {/if}
-                </td>
-                <td class="text-muted nowrap">{formatDate(conv.created_at)}</td>
-              </tr>
-            {/each}
-          </tbody>
-        </table>
-      </div>
+      <Table
+        tableHeaders={CONVERSIONS_HEADERS}
+        tableData={conversionsTableData}
+        sortable={false}
+        --table-row-hover-background="var(--color-surface-2)"
+        --table-content-font-size="var(--font-size-sm)"
+      >
+        {#snippet cell(value, _rowIndex, colIndex)}
+          {#if colIndex === 3}
+            {#if value === 'Clean'}
+              <Pill text="Clean" classes="pill-success" />
+            {:else}
+              {#each String(value).split('|') as signal}
+                <Pill text={signal} classes="pill-warning" />
+              {/each}
+            {/if}
+          {:else if colIndex === 4}
+            <span class="text-muted nowrap">{value}</span>
+          {:else}
+            {value}
+          {/if}
+        {/snippet}
+      </Table>
     {/if}
   {/if}
 </div>
@@ -387,28 +447,18 @@
   .preview-arrow { color: var(--color-text-muted); font-size: var(--font-size-md); }
   .preview-note { font-size: 10px; color: var(--color-text-muted); }
 
-  .status-bar { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-3) var(--space-4); background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--radius-md); }
-  .status-bar.inactive { background: #fef2f2; border-color: #fecaca; }
-  .status-text { font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); color: #065f46; display: flex; align-items: center; gap: var(--space-2); flex: 1; }
-  .status-bar.inactive .status-text { color: #991b1b; }
-  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; flex-shrink: 0; }
-  .status-bar.inactive .status-dot { background: #ef4444; }
+  .status-bar { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-3) var(--space-4); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+  .status-text { font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); color: var(--color-text); display: flex; align-items: center; gap: var(--space-2); flex: 1; }
+  .status-summary { color: var(--color-text-muted); }
   .status-bar :global(button) { flex-shrink: 0; cursor: pointer; position: relative; z-index: 1; }
 
   .metrics-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-4); }
-  .metric-card { padding: var(--space-4); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); }
-  .metric-val { font-size: var(--font-size-xl); font-weight: var(--font-weight-bold); color: var(--color-text); display: block; }
-  .metric-label { font-size: var(--font-size-xs); color: var(--color-text-muted); font-weight: var(--font-weight-medium); margin-top: 2px; display: block; }
 
   .section-header { display: flex; align-items: baseline; gap: var(--space-2); }
   .section-title { font-size: var(--font-size-md); font-weight: var(--font-weight-semibold); }
   .section-count { font-size: var(--font-size-xs); color: var(--color-text-muted); }
 
-  .table-wrapper { border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; }
-  .data-table { width: 100%; border-collapse: collapse; font-size: var(--font-size-sm); }
-  .data-table th { text-align: left; padding: var(--space-3) var(--space-4); font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold); color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.04em; background: var(--color-surface); border-bottom: 1px solid var(--color-border); }
-  .data-table td { padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-border); }
-  .data-table tr:last-child td { border-bottom: none; }
+  .table-empty { padding: var(--space-8); text-align: center; color: var(--color-text-muted); font-size: var(--font-size-sm); }
 
   .code-mono { font-family: var(--font-mono); font-size: var(--font-size-xs); padding: 2px 8px; background: var(--color-surface-2); border-radius: var(--radius-sm); font-weight: var(--font-weight-semibold); }
 
@@ -416,11 +466,24 @@
   .text-bold { font-weight: var(--font-weight-semibold); }
   .nowrap { white-space: nowrap; }
 
-  .suspicious-row { background: color-mix(in srgb, var(--color-warning) 5%, transparent); }
-
   .table-divider { height: 1px; background: var(--color-border); }
 
-  .empty-section { padding: var(--space-8); text-align: center; color: var(--color-text-muted); font-size: var(--font-size-sm); border: 1px dashed var(--color-border); border-radius: var(--radius-lg); }
+  .trigger-section { border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-4); background: var(--color-surface-2); }
+  .trigger-section-label { font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold); color: var(--color-text); margin-bottom: var(--space-3); display: block; }
+  .trigger-options { display: flex; flex-direction: column; gap: var(--space-2); }
+  .trigger-option { display: flex; align-items: flex-start; gap: var(--space-3); padding: var(--space-3) var(--space-4); border: 2px solid var(--color-border); border-radius: var(--radius-md); cursor: pointer; transition: 0.15s; background: var(--color-surface); }
+  .trigger-option:hover { border-color: color-mix(in srgb, var(--color-primary) 50%, transparent); }
+  .trigger-option.selected { border-color: var(--color-primary); background: color-mix(in srgb, var(--color-primary) 5%, var(--color-surface)); }
+  .trigger-option :global(.radio-container) { margin-top: 2px; accent-color: var(--color-primary); }
+  .trigger-option-title { font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); color: var(--color-text); display: block; }
+  .trigger-option-desc { font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: 2px; display: block; line-height: 1.4; }
+  :global(.trigger-default-pill) { display: inline-flex; vertical-align: middle; margin-left: var(--space-2); --pill-font-size: 9px; }
+  .trigger-advice { border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); font-size: var(--font-size-xs); line-height: 1.6; margin-top: var(--space-3); }
+  .trigger-advice strong { display: block; margin-bottom: 2px; font-size: var(--font-size-sm); }
+  .trigger-advice.registration { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+  .trigger-advice.first-purchase { background: #fefce8; border: 1px solid #fde68a; color: #854d0e; }
+  :global([data-theme='dark']) .trigger-advice.registration { background: #1e2a3a; border-color: #1e3a5f; color: #93c5fd; }
+  :global([data-theme='dark']) .trigger-advice.first-purchase { background: #2a2518; border-color: #4a3d1a; color: #fde68a; }
 
   :global(.btn-secondary-sm) {
     --button-color: transparent;

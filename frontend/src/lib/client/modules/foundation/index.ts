@@ -10,5 +10,6 @@ export {
   normalizePhoneE164,
   formatPhone,
   formatPoints,
-  isPointsBucket
+  isPointsBucket,
+  MODAL_CLOSE_ICON
 } from './utils';

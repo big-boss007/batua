@@ -115,7 +115,7 @@
   {:else}
     <GiftCardStatus {card} {customerId} onClaimed={handleClaimed} />
     <div class="gift-check-actions">
-      <button class="check-another" onclick={handleReset}> Check another card </button>
+      <Button text="Check another card" classes="check-another" onclick={handleReset} />
     </div>
   {/if}
 
@@ -141,13 +141,13 @@
   .gift-check-title {
     font-size: var(--font-size-2xl);
     font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    color: #e5e7eb;
     margin-bottom: var(--space-2);
   }
 
   .gift-check-subtitle {
     font-size: var(--font-size-base);
-    color: var(--color-text-muted);
+    color: #9ca3af;
   }
 
   .gift-check-form {
@@ -196,19 +196,15 @@
     padding: var(--space-4) 0;
   }
 
-  .check-another {
-    background: none;
-    border: none;
-    color: var(--color-primary);
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-medium);
-    padding: var(--space-2) var(--space-4);
-    border-radius: var(--radius-md);
-    transition: background var(--transition-fast);
-  }
-
-  .check-another:hover {
-    background: var(--color-surface);
+  :global(.check-another) {
+    --button-color: transparent;
+    --button-text-color: var(--color-primary);
+    --button-font-size: var(--font-size-base);
+    --button-font-weight: var(--font-weight-medium);
+    --button-padding: var(--space-2) var(--space-4);
+    --button-border-radius: var(--radius-md);
+    --button-border: none;
+    --button-hover-color: var(--color-surface);
   }
 
   .loading-skeleton {

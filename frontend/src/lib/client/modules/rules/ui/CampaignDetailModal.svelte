@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Campaign, Rule, CampaignStackingConfig } from '../types';
-  import { Progress } from '@juspay/svelte-ui-components';
+  import { Button, Modal, Progress } from '@juspay/svelte-ui-components';
+  import { MODAL_CLOSE_ICON } from '$lib/client/modules/foundation';
 
   let {
     campaign,
@@ -57,15 +58,14 @@
   let mult = $derived(campaign.multiplier ?? 1);
 </script>
 
-<!-- svelte-ignore a11y_click_events_have_key_events -->
-<div class="modal-overlay" role="presentation" onclick={onClose}>
-  <!-- svelte-ignore a11y_click_events_have_key_events -->
-  <div class="modal-panel" role="dialog" aria-label="Campaign details" tabindex="-1" onclick={(e) => e.stopPropagation()}>
-    <div class="modal-header">
-      <span class="modal-title">Campaign Details</span>
-      <button class="modal-close" onclick={onClose}>&times;</button>
-    </div>
-
+<Modal
+  size="medium"
+  header={{ text: 'Campaign Details', rightImage: MODAL_CLOSE_ICON }}
+  onclose={onClose}
+  onoverlayClick={onClose}
+  onheaderRightImageClick={onClose}
+>
+  {#snippet content()}
     <div class="modal-body">
       <div class="campaign-title-row">
         <span class="campaign-name">{campaign.name}</span>
@@ -133,59 +133,14 @@
       </div>
 
       {#if status === 'active'}
-        <button class="btn-deactivate" onclick={() => onDeactivate(campaign.id)}>Deactivate Campaign</button>
+        <Button text="Deactivate Campaign" onclick={() => onDeactivate(campaign.id)} classes="btn-danger deactivate-btn" />
       {/if}
     </div>
-  </div>
-</div>
+  {/snippet}
+</Modal>
 
 <style>
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    padding-top: var(--space-12);
-    z-index: var(--z-modal);
-    overflow-y: auto;
-  }
-
-  .modal-panel {
-    background: var(--color-bg);
-    border-radius: var(--radius-lg);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
-    width: 560px;
-    max-width: 100%;
-    overflow: hidden;
-  }
-
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--space-4) var(--space-5);
-    border-bottom: 1px solid var(--color-border);
-  }
-
-  .modal-title {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-  }
-
-  .modal-close {
-    background: none;
-    border: none;
-    font-size: 20px;
-    color: var(--color-text-muted);
-    cursor: pointer;
-    padding: 2px 6px;
-    border-radius: var(--radius-sm);
-  }
-
   .modal-body {
-    padding: var(--space-5);
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
@@ -407,19 +362,7 @@
 
   .perf-value.green { color: #22c55e; }
 
-  .btn-deactivate {
-    padding: var(--space-2) var(--space-3);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
-    color: #ef4444;
-    background: white;
-    border: 1px solid #fecaca;
-    border-radius: var(--radius-md);
-    cursor: pointer;
+  .deactivate-btn {
     align-self: flex-start;
-  }
-
-  .btn-deactivate:hover {
-    background: #fef2f2;
   }
 </style>
