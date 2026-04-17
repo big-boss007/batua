@@ -90,6 +90,49 @@ export type TierDistribution = {
   count: number;
 };
 
+export type WalletActionType = 'add' | 'remove' | 'expire';
+export type WalletUnitType = 'cash' | 'points';
+export type WalletActionStep = 'form' | 'confirm' | 'loading' | 'success' | 'error';
+
+export type AddRequest = {
+  merchant_id: string;
+  customer_id: string;
+  bucket_type: string;
+  amount: number;
+  expiry_days: number | null;
+  reason_category: string;
+  reason_text: string;
+  reference: string | null;
+};
+
+export type RemoveRequest = {
+  merchant_id: string;
+  customer_id: string;
+  bucket_type: string;
+  amount: number;
+  reason_category: string;
+  reason_text: string;
+  reference: string | null;
+};
+
+export type ExpireRequest = {
+  merchant_id: string;
+  customer_id: string;
+  bucket_types: Array<string>;
+  reason_category: string;
+  reason_text: string;
+  reference: string | null;
+};
+
+export type WalletActionResult = {
+  success: boolean;
+  ledger_entry_id: string | null;
+  entries_affected: number;
+  amount_affected: number;
+  new_balance: number;
+  error: string | null;
+};
+
 export type MerchantCustomerRow = {
   customer_id: string;
   customer_name: string | null;

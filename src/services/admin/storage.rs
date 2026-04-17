@@ -560,6 +560,62 @@ pub async fn list_merchant_customers(
 }
 
 #[tracing::instrument(skip(pool), err(Debug))]
+pub async fn update_customer(
+    pool: &PgPool,
+    merchant_id: Uuid,
+    customer_id: Uuid,
+    name: Option<&str>,
+    email: Option<&str>,
+) -> Result<MerchantCustomer, AppError> {
+    sqlx::query_scalar::<_, Uuid>(
+        r#"
+        SELECT w.id FROM wallets w
+        WHERE w.merchant_id = $1 AND w.customer_id = $2
+        "#,
+    )
+    .bind(merchant_id)
+    .bind(customer_id)
+    .fetch_optional(pool)
+    .await?
+    .ok_or_else(|| AppError::NotFound("customer not found for this merchant".to_string()))?;
+
+    sqlx::query(
+        r#"
+        UPDATE customers
+        SET name = COALESCE($2, name),
+            email = COALESCE($3, email),
+            updated_at = NOW()
+        WHERE id = $1
+        "#,
+    )
+    .bind(customer_id)
+    .bind(name)
+    .bind(email)
+    .execute(pool)
+    .await?;
+
+    let customer = sqlx::query_as::<_, MerchantCustomer>(
+        r#"
+        SELECT c.id AS customer_id,
+               c.name AS customer_name,
+               c.phone AS customer_phone,
+               c.email AS customer_email,
+               w.id AS wallet_id,
+               w.created_at
+        FROM wallets w
+        JOIN customers c ON c.id = w.customer_id
+        WHERE w.merchant_id = $1 AND w.customer_id = $2
+        "#,
+    )
+    .bind(merchant_id)
+    .bind(customer_id)
+    .fetch_one(pool)
+    .await?;
+
+    Ok(customer)
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
 pub async fn list_merchant_transactions(
     pool: &PgPool,
     merchant_id: Uuid,

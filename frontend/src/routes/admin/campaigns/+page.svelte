@@ -166,8 +166,8 @@
     <div class="section-header">
       <h2 class="section-title">Active & Upcoming Campaigns</h2>
       <div class="section-actions">
-        <Button text="Settings" classes="btn-secondary btn-sm" onclick={() => { showSettingsModal = true; }} />
-        <Button text="+ Create Campaign" classes="btn-primary btn-sm" onclick={() => { showCreateModal = true; }} />
+        <Button text="Settings" classes="btn-secondary" onclick={() => { showSettingsModal = true; }} />
+        <Button text="+ Create Campaign" classes="btn-primary" onclick={() => { showCreateModal = true; }} />
       </div>
     </div>
     <CampaignsList campaigns={$campaignsStore} {rules} onSelect={handleSelectCampaign} />
@@ -283,29 +283,6 @@
     margin-bottom: var(--space-4);
   }
 
-  :global(.btn-primary) {
-    --button-color: var(--color-primary);
-    --button-text-color: #ffffff;
-    --button-border-radius: var(--radius-md);
-    --button-font-size: var(--font-size-sm);
-    --button-font-weight: var(--font-weight-medium);
-    --button-hover-color: var(--color-primary-hover);
-  }
-
-  :global(.btn-secondary) {
-    --button-color: var(--color-surface);
-    --button-text-color: var(--color-text);
-    --button-border: 1px solid var(--color-border);
-    --button-border-radius: var(--radius-md);
-    --button-font-size: var(--font-size-sm);
-    --button-font-weight: var(--font-weight-medium);
-    --button-hover-color: var(--color-surface-2);
-  }
-
-  :global(.btn-sm) {
-    --button-padding: var(--space-1) var(--space-3);
-    --button-font-size: var(--font-size-sm);
-  }
 
   .modal-overlay {
     position: fixed;

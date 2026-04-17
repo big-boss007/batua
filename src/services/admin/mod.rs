@@ -19,6 +19,8 @@ pub fn router() -> Router<AppState> {
             get(handler::get_merchant_by_slug),
         )
         .route("/admin/bulk-credit", post(handler::bulk_credit))
+        .route("/admin/debit", post(handler::admin_debit))
+        .route("/admin/force-expire", post(handler::admin_force_expire))
         .route("/admin/disputes", post(handler::process_dispute))
         .route(
             "/admin/wallet-policies",
@@ -51,6 +53,10 @@ pub fn router() -> Router<AppState> {
         .route(
             "/admin/merchants/{merchant_id}/customers",
             get(handler::merchant_customers),
+        )
+        .route(
+            "/admin/merchants/{merchant_id}/customers/{customer_id}",
+            put(handler::update_customer),
         )
         .route(
             "/admin/merchants/{merchant_id}/transactions",

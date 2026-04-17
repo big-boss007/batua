@@ -89,7 +89,7 @@
         <span class="variables-label">Variables:</span>
         <div class="variables-list">
           {#each variables as variable (variable)}
-            <Pill text={`{{${variable}}}`} classes="pill-variable" />
+            <Pill text={`{{${variable}}}`} classes="pill-info" />
           {/each}
         </div>
       </div>
@@ -210,10 +210,4 @@
     --input-font-size: var(--font-size-sm);
   }
 
-  :global(.pill-variable) {
-    --pill-background: color-mix(in srgb, var(--color-primary) 10%, transparent);
-    --pill-color: var(--color-primary);
-    --pill-font-family: var(--font-mono);
-    --pill-font-size: var(--font-size-xs);
-  }
 </style>

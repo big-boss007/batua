@@ -205,4 +205,18 @@
       padding: var(--space-4);
     }
   }
+
+  /* Modal: ensure bottom padding and rounded corners on all viewports */
+  :global(.modal .modal-content) {
+    max-height: calc(100vh - 96px) !important;
+    margin: 48px auto !important;
+    border-radius: var(--radius-lg) !important;
+    overflow: hidden !important;
+    padding-bottom: var(--space-5) !important;
+  }
+
+  :global(.modal .slot-content) {
+    flex: 1 !important;
+    min-height: 0 !important;
+  }
 </style>

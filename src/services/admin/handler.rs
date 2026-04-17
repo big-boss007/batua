@@ -8,10 +8,10 @@ use crate::error::AppError;
 use super::helpers;
 use super::storage;
 use super::types::{
-    BulkCreditRequest, CoalitionTransferRequest, CreateCoalitionRequest, CreateGeoPolicyRequest,
-    CreateMerchantRequest, DisputeRequest, MerchantCustomersQuery, MerchantTransactionsQuery,
-    PaginationQuery, RecentEventsQuery, UpdateMerchantRequest, UpdatePlanRequest,
-    WalletPolicyRequest,
+    AdminDebitRequest, AdminExpireRequest, BulkCreditRequest, CoalitionTransferRequest,
+    CreateCoalitionRequest, CreateGeoPolicyRequest, CreateMerchantRequest, DisputeRequest,
+    MerchantCustomersQuery, MerchantTransactionsQuery, PaginationQuery, RecentEventsQuery,
+    UpdateCustomerRequest, UpdateMerchantRequest, UpdatePlanRequest, WalletPolicyRequest,
 };
 
 #[tracing::instrument(skip(app_state))]
@@ -236,6 +236,24 @@ pub async fn merchant_customers(
 }
 
 #[tracing::instrument(skip(app_state))]
+pub async fn update_customer(
+    State(app_state): State<AppState>,
+    Path((merchant_id, customer_id)): Path<(Uuid, Uuid)>,
+    Json(req): Json<UpdateCustomerRequest>,
+) -> impl IntoResponse {
+    let customer = storage::update_customer(
+        &app_state.db,
+        merchant_id,
+        customer_id,
+        req.name.as_deref(),
+        req.email.as_deref(),
+    )
+    .await?;
+
+    Ok::<_, AppError>(Json(customer))
+}
+
+#[tracing::instrument(skip(app_state))]
 pub async fn merchant_analytics(
     State(app_state): State<AppState>,
     Path(merchant_id): Path<Uuid>,
@@ -335,4 +353,36 @@ pub async fn get_coalition_transfers(
     let transfers = storage::get_coalition_transfers_for_customer(pool, customer_id).await?;
 
     Ok::<_, AppError>(Json(transfers))
+}
+
+#[tracing::instrument(skip(app_state))]
+pub async fn admin_debit(
+    State(app_state): State<AppState>,
+    Json(req): Json<AdminDebitRequest>,
+) -> impl IntoResponse {
+    if req.amount <= 0.0 {
+        return Err(AppError::BadRequest(
+            "amount must be greater than zero".to_string(),
+        ));
+    }
+
+    let result = helpers::process_debit(&app_state.db, &req).await?;
+
+    Ok::<_, AppError>(Json(result))
+}
+
+#[tracing::instrument(skip(app_state))]
+pub async fn admin_force_expire(
+    State(app_state): State<AppState>,
+    Json(req): Json<AdminExpireRequest>,
+) -> impl IntoResponse {
+    if req.bucket_types.is_empty() {
+        return Err(AppError::BadRequest(
+            "bucket_types must not be empty".to_string(),
+        ));
+    }
+
+    let result = helpers::process_force_expire(&app_state.db, &req).await?;
+
+    Ok::<_, AppError>(Json(result))
 }

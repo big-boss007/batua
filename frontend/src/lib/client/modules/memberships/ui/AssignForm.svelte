@@ -316,7 +316,7 @@
         <Button text="Cancel" classes="btn-ghost" onclick={handleAssignAnother} />
         <Button
           text={actionLabel}
-          classes={isDowngrade ? 'btn-danger-outline' : 'btn-primary'}
+          classes={isDowngrade ? 'btn-danger' : 'btn-primary'}
           disabled={!canAssign}
           onclick={handleSubmitClick}
         />
@@ -362,7 +362,7 @@
         <Button text="Cancel" classes="btn-ghost" onclick={() => (showConfirm = false)} />
         <Button
           text={isDowngrade ? 'Confirm Downgrade' : 'Confirm'}
-          classes={isDowngrade ? 'btn-danger-outline' : 'btn-primary'}
+          classes={isDowngrade ? 'btn-danger' : 'btn-primary'}
           onclick={handleConfirm}
         />
       </div>
@@ -570,15 +570,6 @@
     color: #991b1b;
   }
 
-  :global(.btn-danger-outline) {
-    background: white;
-    color: var(--color-error) !important;
-    border: 1px solid var(--color-error) !important;
-  }
-
-  :global(.btn-danger-outline:hover) {
-    background: #fef2f2;
-  }
 
   /* Success */
   .success-card {

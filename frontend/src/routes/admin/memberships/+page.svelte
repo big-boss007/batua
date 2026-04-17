@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Tabs, Shimmer, Input, Select, Pagination, Pill, Progress, Modal } from '@juspay/svelte-ui-components';
+  import { Tabs, Shimmer, Input, Select, Pagination, Pill, Progress, Modal, Button } from '@juspay/svelte-ui-components';
   import { currentMerchantId } from '$lib/client/modules/admin';
   import {
     toastStore,
@@ -395,7 +395,7 @@
         <div class="empty-state">
           <div class="empty-icon">👥</div>
           <p>No memberships assigned yet.</p>
-          <button class="link-btn" onclick={() => { activeTabIndex = 1; }}>Assign a membership →</button>
+          <Button text="Assign a membership →" classes="btn-ghost" onclick={() => { activeTabIndex = 1; }} />
         </div>
       {:else}
         <div class="table-card">
@@ -627,15 +627,15 @@
 
         <div class="detail-actions" class:actions-dimmed={modalMode !== 'default'}>
           {#if st === 'expiring'}
-            <button class="action-btn action-renew" onclick={() => { modalMode = 'renew-confirm'; }}>↻ Renew for 1 Year</button>
-            <button class="action-btn action-upgrade" onclick={() => { modalMode = 'upgrade'; selectedUpgradeTierId = ''; }}>⬆ Upgrade Tier</button>
-            <button class="action-btn action-cancel" onclick={() => { modalMode = 'cancel-confirm'; }}>Cancel</button>
+            <Button text="↻ Renew for 1 Year" classes="btn-primary" onclick={() => { modalMode = 'renew-confirm'; }} />
+            <Button text="⬆ Upgrade Tier" classes="btn-secondary" onclick={() => { modalMode = 'upgrade'; selectedUpgradeTierId = ''; }} />
+            <Button text="Cancel" classes="btn-danger" onclick={() => { modalMode = 'cancel-confirm'; }} />
           {:else if st === 'active'}
-            <button class="action-btn action-upgrade" onclick={() => { modalMode = 'upgrade'; selectedUpgradeTierId = ''; }}>⬆ Upgrade Tier</button>
-            <button class="action-btn action-extend" onclick={() => { modalMode = 'extend'; extendDays = 365; }}>+ Extend</button>
-            <button class="action-btn action-cancel" onclick={() => { modalMode = 'cancel-confirm'; }}>Cancel Membership</button>
+            <Button text="⬆ Upgrade Tier" classes="btn-secondary" onclick={() => { modalMode = 'upgrade'; selectedUpgradeTierId = ''; }} />
+            <Button text="+ Extend" classes="btn-secondary" onclick={() => { modalMode = 'extend'; extendDays = 365; }} />
+            <Button text="Cancel Membership" classes="btn-danger" onclick={() => { modalMode = 'cancel-confirm'; }} />
           {:else if st === 'cancelled'}
-            <button class="action-btn action-upgrade" style="border-color: var(--color-primary);" onclick={() => { modalMode = 'upgrade'; selectedUpgradeTierId = ''; }}>↻ Re-assign Membership</button>
+            <Button text="↻ Re-assign Membership" classes="btn-primary" onclick={() => { modalMode = 'upgrade'; selectedUpgradeTierId = ''; }} />
           {/if}
         </div>
 
@@ -643,8 +643,8 @@
           <div class="confirm-box confirm-danger">
             <p class="confirm-text danger">Are you sure you want to cancel this membership? {ms.customer_name ?? 'This customer'} will lose their {ms.tier_name} tier ({ms.earn_rate_multiplier}x earn rate) and fall back to their earned tier. This cannot be undone.</p>
             <div class="confirm-actions">
-              <button class="confirm-btn confirm-btn-danger" disabled={actionLoading} onclick={async () => { actionLoading = true; await handleCancelFromDetail(); actionLoading = false; modalMode = 'default'; }}>Yes, Cancel Membership</button>
-              <button class="confirm-btn confirm-btn-ghost" onclick={() => { modalMode = 'default'; }}>Keep Membership</button>
+              <Button text="Yes, Cancel Membership" classes="btn-danger" disabled={actionLoading} onclick={async () => { actionLoading = true; await handleCancelFromDetail(); actionLoading = false; modalMode = 'default'; }} />
+              <Button text="Keep Membership" classes="btn-ghost" onclick={() => { modalMode = 'default'; }} />
             </div>
           </div>
         {/if}
@@ -671,15 +671,11 @@
             </div>
             <div class="confirm-actions">
               {#if st === 'cancelled'}
-                <button class="confirm-btn confirm-btn-primary" disabled={!selectedUpgradeTierId || actionLoading} onclick={handleReassignFromDetail}>
-                  Assign {tiers.find((t) => t.id === selectedUpgradeTierId)?.name ?? ''} Membership
-                </button>
+                <Button text="Assign {tiers.find((t) => t.id === selectedUpgradeTierId)?.name ?? ''} Membership" classes="btn-primary" disabled={!selectedUpgradeTierId || actionLoading} onclick={handleReassignFromDetail} />
               {:else}
-                <button class="confirm-btn confirm-btn-primary" disabled={!selectedUpgradeTierId || actionLoading} onclick={handleUpgradeFromDetail}>
-                  Upgrade to {tiers.find((t) => t.id === selectedUpgradeTierId)?.name ?? '...'}
-                </button>
+                <Button text="Upgrade to {tiers.find((t) => t.id === selectedUpgradeTierId)?.name ?? '...'}" classes="btn-primary" disabled={!selectedUpgradeTierId || actionLoading} onclick={handleUpgradeFromDetail} />
               {/if}
-              <button class="confirm-btn confirm-btn-ghost" onclick={() => { modalMode = 'default'; }}>Cancel</button>
+              <Button text="Cancel" classes="btn-ghost" onclick={() => { modalMode = 'default'; }} />
             </div>
           </div>
         {/if}
@@ -702,8 +698,8 @@
               <div class="extend-preview green">New expiry: {computeExtendedExpiry(ms.expires_at, extendDays)}</div>
             {/if}
             <div class="confirm-actions">
-              <button class="confirm-btn confirm-btn-success" disabled={extendDays <= 0 || actionLoading} onclick={handleExtendFromDetail}>Extend Membership</button>
-              <button class="confirm-btn confirm-btn-ghost" onclick={() => { modalMode = 'default'; }}>Cancel</button>
+              <Button text="Extend Membership" classes="btn-primary" disabled={extendDays <= 0 || actionLoading} onclick={handleExtendFromDetail} />
+              <Button text="Cancel" classes="btn-ghost" onclick={() => { modalMode = 'default'; }} />
             </div>
           </div>
         {/if}
@@ -712,8 +708,8 @@
           <div class="confirm-box confirm-success">
             <p class="confirm-text success">Renew {ms.tier_name} membership for {ms.customer_name ?? 'this customer'}? This will extend by 1 year from today. New expiry: {computeRenewExpiry()}</p>
             <div class="confirm-actions">
-              <button class="confirm-btn confirm-btn-success" disabled={actionLoading} onclick={handleRenewFromDetail}>Confirm Renewal</button>
-              <button class="confirm-btn confirm-btn-ghost" onclick={() => { modalMode = 'default'; }}>Not Now</button>
+              <Button text="Confirm Renewal" classes="btn-primary" disabled={actionLoading} onclick={handleRenewFromDetail} />
+              <Button text="Not Now" classes="btn-ghost" onclick={() => { modalMode = 'default'; }} />
             </div>
           </div>
         {/if}
@@ -819,12 +815,6 @@
     padding: var(--space-12) var(--space-4); color: var(--color-text-muted); font-size: var(--font-size-base);
   }
   .empty-icon { font-size: 36px; }
-  .link-btn {
-    background: none; border: none; color: var(--color-primary);
-    font-size: var(--font-size-base); font-weight: var(--font-weight-medium);
-    cursor: pointer; padding: var(--space-2) var(--space-4); border-radius: var(--radius-md);
-  }
-  .link-btn:hover { background: color-mix(in srgb, var(--color-primary) 6%, transparent); }
 
   .loading { display: flex; flex-direction: column; gap: var(--space-3); padding-top: var(--space-4); }
   :global(.shimmer-table) { --shimmer-width: 100%; --shimmer-height: 48px; --shimmer-border-radius: 8px; }
@@ -867,20 +857,6 @@
   :global(.progress-amber) { --progress-fill-color: #f59e0b; }
 
   .detail-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-  .action-btn {
-    padding: 8px 16px; border-radius: var(--radius-md); font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium); cursor: pointer;
-    border: 1px solid; display: inline-flex; align-items: center; gap: 6px;
-    background: var(--color-surface);
-  }
-  .action-renew { background: #22c55e; color: #fff; border-color: #22c55e; font-weight: var(--font-weight-semibold); }
-  .action-renew:hover { background: #16a34a; }
-  .action-upgrade { color: var(--color-primary); border-color: #c7d2fe; }
-  .action-upgrade:hover { background: color-mix(in srgb, var(--color-primary) 6%, transparent); }
-  .action-extend { color: #22c55e; border-color: #bbf7d0; }
-  .action-extend:hover { background: #f0fdf4; }
-  .action-cancel { color: #ef4444; border-color: #fecaca; }
-  .action-cancel:hover { background: #fef2f2; }
 
   .confirm-box {
     margin-top: 16px; padding: 14px; border-radius: 8px;
@@ -894,18 +870,6 @@
   .confirm-text.success { color: #065f46; }
   .confirm-text.info { color: #3730a3; }
   .confirm-actions { display: flex; gap: 8px; }
-  .confirm-btn {
-    padding: 7px 16px; border-radius: 7px; font-size: 12px; font-weight: 600;
-    cursor: pointer; border: none;
-  }
-  .confirm-btn-danger { background: #ef4444; color: white; }
-  .confirm-btn-danger:hover { background: #dc2626; }
-  .confirm-btn-success { background: #22c55e; color: white; }
-  .confirm-btn-success:hover { background: #16a34a; }
-  .confirm-btn-primary { background: #6366f1; color: white; }
-  .confirm-btn-primary:hover { background: #4f46e5; }
-  .confirm-btn-ghost { background: white; color: #6b7280; border: 1px solid #d1d5db; }
-  .confirm-btn-ghost:hover { background: #f3f4f6; }
 
   .tier-select-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
   .tier-option {

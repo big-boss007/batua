@@ -26,6 +26,8 @@ function decodeCode(raw: unknown): ReferralCode {
     id: (r['id'] as string) ?? '',
     code: (r['code'] as string) ?? '',
     customer_id: (r['customer_id'] as string) ?? '',
+    customer_phone: (r['customer_phone'] as string) ?? null,
+    customer_name: (r['customer_name'] as string) ?? null,
     is_vanity: (r['is_vanity'] as boolean) ?? false,
     is_creator: (r['is_creator'] as boolean) ?? false,
     commission_rate: (r['commission_rate'] as number) ?? null,

@@ -10,8 +10,9 @@ use crate::services::wallets::storage as wallet_storage;
 
 use super::storage;
 use super::types::{
-    AdminDashboard, BulkCreditItemResult, BulkCreditRequest, BulkCreditResult,
-    CoalitionTransferRequest, CoalitionTransferResult, DisputeRequest, DisputeResult,
+    AdminDashboard, AdminDebitRequest, AdminDebitResult, AdminExpireRequest, AdminExpireResult,
+    BulkCreditItemResult, BulkCreditRequest, BulkCreditResult, CoalitionTransferRequest,
+    CoalitionTransferResult, DisputeRequest, DisputeResult,
 };
 
 #[tracing::instrument(skip(pool), err(Debug))]
@@ -302,20 +303,161 @@ pub async fn transfer_coalition_credits(
     })
 }
 
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn process_debit(
+    pool: &PgPool,
+    req: &AdminDebitRequest,
+) -> Result<AdminDebitResult, AppError> {
+    let bucket_type = parse_bucket_type(&req.bucket_type)?;
+
+    let wallet =
+        wallet_storage::get_wallet_by_merchant_customer(pool, req.merchant_id, req.customer_id)
+            .await?
+            .ok_or_else(|| {
+                AppError::NotFound(format!("customer {} has no wallet", req.customer_id))
+            })?;
+
+    let balance = ledger_storage::get_balance(pool, wallet.id).await?;
+    let bucket_balance = balance
+        .buckets
+        .iter()
+        .find(|b| b.bucket_type == bucket_type)
+        .map(|b| b.spendable)
+        .unwrap_or(0.0);
+
+    if req.amount > bucket_balance {
+        return Err(AppError::BadRequest(format!(
+            "insufficient balance: {} has {}, requested {}",
+            req.bucket_type, bucket_balance, req.amount
+        )));
+    }
+
+    let idempotency_key = format!(
+        "admin-debit-{}-{}-{}-{}",
+        req.merchant_id,
+        req.customer_id,
+        req.bucket_type,
+        chrono::Utc::now().timestamp_millis()
+    );
+
+    let new_entry = NewLedgerEntry {
+        wallet_id: wallet.id,
+        bucket_type,
+        movement_type: MovementType::Out,
+        earning_unit: req.amount,
+        currency_equivalent: req.amount,
+        conversion_rate: 1.0,
+        event_id: None,
+        rule_snapshot_id: None,
+        campaign_snapshot_id: None,
+        actor_type: ActorType::Human,
+        actor_id: Some(req.actor_id.clone()),
+        payment_reference: None,
+        transfer_id: None,
+        constraints: serde_json::json!({
+            "reason_category": req.reason_category,
+            "reason_text": req.reason_text,
+            "reference": req.reference,
+            "action": "admin_debit",
+        }),
+        expires_at: None,
+    };
+
+    let entry = ledger_storage::create_entry(pool, new_entry, idempotency_key).await?;
+
+    let new_balance = ledger_storage::get_balance(pool, wallet.id).await?;
+    let new_bucket_bal = new_balance
+        .buckets
+        .iter()
+        .find(|b| format!("{:?}", b.bucket_type) == format!("{:?}", entry.bucket_type))
+        .map(|b| b.spendable)
+        .unwrap_or(0.0);
+
+    Ok(AdminDebitResult {
+        success: true,
+        ledger_entry_id: Some(entry.id),
+        amount_removed: req.amount,
+        new_bucket_balance: new_bucket_bal,
+        new_total_balance: new_balance.spendable_balance,
+    })
+}
+
+#[tracing::instrument(skip(pool), err(Debug))]
+pub async fn process_force_expire(
+    pool: &PgPool,
+    req: &AdminExpireRequest,
+) -> Result<AdminExpireResult, AppError> {
+    let wallet =
+        wallet_storage::get_wallet_by_merchant_customer(pool, req.merchant_id, req.customer_id)
+            .await?
+            .ok_or_else(|| {
+                AppError::NotFound(format!("customer {} has no wallet", req.customer_id))
+            })?;
+
+    let mut total_entries_expired: i32 = 0;
+    let mut total_amount_expired: f64 = 0.0;
+
+    for bucket_type_str in &req.bucket_types {
+        let bucket_type = parse_bucket_type(bucket_type_str)?;
+
+        let expired: Vec<LedgerEntry> = sqlx::query_as(
+            r#"
+            UPDATE ledger_entries
+            SET state = 'expired', expires_at = now()
+            WHERE wallet_id = $1
+                AND bucket_type = $2
+                AND state = 'active'
+                AND movement_type = 'in'
+            RETURNING *
+            "#,
+        )
+        .bind(wallet.id)
+        .bind(&bucket_type)
+        .fetch_all(pool)
+        .await?;
+
+        let count = expired.len() as i32;
+        let amount: f64 = expired.iter().map(|e| e.earning_unit).sum();
+        total_entries_expired += count;
+        total_amount_expired += amount;
+    }
+
+    let new_balance = ledger_storage::get_balance(pool, wallet.id).await?;
+
+    Ok(AdminExpireResult {
+        success: true,
+        entries_expired: total_entries_expired,
+        amount_expired: total_amount_expired,
+        new_total_balance: new_balance.spendable_balance,
+    })
+}
+
 fn parse_bucket_type(
     s: &str,
 ) -> Result<crate::services::ledger::types::BucketType, AppError> {
     match s {
-        "earned_credit" => Ok(crate::services::ledger::types::BucketType::EarnedCredit),
-        "cod_pending" => Ok(crate::services::ledger::types::BucketType::CodPending),
-        "gift_card" => Ok(crate::services::ledger::types::BucketType::GiftCard),
-        "customer_funded" => Ok(crate::services::ledger::types::BucketType::CustomerFunded),
-        "referral_reward" => Ok(crate::services::ledger::types::BucketType::ReferralReward),
-        "goodwill_credit" => Ok(crate::services::ledger::types::BucketType::GoodwillCredit),
-        "membership_benefit" => {
+        "earned_credit" | "EarnedCredit" => {
+            Ok(crate::services::ledger::types::BucketType::EarnedCredit)
+        }
+        "cod_pending" | "CodPending" => {
+            Ok(crate::services::ledger::types::BucketType::CodPending)
+        }
+        "gift_card" | "GiftCard" => Ok(crate::services::ledger::types::BucketType::GiftCard),
+        "customer_funded" | "CustomerFunded" => {
+            Ok(crate::services::ledger::types::BucketType::CustomerFunded)
+        }
+        "referral_reward" | "ReferralReward" => {
+            Ok(crate::services::ledger::types::BucketType::ReferralReward)
+        }
+        "goodwill_credit" | "GoodwillCredit" => {
+            Ok(crate::services::ledger::types::BucketType::GoodwillCredit)
+        }
+        "membership_benefit" | "MembershipBenefit" => {
             Ok(crate::services::ledger::types::BucketType::MembershipBenefit)
         }
-        "refund_credit" => Ok(crate::services::ledger::types::BucketType::RefundCredit),
+        "refund_credit" | "RefundCredit" => {
+            Ok(crate::services::ledger::types::BucketType::RefundCredit)
+        }
         other => Err(AppError::BadRequest(format!(
             "invalid bucket_type: '{other}'"
         ))),

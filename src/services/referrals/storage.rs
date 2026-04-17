@@ -5,7 +5,7 @@ use crate::error::AppError;
 
 use super::types::{
     CodeCreationTrigger, CreateCodeRequest, CreateProgramRequest, ReferralAnalytics, ReferralCode,
-    ReferralConversion, ReferralProgram,
+    ReferralCodeWithCustomer, ReferralConversion, ReferralProgram,
 };
 
 #[tracing::instrument(skip(pool), err(Debug))]
@@ -381,17 +381,19 @@ pub async fn list_merchant_referral_codes(
     merchant_id: Uuid,
     page: i32,
     limit: i32,
-) -> Result<Vec<ReferralCode>, AppError> {
+) -> Result<Vec<ReferralCodeWithCustomer>, AppError> {
     let offset = (page - 1) * limit;
 
-    let codes = sqlx::query_as::<_, ReferralCode>(
+    let codes = sqlx::query_as::<_, ReferralCodeWithCustomer>(
         r#"
-        SELECT id, merchant_id, customer_id, code, is_vanity, is_creator,
-               commission_rate::float8 AS commission_rate,
-               total_referrals, total_conversions, is_active, created_at
-        FROM referral_codes
-        WHERE merchant_id = $1
-        ORDER BY total_conversions DESC, created_at DESC
+        SELECT rc.id, rc.merchant_id, rc.customer_id, rc.code, rc.is_vanity, rc.is_creator,
+               rc.commission_rate::float8 AS commission_rate,
+               rc.total_referrals, rc.total_conversions, rc.is_active, rc.created_at,
+               c.phone AS customer_phone, c.name AS customer_name
+        FROM referral_codes rc
+        LEFT JOIN customers c ON c.id = rc.customer_id
+        WHERE rc.merchant_id = $1
+        ORDER BY rc.total_conversions DESC, rc.created_at DESC
         LIMIT $2 OFFSET $3
         "#,
     )

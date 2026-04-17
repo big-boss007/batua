@@ -220,7 +220,7 @@
             <div class="info-card">
               <div class="info-row">
                 <span class="info-label">Plan</span>
-                <Pill text={merchant.plan_tier ?? 'free'} classes="pill-plan" />
+                <Pill text={merchant.plan_tier ?? 'free'} classes="pill-info" />
               </div>
               {#if storefrontUrl}
                 <div class="info-row">
@@ -288,7 +288,7 @@
         <ConnectorForm onSave={handleCreateConnector} />
         <Button
           text="Cancel"
-          classes="btn-cancel"
+          classes="btn-ghost"
           onclick={() => {
             showConnectorForm = false;
           }}
@@ -524,45 +524,4 @@
     font-size: var(--font-size-sm);
   }
 
-  :global(.pill-plan) {
-    --pill-color: var(--color-primary);
-    --pill-bg: color-mix(in srgb, var(--color-primary) 12%, transparent);
-    --pill-font-size: var(--font-size-sm);
-    --pill-font-weight: var(--font-weight-semibold);
-    text-transform: capitalize;
-  }
-
-  :global(.btn-primary) {
-    --button-color: var(--color-primary);
-    --button-text-color: #ffffff;
-    --button-border-radius: var(--radius-md);
-    --button-padding: var(--space-2) var(--space-5);
-    --button-font-size: var(--font-size-sm);
-    --button-font-weight: var(--font-weight-semibold);
-    --button-hover-color: var(--color-primary-hover);
-  }
-
-  :global(.btn-cancel) {
-    --button-color: transparent;
-    --button-text-color: var(--color-text-muted);
-    --button-border: 1px solid var(--color-border);
-    --button-border-radius: var(--radius-md);
-    --button-padding: var(--space-2) var(--space-5);
-    --button-font-size: var(--font-size-sm);
-    --button-font-weight: var(--font-weight-medium);
-    --button-hover-color: transparent;
-    --button-hover-text-color: var(--color-text);
-    --button-hover-border: 1px solid var(--color-text-muted);
-  }
-
-  :global(.btn-copy) {
-    --button-color: transparent;
-    --button-text-color: var(--color-primary);
-    --button-border: 1px solid var(--color-primary);
-    --button-border-radius: var(--radius-md);
-    --button-padding: var(--space-1) var(--space-3);
-    --button-font-size: var(--font-size-xs);
-    --button-font-weight: var(--font-weight-medium);
-    --button-hover-color: color-mix(in srgb, var(--color-primary) 8%, transparent);
-  }
 </style>

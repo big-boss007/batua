@@ -215,11 +215,15 @@
     --button-border-radius: var(--radius-md);
     --button-padding: var(--space-3) var(--space-4);
     --button-hover-color: var(--color-surface-2);
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-1);
+    --button-justify-content: flex-start;
+    --button-width: 100%;
+    --button-content-flex-direction: column;
+    --button-content-gap: var(--space-1);
+  }
+
+  :global(.template-item button) {
+    align-items: flex-start !important;
     text-align: left;
-    width: 100%;
   }
 
   :global(.template-selected) {

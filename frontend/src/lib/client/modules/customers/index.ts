@@ -11,13 +11,21 @@ export type {
   LoyaltyProgram,
   LoyaltyTier,
   TierDistribution,
-  MerchantCustomerRow
+  MerchantCustomerRow,
+  WalletActionType,
+  WalletUnitType,
+  WalletActionStep,
+  AddRequest,
+  RemoveRequest,
+  ExpireRequest,
+  WalletActionResult
 } from './types';
 
 export {
   searchCustomers,
   getCustomerDetail,
   fetchMerchantCustomers,
+  updateCustomer,
   fetchLoyaltyProgram,
   fetchTiers,
   fetchTierDistribution,
@@ -26,7 +34,10 @@ export {
   createTier,
   updateTier,
   deleteTier,
-  evaluateTier
+  evaluateTier,
+  addCredit,
+  removeBalance,
+  expireBalance
 } from './remote';
 
 export { customerSearchStore, customerDetailStore, loyaltyStore } from './store';

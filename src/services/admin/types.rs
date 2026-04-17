@@ -71,6 +71,46 @@ pub struct BulkCreditItemResult {
 }
 
 #[derive(Debug, Deserialize)]
+pub struct AdminDebitRequest {
+    pub merchant_id: Uuid,
+    pub customer_id: Uuid,
+    pub bucket_type: String,
+    pub amount: f64,
+    pub reason_category: String,
+    pub reason_text: String,
+    pub reference: Option<String>,
+    pub actor_id: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct AdminDebitResult {
+    pub success: bool,
+    pub ledger_entry_id: Option<Uuid>,
+    pub amount_removed: f64,
+    pub new_bucket_balance: f64,
+    pub new_total_balance: f64,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct AdminExpireRequest {
+    pub merchant_id: Uuid,
+    pub customer_id: Uuid,
+    pub bucket_types: Vec<String>,
+    pub reason_category: String,
+    pub reason_text: String,
+    pub reference: Option<String>,
+    pub actor_id: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct AdminExpireResult {
+    pub success: bool,
+    pub entries_expired: i32,
+    pub amount_expired: f64,
+    pub new_total_balance: f64,
+}
+
+#[derive(Debug, Deserialize)]
 pub struct DisputeRequest {
     pub merchant_id: Uuid,
     pub customer_id: Uuid,
@@ -193,6 +233,12 @@ pub struct MerchantCustomer {
     pub customer_email: Option<String>,
     pub wallet_id: Uuid,
     pub created_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct UpdateCustomerRequest {
+    pub name: Option<String>,
+    pub email: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]

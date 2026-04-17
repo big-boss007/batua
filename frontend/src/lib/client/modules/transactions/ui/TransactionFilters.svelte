@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { TransactionFilters } from '$lib/client/modules/transactions';
   import { formatBucketType, formatMovementType } from '$lib/client/modules/transactions';
-  import { Select } from '@juspay/svelte-ui-components';
+  import { Select, Button } from '@juspay/svelte-ui-components';
 
   let {
     filters,
@@ -61,7 +61,7 @@
   </div>
 
   {#if hasActiveFilters}
-    <button class="clear-btn" onclick={handleClear}>Clear Filters</button>
+    <Button text="Clear Filters" classes="btn-ghost" onclick={handleClear} />
   {/if}
 </div>
 
@@ -89,21 +89,4 @@
     font-weight: var(--font-weight-medium);
   }
 
-  .clear-btn {
-    padding: var(--space-2) var(--space-4);
-    background: none;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
-    cursor: pointer;
-    transition:
-      color var(--transition-fast),
-      border-color var(--transition-fast);
-  }
-
-  .clear-btn:hover {
-    color: var(--color-error);
-    border-color: var(--color-error);
-  }
 </style>

@@ -12,7 +12,11 @@ import type {
   LoyaltyProgram,
   LoyaltyTier,
   TierDistribution,
-  MerchantCustomerRow
+  MerchantCustomerRow,
+  AddRequest,
+  RemoveRequest,
+  ExpireRequest,
+  WalletActionResult
 } from './types';
 
 function decodeTierProgress(raw: unknown): TierProgress | null {
@@ -393,10 +397,95 @@ async function fetchMerchantCustomers(
   return apiCaller.get(`/admin/merchants/${merchantId}/customers`, decodeMerchantCustomers, params);
 }
 
+function decodeWalletActionResult(raw: unknown): WalletActionResult {
+  const r = raw as Record<string, unknown>;
+  return {
+    success: (r['success'] as boolean) ?? false,
+    ledger_entry_id: (r['ledger_entry_id'] as string) ?? null,
+    entries_affected: (r['entries_expired'] as number) ?? (r['entries_affected'] as number) ?? 1,
+    amount_affected: (r['amount_removed'] as number) ?? (r['amount_expired'] as number) ?? 0,
+    new_balance: (r['new_total_balance'] as number) ?? (r['new_balance'] as number) ?? 0,
+    error: (r['error'] as string) ?? null
+  };
+}
+
+async function addCredit(
+  merchantId: string,
+  req: AddRequest
+): Promise<APIResult<WalletActionResult>> {
+  const body = {
+    merchant_id: merchantId,
+    customer_ids: [req.customer_id],
+    amount: req.amount,
+    bucket_type: req.bucket_type,
+    reason: `[${req.reason_category}] ${req.reason_text}`,
+    actor_id: 'admin'
+  };
+  return apiCaller.post('/admin/bulk-credit', body, (raw: unknown) => {
+    const r = raw as Record<string, unknown>;
+    const results = r['results'] as Array<Record<string, unknown>> | undefined;
+    const first = results?.[0];
+    return {
+      success: (first?.['success'] as boolean) ?? false,
+      ledger_entry_id: (first?.['ledger_entry_id'] as string) ?? null,
+      entries_affected: 1,
+      amount_affected: req.amount,
+      new_balance: 0,
+      error: (first?.['error'] as string) ?? null
+    };
+  });
+}
+
+async function removeBalance(
+  merchantId: string,
+  req: RemoveRequest
+): Promise<APIResult<WalletActionResult>> {
+  const body = {
+    merchant_id: merchantId,
+    customer_id: req.customer_id,
+    bucket_type: req.bucket_type,
+    amount: req.amount,
+    reason_category: req.reason_category,
+    reason_text: req.reason_text,
+    reference: req.reference,
+    actor_id: 'admin'
+  };
+  return apiCaller.post('/admin/debit', body, decodeWalletActionResult);
+}
+
+async function expireBalance(
+  merchantId: string,
+  req: ExpireRequest
+): Promise<APIResult<WalletActionResult>> {
+  const body = {
+    merchant_id: merchantId,
+    customer_id: req.customer_id,
+    bucket_types: req.bucket_types,
+    reason_category: req.reason_category,
+    reason_text: req.reason_text,
+    reference: req.reference,
+    actor_id: 'admin'
+  };
+  return apiCaller.post('/admin/force-expire', body, decodeWalletActionResult);
+}
+
+async function updateCustomer(
+  merchantId: string,
+  customerId: string,
+  body: { name?: string; email?: string }
+): Promise<APIResult<MerchantCustomerRow>> {
+  return apiCaller.put(
+    `/admin/merchants/${merchantId}/customers/${customerId}`,
+    body,
+    decodeMerchantCustomerRow
+  );
+}
+
 export {
   searchCustomers,
   getCustomerDetail,
   fetchMerchantCustomers,
+  updateCustomer,
   fetchLoyaltyProgram,
   fetchTiers,
   fetchTierDistribution,
@@ -405,5 +494,8 @@ export {
   createTier,
   updateTier,
   deleteTier,
-  evaluateTier
+  evaluateTier,
+  addCredit,
+  removeBalance,
+  expireBalance
 };

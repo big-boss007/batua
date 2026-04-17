@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Table, Pill, Select, Pagination, Shimmer, Modal } from '@juspay/svelte-ui-components';
+  import { Table, Pill, Select, Pagination, Shimmer, Modal, Button } from '@juspay/svelte-ui-components';
   import type { Snippet } from 'svelte';
   import type {
     MerchantTransactionRow,
@@ -24,7 +24,7 @@
     MODAL_CLOSE_ICON
   } from '$lib/client/modules/foundation';
 
-  const BUCKET_TYPES = ['earned_credit', 'cod_pending', 'gift_card', 'customer_funded', 'referral_reward', 'goodwill_credit', 'membership_benefit', 'refund_credit'];
+  const BUCKET_TYPES = ['earned_credit', 'cod_pending', 'gift_card', 'referral_reward', 'goodwill_credit', 'membership_benefit', 'refund_credit'];
   const MOVEMENT_TYPES = ['in', 'out', 'held', 'across'];
 
   let bucketItems = $derived(BUCKET_TYPES.map((bt) => ({ id: bt, label: formatBucketType(bt) })));
@@ -133,6 +133,11 @@
     loading = true;
     const result = await fetchMerchantTransactions(mid, search, bucket, movement, page, pageSize);
     if (result.tag === 'success') {
+      if (result.data.length === 0 && page > 1) {
+        currentPage = page - 1;
+        loading = false;
+        return;
+      }
       transactions = result.data;
     } else {
       transactions = [];
@@ -266,7 +271,7 @@
             </div>
 
             {#if hasActiveFilters}
-              <button class="clear-btn" onclick={handleClearFilters}>Clear Filters</button>
+              <Button text="Clear Filters" classes="btn-ghost" onclick={handleClearFilters} />
             {/if}
           </div>
         </div>
@@ -453,11 +458,12 @@
 
                 {#if Object.keys(selectedEntry.constraints ?? {}).length > 0}
                   <h4 class="section-heading">Constraints</h4>
-                  <pre class="constraints-json">{JSON.stringify(
-                      selectedEntry.constraints,
-                      null,
-                      2
-                    )}</pre>
+                  {#each Object.entries(selectedEntry.constraints) as [key, value]}
+                    <div class="detail-row">
+                      <span class="label">{key.replace(/_/g, ' ')}</span>
+                      <span class="value">{typeof value === 'object' ? JSON.stringify(value) : String(value)}</span>
+                    </div>
+                  {/each}
                 {/if}
 
                 {#if selectedEntry.expires_at !== null}
@@ -588,23 +594,6 @@
     font-weight: var(--font-weight-medium);
   }
 
-  .clear-btn {
-    padding: var(--space-2) var(--space-4);
-    background: none;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
-    cursor: pointer;
-    transition:
-      color var(--transition-fast),
-      border-color var(--transition-fast);
-  }
-
-  .clear-btn:hover {
-    color: var(--color-error);
-    border-color: var(--color-error);
-  }
 
   .pagination-wrapper {
     display: flex;
@@ -709,18 +698,7 @@
     border-bottom: 1px solid var(--color-border);
   }
 
-  .constraints-json {
-    font-family: var(--font-mono, monospace);
-    font-size: var(--font-size-xs);
-    color: var(--color-text);
-    background: var(--color-surface-2, var(--color-bg));
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    padding: var(--space-2) var(--space-3);
-    overflow-x: auto;
-    white-space: pre-wrap;
-    word-break: break-all;
-  }
+
 
   .shimmer-detail {
     display: flex;

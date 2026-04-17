@@ -135,15 +135,15 @@
 
     <div class="actions">
       {#if issuedCard === null}
-        <Button text="Cancel" classes="btn-cancel" onclick={onCancel} />
+        <Button text="Cancel" classes="btn-ghost" onclick={onCancel} />
         <Button
           text={issuing ? 'Issuing...' : 'Confirm & Issue'}
-          classes="btn-confirm"
+          classes="btn-primary"
           disabled={issuing}
           onclick={handleConfirm}
         />
       {:else}
-        <Button text="Done" classes="btn-confirm" onclick={onCancel} />
+        <Button text="Done" classes="btn-primary" onclick={onCancel} />
       {/if}
     </div>
   {/snippet}
@@ -326,25 +326,4 @@
     justify-content: center;
   }
 
-  :global(.btn-cancel) {
-    --button-color: transparent;
-    --button-text-color: var(--color-text-muted);
-    --button-padding: 10px 24px;
-    --button-border-radius: 8px;
-    --button-border: 1px solid var(--color-border);
-    --button-font-size: var(--font-size-sm);
-    --button-font-weight: 500;
-    --button-hover-color: var(--color-surface-2);
-    --button-hover-text-color: var(--color-text);
-  }
-
-  :global(.btn-confirm) {
-    --button-color: var(--color-primary);
-    --button-text-color: #fff;
-    --button-padding: 10px 32px;
-    --button-border-radius: 8px;
-    --button-font-size: var(--font-size-sm);
-    --button-font-weight: 600;
-    --button-hover-color: var(--color-primary-hover);
-  }
 </style>

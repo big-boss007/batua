@@ -59,6 +59,11 @@
     loadingList = true;
     const result = await fetchMerchantCustomers(mid, search, page, pageSize);
     if (result.tag === 'success') {
+      if (result.data.length === 0 && page > 1) {
+        currentPage = page - 1;
+        loadingList = false;
+        return;
+      }
       customers = result.data;
     } else {
       customers = [];
@@ -171,7 +176,7 @@
     </div>
 
     {#if loadingDetail || selectedDetail !== null}
-      <Modal header={{ text: 'Customer Detail', rightImage: MODAL_CLOSE_ICON }} size="fit-content" onclose={handleCloseDetail} onoverlayClick={handleCloseDetail} onheaderRightImageClick={handleCloseDetail}>
+      <Modal header={{ text: 'Customer Detail', rightImage: MODAL_CLOSE_ICON }} size="fit-content" classes="customer-detail-modal" onclose={handleCloseDetail} onoverlayClick={handleCloseDetail} onheaderRightImageClick={handleCloseDetail}>
         {#snippet content()}
           {#if loadingDetail}
             <div class="shimmer-detail">
@@ -181,7 +186,18 @@
               <Shimmer classes="shimmer-row" />
             </div>
           {:else if selectedDetail}
-            <CustomerDetail detail={selectedDetail} pointsIcon={merchant?.points_icon ?? '★'} pointsRate={merchant?.points_to_currency_rate ?? 1.0} />
+            <CustomerDetail
+              detail={selectedDetail}
+              merchantId={merchantId ?? ''}
+              pointsIcon={merchant?.points_icon ?? '★'}
+              pointsRate={merchant?.points_to_currency_rate ?? 1.0}
+              onRefresh={async () => {
+                if (merchantId && selectedDetail) {
+                  const res = await getCustomerDetail(merchantId, selectedDetail.customer.id);
+                  if (res.tag === 'success') selectedDetail = res.data;
+                }
+              }}
+            />
           {/if}
         {/snippet}
       </Modal>
@@ -301,5 +317,17 @@
     font-size: var(--font-size-sm);
     text-align: center;
     padding: var(--space-8);
+  }
+
+  :global(.customer-detail-modal) {
+    --modal-fit-content-max-height: calc(100vh - 96px);
+    --modal-content-background-color: var(--color-surface);
+    --modal-border-radius: var(--radius-lg);
+    --modal-header-background-color: var(--color-surface);
+    --modal-header-border-bottom: 1px solid var(--color-border);
+  }
+  :global(.customer-detail-modal .modal-content) {
+    width: 520px;
+    max-width: 90vw;
   }
 </style>

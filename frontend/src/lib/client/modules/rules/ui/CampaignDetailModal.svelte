@@ -144,6 +144,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
+    width: 100%;
   }
 
   .campaign-title-row {

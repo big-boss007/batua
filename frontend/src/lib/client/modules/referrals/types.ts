@@ -13,6 +13,8 @@ export type ReferralCode = {
   id: string;
   code: string;
   customer_id: string;
+  customer_phone: string | null;
+  customer_name: string | null;
   is_vanity: boolean;
   is_creator: boolean;
   commission_rate: number | null;

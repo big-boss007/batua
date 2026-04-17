@@ -7,6 +7,7 @@ use uuid::Uuid;
 use crate::app_state::AppState;
 use crate::error::AppError;
 use crate::services::identity;
+use crate::services::wallets;
 
 use super::helpers;
 use super::storage;
@@ -60,6 +61,8 @@ pub async fn create_code(
     } else {
         helpers::generate_referral_code(None)
     };
+
+    wallets::storage::get_or_create_wallet(&app_state.db, req.merchant_id, req.customer_id).await?;
 
     let referral_code = storage::create_referral_code(&app_state.db, &req, &code).await?;
     Ok::<_, AppError>((StatusCode::CREATED, Json(referral_code)))

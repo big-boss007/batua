@@ -167,7 +167,7 @@
   <section class="form-section">
     <div class="section-header">
       <h3 class="section-title">Conditions</h3>
-      <button type="button" class="add-btn" onclick={addCondition}>+ Add Condition</button>
+      <Button text="+ Add Condition" classes="btn-ghost" onclick={addCondition} />
     </div>
 
     {#if conditions.length === 0}
@@ -396,20 +396,6 @@
     flex: 2;
   }
 
-  .add-btn {
-    padding: var(--space-1) var(--space-3);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
-    color: var(--color-primary);
-    background: none;
-    border: 1px dashed var(--color-primary);
-    border-radius: var(--radius-sm);
-    transition: all var(--transition-fast);
-  }
-
-  .add-btn:hover {
-    background: color-mix(in srgb, var(--color-primary) 8%, transparent);
-  }
 
   .remove-btn {
     padding: var(--space-1) var(--space-2);

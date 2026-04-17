@@ -183,21 +183,23 @@ select {
   /* Modal */
   --modal-content-background-color: var(--color-bg);
   --modal-border-radius: var(--radius-lg);
+  --modal-header-border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   --modal-header-background-color: var(--color-surface);
   --modal-header-border-bottom: 1px solid var(--color-border);
   --modal-header-padding: var(--space-4) var(--space-6);
   --modal-footer-background-color: var(--color-surface);
+  --modal-footer-border-radius: 0 0 var(--radius-lg) var(--radius-lg);
   --modal-footer-border-top: 1px solid var(--color-border);
   --modal-footer-padding: var(--space-4) var(--space-6);
   --modal-footer-gap: var(--space-3);
   --modal-z-index: var(--z-modal);
   --modal-medium-width: min(620px, 90vw);
-  --modal-medium-height: fit-content;
+  --modal-medium-height: min(fit-content, calc(100vh - 96px));
   --modal-small-width: min(480px, 90vw);
-  --modal-small-height: fit-content;
+  --modal-small-height: min(fit-content, calc(100vh - 96px));
   --modal-large-width: min(800px, 90vw);
-  --modal-large-height: fit-content;
-  --modal-fit-content-max-height: 85vh;
+  --modal-large-height: min(fit-content, calc(100vh - 96px));
+  --modal-fit-content-max-height: calc(100vh - 96px);
   --modal-content-overflow: hidden;
   --modal-overflow-y: auto;
   --modal-footer-primary-button-color: var(--color-primary);
@@ -323,6 +325,17 @@ select {
 .btn-danger {
   --button-color: var(--color-error);
   --button-text-color: #ffffff;
+  --button-hover-color: #dc2626;
+}
+.btn-success {
+  --button-color: var(--color-success);
+  --button-text-color: #ffffff;
+  --button-hover-color: #16a34a;
+}
+.btn-warning {
+  --button-color: var(--color-warning);
+  --button-text-color: #ffffff;
+  --button-hover-color: #d97706;
 }
 .btn-ghost {
   --button-color: transparent;
@@ -369,10 +382,12 @@ select {
 /* Modal global styles */
 .modal .slot-content {
   padding: var(--space-6);
+  padding-right: calc(var(--space-6) + 4px);
+  flex: 1;
+  min-height: 0;
 }
 
 .modal .modal-content {
-  max-height: 85vh;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 

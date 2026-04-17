@@ -63,9 +63,11 @@
   onoverlayClick={onCancel}
   onheaderRightImageClick={onCancel}
   footer={{
-    primaryButton: { text: 'Save Settings', onclick: handleSave },
-    secondaryButton: { text: 'Cancel', onclick: onCancel }
+    primaryButton: { text: 'Save Settings' },
+    secondaryButton: { text: 'Cancel' }
   }}
+  onprimaryButtonClick={handleSave}
+  onsecondaryButtonClick={onCancel}
 >
   {#snippet content()}
     <div class="modal-body">

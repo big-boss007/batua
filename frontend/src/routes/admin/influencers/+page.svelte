@@ -29,7 +29,7 @@
   const TABLE_HEADERS = ['Influencer', 'Code', 'Commission', 'Conversions', 'Status'];
   let tableData = $derived(
     creatorCodes.map((code) => [
-      formatMobile(code.customer_id),
+      formatInfluencer(code.customer_name, code.customer_phone),
       code.code,
       `${code.commission_rate ?? 0}%`,
       code.total_conversions,
@@ -97,12 +97,20 @@
     saving = false;
   }
 
-  function formatMobile(customerId: string): string {
-    if (customerId.length >= 10) {
-      const last10 = customerId.slice(-10);
-      return `+91 ${last10.slice(0, 5)} ${last10.slice(5)}`;
+  function formatPhone(phone: string): string {
+    const digits = phone.replace(/\D/g, '');
+    if (digits.length === 12 && digits.startsWith('91')) {
+      const local = digits.slice(2);
+      return `+91 ${local.slice(0, 5)} ${local.slice(5)}`;
     }
-    return customerId;
+    return phone;
+  }
+
+  function formatInfluencer(name: string | null, phone: string | null): string {
+    if (name && phone) return `${name} (${formatPhone(phone)})`;
+    if (name) return name;
+    if (phone) return formatPhone(phone);
+    return 'Unknown';
   }
 </script>
 
@@ -128,7 +136,7 @@
     <!-- INFLUENCERS LIST -->
     <div class="page-header">
       <div><h1 class="page-title">Influencers</h1><p class="page-subtitle">Manage creator and influencer partnerships</p></div>
-      <Button text="+ Add Influencer" classes="btn-primary-sm" onclick={openModal} />
+      <Button text="+ Add Influencer" classes="btn-primary" onclick={openModal} />
     </div>
 
     <div class="metrics-row">
@@ -247,13 +255,4 @@
   .input-with-prefix :global(input) { border: none !important; border-radius: 0 !important; width: 160px !important; }
   .input-prefix { padding: var(--space-2) var(--space-3); background: var(--color-surface-2); border-right: 1px solid var(--color-border); font-size: var(--font-size-sm); color: var(--color-text-muted); font-weight: var(--font-weight-medium); white-space: nowrap; display: flex; align-items: center; }
 
-  :global(.btn-primary-sm) {
-    --button-color: var(--color-primary);
-    --button-text-color: #ffffff;
-    --button-border-radius: var(--radius-md);
-    --button-padding: var(--space-1) var(--space-4);
-    --button-font-size: var(--font-size-sm);
-    --button-font-weight: var(--font-weight-semibold);
-    --button-hover-color: var(--color-primary-hover);
-  }
 </style>

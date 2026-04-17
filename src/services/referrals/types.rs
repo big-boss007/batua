@@ -83,6 +83,23 @@ pub struct UpdateProgramRequest {
     pub code_creation_trigger: Option<CodeCreationTrigger>,
 }
 
+#[derive(Debug, Clone, Serialize, sqlx::FromRow)]
+pub struct ReferralCodeWithCustomer {
+    pub id: Uuid,
+    pub merchant_id: Uuid,
+    pub customer_id: Uuid,
+    pub code: String,
+    pub is_vanity: bool,
+    pub is_creator: bool,
+    pub commission_rate: Option<f64>,
+    pub total_referrals: i32,
+    pub total_conversions: i32,
+    pub is_active: bool,
+    pub created_at: DateTime<Utc>,
+    pub customer_phone: Option<String>,
+    pub customer_name: Option<String>,
+}
+
 #[derive(Debug, Deserialize)]
 pub struct CreateCodeRequest {
     pub merchant_id: Uuid,

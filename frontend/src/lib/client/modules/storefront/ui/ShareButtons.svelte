@@ -21,7 +21,7 @@
 
 <div class="share-buttons">
   <div class="share-btn-wa">
-    <Button text="Share on WhatsApp" onclick={handleWhatsApp} classes="btn-whatsapp" />
+    <Button text="Share on WhatsApp" onclick={handleWhatsApp} classes="btn-primary" />
   </div>
   <div class="share-btn-copy">
     <Button text="Copy Link" onclick={handleCopy} classes="btn-secondary btn-copy-link" />

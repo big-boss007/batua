@@ -44,11 +44,11 @@
   let pointsName = $derived(merchant?.points_name ?? 'Points');
   let pointsIcon = $derived(merchant?.points_icon ?? 'pts');
 
-  const CODES_HEADERS = ['Code', 'Mobile', 'Type', 'Conversions', 'Status'];
+  const CODES_HEADERS = ['Code', 'Customer', 'Type', 'Conversions', 'Status'];
   let codesTableData = $derived(
     codes.map((code) => [
       code.code,
-      formatMobile(code.customer_id),
+      formatCustomer(code.customer_name, code.customer_phone),
       code.is_creator ? 'Creator' : 'Standard',
       code.total_conversions,
       code.is_active ? 'Active' : 'Inactive'
@@ -58,8 +58,8 @@
   const CONVERSIONS_HEADERS = ['Referrer', 'Referee', 'Order', 'Status', 'Date'];
   let conversionsTableData = $derived(
     conversions.slice(0, 10).map((conv) => [
-      formatMobile(conv.referrer_id),
-      formatMobile(conv.referee_id),
+      conv.referrer_id.slice(0, 8),
+      conv.referee_id.slice(0, 8),
       conv.order_id ?? '—',
       conv.fraud_signals.length > 0 ? conv.fraud_signals.join('|') : 'Clean',
       formatDate(conv.created_at)
@@ -159,12 +159,20 @@
     }
   }
 
-  function formatMobile(customerId: string): string {
-    if (customerId.length >= 10) {
-      const last10 = customerId.slice(-10);
-      return `+91 ${last10.slice(0, 5)} ${last10.slice(5)}`;
+  function formatPhone(phone: string): string {
+    const digits = phone.replace(/\D/g, '');
+    if (digits.length === 12 && digits.startsWith('91')) {
+      const local = digits.slice(2);
+      return `+91 ${local.slice(0, 5)} ${local.slice(5)}`;
     }
-    return customerId;
+    return phone;
+  }
+
+  function formatCustomer(name: string | null, phone: string | null): string {
+    if (name && phone) return `${name} (${formatPhone(phone)})`;
+    if (name) return name;
+    if (phone) return formatPhone(phone);
+    return 'Unknown';
   }
 
   function formatDate(iso: string): string {
@@ -313,7 +321,7 @@
     <!-- ACTIVE DASHBOARD -->
     <div class="page-header">
       <div><h1 class="page-title">Referral Program</h1><p class="page-subtitle">Manage your referral program</p></div>
-      <Button text="Edit Program" classes="btn-secondary-sm" onclick={startSetup} />
+      <Button text="Edit Program" classes="btn-secondary" onclick={startSetup} />
     </div>
 
     <div class="status-bar" class:inactive={!program?.is_active}>
@@ -325,7 +333,7 @@
         {/if}
         · Codes: {program?.code_creation_trigger === 'on_first_purchase' ? 'on first purchase' : 'on registration'}
       </span>
-      <Button text={program?.is_active ? 'Pause' : 'Resume'} classes={program?.is_active ? 'btn-danger-sm' : 'btn-success-sm'} onclick={handleToggleActive} />
+      <Button text={program?.is_active ? 'Pause' : 'Resume'} classes={program?.is_active ? 'btn-danger' : 'btn-primary'} onclick={handleToggleActive} />
     </div>
 
     {#if analytics !== null}
@@ -485,46 +493,4 @@
   :global([data-theme='dark']) .trigger-advice.registration { background: #1e2a3a; border-color: #1e3a5f; color: #93c5fd; }
   :global([data-theme='dark']) .trigger-advice.first-purchase { background: #2a2518; border-color: #4a3d1a; color: #fde68a; }
 
-  :global(.btn-secondary-sm) {
-    --button-color: transparent;
-    --button-text-color: var(--color-text);
-    --button-border: 1px solid var(--color-border);
-    --button-border-radius: var(--radius-md);
-    --button-padding: var(--space-1) var(--space-4);
-    --button-font-size: var(--font-size-sm);
-    --button-font-weight: var(--font-weight-medium);
-    --button-hover-color: var(--color-surface-2);
-  }
-
-  :global(.btn-danger-sm) {
-    --button-color: transparent;
-    --button-text-color: #ef4444;
-    --button-border: 1px solid #fecaca;
-    --button-border-radius: var(--radius-md);
-    --button-padding: var(--space-1) var(--space-4);
-    --button-font-size: var(--font-size-sm);
-    --button-font-weight: var(--font-weight-medium);
-    --button-hover-color: #fef2f2;
-  }
-
-  :global(.btn-success-sm) {
-    --button-color: transparent;
-    --button-text-color: #059669;
-    --button-border: 1px solid #a7f3d0;
-    --button-border-radius: var(--radius-md);
-    --button-padding: var(--space-1) var(--space-4);
-    --button-font-size: var(--font-size-sm);
-    --button-font-weight: var(--font-weight-medium);
-    --button-hover-color: #ecfdf5;
-  }
-
-  :global(.btn-ghost) {
-    --button-color: transparent;
-    --button-text-color: var(--color-text-muted);
-    --button-border: 1px solid var(--color-border);
-    --button-border-radius: var(--radius-md);
-    --button-padding: var(--space-2) var(--space-5);
-    --button-font-size: var(--font-size-sm);
-    --button-font-weight: var(--font-weight-medium);
-  }
 </style>

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Toggle } from '@juspay/svelte-ui-components';
+  import { Toggle, Button } from '@juspay/svelte-ui-components';
 
   import type { WalletPolicy } from '$lib/client/modules/settings';
 
@@ -88,7 +88,7 @@
                     </span>
                   </div>
                 </div>
-                <button class="edit-button" onclick={() => onEdit(policy)}>Edit Policy</button>
+                <Button text="Edit Policy" classes="btn-secondary" onclick={() => onEdit(policy)} />
               </div>
             {/if}
           </div>
@@ -142,7 +142,7 @@
                     </span>
                   </div>
                 </div>
-                <button class="edit-button" onclick={() => onEdit(policy)}>Edit Policy</button>
+                <Button text="Edit Policy" classes="btn-secondary" onclick={() => onEdit(policy)} />
               </div>
             {/if}
           </div>
@@ -256,20 +256,6 @@
     font-weight: var(--font-weight-semibold);
   }
 
-  .edit-button {
-    padding: var(--space-2) var(--space-4);
-    background: var(--color-primary);
-    color: #ffffff;
-    border: none;
-    border-radius: var(--radius-md);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
-    transition: background var(--transition-fast);
-  }
-
-  .edit-button:hover {
-    background: var(--color-primary-hover);
-  }
 
   .category-section {
     display: flex;

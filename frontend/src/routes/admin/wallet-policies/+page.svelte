@@ -421,13 +421,4 @@
     max-width: 720px;
   }
 
-  :global(.btn-primary) {
-    --button-color: var(--color-primary);
-    --button-text-color: #ffffff;
-    --button-border-radius: var(--radius-md);
-    --button-padding: var(--space-2) var(--space-5);
-    --button-font-size: var(--font-size-sm);
-    --button-font-weight: var(--font-weight-semibold);
-    --button-hover-color: var(--color-primary-hover);
-  }
 </style>
