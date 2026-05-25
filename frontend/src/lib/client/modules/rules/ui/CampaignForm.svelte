@@ -26,10 +26,14 @@
 
   let isTemplate = $derived(template !== null);
 
+  // svelte-ignore state_referenced_locally
   let campaignName = $state(template ? `${template.display_name} Campaign` : '');
+  // svelte-ignore state_referenced_locally
   let baseRuleId = $state(rules.filter((r) => r.is_active).length > 0 ? rules.filter((r) => r.is_active)[0].id : '');
+  // svelte-ignore state_referenced_locally
   let multiplier = $state(template?.default_multiplier ?? 2);
   let startsAt = $state(todayISO());
+  // svelte-ignore state_referenced_locally
   let endsAt = $state(addDaysISO(todayISO(), template?.default_duration_days ?? 7));
 
   let activeRules = $derived(rules.filter((r) => r.is_active));
@@ -236,15 +240,11 @@
   .form-section { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-5); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
   .field-group { display: flex; flex-direction: column; gap: var(--space-1); flex: 1; }
   .field-label { font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); color: var(--color-text-muted); }
-  .field-input { padding: var(--space-2) var(--space-3); font-size: var(--font-size-base); color: var(--color-text); background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-family: inherit; }
-  .field-input:focus { outline: none; border-color: var(--color-primary); }
-  .field-error { border-color: var(--color-error); }
   .error-text { font-size: var(--font-size-xs); color: var(--color-error); }
   .field-hint { font-size: var(--font-size-xs); color: var(--color-text-muted); }
   .field-row { display: flex; gap: var(--space-4); }
 
   .multiplier-input-row { display: flex; align-items: center; gap: var(--space-2); }
-  .multiplier-field { max-width: 100px; font-family: var(--font-mono); font-weight: var(--font-weight-semibold); }
   .multiplier-suffix { font-size: var(--font-size-sm); color: var(--color-text-muted); font-weight: var(--font-weight-medium); }
   .no-rules-text { font-size: var(--font-size-sm); color: var(--color-warning); padding: var(--space-2) 0; }
 

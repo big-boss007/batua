@@ -5,3 +5,8 @@
 .DS_Store
 site/node_modules
 site/test-results
+
+# Local tooling state (do not commit)
+.claude/
+.playwright-mcp/
+e2e-report/

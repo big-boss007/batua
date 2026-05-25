@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Wallet Section — Design Options</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #f8f9fa;
+    --surface-2: #f0f1f3;
+    --text: #1a1a2e;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --primary: #7c6aff;
+    --success: #10b981;
+    --error: #ef4444;
+    --warning: #f59e0b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', -apple-system, sans-serif; font-size: 14px; color: var(--text); background: #f5f5f8; -webkit-font-smoothing: antialiased; line-height: 1.5; }
+
+  .page { max-width: 580px; margin: 40px auto; padding: 0 20px; }
+  .option-label {
+    display: inline-block;
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px;
+    padding: 4px 14px; border-radius: 999px; margin-bottom: 12px;
+    background: rgba(124,106,255,0.12); color: var(--primary);
+  }
+  .option-desc { font-size: 13px; color: var(--muted); margin-bottom: 16px; line-height: 1.6; }
+  .separator { border: none; border-top: 2px dashed var(--border); margin: 48px 0; }
+
+  /* Shared card styles */
+  .card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+  }
+  .card-title { font-size: 15px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+
+  /* Current design */
+  .meta-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .meta-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px; }
+  .wallet-val { font-size: 20px; font-weight: 700; }
+  .wallet-points { color: var(--primary); }
+  .wallet-cash { color: var(--success); }
+
+  /* ===== OPTION A: Stacked total on top ===== */
+  .opt-a-hero {
+    text-align: center;
+    padding: 20px 0 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  .opt-a-hero-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
+  .opt-a-hero-value { font-size: 32px; font-weight: 800; color: var(--text); }
+  .opt-a-breakdown {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .opt-a-bucket {
+    padding: 14px 16px;
+    background: var(--surface);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  .opt-a-bucket-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .opt-a-bucket-row { display: flex; align-items: baseline; justify-content: space-between; }
+  .opt-a-bucket-value { font-size: 18px; font-weight: 700; }
+  .opt-a-bucket-equiv { font-size: 12px; color: var(--muted); }
+
+  /* ===== OPTION B: Horizontal bar breakdown ===== */
+  .opt-b-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .opt-b-total-label { font-size: 13px; font-weight: 600; color: var(--muted); }
+  .opt-b-total-value { font-size: 28px; font-weight: 800; }
+  .opt-b-bar-track {
+    height: 8px;
+    background: var(--surface-2);
+    border-radius: 4px;
+    overflow: hidden;
+    display: flex;
+    margin-bottom: 14px;
+  }
+  .opt-b-bar-points { background: var(--primary); border-radius: 4px 0 0 4px; }
+  .opt-b-bar-cash { background: var(--success); border-radius: 0 4px 4px 0; }
+  .opt-b-legend { display: flex; gap: 20px; }
+  .opt-b-legend-item { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+  .opt-b-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .opt-b-dot-points { background: var(--primary); }
+  .opt-b-dot-cash { background: var(--success); }
+  .opt-b-legend-value { font-weight: 700; }
+  .opt-b-legend-equiv { font-size: 11px; color: var(--muted); margin-left: 2px; }
+
+  /* ===== OPTION C: Two-row card with equation ===== */
+  .opt-c-equation {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .opt-c-part {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 14px 18px;
+    background: var(--surface);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    min-width: 130px;
+  }
+  .opt-c-part-value { font-size: 20px; font-weight: 700; }
+  .opt-c-part-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .opt-c-part-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 6px; font-weight: 600; }
+  .opt-c-op { font-size: 20px; font-weight: 700; color: var(--muted); }
+  .opt-c-result {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 14px 24px;
+    background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    min-width: 140px;
+  }
+  .opt-c-result-value { font-size: 24px; font-weight: 800; color: #059669; }
+  .opt-c-result-label { font-size: 11px; color: #16a34a; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; font-weight: 700; }
+
+  /* ===== OPTION D: Compact inline with sub-rows ===== */
+  .opt-d-total {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .opt-d-total-value { font-size: 28px; font-weight: 800; }
+  .opt-d-total-label { font-size: 13px; color: var(--muted); font-weight: 500; }
+  .opt-d-rows { display: flex; flex-direction: column; gap: 10px; }
+  .opt-d-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--surface);
+    border-radius: 8px;
+  }
+  .opt-d-row-left { display: flex; align-items: center; gap: 10px; }
+  .opt-d-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .opt-d-row-label { font-size: 13px; font-weight: 600; }
+  .opt-d-row-right { display: flex; flex-direction: column; align-items: flex-end; }
+  .opt-d-row-value { font-size: 15px; font-weight: 700; }
+  .opt-d-row-equiv { font-size: 11px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- CURRENT -->
+  <span class="option-label">Current Design</span>
+  <p class="option-desc">Three equal columns. Points and cash look like separate unrelated numbers. Total uses backend value. No visual hierarchy telling the user "this is what you can spend".</p>
+  <div class="card">
+    <div class="card-title">💰 Wallet</div>
+    <div class="meta-3">
+      <div>
+        <span class="meta-label">Points Balance</span>
+        <div class="wallet-val wallet-points">936 ✨</div>
+      </div>
+      <div>
+        <span class="meta-label">Cash Balance</span>
+        <div class="wallet-val wallet-cash">₹1,485.00</div>
+      </div>
+      <div>
+        <span class="meta-label">Total ₹ Value</span>
+        <div class="wallet-val">₹1,953.00</div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="separator" />
+
+  <!-- OPTION A: Hero total + bucket cards -->
+  <span class="option-label">Option A — Hero Total + Bucket Cards</span>
+  <p class="option-desc">Total redeemable value is the hero number. Below it, two bucket cards show the breakdown with the points-to-rupee conversion visible. Clear hierarchy: total first, detail second.</p>
+  <div class="card">
+    <div class="card-title">💰 Wallet</div>
+    <div class="opt-a-hero">
+      <div class="opt-a-hero-label">Total Redeemable</div>
+      <div class="opt-a-hero-value">₹1,953.00</div>
+    </div>
+    <div class="opt-a-breakdown">
+      <div class="opt-a-bucket">
+        <div class="opt-a-bucket-label">Points</div>
+        <div class="opt-a-bucket-row">
+          <span class="opt-a-bucket-value" style="color: var(--primary);">936 ✨</span>
+          <span class="opt-a-bucket-equiv">= ₹468</span>
+        </div>
+      </div>
+      <div class="opt-a-bucket">
+        <div class="opt-a-bucket-label">Cash</div>
+        <div class="opt-a-bucket-row">
+          <span class="opt-a-bucket-value" style="color: var(--success);">₹1,485</span>
+          <span class="opt-a-bucket-equiv">Gift Card + Refund</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="separator" />
+
+  <!-- OPTION B: Stacked bar -->
+  <span class="option-label">Option B — Stacked Bar Breakdown</span>
+  <p class="option-desc">Total at top right. A proportional bar shows how much of the balance is points vs cash. Legend below labels each segment with both the native unit and rupee equivalent. Good for quick visual ratio.</p>
+  <div class="card">
+    <div class="card-title">💰 Wallet</div>
+    <div class="opt-b-total-row">
+      <span class="opt-b-total-label">Total Redeemable</span>
+      <span class="opt-b-total-value">₹1,953.00</span>
+    </div>
+    <div class="opt-b-bar-track">
+      <div class="opt-b-bar-points" style="width: 24%;"></div>
+      <div class="opt-b-bar-cash" style="width: 76%;"></div>
+    </div>
+    <div class="opt-b-legend">
+      <div class="opt-b-legend-item">
+        <span class="opt-b-dot opt-b-dot-points"></span>
+        <span>Points</span>
+        <span class="opt-b-legend-value" style="color: var(--primary);">936 ✨</span>
+        <span class="opt-b-legend-equiv">(₹468)</span>
+      </div>
+      <div class="opt-b-legend-item">
+        <span class="opt-b-dot opt-b-dot-cash"></span>
+        <span>Cash</span>
+        <span class="opt-b-legend-value" style="color: var(--success);">₹1,485</span>
+      </div>
+    </div>
+  </div>
+
+  <hr class="separator" />
+
+  <!-- OPTION C: Visual equation -->
+  <span class="option-label">Option C — Visual Equation</span>
+  <p class="option-desc">Points + Cash = Total, laid out as a visual formula. Makes the math explicit — the user can see exactly how the total is computed. The green result card draws the eye to the spendable amount.</p>
+  <div class="card">
+    <div class="card-title">💰 Wallet</div>
+    <div class="opt-c-equation">
+      <div class="opt-c-part">
+        <div class="opt-c-part-value" style="color: var(--primary);">936 ✨</div>
+        <div class="opt-c-part-sub">= ₹468.00</div>
+        <div class="opt-c-part-label">Points</div>
+      </div>
+      <span class="opt-c-op">+</span>
+      <div class="opt-c-part">
+        <div class="opt-c-part-value" style="color: var(--success);">₹1,485</div>
+        <div class="opt-c-part-sub">Gift Card + Refund</div>
+        <div class="opt-c-part-label">Cash</div>
+      </div>
+      <span class="opt-c-op">=</span>
+      <div class="opt-c-result">
+        <div class="opt-c-result-value">₹1,953</div>
+        <div class="opt-c-result-label">Total Redeemable</div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="separator" />
+
+  <!-- OPTION D: Compact rows -->
+  <span class="option-label">Option D — Compact Rows</span>
+  <p class="option-desc">Bold total at top, then each bucket as a row with a color dot, native value on left, rupee equivalent on right. Cleanest for admin use — scannable, dense, and unambiguous.</p>
+  <div class="card">
+    <div class="card-title">💰 Wallet</div>
+    <div class="opt-d-total">
+      <span class="opt-d-total-value">₹1,953.00</span>
+      <span class="opt-d-total-label">total redeemable</span>
+    </div>
+    <div class="opt-d-rows">
+      <div class="opt-d-row">
+        <div class="opt-d-row-left">
+          <span class="opt-d-dot" style="background: var(--primary);"></span>
+          <span class="opt-d-row-label">Points</span>
+        </div>
+        <div class="opt-d-row-right">
+          <span class="opt-d-row-value" style="color: var(--primary);">936 ✨</span>
+          <span class="opt-d-row-equiv">worth ₹468.00</span>
+        </div>
+      </div>
+      <div class="opt-d-row">
+        <div class="opt-d-row-left">
+          <span class="opt-d-dot" style="background: var(--success);"></span>
+          <span class="opt-d-row-label">Cash</span>
+        </div>
+        <div class="opt-d-row-right">
+          <span class="opt-d-row-value" style="color: var(--success);">₹1,485.00</span>
+          <span class="opt-d-row-equiv">Gift Card ₹1,315 + Refund ₹170</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>About Page — Design Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --color-bg: #ffffff;
+    --color-surface: #f8f9fa;
+    --color-surface-2: #f0f1f3;
+    --color-text: #1a1a2e;
+    --color-text-muted: #6b7280;
+    --color-border: #e5e7eb;
+    --color-primary: #7c6aff;
+    --color-primary-hover: #6b5ce7;
+    --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+    --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-10: 40px;
+    --radius-sm: 4px; --radius-md: 8px; --radius-lg: 12px;
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font-sans);
+    background: var(--color-bg);
+    color: var(--color-text);
+    display: flex;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ============ SIDEBAR ============ */
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+    width: 240px;
+    background: var(--color-surface);
+    border-right: 1px solid var(--color-border);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    flex-shrink: 0;
+  }
+
+  .sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+    min-height: 56px;
+  }
+
+  .logo-text {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--color-primary);
+  }
+
+  .toggle-btn {
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--color-text-muted);
+    border-radius: var(--radius-sm);
+  }
+
+  .sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-2);
+    gap: var(--space-1);
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-md);
+    color: var(--color-text-muted);
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .nav-item:hover { background: var(--color-surface-2); color: var(--color-text); }
+  .nav-item.active { background: var(--color-primary); color: #fff; }
+
+  .nav-icon {
+    display: flex; align-items: center; justify-content: center;
+    width: 20px; height: 20px;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .nav-chevron { margin-left: auto; font-size: 10px; color: var(--color-text-muted); }
+
+  .sidebar-footer {
+    margin-top: auto;
+    padding: var(--space-3);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .switch-merchant {
+    display: block;
+    font-size: 12px;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    text-align: center;
+    padding: var(--space-2);
+    border-radius: var(--radius-sm);
+  }
+
+  /* ============ MAIN ============ */
+  .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-8);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-surface);
+    min-height: 56px;
+  }
+
+  .topbar-title { font-size: 14px; font-weight: 600; }
+
+  .merchant-pill {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    background: var(--color-surface-2);
+    border: 1px solid var(--color-border);
+    padding: 3px var(--space-3);
+    border-radius: 9999px;
+  }
+
+  .topbar-spacer { flex: 1; }
+  .theme-toggle { color: var(--color-text-muted); font-size: 16px; }
+
+  .page {
+    padding: var(--space-8);
+    max-width: 1100px;
+    width: 100%;
+  }
+
+  .page-header { margin-bottom: var(--space-6); }
+  .page-title { font-size: 24px; font-weight: 700; }
+  .page-subtitle { font-size: 13px; color: var(--color-text-muted); margin-top: var(--space-1); }
+
+  /* ============ SUB-TABS ============ */
+  .subtabs {
+    display: flex;
+    gap: var(--space-1);
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: var(--space-6);
+    overflow-x: auto;
+  }
+
+  .subtab {
+    appearance: none;
+    background: none;
+    border: none;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    padding: var(--space-3) var(--space-4);
+    cursor: pointer;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: color .15s ease;
+  }
+
+  .subtab:hover { color: var(--color-text); }
+  .subtab.active { color: var(--color-primary); border-bottom-color: var(--color-primary); font-weight: 600; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ============ OVERVIEW PANEL ============ */
+  .hero {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-10);
+    background:
+      radial-gradient(900px 240px at 0% 0%, rgba(124,106,255,.10), transparent 70%),
+      var(--color-surface);
+    margin-bottom: var(--space-6);
+  }
+
+  .eyebrow {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--color-primary);
+  }
+
+  .hero-headline {
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-top: var(--space-3);
+    max-width: 620px;
+  }
+
+  .hero-text {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--color-text-muted);
+    margin-top: var(--space-4);
+    max-width: 620px;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: var(--space-3);
+    margin-top: var(--space-6);
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    appearance: none;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    padding: var(--space-3) var(--space-5);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    border: 1px solid transparent;
+  }
+
+  .btn-primary { background: var(--color-primary); color: #fff; }
+  .btn-primary:hover { background: var(--color-primary-hover); }
+  .btn-secondary {
+    background: var(--color-bg);
+    color: var(--color-text);
+    border-color: var(--color-border);
+  }
+  .btn-secondary:hover { border-color: var(--color-primary); color: var(--color-primary); }
+
+  .section-label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-4);
+  }
+
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-4);
+  }
+
+  .feature-card {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    cursor: pointer;
+    background: var(--color-bg);
+    transition: border-color .15s ease, transform .15s ease;
+  }
+
+  .feature-card:hover { border-color: var(--color-primary); transform: translateY(-2px); }
+
+  .feature-icon {
+    width: 40px; height: 40px;
+    border-radius: var(--radius-md);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    margin-bottom: var(--space-3);
+  }
+
+  .feature-card h3 { font-size: 14px; font-weight: 600; }
+  .feature-card p {
+    font-size: 12px;
+    color: var(--color-text-muted);
+    margin-top: var(--space-1);
+    line-height: 1.6;
+  }
+
+  /* ============ FEATURE PANEL ============ */
+  .feature-head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    margin-bottom: var(--space-5);
+  }
+
+  .feature-head .feature-icon {
+    width: 52px; height: 52px;
+    font-size: 26px;
+    margin: 0;
+    flex-shrink: 0;
+  }
+
+  .feature-head h2 { font-size: 20px; font-weight: 700; }
+  .feature-head .tagline { font-size: 13px; color: var(--color-text-muted); margin-top: 2px; }
+
+  .feature-lead {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--color-text);
+    max-width: 680px;
+    margin-bottom: var(--space-6);
+  }
+
+  .cap-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3) var(--space-6);
+    margin-bottom: var(--space-6);
+  }
+
+  .cap {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .cap .check {
+    width: 18px; height: 18px;
+    border-radius: 9999px;
+    background: rgba(16,185,129,.12);
+    color: #10b981;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .callout {
+    display: flex;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-left: 3px solid var(--color-primary);
+    font-size: 13px;
+    line-height: 1.6;
+    max-width: 680px;
+  }
+
+  .callout strong { color: var(--color-text); }
+</style>
+</head>
+<body>
+
+<!-- ================= SIDEBAR ================= -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <span class="logo-text">Batua</span>
+    <span class="toggle-btn">‹</span>
+  </div>
+  <nav class="sidebar-nav">
+    <a class="nav-item"><span class="nav-icon">▦</span><span>Wallet</span><span class="nav-chevron">▸</span></a>
+    <a class="nav-item"><span class="nav-icon">♥</span><span>Loyalty</span><span class="nav-chevron">▸</span></a>
+    <a class="nav-item"><span class="nav-icon">⇄</span><span>Transactions</span></a>
+    <a class="nav-item"><span class="nav-icon">☖</span><span>Customers</span></a>
+    <a class="nav-item"><span class="nav-icon">☆</span><span>Gift Cards</span></a>
+    <a class="nav-item"><span class="nav-icon">→</span><span>Referrals</span><span class="nav-chevron">▸</span></a>
+    <a class="nav-item"><span class="nav-icon">✉</span><span>Notifications</span></a>
+    <a class="nav-item"><span class="nav-icon">☸</span><span>Settings</span></a>
+    <a class="nav-item active"><span class="nav-icon">ⓘ</span><span>About</span></a>
+  </nav>
+  <div class="sidebar-footer">
+    <a class="switch-merchant">Switch Merchant →</a>
+  </div>
+</aside>
+
+<!-- ================= MAIN ================= -->
+<div class="main">
+  <div class="topbar">
+    <span class="topbar-title">Merchant Admin</span>
+    <span class="merchant-pill">Dal Dynasty</span>
+    <span class="topbar-spacer"></span>
+    <span class="theme-toggle">◑</span>
+  </div>
+
+  <div class="page">
+    <div class="page-header">
+      <h1 class="page-title">About</h1>
+      <p class="page-subtitle">Learn about Batua and everything the retention suite can do</p>
+    </div>
+
+    <div class="subtabs" id="subtabs">
+      <button class="subtab active" data-tab="overview">Overview</button>
+      <button class="subtab" data-tab="wallet">Wallet</button>
+      <button class="subtab" data-tab="loyalty">Loyalty</button>
+      <button class="subtab" data-tab="giftcards">Gift Cards</button>
+      <button class="subtab" data-tab="referrals">Referrals</button>
+      <button class="subtab" data-tab="campaigns">Campaigns</button>
+      <button class="subtab" data-tab="memberships">Memberships</button>
+    </div>
+
+    <!-- ===== OVERVIEW ===== -->
+    <div class="panel active" data-panel="overview">
+      <div class="hero">
+        <span class="eyebrow">Breeze Retention Suite</span>
+        <h2 class="hero-headline">Turn one-time buyers into customers who keep coming back.</h2>
+        <p class="hero-text">
+          Batua is the all-in-one retention platform for Indian Shopify D2C brands. It brings
+          wallet &amp; store credit, loyalty, gift cards, referrals, campaigns, and memberships
+          into a single platform — built COD-first, WhatsApp-native, and festive-ready for the
+          Indian market. Use the tabs above to explore each part of the suite.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="/website/index.html" target="_blank">Visit Website →</a>
+          <a class="btn btn-secondary" href="/website/pricing.html" target="_blank">See Pricing</a>
+        </div>
+      </div>
+
+      <div class="section-label">Explore the suite</div>
+      <div class="feature-grid">
+        <div class="feature-card" data-goto="wallet">
+          <div class="feature-icon" style="background:rgba(124,106,255,.12);color:#7c6aff">💳</div>
+          <h3>Wallet</h3>
+          <p>Store credit &amp; cashback customers spend at checkout.</p>
+        </div>
+        <div class="feature-card" data-goto="loyalty">
+          <div class="feature-icon" style="background:rgba(245,158,11,.14);color:#f59e0b">⭐</div>
+          <h3>Loyalty</h3>
+          <p>Points and VIP tiers that reward your best customers.</p>
+        </div>
+        <div class="feature-card" data-goto="giftcards">
+          <div class="feature-icon" style="background:rgba(236,72,153,.12);color:#ec4899">🎁</div>
+          <h3>Gift Cards</h3>
+          <p>Digital gift cards customers can send and redeem.</p>
+        </div>
+        <div class="feature-card" data-goto="referrals">
+          <div class="feature-icon" style="background:rgba(59,130,246,.12);color:#3b82f6">🔗</div>
+          <h3>Referrals</h3>
+          <p>Two-sided referrals that grow your customer base.</p>
+        </div>
+        <div class="feature-card" data-goto="campaigns">
+          <div class="feature-icon" style="background:rgba(16,185,129,.12);color:#10b981">📣</div>
+          <h3>Campaigns</h3>
+          <p>Festive multiplier boosts for big sales moments.</p>
+        </div>
+        <div class="feature-card" data-goto="memberships">
+          <div class="feature-icon" style="background:rgba(139,92,246,.14);color:#8b5cf6">👑</div>
+          <h3>Memberships</h3>
+          <p>Paid membership tiers with premium earning perks.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== WALLET ===== -->
+    <div class="panel" data-panel="wallet">
+      <div class="feature-head">
+        <div class="feature-icon" style="background:rgba(124,106,255,.12);color:#7c6aff">💳</div>
+        <div>
+          <h2>Wallet</h2>
+          <div class="tagline">Store credit &amp; cashback that brings customers back.</div>
+        </div>
+      </div>
+      <p class="feature-lead">
+        The Batua wallet holds every form of store value a customer earns — cashback, refunds,
+        gift-card balance, referral rewards, and goodwill credit — in one balance they spend at
+        Shopify checkout.
+      </p>
+      <div class="cap-grid">
+        <div class="cap"><span class="check">✓</span><span>COD-to-prepaid cashback incentives</span></div>
+        <div class="cap"><span class="check">✓</span><span>Multi-bucket balances, each with its own rules</span></div>
+        <div class="cap"><span class="check">✓</span><span>Per-bucket expiry &amp; redemption policies</span></div>
+        <div class="cap"><span class="check">✓</span><span>UPI top-up for customer-funded balance</span></div>
+        <div class="cap"><span class="check">✓</span><span>Append-only ledger for every movement</span></div>
+        <div class="cap"><span class="check">✓</span><span>Spend balance directly at checkout</span></div>
+      </div>
+      <div class="callout">
+        <span>💡</span>
+        <span><strong>COD-aware:</strong> reward prepaid orders with wallet cashback to cut return-to-origin and improve cash flow.</span>
+      </div>
+    </div>
+
+    <!-- ===== LOYALTY ===== -->
+    <div class="panel" data-panel="loyalty">
+      <div class="feature-head">
+        <div class="feature-icon" style="background:rgba(245,158,11,.14);color:#f59e0b">⭐</div>
+        <div>
+          <h2>Loyalty</h2>
+          <div class="tagline">Points and VIP tiers that reward your best customers.</div>
+        </div>
+      </div>
+      <p class="feature-lead">
+        Set earning rules on the actions you care about and let customers climb VIP tiers that
+        boost how fast they earn — keeping your most valuable buyers engaged.
+      </p>
+      <div class="cap-grid">
+        <div class="cap"><span class="check">✓</span><span>Configurable earn rules — percentage or fixed</span></div>
+        <div class="cap"><span class="check">✓</span><span>VIP tiers with earn-rate multipliers</span></div>
+        <div class="cap"><span class="check">✓</span><span>Milestones for lifetime spend &amp; order count</span></div>
+        <div class="cap"><span class="check">✓</span><span>Purchase streaks</span></div>
+        <div class="cap"><span class="check">✓</span><span>Birthday &amp; profile-completion bonuses</span></div>
+        <div class="cap"><span class="check">✓</span><span>Spin-the-wheel reward mechanic</span></div>
+      </div>
+      <div class="callout">
+        <span>💡</span>
+        <span><strong>Indian shoppers expect tiers</strong> — inspired by Tata Neu and Flipkart Plus. Batua brings the same mechanic to D2C brands.</span>
+      </div>
+    </div>
+
+    <!-- ===== GIFT CARDS ===== -->
+    <div class="panel" data-panel="giftcards">
+      <div class="feature-head">
+        <div class="feature-icon" style="background:rgba(236,72,153,.12);color:#ec4899">🎁</div>
+        <div>
+          <h2>Gift Cards</h2>
+          <div class="tagline">Digital gift cards your customers can send and redeem.</div>
+        </div>
+      </div>
+      <p class="feature-lead">
+        Issue branded digital gift cards, let recipients claim them straight into their wallet,
+        and let anyone check a balance — a gifting channel Shopify's native feature doesn't cover.
+      </p>
+      <div class="cap-grid">
+        <div class="cap"><span class="check">✓</span><span>Digital gift card issuance</span></div>
+        <div class="cap"><span class="check">✓</span><span>Claim-to-wallet flow for recipients</span></div>
+        <div class="cap"><span class="check">✓</span><span>Public gift-card balance checker</span></div>
+        <div class="cap"><span class="check">✓</span><span>Bulk issuance for corporate gifting</span></div>
+        <div class="cap"><span class="check">✓</span><span>Full ledger trail per card</span></div>
+        <div class="cap"><span class="check">✓</span><span>Expiry &amp; status management</span></div>
+      </div>
+      <div class="callout">
+        <span>💡</span>
+        <span><strong>Gifting is growing 20–30% a year</strong> in India — personal and corporate. Gift cards open a new acquisition channel.</span>
+      </div>
+    </div>
+
+    <!-- ===== REFERRALS ===== -->
+    <div class="panel" data-panel="referrals">
+      <div class="feature-head">
+        <div class="feature-icon" style="background:rgba(59,130,246,.12);color:#3b82f6">🔗</div>
+        <div>
+          <h2>Referrals</h2>
+          <div class="tagline">Two-sided referrals that turn customers into a growth channel.</div>
+        </div>
+      </div>
+      <p class="feature-lead">
+        Give every customer a referral code and reward both sides when a friend buys. Word of
+        mouth is the #1 discovery channel for Indian shoppers — Batua makes it systematic.
+      </p>
+      <div class="cap-grid">
+        <div class="cap"><span class="check">✓</span><span>Auto-generated referral codes</span></div>
+        <div class="cap"><span class="check">✓</span><span>Give-get rewards for referrer &amp; referee</span></div>
+        <div class="cap"><span class="check">✓</span><span>Vanity codes for memorable sharing</span></div>
+        <div class="cap"><span class="check">✓</span><span>Influencer / creator codes with commission</span></div>
+        <div class="cap"><span class="check">✓</span><span>Conversion tracking end-to-end</span></div>
+        <div class="cap"><span class="check">✓</span><span>Trigger codes on registration or first purchase</span></div>
+      </div>
+      <div class="callout">
+        <span>💡</span>
+        <span><strong>No per-referral commission to Batua</strong> — unlike referral-only tools that take a cut of referral revenue.</span>
+      </div>
+    </div>
+
+    <!-- ===== CAMPAIGNS ===== -->
+    <div class="panel" data-panel="campaigns">
+      <div class="feature-head">
+        <div class="feature-icon" style="background:rgba(16,185,129,.12);color:#10b981">📣</div>
+        <div>
+          <h2>Campaigns</h2>
+          <div class="tagline">Time-boxed boosts for the festive season and big moments.</div>
+        </div>
+      </div>
+      <p class="feature-lead">
+        Layer multiplier campaigns on top of your earn rules to run 2x or 3x earning events
+        during Diwali, sales, or product launches — without rewriting a single rule.
+      </p>
+      <div class="cap-grid">
+        <div class="cap"><span class="check">✓</span><span>Multiplier campaigns on any earn rule</span></div>
+        <div class="cap"><span class="check">✓</span><span>Festive templates (Diwali, and more)</span></div>
+        <div class="cap"><span class="check">✓</span><span>Scheduled start &amp; end dates</span></div>
+        <div class="cap"><span class="check">✓</span><span>Campaign calendar view</span></div>
+        <div class="cap"><span class="check">✓</span><span>Per-campaign performance tracking</span></div>
+        <div class="cap"><span class="check">✓</span><span>Stacks with loyalty &amp; membership boosts</span></div>
+      </div>
+      <div class="callout">
+        <span>💡</span>
+        <span><strong>Festive-native:</strong> India's biggest sales windows are seasonal — campaigns let you ramp rewards up and down on schedule.</span>
+      </div>
+    </div>
+
+    <!-- ===== MEMBERSHIPS ===== -->
+    <div class="panel" data-panel="memberships">
+      <div class="feature-head">
+        <div class="feature-icon" style="background:rgba(139,92,246,.14);color:#8b5cf6">👑</div>
+        <div>
+          <h2>Memberships</h2>
+          <div class="tagline">Paid memberships with premium earning perks.</div>
+        </div>
+      </div>
+      <p class="feature-lead">
+        Offer paid membership tiers — like Tata Neu or Flipkart Plus — that give members a higher
+        earn rate and exclusive benefits, creating a recurring revenue stream and deeper loyalty.
+      </p>
+      <div class="cap-grid">
+        <div class="cap"><span class="check">✓</span><span>Paid membership tiers</span></div>
+        <div class="cap"><span class="check">✓</span><span>Boosted earn-rate multiplier for members</span></div>
+        <div class="cap"><span class="check">✓</span><span>Upgrade, extend &amp; renew flows</span></div>
+        <div class="cap"><span class="check">✓</span><span>Tied to loyalty tiers</span></div>
+        <div class="cap"><span class="check">✓</span><span>Expiry management &amp; reminders</span></div>
+        <div class="cap"><span class="check">✓</span><span>Member-only benefits</span></div>
+      </div>
+      <div class="callout">
+        <span>💡</span>
+        <span><strong>Recurring revenue:</strong> a paid membership turns retention into predictable income on top of repeat orders.</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const subtabs = document.querySelectorAll('.subtab');
+  const panels = document.querySelectorAll('.panel');
+
+  function show(tab) {
+    subtabs.forEach((s) => s.classList.toggle('active', s.dataset.tab === tab));
+    panels.forEach((p) => p.classList.toggle('active', p.dataset.panel === tab));
+    document.querySelector('.page').scrollIntoView({ block: 'start' });
+  }
+
+  subtabs.forEach((s) => s.addEventListener('click', () => show(s.dataset.tab)));
+  document.querySelectorAll('.feature-card').forEach((c) =>
+    c.addEventListener('click', () => show(c.dataset.goto))
+  );
+</script>
+</body>
+</html>

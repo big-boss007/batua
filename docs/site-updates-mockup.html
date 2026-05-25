@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Marketing Site Updates — Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../site/styles.css" />
+<style>
+  /* The site uses an IntersectionObserver in script.js to reveal these.
+     Force visible so the mockup renders without loading the script. */
+  .animate-on-scroll {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+</style>
+<style>
+  /* Subtle banner above each updated/new section, so reviewer knows what they're seeing */
+  .update-banner {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #fef3c7;
+    color: #78350f;
+    border-top: 1px solid #f59e0b;
+    border-bottom: 1px solid #f59e0b;
+    padding: 10px 24px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+  }
+  .update-banner .tag {
+    background: #f59e0b;
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-right: 10px;
+    font-weight: 700;
+  }
+  .mockup-intro {
+    background: #1a1a2e;
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    padding: 56px 24px;
+    text-align: center;
+  }
+  .mockup-intro h1 {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .mockup-intro p {
+    font-size: 15px;
+    color: rgba(255, 255, 255, 0.7);
+    max-width: 680px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+  .new-block {
+    position: relative;
+  }
+  .new-block::before {
+    content: 'NEW';
+    position: absolute;
+    top: -8px;
+    left: -8px;
+    background: #10b981;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+    z-index: 1;
+  }
+</style>
+</head>
+<body>
+
+<div class="mockup-intro">
+  <h1>Marketing site — proposed updates</h1>
+  <p>
+    Each section below is either an extension of an existing one (Loyalty, Memberships)
+    or a brand-new section (Merchant tools, Customer Storefront, Built on). Yellow
+    banners mark each update. "NEW" tags mark the individual feature blocks that
+    would be added. Real site styles are loaded so the look is faithful.
+  </p>
+</div>
+
+<!-- ============================================================= -->
+<!-- UPDATE 2 — Loyalty: add feature blocks explaining tier mechanic -->
+<!-- ============================================================= -->
+<div class="update-banner">
+  <span class="tag">Update 2</span>
+  Loyalty section — add 3 feature blocks explaining how the tier system works (existing tier visual stays; existing bonus blocks stay).
+</div>
+
+<section class="section section--black" id="loyalty">
+  <div class="container">
+    <div class="feature-section__header animate-on-scroll">
+      <p class="eyebrow">Loyalty</p>
+      <h2 class="headline-large">Reward your best customers.<br>They'll reward you back.</h2>
+      <p class="body-large" style="margin-top: 20px;">Turn anonymous buyers into a tiered community where the best customers get the best treatment.</p>
+    </div>
+
+    <!-- Existing tier visual (unchanged) -->
+    <div class="tier-visual animate-on-scroll">
+      <div class="tier-card"><div class="tier-card__icon" style="color: #cd7f32;">●</div><div class="tier-card__name">Bronze</div><div class="tier-card__multiplier">1x</div><div class="tier-card__threshold">Starting tier</div></div>
+      <div class="tier-arrow">→</div>
+      <div class="tier-card"><div class="tier-card__icon" style="color: #c0c0c0;">●</div><div class="tier-card__name">Silver</div><div class="tier-card__multiplier">1.25x</div><div class="tier-card__threshold">₹2,000 spend</div></div>
+      <div class="tier-arrow">→</div>
+      <div class="tier-card"><div class="tier-card__icon" style="color: #ffd700;">●</div><div class="tier-card__name">Gold</div><div class="tier-card__multiplier">1.5x</div><div class="tier-card__threshold">₹5,000 spend</div></div>
+      <div class="tier-arrow">→</div>
+      <div class="tier-card"><div class="tier-card__icon" style="color: #e5e4e2;">●</div><div class="tier-card__name">Platinum</div><div class="tier-card__multiplier">2x</div><div class="tier-card__threshold">₹15,000 spend</div></div>
+    </div>
+
+    <!-- NEW feature blocks: how the tier system actually works -->
+    <div class="feature-block animate-on-scroll new-block">
+      <h3 class="feature-block__title">Auto-tier assignment</h3>
+      <p class="feature-block__desc">Tiers recompute automatically from rolling spend, lifetime spend, or order count — pick the criterion that fits your brand. No CSV uploads, no manual tagging, no operations work. Customers see their next tier and exactly how much spend stands between them and it.</p>
+    </div>
+
+    <div class="feature-block animate-on-scroll new-block">
+      <h3 class="feature-block__title">Earn-rate multipliers you control</h3>
+      <p class="feature-block__desc">Bronze 1x. Silver 1.25x. Gold 1.5x. Platinum 2x — or whatever ladder fits your margins. Set your own tier names, thresholds, and multipliers. Add a fifth tier ("Diamond"), call them whatever you want.</p>
+    </div>
+
+    <div class="feature-block animate-on-scroll new-block">
+      <h3 class="feature-block__title">Stacks with campaigns &amp; membership</h3>
+      <p class="feature-block__desc">A Gold customer on a 3x Diwali campaign earns 4.5x. If they're also a member, the membership boost stacks on top. The effective rate is shown on the storefront <em>before</em> they buy — they see exactly why it's worth checking out today.</p>
+    </div>
+
+    <!-- Existing bonus blocks (unchanged) -->
+    <div class="feature-block animate-on-scroll">
+      <h3 class="feature-block__title">Birthday bonus</h3>
+      <p class="feature-block__desc">"Happy Birthday Priya! ₹100 has been added to your wallet." Automatic. One per customer per year. Set the amount once, never think about it again.</p>
+    </div>
+    <div class="feature-block animate-on-scroll">
+      <h3 class="feature-block__title">Milestone rewards</h3>
+      <p class="feature-block__desc">3rd order: ₹50 bonus. ₹5,000 lifetime spend: ₹150 bonus. 10th order: ₹500 bonus. Checked automatically after every purchase. One-time per milestone.</p>
+    </div>
+    <div class="feature-block animate-on-scroll">
+      <h3 class="feature-block__title">Streak rewards</h3>
+      <p class="feature-block__desc">"You've placed 3 orders in 30 days — here's ₹75!" Rewards consistency, not just big spenders. Resets every window — earn the streak again and again.</p>
+    </div>
+    <div class="feature-block animate-on-scroll">
+      <h3 class="feature-block__title">Profile completion</h3>
+      <p class="feature-block__desc">"Complete your profile for ₹30 in credits." Name, email, birthday — each field tracked. You get better customer data. They get free money.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================= -->
+<!-- UPDATE 1 — Memberships: add feature blocks explaining the system -->
+<!-- ============================================================= -->
+<div class="update-banner">
+  <span class="tag">Update 1</span>
+  Memberships section — keep the existing pricing cards; add 4 feature blocks describing how memberships actually work (before the "Why it works" closer).
+</div>
+
+<section class="section section--gradient" id="memberships">
+  <div class="container">
+    <div class="feature-section__header animate-on-scroll">
+      <p class="eyebrow">Memberships</p>
+      <h2 class="headline-large">The Amazon Prime model.<br>For your store.</h2>
+      <p class="body-large" style="margin-top: 20px;">Your best customers want VIP treatment. Let them pay for it.</p>
+    </div>
+
+    <!-- Existing pricing cards (unchanged) -->
+    <div class="membership-cards animate-on-scroll">
+      <div class="membership-card">
+        <div class="membership-card__badge">Monthly</div>
+        <div class="membership-card__price">₹99<span style="font-size: 20px; font-weight: 400; color: var(--gray);">/mo</span></div>
+        <div class="membership-card__period">Billed monthly</div>
+        <ul class="membership-card__benefits">
+          <li>2x cashback on every order</li>
+          <li>Free shipping</li>
+          <li>Early access to new launches</li>
+        </ul>
+      </div>
+      <div class="membership-card membership-card--featured">
+        <div class="membership-card__badge">Annual — Best Value</div>
+        <div class="membership-card__price">₹799<span style="font-size: 20px; font-weight: 400; color: var(--gray);">/yr</span></div>
+        <div class="membership-card__period">₹67/mo — save 33%</div>
+        <ul class="membership-card__benefits">
+          <li>2.5x cashback on every order</li>
+          <li>Free shipping + priority support</li>
+          <li>Early access + exclusive collections</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- NEW feature blocks: how memberships actually work -->
+    <div class="feature-block animate-on-scroll new-block">
+      <h3 class="feature-block__title">Upgrade, extend, renew — self-serve</h3>
+      <p class="feature-block__desc">Members switch plans, extend by months, or renew early from their account. You don't field a single support email. The wallet, balance, and benefits update instantly.</p>
+    </div>
+
+    <div class="feature-block animate-on-scroll new-block">
+      <h3 class="feature-block__title">Earn-boost stacks with everything</h3>
+      <p class="feature-block__desc">A 2.5x member earn-boost compounds on top of Gold-tier 1.5x and a 3x Diwali campaign — the customer sees the effective rate before checkout. They feel the value of the membership on every order, not just occasionally.</p>
+    </div>
+
+    <div class="feature-block animate-on-scroll new-block">
+      <h3 class="feature-block__title">Auto-renewal reminders</h3>
+      <p class="feature-block__desc">WhatsApp nudges fire at 7 days, 1 day, and on expiry. One-tap renew. Members renewing close to expiry convert at 65%+ — higher than any other lifecycle moment.</p>
+    </div>
+
+    <div class="feature-block animate-on-scroll new-block">
+      <h3 class="feature-block__title">Tied to your loyalty tiers</h3>
+      <p class="feature-block__desc">Members can be granted instant tier status — pay for Gold instead of grinding to it. The customer's effective multiplier is always the better of earned tier and membership tier. No worse off, often better.</p>
+    </div>
+
+    <!-- Existing "Why it works" closer (unchanged) -->
+    <div class="feature-block animate-on-scroll" style="text-align: center;">
+      <h3 class="feature-block__title">Why it works</h3>
+      <p class="feature-block__desc">Members have already committed money to your brand. They <em>will</em> come back to get their money's worth. Typical member spends 3-4x more than non-members.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================= -->
+<!-- UPDATE 3 — NEW Merchant Tools section                           -->
+<!-- ============================================================= -->
+<div class="update-banner">
+  <span class="tag">Update 3</span>
+  NEW section — "Merchant tools" / "For your team." Positions Batua as a real admin platform, not just a customer mechanic. Suggested place: after Campaigns, before Memberships.
+</div>
+
+<section class="section section--white" id="merchant-tools">
+  <div class="container">
+    <div class="feature-section__header animate-on-scroll">
+      <p class="eyebrow">For your team</p>
+      <h2 class="headline-large">Built for the people<br>who run loyalty, not just the customers.</h2>
+      <p class="body-large" style="margin-top: 20px;">Loyalty fails when the merchant team can't operate it. Every screen, every button, every export — built for the human running the store.</p>
+    </div>
+
+    <div class="feature-block animate-on-scroll new-block">
+      <h3 class="feature-block__title">Wallet policies — redemption you control</h3>
+      <p class="feature-block__desc">Per credit type: minimum redemption, step size, % of order cap, ₹ cap, stackable with discounts (or not), expiry days, excluded payment methods. The CFO sets the guardrails once; customers see clean rules at checkout.</p>
+    </div>
+
+    <div class="feature-block animate-on-scroll new-block">
+      <h3 class="feature-block__title">Manual &amp; bulk credit</h3>
+      <p class="feature-block__desc">Credit one customer for a service recovery — or upload a CSV and credit 500 customers for your Diwali apology. Every entry is logged, reasoned, and attributed to the team member who issued it.</p>
+    </div>
+
+    <div class="feature-block animate-on-scroll new-block">
+      <h3 class="feature-block__title">Debit &amp; force-expire</h3>
+      <p class="feature-block__desc">Mistakes happen. Claw back a wrongly-issued credit. Force-expire a stale balance. Every reversal lands in the same append-only ledger — auditable, never silent.</p>
+    </div>
+
+    <div class="feature-block animate-on-scroll new-block">
+      <h3 class="feature-block__title">Edit every notification</h3>
+      <p class="feature-block__desc">The actual WhatsApp / SMS / email copy is yours to edit per event — tone, language, emoji. Your brand voice survives every message we send on your behalf. Hindi, Tamil, Gujarati — go.</p>
+    </div>
+
+    <div class="feature-block animate-on-scroll new-block">
+      <h3 class="feature-block__title">Brand your points</h3>
+      <p class="feature-block__desc">Call them "Drapes Dollars," "Henna Hearts," or "Chai Coins." Set the icon, the name, and the conversion rate to rupees. Your vocabulary, everywhere customers see their balance.</p>
+    </div>
+
+    <div class="feature-block animate-on-scroll new-block">
+      <h3 class="feature-block__title">Transactions ledger</h3>
+      <p class="feature-block__desc">Every movement on every wallet, filterable, exportable, reconcilable. Your finance team gets the truth in one screen — no spreadsheets, no Shopify exports stitched together.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================= -->
+<!-- UPDATE 4 — NEW Customer Storefront section                      -->
+<!-- ============================================================= -->
+<div class="update-banner">
+  <span class="tag">Update 4</span>
+  NEW section — "Customer Storefront." This is Batua's biggest differentiator vs. Smile / Yotpo (per the competitive analysis) and is invisible on the current site. Suggested place: right after the Referrals section.
+</div>
+
+<section class="section section--gradient" id="storefront">
+  <div class="container">
+    <div class="feature-section__header animate-on-scroll">
+      <p class="eyebrow">Customer Storefront</p>
+      <h2 class="headline-large">A rewards homepage.<br>Not a widget.</h2>
+      <p class="body-large" style="margin-top: 20px;">Smile, Yotpo, LoyaltyLion — they all give you a popup in the corner. Batua gives every customer their own page at your domain. Branded. Full-width. Theirs.</p>
+    </div>
+
+    <div class="feature-block animate-on-scroll new-block">
+      <h3 class="feature-block__title">A page, at your domain</h3>
+      <p class="feature-block__desc">yourstore.com/rewards. Header, fonts, colors, copy — yours. Not a corner popup. Not a third-party domain. Customers land somewhere that feels like home, because it is.</p>
+    </div>
+
+    <div class="feature-block animate-on-scroll new-block">
+      <h3 class="feature-block__title">Wallet, history, gift cards, referrals — one place</h3>
+      <p class="feature-block__desc">Customers don't dig through email to find what they have. Balance, recent earnings, gift card claim, referral code — all on one page. The thing they come back to before they buy.</p>
+    </div>
+
+    <div class="feature-block animate-on-scroll new-block">
+      <h3 class="feature-block__title">Public gift-card balance check</h3>
+      <p class="feature-block__desc">yourstore.com/gift-cards/check. Recipients verify balance without an account — paste the code, see balance and expiry. Shareable link, zero friction, zero support tickets.</p>
+    </div>
+
+    <div class="feature-block animate-on-scroll new-block">
+      <h3 class="feature-block__title">Branded referral landing pages</h3>
+      <p class="feature-block__desc">yourstore.com/refer/PRIYA10. Friends land on a page Priya can actually screenshot and share — big "Shop Now," your brand, no ugly query strings. The conversion difference vs. a query-param link is 2-3x.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================= -->
+<!-- UPDATE 5 — NEW Built On / Trust section                         -->
+<!-- ============================================================= -->
+<div class="update-banner">
+  <span class="tag">Update 5</span>
+  NEW section — "Built on." Credibility section for buyers' finance teams and integration leads. Suggested place: just before the Pricing section.
+</div>
+
+<section class="section section--black" id="built-on">
+  <div class="container">
+    <div class="feature-section__header animate-on-scroll">
+      <p class="eyebrow">Under the hood</p>
+      <h2 class="headline-large">Built like a bank.<br>Priced like a SaaS.</h2>
+      <p class="body-large" style="margin-top: 20px;">Loyalty programs are real liability — points are a number on your balance sheet. The system that mints them had better be one you'd trust your auditor with.</p>
+    </div>
+
+    <div class="feature-block animate-on-scroll new-block">
+      <h3 class="feature-block__title">Append-only double-entry ledger</h3>
+      <p class="feature-block__desc">Every credit, debit, COD release, and expiry is an immutable entry. Nothing is overwritten. Nothing is silently corrected. The ledger is the source of truth — your auditor will recognize the shape immediately.</p>
+    </div>
+
+    <div class="feature-block animate-on-scroll new-block">
+      <h3 class="feature-block__title">Idempotency on every action</h3>
+      <p class="feature-block__desc">Re-process the same Shopify webhook 100 times. The customer earns the bonus once. Every operation that touches the wallet carries an idempotency key — duplicates are physically impossible.</p>
+    </div>
+
+    <div class="feature-block animate-on-scroll new-block">
+      <h3 class="feature-block__title">Every event, every state</h3>
+      <p class="feature-block__desc">Shopify webhooks land in a state machine: Received → Processing → Processed or Failed. Nothing is silently dropped, nothing is silently retried. Operations sees the truth on a dashboard, not in customer complaints.</p>
+    </div>
+
+    <div class="feature-block animate-on-scroll new-block">
+      <h3 class="feature-block__title">Full attribution on every change</h3>
+      <p class="feature-block__desc">Every credit attributes to a rule, a campaign, a manual issuance, or a system event — and the human who triggered it. Customer asks "where did this ₹150 come from?" — one query, one answer.</p>
+    </div>
+
+    <div class="feature-block animate-on-scroll new-block">
+      <h3 class="feature-block__title">Eight foundational truths</h3>
+      <p class="feature-block__desc">The architectural commitments we never break: the ledger is append-only; idempotency is structural; value is not fungible across buckets; and five more. Engineered before the first feature was written. Inviolable.</p>
+    </div>
+  </div>
+</section>
+
+<!-- End -->
+<div class="mockup-intro" style="padding: 32px 24px;">
+  <p style="font-size: 13px;">End of mockup. The actual <code>site/index.html</code> changes will preserve all existing sections and only insert the new content shown above.</p>
+</div>
+
+</body>
+</html>

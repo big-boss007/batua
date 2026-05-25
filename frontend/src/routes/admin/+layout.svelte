@@ -42,7 +42,8 @@
       ]
     },
     { label: 'Notifications', href: '/admin/notifications', icon: '\u2709' },
-    { label: 'Settings', href: '/admin/settings', icon: '\u2638' }
+    { label: 'Settings', href: '/admin/settings', icon: '\u2638' },
+    { label: 'About', href: '/admin/about', icon: '\u24d8' }
   ];
 
   let sidebarCollapsed = $state(false);

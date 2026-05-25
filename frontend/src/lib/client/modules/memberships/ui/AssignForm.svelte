@@ -196,7 +196,7 @@
 
     <!-- Phone lookup -->
     <div class="form-field">
-      <label class="form-label">Customer Phone</label>
+      <span class="form-label">Customer Phone</span>
       <div class="phone-row">
         <Input
           value={phone}
@@ -262,7 +262,7 @@
       <!-- Tier + expiry selection -->
       <div class="form-grid">
         <div class="form-field">
-          <label class="form-label">Assign Tier</label>
+          <span class="form-label">Assign Tier</span>
           <Select
             items={tierItems}
             value={selectedTierId ? [selectedTierId] : []}
@@ -676,9 +676,6 @@
     font-size: var(--font-size-sm);
     border: 1px dashed var(--color-border);
     border-radius: var(--radius-md);
-  }
-
-  .modal-body {
   }
 
   .modal-text {

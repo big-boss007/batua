@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Before / After — Component Library Fix Report</title>
+<style>
+  :root {
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --accent: #6366f1;
+    --green: #22c55e;
+    --green-bg: #f0fdf4;
+    --red: #ef4444;
+    --red-bg: #fef2f2;
+    --code-bg: #f1f5f9;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+  .container { max-width: 1200px; margin: 0 auto; padding: 40px 24px; }
+
+  header { text-align: center; margin-bottom: 48px; }
+  header h1 { font-size: 28px; font-weight: 700; margin-bottom: 6px; }
+  header .subtitle { color: var(--text-muted); font-size: 15px; }
+  header .date { color: var(--text-muted); font-size: 12px; margin-top: 4px; }
+
+  .summary-bar { display: flex; gap: 16px; justify-content: center; margin-bottom: 40px; flex-wrap: wrap; }
+  .summary-stat { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 24px; text-align: center; min-width: 140px; }
+  .summary-stat .num { font-size: 28px; font-weight: 800; }
+  .summary-stat .lbl { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-green .num { color: var(--green); }
+  .stat-red .num { color: var(--red); }
+  .stat-accent .num { color: var(--accent); }
+
+  .toc { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; margin-bottom: 36px; columns: 2; }
+  .toc a { display: block; padding: 3px 0; font-size: 13px; color: var(--accent); text-decoration: none; break-inside: avoid; }
+  .toc a:hover { text-decoration: underline; }
+
+  .fix-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 32px; overflow: hidden; }
+  .fix-card-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .fix-card-header h2 { font-size: 16px; font-weight: 700; }
+  .fix-card-header .fix-id { font-size: 11px; color: var(--text-muted); font-family: monospace; }
+  .fix-badge { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .badge-fixed { background: var(--green-bg); color: var(--green); }
+  .badge-skipped { background: #fffbeb; color: #d97706; }
+
+  .fix-details { padding: 12px 20px; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .fix-details .file { font-family: monospace; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+  .fix-details .what { margin-bottom: 4px; }
+  .fix-details .change { display: flex; gap: 12px; flex-wrap: wrap; }
+  .change-from, .change-to { padding: 4px 10px; border-radius: 6px; font-size: 12px; font-family: monospace; }
+  .change-from { background: var(--red-bg); color: var(--red); text-decoration: line-through; }
+  .change-to { background: var(--green-bg); color: #15803d; }
+
+  .comparison { display: grid; grid-template-columns: 1fr 1fr; }
+  .comparison-side { position: relative; }
+  .comparison-side img { width: 100%; display: block; }
+  .comparison-label { position: absolute; top: 8px; left: 8px; padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+  .label-before { background: rgba(239, 68, 68, 0.9); color: white; }
+  .label-after { background: rgba(34, 197, 94, 0.9); color: white; }
+
+  .no-visual { padding: 32px 20px; text-align: center; color: var(--text-muted); font-size: 13px; font-style: italic; }
+
+  footer { text-align: center; padding: 40px 0 20px; color: var(--text-muted); font-size: 12px; }
+
+  @media (max-width: 768px) {
+    .comparison { grid-template-columns: 1fr; }
+    .toc { columns: 1; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>Before / After — Component Library Fix Report</h1>
+  <p class="subtitle">All <code>@juspay/svelte-ui-components</code> violations fixed and verified</p>
+  <p class="date">31 March 2026</p>
+</header>
+
+<div class="summary-bar">
+  <div class="summary-stat stat-green"><div class="num">22</div><div class="lbl">Violations Fixed</div></div>
+  <div class="summary-stat stat-accent"><div class="num">15</div><div class="lbl">Files Changed</div></div>
+  <div class="summary-stat stat-red"><div class="num">6</div><div class="lbl">Skipped (Acceptable)</div></div>
+  <div class="summary-stat"><div class="num">0</div><div class="lbl">New Errors</div></div>
+</div>
+
+<div class="toc">
+  <a href="#fix1">1. Influencers — btn-primary-sm</a>
+  <a href="#fix2">2. Referrals — btn-secondary-sm, btn-danger-sm, btn-success-sm</a>
+  <a href="#fix3">3. Campaigns — :global() overrides</a>
+  <a href="#fix4">4. Settings — btn-cancel, pill-plan</a>
+  <a href="#fix5">5. Wallet Policies — :global(.btn-primary) override</a>
+  <a href="#fix6">6. Transactions — raw clear-btn</a>
+  <a href="#fix7">7. TransactionFilters — raw clear-btn</a>
+  <a href="#fix8">8. Memberships — 15 raw buttons</a>
+  <a href="#fix9">9. GiftCardConfirmation — btn-cancel, btn-confirm</a>
+  <a href="#fix10">10. AssignForm — btn-danger-outline</a>
+  <a href="#fix11">11. NotificationTemplateEditor — pill-variable</a>
+  <a href="#fix12">12. WalletPoliciesList — raw edit-button</a>
+  <a href="#fix13">13. RuleForm — raw add-btn</a>
+  <a href="#fix14">14. ShareButtons — btn-whatsapp</a>
+  <a href="#skip">Skipped (acceptable patterns)</a>
+</div>
+
+<!-- ═══════════════ FIX 1: INFLUENCERS ═══════════════ -->
+<div class="fix-card" id="fix1">
+  <div class="fix-card-header">
+    <h2>1. Influencers — <code>btn-primary-sm</code></h2>
+    <span class="fix-badge badge-fixed">Fixed</span>
+  </div>
+  <div class="fix-details">
+    <div class="file">routes/admin/influencers/+page.svelte:131</div>
+    <div class="what">Custom <code>btn-primary-sm</code> class with local :global() override replaced with standard class.</div>
+    <div class="change">
+      <span class="change-from">classes="btn-primary-sm"</span>
+      <span class="change-to">classes="btn-primary"</span>
+    </div>
+  </div>
+  <div class="comparison">
+    <div class="comparison-side"><span class="comparison-label label-before">Before</span><img src="influencers.png" alt="Before" loading="lazy"></div>
+    <div class="comparison-side"><span class="comparison-label label-after">After</span><img src="after-influencers.png" alt="After" loading="lazy"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ FIX 2: REFERRALS ═══════════════ -->
+<div class="fix-card" id="fix2">
+  <div class="fix-card-header">
+    <h2>2. Referrals — custom <code>-sm</code> button variants</h2>
+    <span class="fix-badge badge-fixed">Fixed</span>
+  </div>
+  <div class="fix-details">
+    <div class="file">routes/admin/referrals/+page.svelte:316, 328, 488–529</div>
+    <div class="what">Replaced 3 custom button classes and removed 4 <code>:global()</code> overrides.</div>
+    <div class="change">
+      <span class="change-from">btn-secondary-sm</span>
+      <span class="change-to">btn-secondary</span>
+    </div>
+    <div class="change" style="margin-top:4px">
+      <span class="change-from">btn-danger-sm / btn-success-sm</span>
+      <span class="change-to">btn-danger / btn-primary</span>
+    </div>
+  </div>
+  <div class="comparison">
+    <div class="comparison-side"><span class="comparison-label label-before">Before</span><img src="referrals.png" alt="Before" loading="lazy"></div>
+    <div class="comparison-side"><span class="comparison-label label-after">After</span><img src="after-referrals.png" alt="After" loading="lazy"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ FIX 3: CAMPAIGNS ═══════════════ -->
+<div class="fix-card" id="fix3">
+  <div class="fix-card-header">
+    <h2>3. Campaigns — local <code>:global()</code> overrides</h2>
+    <span class="fix-badge badge-fixed">Fixed</span>
+  </div>
+  <div class="fix-details">
+    <div class="file">routes/admin/campaigns/+page.svelte:169–170, 286–308</div>
+    <div class="what">Removed local <code>:global(.btn-primary)</code>, <code>:global(.btn-secondary)</code>, <code>:global(.btn-sm)</code> overrides. Removed <code>btn-sm</code> usage from buttons.</div>
+    <div class="change">
+      <span class="change-from">classes="btn-primary btn-sm"</span>
+      <span class="change-to">classes="btn-primary"</span>
+    </div>
+  </div>
+  <div class="comparison">
+    <div class="comparison-side"><span class="comparison-label label-before">Before</span><img src="campaigns.png" alt="Before" loading="lazy"></div>
+    <div class="comparison-side"><span class="comparison-label label-after">After</span><img src="after-campaigns.png" alt="After" loading="lazy"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ FIX 4: SETTINGS ═══════════════ -->
+<div class="fix-card" id="fix4">
+  <div class="fix-card-header">
+    <h2>4. Settings — <code>btn-cancel</code>, <code>btn-copy</code>, <code>pill-plan</code></h2>
+    <span class="fix-badge badge-fixed">Fixed</span>
+  </div>
+  <div class="fix-details">
+    <div class="file">routes/admin/settings/+page.svelte:223, 291, 527–567</div>
+    <div class="what">Replaced custom classes and removed all <code>:global()</code> overrides including btn-primary, btn-cancel, btn-copy, pill-plan.</div>
+    <div class="change">
+      <span class="change-from">btn-cancel / pill-plan</span>
+      <span class="change-to">btn-ghost / pill-info</span>
+    </div>
+  </div>
+  <div class="comparison">
+    <div class="comparison-side"><span class="comparison-label label-before">Before</span><img src="settings.png" alt="Before" loading="lazy"></div>
+    <div class="comparison-side"><span class="comparison-label label-after">After</span><img src="after-settings.png" alt="After" loading="lazy"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ FIX 5: WALLET POLICIES ═══════════════ -->
+<div class="fix-card" id="fix5">
+  <div class="fix-card-header">
+    <h2>5. Wallet Policies — <code>:global(.btn-primary)</code> override</h2>
+    <span class="fix-badge badge-fixed">Fixed</span>
+  </div>
+  <div class="fix-details">
+    <div class="file">routes/admin/wallet-policies/+page.svelte:424–432</div>
+    <div class="what">Removed local <code>:global(.btn-primary)</code> override — uses global definition from app.css.</div>
+  </div>
+  <div class="comparison">
+    <div class="comparison-side"><span class="comparison-label label-before">Before</span><img src="wallet-policies.png" alt="Before" loading="lazy"></div>
+    <div class="comparison-side"><span class="comparison-label label-after">After</span><img src="after-wallet-policies.png" alt="After" loading="lazy"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ FIX 6: TRANSACTIONS ═══════════════ -->
+<div class="fix-card" id="fix6">
+  <div class="fix-card-header">
+    <h2>6. Transactions — raw <code>&lt;button class="clear-btn"&gt;</code></h2>
+    <span class="fix-badge badge-fixed">Fixed</span>
+  </div>
+  <div class="fix-details">
+    <div class="file">routes/admin/transactions/+page.svelte:269</div>
+    <div class="what">Replaced raw <code>&lt;button&gt;</code> with <code>&lt;Button&gt;</code> component using <code>btn-ghost</code>. Removed custom CSS.</div>
+    <div class="change">
+      <span class="change-from">&lt;button class="clear-btn"&gt;</span>
+      <span class="change-to">&lt;Button classes="btn-ghost" /&gt;</span>
+    </div>
+  </div>
+  <div class="comparison">
+    <div class="comparison-side"><span class="comparison-label label-before">Before</span><img src="transactions.png" alt="Before" loading="lazy"></div>
+    <div class="comparison-side"><span class="comparison-label label-after">After</span><img src="after-transactions.png" alt="After" loading="lazy"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ FIX 7: TRANSACTION FILTERS ═══════════════ -->
+<div class="fix-card" id="fix7">
+  <div class="fix-card-header">
+    <h2>7. TransactionFilters — raw <code>&lt;button class="clear-btn"&gt;</code></h2>
+    <span class="fix-badge badge-fixed">Fixed</span>
+  </div>
+  <div class="fix-details">
+    <div class="file">lib/client/modules/transactions/ui/TransactionFilters.svelte:64</div>
+    <div class="what">Same pattern as transactions page — replaced with <code>&lt;Button classes="btn-ghost"&gt;</code>. Removed custom CSS.</div>
+  </div>
+  <div class="no-visual">Component-level fix — visible through Transactions page screenshot above.</div>
+</div>
+
+<!-- ═══════════════ FIX 8: MEMBERSHIPS ═══════════════ -->
+<div class="fix-card" id="fix8">
+  <div class="fix-card-header">
+    <h2>8. Memberships — 15 raw buttons replaced</h2>
+    <span class="fix-badge badge-fixed">Fixed</span>
+  </div>
+  <div class="fix-details">
+    <div class="file">routes/admin/memberships/+page.svelte:398, 630–716</div>
+    <div class="what">Replaced all raw <code>&lt;button&gt;</code> elements (link-btn, action-btn, confirm-btn) with <code>&lt;Button&gt;</code> component using standard classes. Removed ~60 lines of custom CSS.</div>
+    <div class="change">
+      <span class="change-from">action-renew / action-upgrade / action-extend</span>
+      <span class="change-to">btn-primary / btn-secondary</span>
+    </div>
+    <div class="change" style="margin-top:4px">
+      <span class="change-from">confirm-btn-danger / confirm-btn-success / confirm-btn-ghost</span>
+      <span class="change-to">btn-danger / btn-primary / btn-ghost</span>
+    </div>
+    <div class="change" style="margin-top:4px">
+      <span class="change-from">link-btn / action-cancel</span>
+      <span class="change-to">btn-ghost / btn-danger</span>
+    </div>
+  </div>
+  <div class="comparison">
+    <div class="comparison-side"><span class="comparison-label label-before">Before</span><img src="memberships.png" alt="Before" loading="lazy"></div>
+    <div class="comparison-side"><span class="comparison-label label-after">After</span><img src="after-memberships.png" alt="After" loading="lazy"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ FIX 9: GIFT CARD CONFIRMATION ═══════════════ -->
+<div class="fix-card" id="fix9">
+  <div class="fix-card-header">
+    <h2>9. GiftCardConfirmation — <code>btn-cancel</code>, <code>btn-confirm</code></h2>
+    <span class="fix-badge badge-fixed">Fixed</span>
+  </div>
+  <div class="fix-details">
+    <div class="file">lib/client/modules/gift-cards/ui/GiftCardConfirmation.svelte:138, 141, 146, 329–349</div>
+    <div class="what">Replaced custom button classes and removed <code>:global()</code> overrides.</div>
+    <div class="change">
+      <span class="change-from">btn-cancel / btn-confirm</span>
+      <span class="change-to">btn-ghost / btn-primary</span>
+    </div>
+  </div>
+  <div class="comparison">
+    <div class="comparison-side"><span class="comparison-label label-before">Before</span><img src="gift-cards.png" alt="Before" loading="lazy"></div>
+    <div class="comparison-side"><span class="comparison-label label-after">After</span><img src="after-gift-cards.png" alt="After" loading="lazy"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ FIX 10: ASSIGN FORM ═══════════════ -->
+<div class="fix-card" id="fix10">
+  <div class="fix-card-header">
+    <h2>10. AssignForm — <code>btn-danger-outline</code></h2>
+    <span class="fix-badge badge-fixed">Fixed</span>
+  </div>
+  <div class="fix-details">
+    <div class="file">lib/client/modules/memberships/ui/AssignForm.svelte:319, 365, 573–581</div>
+    <div class="what">Replaced custom <code>btn-danger-outline</code> with standard <code>btn-danger</code>. Removed <code>:global()</code> override.</div>
+    <div class="change">
+      <span class="change-from">btn-danger-outline</span>
+      <span class="change-to">btn-danger</span>
+    </div>
+  </div>
+  <div class="no-visual">Component visible through Memberships &rarr; Assign Membership tab.</div>
+</div>
+
+<!-- ═══════════════ FIX 11: NOTIFICATION TEMPLATE EDITOR ═══════════════ -->
+<div class="fix-card" id="fix11">
+  <div class="fix-card-header">
+    <h2>11. NotificationTemplateEditor — <code>pill-variable</code></h2>
+    <span class="fix-badge badge-fixed">Fixed</span>
+  </div>
+  <div class="fix-details">
+    <div class="file">lib/client/modules/settings/ui/NotificationTemplateEditor.svelte:92, 213–218</div>
+    <div class="what">Replaced custom <code>pill-variable</code> with standard <code>pill-info</code>. Removed <code>:global()</code> override.</div>
+    <div class="change">
+      <span class="change-from">classes="pill-variable"</span>
+      <span class="change-to">classes="pill-info"</span>
+    </div>
+  </div>
+  <div class="comparison">
+    <div class="comparison-side"><span class="comparison-label label-before">Before</span><img src="notifications.png" alt="Before" loading="lazy"></div>
+    <div class="comparison-side"><span class="comparison-label label-after">After</span><img src="after-notifications.png" alt="After" loading="lazy"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ FIX 12: WALLET POLICIES LIST ═══════════════ -->
+<div class="fix-card" id="fix12">
+  <div class="fix-card-header">
+    <h2>12. WalletPoliciesList — raw <code>&lt;button class="edit-button"&gt;</code></h2>
+    <span class="fix-badge badge-fixed">Fixed</span>
+  </div>
+  <div class="fix-details">
+    <div class="file">lib/client/modules/settings/ui/WalletPoliciesList.svelte:91, 145</div>
+    <div class="what">Replaced 2 raw <code>&lt;button&gt;</code> elements with <code>&lt;Button&gt;</code> component using <code>btn-secondary</code>. Removed custom CSS.</div>
+    <div class="change">
+      <span class="change-from">&lt;button class="edit-button"&gt;</span>
+      <span class="change-to">&lt;Button classes="btn-secondary" /&gt;</span>
+    </div>
+  </div>
+  <div class="no-visual">Component visible through Wallet Policies page when policies exist and are expanded.</div>
+</div>
+
+<!-- ═══════════════ FIX 13: RULE FORM ═══════════════ -->
+<div class="fix-card" id="fix13">
+  <div class="fix-card-header">
+    <h2>13. RuleForm — raw <code>&lt;button class="add-btn"&gt;</code></h2>
+    <span class="fix-badge badge-fixed">Fixed</span>
+  </div>
+  <div class="fix-details">
+    <div class="file">lib/client/modules/rules/ui/RuleForm.svelte:170</div>
+    <div class="what">Replaced raw button with <code>&lt;Button&gt;</code> component using <code>btn-ghost</code>. Removed custom CSS.</div>
+    <div class="change">
+      <span class="change-from">&lt;button class="add-btn"&gt;</span>
+      <span class="change-to">&lt;Button classes="btn-ghost" /&gt;</span>
+    </div>
+  </div>
+  <div class="comparison">
+    <div class="comparison-side"><span class="comparison-label label-before">Before</span><img src="rules.png" alt="Before" loading="lazy"></div>
+    <div class="comparison-side"><span class="comparison-label label-after">After</span><img src="after-rules.png" alt="After" loading="lazy"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ FIX 14: SHARE BUTTONS ═══════════════ -->
+<div class="fix-card" id="fix14">
+  <div class="fix-card-header">
+    <h2>14. ShareButtons — <code>btn-whatsapp</code></h2>
+    <span class="fix-badge badge-fixed">Fixed</span>
+  </div>
+  <div class="fix-details">
+    <div class="file">lib/client/modules/storefront/ui/ShareButtons.svelte:24</div>
+    <div class="what">Replaced custom <code>btn-whatsapp</code> with standard <code>btn-primary</code>. WhatsApp green color is applied via parent CSS variables.</div>
+    <div class="change">
+      <span class="change-from">classes="btn-whatsapp"</span>
+      <span class="change-to">classes="btn-primary"</span>
+    </div>
+  </div>
+  <div class="no-visual">Storefront component — visible in customer-facing referral share dialog.</div>
+</div>
+
+<!-- ═══════════════ SKIPPED ═══════════════ -->
+<div class="fix-card" id="skip">
+  <div class="fix-card-header">
+    <h2>Skipped — Acceptable Patterns</h2>
+    <span class="fix-badge badge-skipped">6 items</span>
+  </div>
+  <div class="fix-details">
+    <div class="what">These raw <code>&lt;button&gt;</code> elements were reviewed and deemed acceptable because they use semantic patterns (interactive cards, icon-only actions, dropdown items) that don't map cleanly to the Button component:</div>
+    <table style="width:100%; font-size:12px; margin-top:10px; border-collapse:collapse;">
+      <thead><tr style="border-bottom:1px solid var(--border);">
+        <th style="text-align:left; padding:6px 8px; color:var(--text-muted);">File</th>
+        <th style="text-align:left; padding:6px 8px; color:var(--text-muted);">Element</th>
+        <th style="text-align:left; padding:6px 8px; color:var(--text-muted);">Reason</th>
+      </tr></thead>
+      <tbody>
+        <tr><td style="padding:6px 8px; font-family:monospace;">FestiveTemplateGrid.svelte:32</td><td><code>&lt;button class="template-card"&gt;</code></td><td>Interactive card with rich content</td></tr>
+        <tr><td style="padding:6px 8px; font-family:monospace;">CustomerSearch.svelte:72</td><td><code>&lt;button class="result-item"&gt;</code></td><td>Dropdown list interaction</td></tr>
+        <tr><td style="padding:6px 8px; font-family:monospace;">TierWizard.svelte:554, 557</td><td><code>&lt;button class="icon-btn"&gt;</code></td><td>Icon-only edit/delete actions</td></tr>
+        <tr><td style="padding:6px 8px; font-family:monospace;">GiftCardDetail.svelte:71, 78, 85</td><td><code>&lt;button class="icon-btn"&gt;</code></td><td>Icon-only reveal/copy actions</td></tr>
+        <tr><td style="padding:6px 8px; font-family:monospace;">BulkIssueForm.svelte:116, 131</td><td><code>&lt;button class="upload-row"&gt;</code></td><td>File upload trigger with rich layout</td></tr>
+        <tr><td style="padding:6px 8px; font-family:monospace;">IssueGiftCardForm.svelte:34</td><td><code>&lt;input type="date"&gt;</code></td><td>Input component doesn't support date type</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<footer>
+  Component Library Fix Report — 31 March 2026 — 22 fixed, 6 skipped, 0 regressions<br>
+  Build verified: <code>svelte-check --threshold error</code> passed (0 new errors)
+</footer>
+
+</div>
+</body>
+</html>

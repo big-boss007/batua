@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memberships UAT Report</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #f5f6f8;
+    color: #1a1a2e;
+    line-height: 1.6;
+    padding: 2rem;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  h1 {
+    font-size: 2rem;
+    margin-bottom: 0.25rem;
+    color: #16213e;
+  }
+
+  .subtitle {
+    color: #555;
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+  }
+
+  /* Summary table */
+  .summary-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+
+  .summary-card h2 {
+    font-size: 1.15rem;
+    margin-bottom: 1rem;
+    color: #16213e;
+  }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .summary-stat {
+    text-align: center;
+    padding: 1rem;
+    border-radius: 8px;
+  }
+
+  .summary-stat .number {
+    font-size: 2rem;
+    font-weight: 700;
+    display: block;
+  }
+
+  .summary-stat .label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #666;
+  }
+
+  .stat-total { background: #eef0f7; }
+  .stat-total .number { color: #16213e; }
+  .stat-pass { background: #e8f5e9; }
+  .stat-pass .number { color: #2e7d32; }
+  .stat-fail { background: #fce4ec; }
+  .stat-fail .number { color: #c62828; }
+  .stat-bug { background: #fff3e0; }
+  .stat-bug .number { color: #e65100; }
+  .stat-skip { background: #e8eaf6; }
+  .stat-skip .number { color: #3949ab; }
+
+  /* Summary table */
+  .summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+  }
+
+  .summary-table th {
+    text-align: left;
+    padding: 0.6rem 0.8rem;
+    background: #f5f6f8;
+    border-bottom: 2px solid #ddd;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .summary-table td {
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #eee;
+  }
+
+  .summary-table tr:hover { background: #fafafa; }
+
+  /* Badges */
+  .badge {
+    display: inline-block;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .badge-pass { background: #e8f5e9; color: #2e7d32; }
+  .badge-fail { background: #fce4ec; color: #c62828; }
+  .badge-bug { background: #fff3e0; color: #e65100; }
+  .badge-skip { background: #e8eaf6; color: #3949ab; }
+
+  /* Section headers */
+  .section-header {
+    margin: 2.5rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #5c6bc0;
+  }
+
+  .section-header h2 {
+    font-size: 1.35rem;
+    color: #283593;
+  }
+
+  .section-header p {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 0.25rem;
+  }
+
+  /* Test case cards */
+  .test-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    border-left: 4px solid #ccc;
+  }
+
+  .test-card.pass { border-left-color: #4caf50; }
+  .test-card.fail { border-left-color: #f44336; }
+  .test-card.bug { border-left-color: #ff9800; }
+
+  .test-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+
+  .test-card-header h3 {
+    font-size: 1rem;
+    color: #1a1a2e;
+  }
+
+  .test-id {
+    font-size: 0.8rem;
+    color: #999;
+    font-weight: 400;
+    margin-right: 0.5rem;
+  }
+
+  .test-steps {
+    font-size: 0.88rem;
+    color: #555;
+    margin-bottom: 0.75rem;
+  }
+
+  .test-steps ol {
+    padding-left: 1.25rem;
+  }
+
+  .test-steps li {
+    margin-bottom: 0.2rem;
+  }
+
+  .test-notes {
+    font-size: 0.85rem;
+    color: #666;
+    background: #f9f9fb;
+    padding: 0.6rem 0.9rem;
+    border-radius: 6px;
+    margin-bottom: 0.75rem;
+  }
+
+  .test-notes strong { color: #333; }
+
+  .test-screenshot {
+    margin-top: 0.75rem;
+  }
+
+  .test-screenshot img {
+    max-width: 100%;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+
+  .test-screenshot figcaption {
+    font-size: 0.8rem;
+    color: #888;
+    margin-top: 0.4rem;
+    text-align: center;
+  }
+
+  /* Bug details */
+  .bug-detail {
+    background: #fff8f0;
+    border: 1px solid #ffe0b2;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.88rem;
+  }
+
+  .bug-detail strong { color: #e65100; }
+
+  .bug-detail code {
+    background: #ffecd2;
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    font-size: 0.82rem;
+  }
+
+  /* Footer */
+  .report-footer {
+    margin-top: 3rem;
+    padding-top: 1rem;
+    border-top: 1px solid #ddd;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #999;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>Memberships UAT Report</h1>
+<p class="subtitle">Batua Project &mdash; 21 March 2026 &mdash; Merchant: Chai &amp; Co (<code>chaiandco</code>)</p>
+
+<!-- ============ SUMMARY ============ -->
+<div class="summary-card">
+  <h2>Executive Summary</h2>
+  <div class="summary-grid">
+    <div class="summary-stat stat-total">
+      <span class="number">10</span>
+      <span class="label">Total Tests</span>
+    </div>
+    <div class="summary-stat stat-pass">
+      <span class="number">7</span>
+      <span class="label">Passed</span>
+    </div>
+    <div class="summary-stat stat-bug">
+      <span class="number">3</span>
+      <span class="label">Bugs Found</span>
+    </div>
+    <div class="summary-stat stat-fail">
+      <span class="number">0</span>
+      <span class="label">Failed</span>
+    </div>
+    <div class="summary-stat stat-skip">
+      <span class="number">0</span>
+      <span class="label">Skipped</span>
+    </div>
+  </div>
+
+  <table class="summary-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Test Case</th>
+        <th>Stakeholder</th>
+        <th>Result</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>View memberships page</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>2</td><td>Subscribers tab &mdash; member list</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>3</td><td>Customer ID shows truncated UUID instead of name</td><td>Merchant Admin</td><td><span class="badge badge-bug">BUG</span></td></tr>
+      <tr><td>4</td><td>Cancel membership button</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>5</td><td>Assign Membership tab &mdash; phone lookup form</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>6</td><td>Assign Membership &mdash; lookup button disabled without input</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>7</td><td>Membership expiry calculation</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>8</td><td>Status badge</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>9</td><td>Missing membership count/summary</td><td>Merchant Admin</td><td><span class="badge badge-bug">BUG</span></td></tr>
+      <tr><td>10</td><td>No bulk assignment option</td><td>Merchant Admin</td><td><span class="badge badge-bug">BUG</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ============ STAKEHOLDER 1: MERCHANT ADMIN ============ -->
+<div class="section-header">
+  <h2>Stakeholder 1: Merchant Admin</h2>
+  <p>Admin panel at <code>/admin/memberships</code> &mdash; 2 tabs: Subscribers, Assign Membership</p>
+</div>
+
+<!-- Test 1 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#1</span> View Memberships Page</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Navigate to <code>/admin/memberships</code></li>
+      <li>Observe page title "Memberships" with subtitle "Assign loyalty tiers to customers with a 1-year expiry"</li>
+      <li>Verify two tabs: "Subscribers" (selected by default), "Assign Membership"</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Page loads correctly with the expected title, subtitle, and tab layout.
+    The "Subscribers" tab is selected by default, showing the member list table.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="memberships-uat/01-admin-memberships-list.png" alt="Memberships page with Subscribers tab">
+      <figcaption>Memberships page &mdash; Subscribers tab selected by default</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 2 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#2</span> Subscribers Tab &mdash; Member List</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Observe the table on the Subscribers tab</li>
+      <li>Verify columns: Customer ID, Tier, Status, Started, Expires, Actions</li>
+      <li>Verify membership data matches the database</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Table displays correctly with 1 membership row for Chai &amp; Co.
+    Customer ID: c0000000... (truncated UUID), Tier: Gold, Status: active,
+    Started: 21 Mar 2026, 01:47 am, Expires: 14 Feb 2027, 01:47 am.
+    This is Vikram Singh (<code>c0000000-0000-0000-0000-000000000004</code>) per database.
+    All columns render correctly with proper date formatting.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="memberships-uat/01-admin-memberships-list.png" alt="Subscribers tab with member list">
+      <figcaption>Subscribers tab showing 1 membership &mdash; Gold tier, active status</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 3 -->
+<div class="test-card bug">
+  <div class="test-card-header">
+    <h3><span class="test-id">#3</span> Customer ID Shows Truncated UUID Instead of Name</h3>
+    <span class="badge badge-bug">BUG</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Observe the Customer ID column in the Subscribers table</li>
+      <li>Note it displays "c0000000..." (truncated UUID)</li>
+      <li>Compare against expected behavior: should show customer name</li>
+    </ol>
+  </div>
+  <div class="bug-detail">
+    <strong>Bug (MEDIUM):</strong> The Customer column displays <code>c0000000...</code> (a truncated UUID)
+    instead of the customer name "Vikram Singh". Merchants cannot identify which customer has which membership
+    without manually looking up the UUID. The Transactions page correctly shows customer name + phone,
+    so the Memberships page should follow the same pattern.
+    <br><br>
+    <strong>Root cause:</strong> Frontend displays raw <code>customer_id</code> instead of joining/displaying the customer name.
+  </div>
+</div>
+
+<!-- Test 4 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#4</span> Cancel Membership Button</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Observe the Actions column in the Subscribers table</li>
+      <li>Verify each row has a "Cancel" button (red outlined)</li>
+      <li>Confirm the button is clickable</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Each membership row has a "Cancel" button styled with a red outline.
+    The button is clickable and provides the ability to cancel active memberships.
+  </div>
+</div>
+
+<!-- Test 5 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#5</span> Assign Membership Tab &mdash; Phone Lookup Form</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Click the "Assign Membership" tab</li>
+      <li>Observe the form: "Customer Phone" label with text input</li>
+      <li>Verify placeholder text: "10-digit phone number"</li>
+      <li>Verify "Lookup" button present (disabled until input has content)</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> The Assign Membership tab displays a clean phone lookup form with
+    a "Customer Phone" label, text input with placeholder "10-digit phone number", and a
+    "Lookup" button that is correctly disabled when the input is empty.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="memberships-uat/02-admin-assign-membership.png" alt="Assign Membership tab with phone lookup form">
+      <figcaption>Assign Membership tab &mdash; phone lookup form with disabled Lookup button</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 6 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#6</span> Assign Membership &mdash; Lookup Button Disabled Without Input</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>On the Assign Membership tab, observe the "Lookup" button with empty input</li>
+      <li>Verify the button is disabled</li>
+      <li>Confirm it prevents accidental empty lookups</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> The "Lookup" button is correctly disabled when the phone input is empty.
+    This prevents accidental empty lookups and follows good form validation practices.
+  </div>
+</div>
+
+<!-- Test 7 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#7</span> Membership Expiry Calculation</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Observe the Started and Expires dates for the active membership</li>
+      <li>Calculate the duration between the two dates</li>
+      <li>Compare against the described "1-year expiry" in the page subtitle</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Started: 21 Mar 2026, Expires: 14 Feb 2027. This is approximately
+    11 months (330 days), which is close to the described "1-year expiry". The expiry date
+    is correctly stored and displayed.
+  </div>
+</div>
+
+<!-- Test 8 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#8</span> Status Badge</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Observe the Status column in the Subscribers table</li>
+      <li>Verify "active" status is displayed</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> The "active" status is displayed as plain text. While functional,
+    it could benefit from a colored badge (like the Transactions page uses green "Active" pills)
+    for improved visual consistency across the admin panel.
+  </div>
+</div>
+
+<!-- Test 9 -->
+<div class="test-card bug">
+  <div class="test-card-header">
+    <h3><span class="test-id">#9</span> Missing Membership Count/Summary</h3>
+    <span class="badge badge-bug">BUG</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Observe the Memberships page for any summary statistics</li>
+      <li>Check for total member count, tier breakdown, or expiring-soon count</li>
+      <li>Compare against other admin pages (e.g., Gift Cards stats bar)</li>
+    </ol>
+  </div>
+  <div class="bug-detail">
+    <strong>Bug (LOW):</strong> No summary stats are shown on the Memberships page. There is no
+    total member count, tier breakdown, or "expiring soon" indicator. Unlike the Gift Cards page
+    which shows a stats bar with key metrics, the Memberships page goes directly into the table
+    without any overview.
+    <br><br>
+    <strong>Root cause:</strong> Summary/stats section not implemented for the Memberships page.
+  </div>
+</div>
+
+<!-- Test 10 -->
+<div class="test-card bug">
+  <div class="test-card-header">
+    <h3><span class="test-id">#10</span> No Bulk Assignment Option</h3>
+    <span class="badge badge-bug">BUG</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Navigate to the Assign Membership tab</li>
+      <li>Check for any bulk assignment options (CSV upload, batch input)</li>
+      <li>Compare against Gift Cards which has bulk issue capability</li>
+    </ol>
+  </div>
+  <div class="bug-detail">
+    <strong>Bug (LOW):</strong> Only individual phone lookup is available for assigning memberships.
+    There is no CSV upload or bulk assignment option, unlike the Gift Cards feature which supports
+    bulk issuance. For merchants onboarding multiple loyalty members at once (e.g., migrating from
+    another platform or running a promotion), individual phone lookup is impractical.
+    <br><br>
+    <strong>Root cause:</strong> Bulk assignment feature not implemented.
+  </div>
+</div>
+
+
+<!-- ============ BUG SUMMARY ============ -->
+<div class="section-header">
+  <h2>Bug Summary</h2>
+  <p>All bugs discovered during UAT, ordered by severity</p>
+</div>
+
+<div class="summary-card">
+  <table class="summary-table">
+    <thead>
+      <tr>
+        <th>Severity</th>
+        <th>Bug</th>
+        <th>Component</th>
+        <th>Root Cause</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="badge badge-bug">MEDIUM</span></td>
+        <td>Customer ID shows truncated UUID instead of customer name</td>
+        <td>Admin &mdash; Memberships</td>
+        <td>Frontend displays raw <code>customer_id</code> instead of resolved customer name</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-skip">LOW</span></td>
+        <td>No summary stats or member count</td>
+        <td>Admin &mdash; Memberships</td>
+        <td>Missing overview section with total members, tier breakdown, expiring soon count</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-skip">LOW</span></td>
+        <td>No bulk assignment option</td>
+        <td>Admin &mdash; Memberships</td>
+        <td>Only individual phone lookup available, no CSV or batch assignment</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ============ TEST ENVIRONMENT ============ -->
+<div class="summary-card">
+  <h2>Test Environment</h2>
+  <table class="summary-table">
+    <tbody>
+      <tr><td><strong>Backend</strong></td><td>Rust/Axum at <code>localhost:3000</code></td></tr>
+      <tr><td><strong>Frontend</strong></td><td>SvelteKit dev server at <code>localhost:5174</code></td></tr>
+      <tr><td><strong>Database</strong></td><td>PostgreSQL (<code>batua</code> database)</td></tr>
+      <tr><td><strong>Test Merchant</strong></td><td>Chai &amp; Co (<code>chaiandco</code>)</td></tr>
+      <tr><td><strong>Test Membership</strong></td><td>Vikram Singh (<code>c0000000-0000-0000-0000-000000000004</code>), Gold tier, active</td></tr>
+      <tr><td><strong>Date</strong></td><td>21 March 2026</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<div class="report-footer">
+  <p>Memberships UAT Report &mdash; Generated 21 March 2026</p>
+</div>
+
+</div>
+</body>
+</html>

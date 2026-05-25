@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loyalty &amp; Tiers UAT Report</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f3f4f6;
+    color: #1f2937;
+    line-height: 1.6;
+    padding: 2rem;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  h1 { font-size: 1.75rem; font-weight: 700; color: #111827; }
+  h2 { font-size: 1.35rem; font-weight: 600; color: #111827; margin-bottom: 1rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem; }
+
+  .header {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .header-meta { font-size: 0.875rem; color: #6b7280; }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .summary-item {
+    background: #fff;
+    border-radius: 10px;
+    padding: 1.25rem;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .summary-item .value { font-size: 2rem; font-weight: 700; line-height: 1.2; }
+  .summary-item .label { font-size: 0.75rem; color: #6b7280; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.25rem; }
+  .summary-item.pass .value { color: #059669; }
+  .summary-item.fail .value { color: #dc2626; }
+  .summary-item.bug .value { color: #d97706; }
+  .summary-item.total .value { color: #2563eb; }
+  .summary-item.skip .value { color: #6b7280; }
+
+  .section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  .test-case {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .test-case.pass { border-left: 4px solid #059669; }
+  .test-case.fail { border-left: 4px solid #dc2626; }
+  .test-case.bug { border-left: 4px solid #d97706; }
+  .test-case.skip { border-left: 4px solid #6b7280; }
+
+  .test-case h3 { display: flex; align-items: center; gap: 0.75rem; }
+
+  .badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .badge-pass { background: #d1fae5; color: #065f46; }
+  .badge-fail { background: #fee2e2; color: #991b1b; }
+  .badge-bug { background: #fef3c7; color: #92400e; }
+  .badge-skip { background: #f3f4f6; color: #4b5563; }
+
+  .severity {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    margin-left: 0.5rem;
+  }
+  .severity-high { background: #fee2e2; color: #991b1b; }
+  .severity-medium { background: #fef3c7; color: #92400e; }
+  .severity-low { background: #f3f4f6; color: #4b5563; }
+
+  .test-id {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+    background: #f3f4f6;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-family: monospace;
+  }
+
+  .steps { margin: 0.75rem 0; padding-left: 1.5rem; }
+  .steps li { margin-bottom: 0.25rem; font-size: 0.9rem; }
+
+  .screenshot-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+  .screenshot-grid img {
+    width: 100%;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+    cursor: pointer;
+  }
+  .screenshot-grid img:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  .screenshot-caption {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+    text-align: center;
+  }
+
+  .notes {
+    background: #f9fafb;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    margin-top: 0.75rem;
+  }
+  .notes strong { color: #374151; }
+
+  .bug-detail {
+    background: #fffbeb;
+    border: 1px solid #fcd34d;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    margin-top: 0.75rem;
+  }
+  .bug-detail p { margin-bottom: 0.25rem; }
+
+  .bug-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    margin-top: 1rem;
+  }
+  .bug-table th {
+    text-align: left;
+    padding: 0.6rem 0.8rem;
+    background: #f9fafb;
+    border-bottom: 2px solid #e5e7eb;
+    font-weight: 600;
+  }
+  .bug-table td {
+    padding: 0.6rem 0.8rem;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: top;
+  }
+
+  .env-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+  .env-table td {
+    padding: 0.4rem 0.8rem;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .env-table td:first-child {
+    font-weight: 600;
+    color: #374151;
+    width: 200px;
+  }
+
+  .data-check {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+    margin-top: 0.75rem;
+    font-family: monospace;
+  }
+
+  @media print {
+    body { background: #fff; padding: 1rem; }
+    .section, .header, .summary-item { box-shadow: none; border: 1px solid #e5e7eb; }
+    .test-case { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div>
+      <h1>Loyalty &amp; Tiers UAT Report</h1>
+      <p class="header-meta">Batua Project &mdash; 26 March 2026 &mdash; Merchant: Sherwani Studio (<code>sherwanistudio</code>)</p>
+    </div>
+    <div class="header-meta">
+      Generated by Claude Code UAT Agent
+    </div>
+  </div>
+
+  <!-- SUMMARY GRID -->
+  <div class="summary-grid">
+    <div class="summary-item total"><span class="value">14</span><span class="label">Total Tests</span></div>
+    <div class="summary-item pass"><span class="value">13</span><span class="label">Passed</span></div>
+    <div class="summary-item fail"><span class="value">0</span><span class="label">Failed</span></div>
+    <div class="summary-item bug"><span class="value">0</span><span class="label">Bugs</span></div>
+    <div class="summary-item skip"><span class="value">1</span><span class="label">Skipped</span></div>
+  </div>
+
+  <!-- BUG SUMMARY TABLE -->
+  <div class="section">
+    <h2>Bug Summary</h2>
+    <table class="bug-table">
+      <thead><tr><th>ID</th><th>Severity</th><th>Test Case</th><th>Description</th><th>Root Cause</th></tr></thead>
+      <tbody>
+        <tr>
+          <td colspan="5" style="text-align: center; color: #6b7280; padding: 1rem;">No bugs found. All test cases passed.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- STAKEHOLDER 1: MERCHANT ADMIN -->
+  <div class="section">
+    <h2>Stakeholder 1: Merchant Admin</h2>
+
+    <!-- Test #1 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#1</span> Loyalty Page Load &mdash; Light Mode <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Navigate to http://localhost:5174/admin/loyalty</li>
+        <li>Verify page loads with program summary, tier list, and distribution chart</li>
+        <li>Check console for errors</li>
+        <li>Verify sidebar shows "Tiers" under Loyalty section</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="loyalty-uat/01-admin-loyalty-page-light.png" alt="Loyalty page in light mode">
+          <p class="screenshot-caption">Loyalty page &mdash; light mode, program summary + 4 tiers visible</p>
+        </div>
+        <div>
+          <img src="loyalty-uat/02-admin-loyalty-fullpage-light.png" alt="Full page loyalty view">
+          <p class="screenshot-caption">Full page view showing tiers list and distribution chart</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Page loads instantly with three sections visible:<br>
+        &bull; <strong>Program Summary:</strong> "Sherwani Rewards", Evaluation Criteria: "Total Spend", Evaluation Period: "Last 365 days"<br>
+        &bull; <strong>Tiers:</strong> 4 tiers ordered by rank &mdash; Bronze (1x, threshold 0), Silver (1.5x, threshold 5,000), Gold (2x, threshold 15,000), Platinum (3x, threshold 50,000)<br>
+        &bull; <strong>Tier Distribution:</strong> Chart showing 4 customers across tiers<br>
+        &bull; Header buttons: "Reconfigure" (ghost) and "Evaluate Tiers" (secondary)<br>
+        &bull; Sidebar correctly highlights "Tiers" under "Loyalty" section with sub-items: Earn Rules, Tiers, Memberships, Campaigns<br>
+        &bull; No console errors. All 4 API calls return 200.
+      </div>
+    </div>
+
+    <!-- Test #2 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#2</span> Program Details Display <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Verify program name displays correctly</li>
+        <li>Verify evaluation criteria shows human-readable label</li>
+        <li>Verify evaluation period shows formatted text</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="loyalty-uat/01-admin-loyalty-page-light.png" alt="Program details section">
+          <p class="screenshot-caption">Program summary card &mdash; name, criteria, period in 3-column grid</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Program summary card renders as a clean 3-column grid:<br>
+        &bull; "Tier Program" &rarr; "Sherwani Rewards"<br>
+        &bull; "Evaluation Criteria" &rarr; "Total Spend" (mapped from "spend" enum)<br>
+        &bull; "Evaluation Period" &rarr; "Last 365 days" (formatted from evaluation_period_days=365)<br>
+        DB confirms: <code>SELECT name, evaluation_criteria, evaluation_period_days FROM loyalty_programs WHERE merchant_id = '...050'</code> &rarr; Sherwani Rewards, spend, 365. All values match.
+      </div>
+    </div>
+
+    <!-- Test #3 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#3</span> Tier List &mdash; Ordered by Rank <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Verify tiers are displayed in rank order (ascending)</li>
+        <li>Verify each tier shows name, multiplier badge, threshold, and rank</li>
+        <li>Verify edit and delete buttons are present on each tier</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="loyalty-uat/02-admin-loyalty-fullpage-light.png" alt="Tiers list ordered by rank">
+          <p class="screenshot-caption">4 tiers in rank order &mdash; Bronze, Silver, Gold, Platinum</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Tiers display in correct ascending rank order with TierBadge components:<br>
+        &bull; Bronze 1x (Rank 1, Threshold 0)<br>
+        &bull; Silver 1.5x (Rank 2, Threshold 5,000)<br>
+        &bull; Gold 2x (Rank 3, Threshold 15,000)<br>
+        &bull; Platinum 3x (Rank 4, Threshold 50,000)<br>
+        Each row has edit (pencil icon) and delete (trash icon) buttons. Thresholds formatted with Indian locale (en-IN) commas. The <code>sortTiersByRank</code> helper correctly sorts the array.
+      </div>
+    </div>
+
+    <!-- Test #4 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#4</span> Tier Creation Form <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Click "Add Tier" button</li>
+        <li>Verify the create form appears with all fields</li>
+        <li>Verify "Create Tier" button is disabled until tier name is entered</li>
+        <li>Click "Cancel" to dismiss the form</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="loyalty-uat/03-admin-tier-create-form.png" alt="Tier creation form">
+          <p class="screenshot-caption">Create Tier form with 5 fields &mdash; name, rank, threshold, multiplier, benefits JSON</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> The TierForm component renders with:<br>
+        &bull; "Tier Name" text input (placeholder "e.g. Gold")<br>
+        &bull; "Rank" number input (default 1)<br>
+        &bull; "Threshold" number input (default 0) with helper text "Minimum value to reach this tier"<br>
+        &bull; "Earn Rate Multiplier" number input (default 1) with helper text "Points multiplier for this tier"<br>
+        &bull; "Benefits (JSON)" textarea (default "{}")<br>
+        &bull; "Create Tier" button correctly disabled until name is provided. "Cancel" button dismisses form. The "Add Tier" button text changes to "Cancel" when form is open.
+      </div>
+    </div>
+
+    <!-- Test #5 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#5</span> Tier Editing Form <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Click the edit (pencil) icon on the Bronze tier</li>
+        <li>Verify the edit form appears pre-filled with tier data</li>
+        <li>Verify all fields are populated correctly</li>
+        <li>Click "Cancel" to dismiss the form</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="loyalty-uat/04-admin-tier-edit-form.png" alt="Tier edit form">
+          <p class="screenshot-caption">Edit Tier form pre-filled with Bronze tier data</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Edit form renders inline, replacing the tier row. Pre-filled values:<br>
+        &bull; Tier Name: "Bronze"<br>
+        &bull; Rank: 1<br>
+        &bull; Threshold: 0<br>
+        &bull; Earn Rate Multiplier: 1<br>
+        &bull; Benefits (JSON): <code>{"perks": ["Early access to sales"]}</code><br>
+        Heading changes to "Edit Tier" (vs "Create Tier"). Button label is "Update Tier" (not "Create Tier"). Cancel returns to the read-only tier row without making changes.
+      </div>
+    </div>
+
+    <!-- Test #6 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#6</span> Tier Deletion Confirmation <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Click the delete (trash) icon on the Bronze tier</li>
+        <li>Verify a confirmation prompt appears inline</li>
+        <li>Verify "Yes" and "No" buttons are shown</li>
+        <li>Click "No" to cancel deletion</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="loyalty-uat/05-admin-tier-delete-confirm.png" alt="Delete confirmation">
+          <p class="screenshot-caption">Inline delete confirmation &mdash; "Delete?" with Yes/No buttons</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Delete uses an inline confirmation pattern (not a modal). The edit/delete icons are replaced with "Delete?" text in red, a "Yes" button (btn-danger btn-sm), and a "No" button (btn-ghost btn-sm). Clicking "No" returns to the default state with edit/delete icons restored. This is a safe pattern that prevents accidental deletion.
+      </div>
+    </div>
+
+    <!-- Test #7 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#7</span> Evaluate Tiers &mdash; Customer Distribution <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Click "Evaluate Tiers" button</li>
+        <li>Verify the button shows "Evaluating..." while processing</li>
+        <li>Verify success message appears: "Evaluated 100 customers"</li>
+        <li>Verify distribution chart updates with new data</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="loyalty-uat/06-admin-evaluate-result.png" alt="Evaluate result">
+          <p class="screenshot-caption">"Evaluated 100 customers" success message with updated distribution</p>
+        </div>
+        <div>
+          <img src="loyalty-uat/07-admin-distribution-after-evaluate.png" alt="Distribution after evaluate">
+          <p class="screenshot-caption">Full page &mdash; distribution chart showing 100 Bronze, 0 others</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> The evaluate endpoint (POST <code>/loyalty/programs/{merchantId}/evaluate</code>) runs tier evaluation for all 100 customers. Result: "Evaluated 100 customers" displayed in green next to the action buttons. Distribution chart updated from 4 customers (seeded) to 100 customers, all in Bronze tier. This is correct because the evaluation criteria is "spend" and customers' qualifying_value is based on order stats &mdash; with seed data, all customers have low spend (&lt;250) which places them in Bronze (threshold 0). The page auto-scrolls to the distribution section after evaluation.
+      </div>
+    </div>
+
+    <!-- Test #8 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#8</span> Dark Mode <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Click the theme toggle button twice to switch to dark mode</li>
+        <li>Verify all sections render correctly with dark backgrounds</li>
+        <li>Check text readability, card borders, tier badges</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="loyalty-uat/08-admin-loyalty-dark-mode.png" alt="Dark mode viewport">
+          <p class="screenshot-caption">Dark mode &mdash; program summary and tier list</p>
+        </div>
+        <div>
+          <img src="loyalty-uat/09-admin-loyalty-dark-fullpage.png" alt="Dark mode full page">
+          <p class="screenshot-caption">Dark mode full page &mdash; all sections including distribution chart</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Dark mode applies correctly via <code>data-theme="dark"</code> attribute. All elements adapt:<br>
+        &bull; Program summary card: dark surface background, readable text<br>
+        &bull; Tier list: dark borders, white text, tier badges maintain color coding<br>
+        &bull; Distribution chart: dark background, visible bar colors and labels<br>
+        &bull; Sidebar: dark background with proper contrast<br>
+        &bull; Buttons: ghost and secondary variants render correctly<br>
+        No visual issues, all text readable. CSS custom properties handle the transition cleanly.
+      </div>
+    </div>
+
+    <!-- Test #9 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#9</span> Reconfigure Wizard <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Click "Reconfigure" button</li>
+        <li>Verify the wizard opens in reconfigure mode</li>
+        <li>Verify existing settings are pre-filled</li>
+        <li>Verify step indicators show: 1 Settings, 2 Tiers, 3 Review</li>
+        <li>Click "Cancel" to return to the tier management view</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="loyalty-uat/10-admin-reconfigure-wizard.png" alt="Reconfigure wizard">
+          <p class="screenshot-caption">TierWizard in reconfigure mode &mdash; settings pre-filled, 3-step flow</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> The TierWizard component opens in reconfigure mode with:<br>
+        &bull; Info banner: "Reconfigure mode: Your current settings are pre-filled. No changes are saved until you confirm on the final step."<br>
+        &bull; Step 1 "Update Tier Settings" with pre-filled values: Name = "Sherwani Rewards", Criteria = "Total Spend", Period = "Last 365 days"<br>
+        &bull; Step indicators: "1 Settings" (active), "2 Tiers", "3 Review"<br>
+        &bull; "Cancel" button returns to the main view without changes. "Next: Edit Tiers" button advances to tier editing step.<br>
+        Page title changes to "Reconfigure your loyalty tiers" during wizard mode.
+      </div>
+    </div>
+
+    <!-- Test #10 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#10</span> Console &amp; Network Check <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Review console messages across all admin page interactions</li>
+        <li>Review network requests for failed API calls</li>
+      </ol>
+      <div class="notes">
+        <strong>Notes:</strong> No console errors across all admin tests. No console warnings. All API calls return 200:<br>
+        &bull; <code>GET /admin/merchants?page=1&amp;limit=50</code> &rarr; 200<br>
+        &bull; <code>GET /loyalty/programs/{merchantId}</code> &rarr; 200<br>
+        &bull; <code>GET /loyalty/programs/{programId}/tiers</code> &rarr; 200<br>
+        &bull; <code>GET /loyalty/distribution/{merchantId}</code> &rarr; 200<br>
+        &bull; <code>POST /loyalty/programs/{merchantId}/evaluate</code> &rarr; 200<br>
+        No favicon 404 errors observed during this session.
+      </div>
+    </div>
+  </div>
+
+  <!-- STAKEHOLDER 2: CUSTOMER STOREFRONT -->
+  <div class="section">
+    <h2>Stakeholder 2: Customer Storefront</h2>
+
+    <!-- Test #11 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#11</span> Storefront &mdash; Dashboard with Tier Display <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Navigate to http://localhost:5174/s/sherwanistudio</li>
+        <li>Enter phone "9050000001" (Shreya Mehta &mdash; Bronze tier)</li>
+        <li>Click "View Rewards"</li>
+        <li>Verify tier section displays correctly with progress bar</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="loyalty-uat/11-storefront-dashboard-with-tier.png" alt="Storefront dashboard with tier">
+          <p class="screenshot-caption">Dashboard &mdash; welcome banner with "Bronze" badge, wallet, tier section</p>
+        </div>
+        <div>
+          <img src="loyalty-uat/12-storefront-tier-section.png" alt="Tier section closeup">
+          <p class="screenshot-caption">Tier card with progress bar: 144.8 / 5,000, "4,855.2 to next tier"</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> The storefront shows tier information in two places:<br>
+        &bull; <strong>Welcome banner:</strong> "Bronze" badge next to the customer name<br>
+        &bull; <strong>Earn multiplier:</strong> "Earning 1x Jewels on every order" (Bronze = 1x multiplier)<br>
+        &bull; <strong>Loyalty Tier card:</strong> Star icon, "Bronze" label, progress bar showing 144.8 / 5,000, text "4,855.2 to next tier"<br>
+        The progress bar correctly calculates: 144.8 / 5000 = 2.9% fill. Next tier is Silver (threshold 5,000). All 9 API calls return 200 including the loyalty customer-tier endpoint.
+      </div>
+    </div>
+
+    <!-- Test #12 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#12</span> Storefront &mdash; Full Dashboard with Activity <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Scroll through the full dashboard</li>
+        <li>Verify all sections present: wallet, tier, activity, referrals</li>
+        <li>Verify activity feed shows transactions</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="loyalty-uat/13-storefront-fullpage.png" alt="Storefront full page">
+          <p class="screenshot-caption">Full page &mdash; wallet, tier, 10 activity entries, refer &amp; earn section</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Full dashboard for Shreya Mehta shows:<br>
+        &bull; Total Redeemable: &#8377;505.40<br>
+        &bull; Jewels: 444 (Earned 268 + Referral 100 + Goodwill 76) &#8776; &#8377;44.40<br>
+        &bull; Cash: &#8377;461.00 (Gift Card)<br>
+        &bull; Lifetime Saved: &#8377;505.40<br>
+        &bull; Loyalty Tier: Bronze (progress 144.8 / 5,000)<br>
+        &bull; Activity: 10 entries (Earned, Held, Redeemed types)<br>
+        &bull; Refer &amp; Earn: Code SHERX002, 5 referrals, 7 conversions<br>
+        &bull; Footer links: Gift Card, Refer &amp; Earn
+      </div>
+    </div>
+
+    <!-- Test #13 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#13</span> Storefront &mdash; Mobile Viewport (375px) <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Emulate iPhone viewport at 375x812 with mobile touch</li>
+        <li>Reload the page with Shreya Mehta logged in</li>
+        <li>Verify all sections render responsively</li>
+        <li>Verify tier section and progress bar are readable</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="loyalty-uat/14-storefront-mobile-375px.png" alt="Storefront at 375px">
+          <p class="screenshot-caption">Mobile viewport (375px) &mdash; top section, wallet, tier badge</p>
+        </div>
+        <div>
+          <img src="loyalty-uat/15-storefront-mobile-tier-section.png" alt="Tier section at 375px">
+          <p class="screenshot-caption">Mobile &mdash; tier card with progress bar, activity feed</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Storefront renders perfectly at 375px mobile viewport:<br>
+        &bull; Welcome banner stacks vertically, "Bronze" badge visible<br>
+        &bull; Wallet section: cards stack in a clean single-column layout<br>
+        &bull; Jewels bucket breakdown pills wrap gracefully<br>
+        &bull; Tier progress bar spans full width, labels (144.8 / 5,000) clearly readable<br>
+        &bull; Activity feed entries stack well with date, type, and amount visible<br>
+        &bull; Refer &amp; Earn section responsive with WhatsApp/Copy buttons stacking<br>
+        This is expected since the storefront uses a mobile-first card layout with hardcoded hex colors.
+      </div>
+    </div>
+
+    <!-- Test -- Mobile full page -->
+    <div class="test-case skip">
+      <h3><span class="test-id">#S1</span> Storefront &mdash; Mobile Full Page <span class="badge badge-skip">SKIP &mdash; supplementary check</span></h3>
+      <ol class="steps">
+        <li>Capture full-page screenshot at 375px</li>
+        <li>Verify no layout breaks across entire page</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="loyalty-uat/16-storefront-mobile-fullpage.png" alt="Storefront mobile full page">
+          <p class="screenshot-caption">Full page at 375px &mdash; no layout breaks, all sections intact</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Full page mobile screenshot confirms no layout breaks from top to bottom. All sections render correctly: header, welcome, wallet, tier, activity, referrals, footer links. Counted as SKIP since this is a supplementary visual check rather than a standalone test case.
+      </div>
+    </div>
+  </div>
+
+  <!-- DATA INTEGRITY SECTION -->
+  <div class="section">
+    <h2>Data Integrity Checks</h2>
+
+    <div class="test-case pass">
+      <h3><span class="test-id">DI-1</span> Tier Configuration Matches DB <span class="badge badge-pass">PASS</span></h3>
+      <div class="data-check">
+        DB query: SELECT name, rank, threshold, earn_rate_multiplier FROM loyalty_tiers<br>
+        &nbsp;&nbsp;WHERE program_id = 'f0000000-...-050' ORDER BY rank ASC<br>
+        <br>
+        DB result:<br>
+        &nbsp;&nbsp;Bronze  | rank 1 | threshold 0     | multiplier 1.0<br>
+        &nbsp;&nbsp;Silver  | rank 2 | threshold 5000  | multiplier 1.5<br>
+        &nbsp;&nbsp;Gold    | rank 3 | threshold 15000 | multiplier 2.0<br>
+        &nbsp;&nbsp;Platinum| rank 4 | threshold 50000 | multiplier 3.0<br>
+        <br>
+        Admin UI shows: Bronze 1x (0), Silver 1.5x (5,000), Gold 2x (15,000), Platinum 3x (50,000)<br>
+        Result: MATCH
+      </div>
+    </div>
+
+    <div class="test-case pass">
+      <h3><span class="test-id">DI-2</span> Customer Tier Qualifying Value Matches Storefront <span class="badge badge-pass">PASS</span></h3>
+      <div class="data-check">
+        DB query: SELECT qualifying_value, lt.name, lt.threshold FROM customer_tiers ct<br>
+        &nbsp;&nbsp;JOIN loyalty_tiers lt ON lt.id = ct.tier_id<br>
+        &nbsp;&nbsp;WHERE ct.customer_id = 'c0050000-...-001'<br>
+        <br>
+        DB result: qualifying_value = 144.8, tier = Bronze, threshold = 0<br>
+        <br>
+        API: GET /loyalty/customers/{merchantId}/{customerId}<br>
+        Response: tier.name = "Bronze", customer.qualifying_value = 144.8<br>
+        &nbsp;&nbsp;progress_to_next: next_tier = "Silver", current = 144.8, threshold = 5000, pct = 2.9%<br>
+        <br>
+        Storefront shows: "Bronze", progress "144.8 / 5,000", "4,855.2 to next tier"<br>
+        Calculation: 5000 - 144.8 = 4855.2 (matches "to next tier" text)<br>
+        Result: MATCH (DB, API, and Storefront all agree)
+      </div>
+    </div>
+
+    <div class="test-case pass">
+      <h3><span class="test-id">DI-3</span> Tier Distribution After Evaluate <span class="badge badge-pass">PASS</span></h3>
+      <div class="data-check">
+        After clicking "Evaluate Tiers":<br>
+        API: POST /loyalty/programs/{merchantId}/evaluate &rarr; { "evaluated": 100 }<br>
+        <br>
+        DB query: SELECT lt.name, count(*) FROM customer_tiers ct<br>
+        &nbsp;&nbsp;JOIN loyalty_tiers lt ON lt.id = ct.tier_id<br>
+        &nbsp;&nbsp;WHERE ct.merchant_id = '...050' GROUP BY lt.name<br>
+        <br>
+        DB result: Bronze = 100, Silver = 0, Gold = 0, Platinum = 0<br>
+        UI Distribution: Bronze 100, Silver 0, Gold 0, Platinum 0, Total "100 customers"<br>
+        <br>
+        All customers are Bronze because evaluation_criteria = "spend" and<br>
+        all customers have qualifying_value &lt; 5000 (highest is 245.6).<br>
+        Result: MATCH
+      </div>
+    </div>
+  </div>
+
+  <!-- ENVIRONMENT SECTION -->
+  <div class="section">
+    <h2>Test Environment</h2>
+    <table class="env-table">
+      <tr><td>Date</td><td>2026-03-26 23:40</td></tr>
+      <tr><td>Backend URL</td><td>http://localhost:3000</td></tr>
+      <tr><td>Frontend URL</td><td>http://localhost:5174</td></tr>
+      <tr><td>Database</td><td>batua (local PostgreSQL)</td></tr>
+      <tr><td>Merchant</td><td>Sherwani Studio (ID: b0000000-0000-0000-0000-000000000050, slug: sherwanistudio)</td></tr>
+      <tr><td>Test Customer (with tier)</td><td>Shreya Mehta (phone: +919050000001, tier: Bronze, qualifying_value: 144.8)</td></tr>
+      <tr><td>Loyalty Program</td><td>Sherwani Rewards (criteria: spend, period: 365 days, 4 tiers)</td></tr>
+      <tr><td>Browser</td><td>Chromium (Chrome DevTools Protocol)</td></tr>
+      <tr><td>Total Screenshots</td><td>16</td></tr>
+      <tr><td>Git Branch</td><td>release</td></tr>
+      <tr><td>Git Commit</td><td>69b4439</td></tr>
+    </table>
+  </div>
+
+</div>
+</body>
+</html>

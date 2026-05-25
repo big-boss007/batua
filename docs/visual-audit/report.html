@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Batua Admin Panel - Visual Consistency Audit</title>
+<style>
+  :root {
+    --purple: #7c6aff;
+    --red: #ef4444;
+    --orange: #f59e0b;
+    --green: #22c55e;
+    --blue: #3b82f6;
+    --gray: #6b7280;
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --text: #1e293b;
+    --text-muted: #64748b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  .header {
+    background: linear-gradient(135deg, #1e1b4b, #312e81, #4338ca);
+    color: white;
+    padding: 48px 40px;
+    text-align: center;
+  }
+  .header h1 { font-size: 2.5rem; margin-bottom: 8px; }
+  .header p { font-size: 1.1rem; opacity: 0.85; }
+  .header .date { font-size: 0.85rem; opacity: 0.6; margin-top: 12px; }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 40px 24px; }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+  .summary-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+  }
+  .summary-card .number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .summary-card .label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+  .severity-critical .number { color: var(--red); }
+  .severity-high .number { color: var(--orange); }
+  .severity-medium .number { color: var(--blue); }
+  .severity-low .number { color: var(--gray); }
+
+  .toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 32px;
+    margin-bottom: 48px;
+  }
+  .toc h2 { font-size: 1.3rem; margin-bottom: 12px; }
+  .toc ol { padding-left: 20px; }
+  .toc li { margin-bottom: 6px; }
+  .toc a { color: var(--purple); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+
+  .section {
+    margin-bottom: 56px;
+  }
+  .section > h2 {
+    font-size: 1.6rem;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--purple);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section > p.section-desc {
+    color: var(--text-muted);
+    margin-bottom: 24px;
+  }
+
+  .finding {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .finding-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    background: #f1f5f9;
+  }
+  .finding-header h3 { font-size: 1.05rem; flex: 1; }
+
+  .severity-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .badge-critical { background: #fef2f2; color: var(--red); border: 1px solid #fecaca; }
+  .badge-high { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+  .badge-medium { background: #eff6ff; color: var(--blue); border: 1px solid #bfdbfe; }
+  .badge-low { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+
+  .finding-body { padding: 20px; }
+  .finding-body p { margin-bottom: 12px; }
+
+  .screenshot-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 16px 0;
+  }
+  .screenshot-grid.single { grid-template-columns: 1fr; max-width: 800px; }
+  .screenshot-grid.triple { grid-template-columns: 1fr 1fr 1fr; }
+
+  .screenshot-item {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .screenshot-item img {
+    width: 100%;
+    display: block;
+  }
+  .screenshot-item .caption {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    background: #f8fafc;
+    border-top: 1px solid var(--border);
+  }
+
+  .affected-files {
+    margin-top: 12px;
+  }
+  .affected-files summary {
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+  .affected-files ul {
+    margin-top: 8px;
+    padding-left: 20px;
+  }
+  .affected-files li {
+    font-size: 0.85rem;
+    font-family: 'SF Mono', Monaco, Consolas, monospace;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+
+  .fix-suggestion {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-top: 12px;
+    font-size: 0.9rem;
+  }
+  .fix-suggestion strong {
+    color: #16a34a;
+  }
+
+  .comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 0.9rem;
+  }
+  .comparison-table th,
+  .comparison-table td {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    text-align: left;
+  }
+  .comparison-table th {
+    background: #f1f5f9;
+    font-weight: 600;
+  }
+  .comparison-table td code {
+    background: #f1f5f9;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+  }
+  .check { color: var(--green); }
+  .cross { color: var(--red); }
+
+  .page-gallery {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .page-gallery .screenshot-item { cursor: pointer; transition: transform 0.2s; }
+  .page-gallery .screenshot-item:hover { transform: scale(1.02); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+
+  .annotation {
+    background: #fffbeb;
+    border-left: 3px solid var(--orange);
+    padding: 8px 12px;
+    margin: 8px 0;
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 768px) {
+    .summary-grid { grid-template-columns: repeat(2, 1fr); }
+    .screenshot-grid { grid-template-columns: 1fr; }
+    .page-gallery { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Batua Admin Panel - Visual Consistency Audit</h1>
+  <p>Systematic review of all merchant admin screens for visual inconsistencies</p>
+  <div class="date">Generated: 27 March 2026 | 14 pages audited | Light + Dark themes</div>
+</div>
+
+<div class="container">
+
+<!-- Summary Cards -->
+<div class="summary-grid">
+  <div class="summary-card severity-critical">
+    <div class="number">1</div>
+    <div class="label">Critical Issues</div>
+  </div>
+  <div class="summary-card severity-high">
+    <div class="number">5</div>
+    <div class="label">High Severity</div>
+  </div>
+  <div class="summary-card severity-medium">
+    <div class="number">4</div>
+    <div class="label">Medium Severity</div>
+  </div>
+  <div class="summary-card severity-low">
+    <div class="number">3</div>
+    <div class="label">Low Severity</div>
+  </div>
+</div>
+
+<!-- Table of Contents -->
+<div class="toc">
+  <h2>Table of Contents</h2>
+  <ol>
+    <li><a href="#gallery">Page Gallery - All Screenshots</a></li>
+    <li><a href="#dark-theme">Dark Theme Completely Broken</a></li>
+    <li><a href="#stat-cards">Stat Card Styling Inconsistency</a></li>
+    <li><a href="#page-headers">Page Header Pattern Violations</a></li>
+    <li><a href="#status-indicators">Status Indicator Inconsistency</a></li>
+    <li><a href="#table-patterns">Table Implementation Inconsistency</a></li>
+    <li><a href="#hardcoded-colors">Hardcoded Colors (Dark Theme Failures)</a></li>
+    <li><a href="#subtitle-css">Subtitle CSS Class Fragmentation</a></li>
+    <li><a href="#recommendations">Prioritised Fix Recommendations</a></li>
+  </ol>
+</div>
+
+<!-- ===== SECTION 1: PAGE GALLERY ===== -->
+<div class="section" id="gallery">
+  <h2>1. Page Gallery - All Screenshots</h2>
+  <p class="section-desc">Every admin screen captured at 1440x900 in light theme.</p>
+
+  <div class="page-gallery">
+    <div class="screenshot-item">
+      <img src="01-overview.png" alt="Overview">
+      <div class="caption">Overview (/admin)</div>
+    </div>
+    <div class="screenshot-item">
+      <img src="02-wallet-policies.png" alt="Wallet Policies">
+      <div class="caption">Wallet Policies (/admin/wallet-policies)</div>
+    </div>
+    <div class="screenshot-item">
+      <img src="03-earn-rules.png" alt="Earn Rules">
+      <div class="caption">Earn Rules (/admin/rules)</div>
+    </div>
+    <div class="screenshot-item">
+      <img src="04-vip-tiers.png" alt="VIP Tiers">
+      <div class="caption">VIP Tiers (/admin/loyalty)</div>
+    </div>
+    <div class="screenshot-item">
+      <img src="05-memberships.png" alt="Memberships">
+      <div class="caption">Memberships (/admin/memberships)</div>
+    </div>
+    <div class="screenshot-item">
+      <img src="06-campaigns.png" alt="Campaigns">
+      <div class="caption">Campaigns (/admin/campaigns)</div>
+    </div>
+    <div class="screenshot-item">
+      <img src="07-transactions.png" alt="Transactions">
+      <div class="caption">Transactions (/admin/transactions)</div>
+    </div>
+    <div class="screenshot-item">
+      <img src="08-customers.png" alt="Customers">
+      <div class="caption">Customers (/admin/customers)</div>
+    </div>
+    <div class="screenshot-item">
+      <img src="09-customer-detail.png" alt="Customer Detail">
+      <div class="caption">Customer Detail Modal</div>
+    </div>
+    <div class="screenshot-item">
+      <img src="10-gift-cards.png" alt="Gift Cards">
+      <div class="caption">Gift Cards - All Cards (/admin/gift-cards)</div>
+    </div>
+    <div class="screenshot-item">
+      <img src="10b-gift-cards-issue.png" alt="Gift Cards Issue">
+      <div class="caption">Gift Cards - Issue Card Tab</div>
+    </div>
+    <div class="screenshot-item">
+      <img src="10c-gift-cards-bulk.png" alt="Gift Cards Bulk">
+      <div class="caption">Gift Cards - Bulk Issue Tab</div>
+    </div>
+    <div class="screenshot-item">
+      <img src="11-referrals.png" alt="Referrals">
+      <div class="caption">Referral Program (/admin/referrals)</div>
+    </div>
+    <div class="screenshot-item">
+      <img src="12-influencers.png" alt="Influencers">
+      <div class="caption">Influencers (/admin/influencers)</div>
+    </div>
+    <div class="screenshot-item">
+      <img src="13-notifications.png" alt="Notifications">
+      <div class="caption">Notifications (/admin/notifications)</div>
+    </div>
+    <div class="screenshot-item">
+      <img src="14-settings.png" alt="Settings">
+      <div class="caption">Settings - My Store (/admin/settings)</div>
+    </div>
+    <div class="screenshot-item">
+      <img src="14b-settings-connectors.png" alt="Settings Connectors">
+      <div class="caption">Settings - Connectors Tab</div>
+    </div>
+  </div>
+
+  <h3 style="margin-top: 32px; margin-bottom: 16px;">Dark Mode Screenshots</h3>
+  <div class="page-gallery">
+    <div class="screenshot-item">
+      <img src="19-dark-confirmed.png" alt="Dark Overview">
+      <div class="caption">Overview (dark)</div>
+    </div>
+    <div class="screenshot-item">
+      <img src="20-dark-wallet-policies.png" alt="Dark Wallet Policies">
+      <div class="caption">Wallet Policies (dark) - green preview card issue</div>
+    </div>
+    <div class="screenshot-item">
+      <img src="22-dark-campaigns.png" alt="Dark Campaigns">
+      <div class="caption">Campaigns (dark) - white card issues</div>
+    </div>
+    <div class="screenshot-item">
+      <img src="24-dark-vip-tiers.png" alt="Dark VIP Tiers">
+      <div class="caption">VIP Tiers (dark) - badge pill issues</div>
+    </div>
+    <div class="screenshot-item">
+      <img src="21-dark-referrals.png" alt="Dark Referrals">
+      <div class="caption">Referrals (dark) - mostly good</div>
+    </div>
+    <div class="screenshot-item">
+      <img src="23-dark-gift-cards.png" alt="Dark Gift Cards">
+      <div class="caption">Gift Cards (dark) - works well</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECTION 2: DARK THEME ===== -->
+<div class="section" id="dark-theme">
+  <h2>2. Dark Theme - Component-Level Failures</h2>
+  <p class="section-desc">The theme toggle works correctly (3-state: light / system / dark). Dark mode applies globally via CSS variables. However, several components use hardcoded light-theme colors that don't adapt.</p>
+
+  <div class="finding">
+    <div class="finding-header">
+      <h3>Dark mode works globally, but specific components have hardcoded light backgrounds</h3>
+      <span class="severity-badge badge-high">High</span>
+    </div>
+    <div class="finding-body">
+      <p>The <code>ThemeSwitcher</code> cycles through <strong>light &rarr; system &rarr; dark</strong>. The global CSS variables (<code>--color-background</code>, <code>--color-surface</code>, <code>--color-text</code>) correctly switch via the <code>[data-theme='dark']</code> selector. Most pages render well in dark mode. However, several components use hardcoded hex colors that create jarring light islands on a dark background.</p>
+
+      <div class="screenshot-grid">
+        <div class="screenshot-item">
+          <img src="19-dark-confirmed.png" alt="Dark mode overview">
+          <div class="caption">Overview: Dark mode works correctly - all CSS variable-based elements adapt</div>
+        </div>
+        <div class="screenshot-item">
+          <img src="23-dark-gift-cards.png" alt="Dark mode gift cards">
+          <div class="caption">Gift Cards: Dark mode works well - stat cards and table adapt properly</div>
+        </div>
+      </div>
+
+      <p style="margin-top: 16px;"><strong>Pages with dark mode failures (hardcoded colors):</strong></p>
+
+      <div class="screenshot-grid">
+        <div class="screenshot-item">
+          <img src="20-dark-wallet-policies.png" alt="Dark mode wallet policies">
+          <div class="caption">Wallet Policies: Green "PREVIEW" card uses hardcoded #f0fdf4 gradient - doesn't adapt</div>
+        </div>
+        <div class="screenshot-item">
+          <img src="22-dark-campaigns.png" alt="Dark mode campaigns">
+          <div class="caption">Campaigns: Earning formula card and campaign cards have light backgrounds</div>
+        </div>
+      </div>
+
+      <div class="screenshot-grid">
+        <div class="screenshot-item">
+          <img src="24-dark-vip-tiers.png" alt="Dark mode VIP tiers">
+          <div class="caption">VIP Tiers: Tier badges (Bronze/Silver/Gold/Platinum) have white pill backgrounds; tier program info section has a light border that doesn't adapt well</div>
+        </div>
+        <div class="screenshot-item">
+          <img src="21-dark-referrals.png" alt="Dark mode referrals">
+          <div class="caption">Referrals: Mostly adapts well, but the status bar and config preview have subtle hardcoded tints</div>
+        </div>
+      </div>
+
+      <div class="annotation">
+        The Campaigns page has the worst dark mode rendering: the entire earning formula card and all campaign template cards appear as bright white rectangles on a dark background. This is the highest-impact fix.
+      </div>
+
+      <div class="fix-suggestion">
+        <strong>Suggested Fix:</strong> See Section 8 below for the full list of hardcoded hex values that need to be replaced with CSS variable equivalents. Priority: Campaigns earning formula &gt; Wallet Policies preview &gt; VIP Tiers badges &gt; Referrals status bar.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECTION 3: STAT CARDS ===== -->
+<div class="section" id="stat-cards">
+  <h2>3. Stat Card Styling Inconsistency</h2>
+  <p class="section-desc">Four pages use stat/metric cards with two different implementations and inconsistent sizing.</p>
+
+  <div class="finding">
+    <div class="finding-header">
+      <h3>Two different stat card implementations with different padding, font sizes, and structure</h3>
+      <span class="severity-badge badge-high">High</span>
+    </div>
+    <div class="finding-body">
+      <p>The Overview page uses a dedicated <code>MetricCard</code> component with larger padding and font sizes. All other pages (Gift Cards, Referrals, Influencers) use custom inline <code>.stat-card</code> divs with smaller sizes. This creates a visible inconsistency.</p>
+
+      <div class="screenshot-grid">
+        <div class="screenshot-item">
+          <img src="01-overview.png" alt="Overview stat cards">
+          <div class="caption">Overview: MetricCard component - 3 per row, larger font (2xl), padding space-6</div>
+        </div>
+        <div class="screenshot-item">
+          <img src="10-gift-cards.png" alt="Gift Cards stat cards">
+          <div class="caption">Gift Cards: Custom .stat-card divs - 5 per row, smaller font (lg), padding space-4/5</div>
+        </div>
+      </div>
+
+      <div class="screenshot-grid">
+        <div class="screenshot-item">
+          <img src="11-referrals.png" alt="Referrals stat cards">
+          <div class="caption">Referrals: 4 stat cards per row, yet another subtle sizing variant</div>
+        </div>
+        <div class="screenshot-item">
+          <img src="12-influencers.png" alt="Influencers stat cards">
+          <div class="caption">Influencers: 2 stat cards, same custom style as Gift Cards</div>
+        </div>
+      </div>
+
+      <table class="comparison-table">
+        <tr>
+          <th>Property</th>
+          <th>Overview (MetricCard)</th>
+          <th>Gift Cards / Referrals / Influencers</th>
+        </tr>
+        <tr>
+          <td>Component</td>
+          <td><code>MetricCard.svelte</code></td>
+          <td>Inline <code>.stat-card</code> divs</td>
+        </tr>
+        <tr>
+          <td>Padding</td>
+          <td><code>var(--space-6)</code> (24px)</td>
+          <td><code>var(--space-4) var(--space-5)</code> (16px 20px)</td>
+        </tr>
+        <tr>
+          <td>Value font-size</td>
+          <td><code>var(--font-size-2xl)</code></td>
+          <td><code>var(--font-size-lg)</code></td>
+        </tr>
+        <tr>
+          <td>Label font-size</td>
+          <td><code>var(--font-size-sm)</code></td>
+          <td><code>var(--font-size-xs)</code></td>
+        </tr>
+        <tr>
+          <td>Icon support</td>
+          <td class="check">Yes</td>
+          <td class="cross">No</td>
+        </tr>
+        <tr>
+          <td>Sub-text (e.g. currency)</td>
+          <td class="check">Yes</td>
+          <td class="cross">No</td>
+        </tr>
+      </table>
+
+      <div class="annotation">
+        Additionally, the Overview's "Active Jewels" value is styled green, "COD Pending" is orange, while "Active Customers" and "Redemptions" are black. On Gift Cards/Referrals/Influencers, all stat values are black. There's no system for when stat values should be colored.
+      </div>
+
+      <div class="fix-suggestion">
+        <strong>Suggested Fix:</strong> Standardise on the <code>MetricCard</code> component for all stat card use cases. Add size variants (<code>size="compact"</code> for pages with 4-5 cards) that reduce padding/font proportionally. Move all custom <code>.stat-card</code> divs to use <code>MetricCard</code>.
+      </div>
+
+      <details class="affected-files">
+        <summary>Affected Files</summary>
+        <ul>
+          <li>frontend/src/lib/client/modules/admin/ui/MetricCard.svelte (extend with size prop)</li>
+          <li>frontend/src/routes/admin/gift-cards/+page.svelte (migrate to MetricCard)</li>
+          <li>frontend/src/routes/admin/referrals/+page.svelte (migrate to MetricCard)</li>
+          <li>frontend/src/routes/admin/influencers/+page.svelte (migrate to MetricCard)</li>
+        </ul>
+      </details>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECTION 4: PAGE HEADERS ===== -->
+<div class="section" id="page-headers">
+  <h2>4. Page Header Pattern Violations</h2>
+  <p class="section-desc">Pages should follow a consistent pattern: h1 title + subtitle + optional action button (top-right).</p>
+
+  <div class="finding">
+    <div class="finding-header">
+      <h3>Campaigns page is missing its h1 heading entirely</h3>
+      <span class="severity-badge badge-high">High</span>
+    </div>
+    <div class="finding-body">
+      <p>The Campaigns page starts directly with a description paragraph (<code>&lt;p class="page-desc"&gt;</code>) and the earning formula card. There is no <code>&lt;h1&gt;</code> heading, making it the only admin page without a title.</p>
+
+      <div class="screenshot-grid single">
+        <div class="screenshot-item">
+          <img src="06-campaigns.png" alt="Campaigns missing h1">
+          <div class="caption">Campaigns page: No h1 "Campaigns" heading - jumps straight to description text</div>
+        </div>
+      </div>
+
+      <div class="fix-suggestion">
+        <strong>Suggested Fix:</strong> Add <code>&lt;h1 class="page-title"&gt;Campaigns&lt;/h1&gt;</code> and a subtitle before the earning formula section in <code>campaigns/+page.svelte</code>.
+      </div>
+    </div>
+  </div>
+
+  <div class="finding">
+    <div class="finding-header">
+      <h3>Three pages missing subtitle descriptions</h3>
+      <span class="severity-badge badge-medium">Medium</span>
+    </div>
+    <div class="finding-body">
+      <p>Most pages have a descriptive subtitle below the h1, but Gift Cards, Notifications, and Settings do not. This creates an uneven density between pages.</p>
+
+      <table class="comparison-table">
+        <tr>
+          <th>Page</th>
+          <th>Has h1</th>
+          <th>Has Subtitle</th>
+          <th>Subtitle Text</th>
+        </tr>
+        <tr><td>Overview</td><td class="check">Yes</td><td class="check">Yes</td><td>"Overview of your wallet program"</td></tr>
+        <tr><td>Wallet Policies</td><td class="check">Yes</td><td class="check">Yes</td><td>"Configure your points currency and bucket policies"</td></tr>
+        <tr><td>Earn Rules</td><td class="check">Yes</td><td class="check">Yes</td><td>"Configure how customers earn and burn points"</td></tr>
+        <tr><td>VIP Tiers</td><td class="check">Yes</td><td class="check">Yes</td><td>"Manage your VIP tiers and customer distribution"</td></tr>
+        <tr><td>Memberships</td><td class="check">Yes</td><td class="check">Yes</td><td>"Assign loyalty tiers to customers with a 1-year expiry"</td></tr>
+        <tr><td>Campaigns</td><td class="cross">No</td><td class="cross">No</td><td>-</td></tr>
+        <tr><td>Transactions</td><td class="check">Yes</td><td class="check">Yes</td><td>"View merchant-wide transaction feed across all customers"</td></tr>
+        <tr><td>Customers</td><td class="check">Yes</td><td class="check">Yes</td><td>"Browse and manage customers for this merchant"</td></tr>
+        <tr><td>Gift Cards</td><td class="check">Yes</td><td class="cross">No</td><td>-</td></tr>
+        <tr><td>Referrals</td><td class="check">Yes</td><td class="check">Yes</td><td>"Manage your referral program"</td></tr>
+        <tr><td>Influencers</td><td class="check">Yes</td><td class="check">Yes</td><td>"Manage creator and influencer partnerships"</td></tr>
+        <tr><td>Notifications</td><td class="check">Yes</td><td class="cross">No</td><td>-</td></tr>
+        <tr><td>Settings</td><td class="check">Yes</td><td class="cross">No</td><td>-</td></tr>
+      </table>
+
+      <div class="fix-suggestion">
+        <strong>Suggested Fix:</strong> Add subtitles to the three missing pages:
+        <br>- Gift Cards: "Issue and manage gift cards for your customers"
+        <br>- Notifications: "Manage notification templates and delivery logs"
+        <br>- Settings: "Configure your store, integrations, and notifications"
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECTION 5: STATUS INDICATORS ===== -->
+<div class="section" id="status-indicators">
+  <h2>5. Status Indicator Inconsistency</h2>
+  <p class="section-desc">Status is displayed as Pill component on some pages, custom colored spans on others.</p>
+
+  <div class="finding">
+    <div class="finding-header">
+      <h3>Mix of Pill component and custom styled spans for "Active/Inactive" status</h3>
+      <span class="severity-badge badge-high">High</span>
+    </div>
+    <div class="finding-body">
+      <p>Some pages use the <code>Pill</code> component from the library (correct approach), while others use custom <code>&lt;span class="status-active"&gt;</code> elements. This creates visual differences in border-radius, padding, background opacity, and font weight.</p>
+
+      <table class="comparison-table">
+        <tr>
+          <th>Page</th>
+          <th>Implementation</th>
+          <th>CSS Classes</th>
+        </tr>
+        <tr>
+          <td>Gift Cards</td>
+          <td>Pill component <span class="check">(correct)</span></td>
+          <td><code>.pill-gc-success</code>, <code>.pill-gc-info</code>, etc.</td>
+        </tr>
+        <tr>
+          <td>Transactions</td>
+          <td>Pill component <span class="check">(correct)</span></td>
+          <td><code>.pill-success</code>, <code>.pill-error</code>, etc.</td>
+        </tr>
+        <tr>
+          <td>Influencers</td>
+          <td>Pill component <span class="check">(correct)</span></td>
+          <td><code>.pill-success</code>, <code>.pill-neutral</code></td>
+        </tr>
+        <tr>
+          <td>Settings (Connectors)</td>
+          <td>Pill component <span class="check">(correct)</span></td>
+          <td><code>.pill-success</code>, <code>.pill-neutral</code></td>
+        </tr>
+        <tr>
+          <td>Earn Rules</td>
+          <td>Custom span <span class="cross">(inconsistent)</span></td>
+          <td><code>.status-active</code>, <code>.status-inactive</code></td>
+        </tr>
+        <tr>
+          <td>Notifications</td>
+          <td>Custom span <span class="cross">(inconsistent)</span></td>
+          <td><code>.template-item-status</code> with inline styles</td>
+        </tr>
+        <tr>
+          <td>Referrals (program status)</td>
+          <td>Colored text + dot <span class="cross">(inconsistent)</span></td>
+          <td><code>.status-dot</code> + <code>.status-text</code></td>
+        </tr>
+      </table>
+
+      <div class="annotation">
+        Additionally, the Pill class naming is fragmented: <code>.pill-gc-*</code> on Gift Cards, <code>.pill-success</code> on Transactions, <code>.pill-log-*</code> on Notifications logs. These should use a unified naming scheme.
+      </div>
+
+      <div class="fix-suggestion">
+        <strong>Suggested Fix:</strong> Migrate all status indicators to use the <code>Pill</code> component with the global variant classes defined in <code>app.css</code>: <code>.pill-success</code>, <code>.pill-error</code>, <code>.pill-warning</code>, <code>.pill-info</code>, <code>.pill-neutral</code>. Remove all custom <code>.status-*</code> spans and page-specific <code>.pill-gc-*</code> / <code>.pill-log-*</code> classes.
+      </div>
+
+      <details class="affected-files">
+        <summary>Affected Files</summary>
+        <ul>
+          <li>frontend/src/routes/admin/rules/+page.svelte (replace .status-active spans with Pill)</li>
+          <li>frontend/src/routes/admin/notifications/+page.svelte (replace custom status spans with Pill)</li>
+          <li>frontend/src/routes/admin/referrals/+page.svelte (replace .status-dot with Pill)</li>
+          <li>frontend/src/routes/admin/gift-cards/+page.svelte (rename .pill-gc-* to .pill-success etc.)</li>
+        </ul>
+      </details>
+    </div>
+  </div>
+
+  <div class="finding">
+    <div class="finding-header">
+      <h3>Gift Cards "active" status pill is lowercase while all others are title-case</h3>
+      <span class="severity-badge badge-low">Low</span>
+    </div>
+    <div class="finding-body">
+      <p>On the Gift Cards table, the status pill reads "active" (lowercase). On all other pages it displays as "Active" (title-case). This is a minor but noticeable text inconsistency.</p>
+
+      <div class="fix-suggestion">
+        <strong>Suggested Fix:</strong> Capitalise the status value before rendering: use <code>text-transform: capitalize</code> on the pill, or transform the value in the template.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Section 6 (Button Variant Inconsistency) removed — verified as false positive.
+     All primary buttons use btn-primary (#7c6aff purple) consistently.
+     "Reconfigure" = btn-ghost, "Evaluate Tiers" = btn-secondary — correct usage. -->
+
+<!-- ===== SECTION 7: TABLE PATTERNS ===== -->
+<div class="section" id="table-patterns">
+  <h2>7. Table Implementation Inconsistency</h2>
+  <p class="section-desc">Some pages use the Table component from the library, others use custom HTML tables or div-based layouts.</p>
+
+  <div class="finding">
+    <div class="finding-header">
+      <h3>Three pages use custom HTML tables instead of the Table component</h3>
+      <span class="severity-badge badge-medium">Medium</span>
+    </div>
+    <div class="finding-body">
+      <p>The component library provides a <code>Table</code> component (used by Transactions, Customers, Gift Cards, Settings/Connectors). However, Referrals, Influencers, and Earn Rules use either custom <code>&lt;table&gt;</code> HTML or div-based row layouts. This leads to different hover states, row heights, header styles, and overall visual feel.</p>
+
+      <table class="comparison-table">
+        <tr>
+          <th>Page</th>
+          <th>Implementation</th>
+          <th>Row Hover</th>
+          <th>Header Style</th>
+        </tr>
+        <tr>
+          <td>Transactions</td>
+          <td>Table component <span class="check">(correct)</span></td>
+          <td>surface-2 hover</td>
+          <td>Uppercase, muted</td>
+        </tr>
+        <tr>
+          <td>Customers</td>
+          <td>Table component <span class="check">(correct)</span></td>
+          <td>surface-2 hover</td>
+          <td>Uppercase, muted</td>
+        </tr>
+        <tr>
+          <td>Gift Cards</td>
+          <td>Table component <span class="check">(correct)</span></td>
+          <td>surface-2 hover</td>
+          <td>Uppercase, muted</td>
+        </tr>
+        <tr>
+          <td>Settings/Connectors</td>
+          <td>Table component <span class="check">(correct)</span></td>
+          <td>surface-2 hover</td>
+          <td>Uppercase, muted</td>
+        </tr>
+        <tr>
+          <td>Referrals</td>
+          <td>Custom &lt;table&gt; <span class="cross">(inconsistent)</span></td>
+          <td>Different hover</td>
+          <td>Uppercase, but different padding</td>
+        </tr>
+        <tr>
+          <td>Influencers</td>
+          <td>Custom &lt;table&gt; <span class="cross">(inconsistent)</span></td>
+          <td>Different hover</td>
+          <td>Uppercase, but different padding</td>
+        </tr>
+        <tr>
+          <td>Earn Rules</td>
+          <td>Div-based rows <span class="cross">(inconsistent)</span></td>
+          <td>Card-like hover</td>
+          <td>No column headers</td>
+        </tr>
+      </table>
+
+      <div class="fix-suggestion">
+        <strong>Suggested Fix:</strong> Migrate Referrals and Influencers to use the <code>Table</code> component with cell snippets (same pattern as Transactions). The Earn Rules page uses a card-row layout which may be intentional for richer content, but should at minimum share the same border/shadow/hover CSS variables as the Table component.
+      </div>
+
+      <details class="affected-files">
+        <summary>Affected Files</summary>
+        <ul>
+          <li>frontend/src/routes/admin/referrals/+page.svelte</li>
+          <li>frontend/src/routes/admin/influencers/+page.svelte</li>
+          <li>frontend/src/routes/admin/rules/+page.svelte</li>
+        </ul>
+      </details>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECTION 8: HARDCODED COLORS ===== -->
+<div class="section" id="hardcoded-colors">
+  <h2>8. Hardcoded Colors (Dark Theme Failures)</h2>
+  <p class="section-desc">Several components use hardcoded hex colors that will not adapt when dark mode is eventually fixed.</p>
+
+  <div class="finding">
+    <div class="finding-header">
+      <h3>Wallet Policies: Points preview section uses hardcoded green hex colors</h3>
+      <span class="severity-badge badge-critical">Critical</span>
+    </div>
+    <div class="finding-body">
+      <p>The "Points Preview" card on the Wallet Policies page has a green gradient background, green text, and green borders - all using hardcoded hex values. When dark mode is fixed, this section will remain a bright green card on a dark background.</p>
+
+      <div class="screenshot-grid single">
+        <div class="screenshot-item">
+          <img src="02-wallet-policies.png" alt="Wallet Policies hardcoded colors">
+          <div class="caption">The "PREVIEW" card (top right) uses hardcoded #f0fdf4, #dcfce7, #16a34a, #14532d, #059669</div>
+        </div>
+      </div>
+
+      <table class="comparison-table">
+        <tr>
+          <th>CSS Property</th>
+          <th>Current (Hardcoded)</th>
+          <th>Should Be</th>
+        </tr>
+        <tr>
+          <td>Background gradient</td>
+          <td><code>#f0fdf4, #dcfce7</code></td>
+          <td><code>color-mix(in srgb, var(--color-success) 8%, var(--color-surface))</code></td>
+        </tr>
+        <tr>
+          <td>Border</td>
+          <td><code>#bbf7d0</code></td>
+          <td><code>color-mix(in srgb, var(--color-success) 30%, var(--color-border))</code></td>
+        </tr>
+        <tr>
+          <td>Label text</td>
+          <td><code>#16a34a</code></td>
+          <td><code>var(--color-success)</code></td>
+        </tr>
+        <tr>
+          <td>Value text</td>
+          <td><code>#14532d</code></td>
+          <td><code>var(--color-text)</code></td>
+        </tr>
+      </table>
+
+      <div class="fix-suggestion">
+        <strong>Suggested Fix:</strong> Replace all hardcoded hex values in the <code>.points-preview</code> section with CSS variable-based equivalents using <code>color-mix()</code> for tinted backgrounds.
+      </div>
+
+      <details class="affected-files">
+        <summary>Affected Files</summary>
+        <ul>
+          <li>frontend/src/routes/admin/wallet-policies/+page.svelte (lines ~293-342)</li>
+        </ul>
+      </details>
+    </div>
+  </div>
+
+  <div class="finding">
+    <div class="finding-header">
+      <h3>Campaigns page: Earning formula and campaign cards are entirely light-background in dark mode</h3>
+      <span class="severity-badge badge-critical">Critical</span>
+    </div>
+    <div class="finding-body">
+      <p>The Campaigns page is the most visually broken page in dark mode. The "Active Campaign Earning Formula" card, active/upcoming campaign cards, and all festive template cards render with bright white/light backgrounds against the dark page background.</p>
+
+      <div class="screenshot-grid single">
+        <div class="screenshot-item">
+          <img src="22-dark-campaigns.png" alt="Campaigns dark mode">
+          <div class="caption">Campaigns in dark mode: Earning formula card and all campaign cards are bright white islands</div>
+        </div>
+      </div>
+
+      <div class="fix-suggestion">
+        <strong>Suggested Fix:</strong> Replace hardcoded backgrounds in the campaign cards and earning formula section with <code>var(--color-surface)</code> and <code>var(--color-border)</code>. The green/blue top borders on campaign cards can remain as accent colours.
+      </div>
+
+      <details class="affected-files">
+        <summary>Affected Files</summary>
+        <ul>
+          <li>frontend/src/routes/admin/campaigns/+page.svelte (earning formula card, campaign cards, template cards)</li>
+        </ul>
+      </details>
+    </div>
+  </div>
+
+  <div class="finding">
+    <div class="finding-header">
+      <h3>VIP Tiers: Tier badges have hardcoded white backgrounds</h3>
+      <span class="severity-badge badge-medium">Medium</span>
+    </div>
+    <div class="finding-body">
+      <p>The tier badge pills (Bronze 1x, Silver 1.5x, Gold 2x, Platinum 3x) use hardcoded white/light background colours. In dark mode, they appear as bright white pills inside dark cards.</p>
+
+      <div class="screenshot-grid single">
+        <div class="screenshot-item">
+          <img src="24-dark-vip-tiers.png" alt="VIP Tiers dark mode">
+          <div class="caption">VIP Tiers in dark mode: Tier badges are bright white pills on dark background</div>
+        </div>
+      </div>
+
+      <div class="fix-suggestion">
+        <strong>Suggested Fix:</strong> Replace hardcoded badge background colours with <code>color-mix(in srgb, var(--tier-color) 15%, var(--color-surface))</code> to create a tinted version that adapts to both themes.
+      </div>
+
+      <details class="affected-files">
+        <summary>Affected Files</summary>
+        <ul>
+          <li>frontend/src/routes/admin/loyalty/+page.svelte (tier badge styles)</li>
+        </ul>
+      </details>
+    </div>
+  </div>
+
+  <div class="finding">
+    <div class="finding-header">
+      <h3>Referrals page: Banner, config preview, and status bar use hardcoded colors</h3>
+      <span class="severity-badge badge-high">High</span>
+    </div>
+    <div class="finding-body">
+      <p>Multiple sections on the Referrals page use hardcoded colors:</p>
+      <ul style="margin: 8px 0 8px 20px;">
+        <li><code>.reconfigure-banner</code>: hardcoded <code>#fffbeb</code> background, <code>#fde68a</code> border, <code>#92400e</code> text</li>
+        <li><code>.config-preview</code>: hardcoded blue gradient</li>
+        <li><code>.status-bar</code>: hardcoded green/red status colors</li>
+      </ul>
+
+      <div class="fix-suggestion">
+        <strong>Suggested Fix:</strong> Replace with CSS variable equivalents: <code>var(--color-warning)</code> for banner, <code>var(--color-primary)</code> for config preview, <code>var(--color-success)</code>/<code>var(--color-error)</code> for status.
+      </div>
+
+      <details class="affected-files">
+        <summary>Affected Files</summary>
+        <ul>
+          <li>frontend/src/routes/admin/referrals/+page.svelte (lines ~398, ~419, ~428-433, ~475-478)</li>
+        </ul>
+      </details>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECTION 9: SUBTITLE CSS ===== -->
+<div class="section" id="subtitle-css">
+  <h2>9. Subtitle CSS Class Fragmentation</h2>
+  <p class="section-desc">Pages that do have subtitles use three different CSS class names for the same visual element.</p>
+
+  <div class="finding">
+    <div class="finding-header">
+      <h3>Three different CSS class names for the same subtitle pattern</h3>
+      <span class="severity-badge badge-low">Low</span>
+    </div>
+    <div class="finding-body">
+      <table class="comparison-table">
+        <tr>
+          <th>CSS Class</th>
+          <th>Used By</th>
+          <th>Font Size</th>
+        </tr>
+        <tr>
+          <td><code>.subtitle</code></td>
+          <td>Overview, Gift Cards, Referrals, Influencers</td>
+          <td><code>var(--font-size-sm)</code></td>
+        </tr>
+        <tr>
+          <td><code>.page-subtitle</code></td>
+          <td>Transactions, Customers</td>
+          <td><code>var(--font-size-base)</code></td>
+        </tr>
+        <tr>
+          <td><code>.page-description</code></td>
+          <td>Earn Rules</td>
+          <td><code>var(--font-size-sm)</code></td>
+        </tr>
+      </table>
+
+      <p>Note that <code>.page-subtitle</code> uses <code>font-size-base</code> while the other two use <code>font-size-sm</code>, creating a visible text size difference between Transactions/Customers and other pages.</p>
+
+      <div class="fix-suggestion">
+        <strong>Suggested Fix:</strong> Consolidate to a single class name (e.g., <code>.page-subtitle</code>) in all pages with consistent <code>font-size-sm</code> and <code>color: var(--color-text-muted)</code>. Define it once in <code>app.css</code> rather than in each page's scoped styles.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECTION 10: RECOMMENDATIONS ===== -->
+<div class="section" id="recommendations">
+  <h2>10. Prioritised Fix Recommendations</h2>
+  <p class="section-desc">Ordered by impact and effort. Fix critical items first.</p>
+
+  <table class="comparison-table">
+    <tr>
+      <th>#</th>
+      <th>Issue</th>
+      <th>Severity</th>
+      <th>Effort</th>
+      <th>Action</th>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>Campaigns dark mode: all cards have white backgrounds</td>
+      <td><span class="severity-badge badge-critical">Critical</span></td>
+      <td>Medium</td>
+      <td>Replace hardcoded card backgrounds in earning formula, campaign cards, and template cards with <code>var(--color-surface)</code> / <code>var(--color-border)</code></td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Hardcoded colors in Wallet Policies preview</td>
+      <td><span class="severity-badge badge-high">High</span></td>
+      <td>Low</td>
+      <td>Replace ~10 hardcoded hex values with CSS variable equivalents in points preview section</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>Hardcoded colors in Referrals</td>
+      <td><span class="severity-badge badge-high">High</span></td>
+      <td>Low</td>
+      <td>Replace hardcoded hex colors in banner, config preview, status bar</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>Status indicators: Pill vs custom spans</td>
+      <td><span class="severity-badge badge-high">High</span></td>
+      <td>Medium</td>
+      <td>Migrate Earn Rules, Notifications, Referrals status-bar to use Pill component with unified class names</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>Stat card inconsistency</td>
+      <td><span class="severity-badge badge-high">High</span></td>
+      <td>Medium</td>
+      <td>Add size variants to MetricCard, migrate Gift Cards/Referrals/Influencers to use it</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>Campaigns missing h1</td>
+      <td><span class="severity-badge badge-high">High</span></td>
+      <td>Low</td>
+      <td>Add <code>&lt;h1 class="page-title"&gt;Campaigns&lt;/h1&gt;</code> + subtitle</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>Custom tables (Referrals, Influencers)</td>
+      <td><span class="severity-badge badge-medium">Medium</span></td>
+      <td>Medium</td>
+      <td>Migrate to Table component with cell snippets</td>
+    </tr>
+    <tr>
+      <td>9</td>
+      <td>Missing subtitles on 3 pages</td>
+      <td><span class="severity-badge badge-medium">Medium</span></td>
+      <td>Low</td>
+      <td>Add subtitle text to Gift Cards, Notifications, Settings</td>
+    </tr>
+    <tr>
+      <td>10</td>
+      <td>Subtitle CSS class fragmentation</td>
+      <td><span class="severity-badge badge-low">Low</span></td>
+      <td>Low</td>
+      <td>Consolidate .subtitle / .page-subtitle / .page-description to one class in app.css</td>
+    </tr>
+    <tr>
+      <td>11</td>
+      <td>Gift Cards "active" lowercase pill</td>
+      <td><span class="severity-badge badge-low">Low</span></td>
+      <td>Low</td>
+      <td>Add <code>text-transform: capitalize</code> or transform value before render</td>
+    </tr>
+    <tr>
+      <td>12</td>
+      <td>Pill class naming fragmentation</td>
+      <td><span class="severity-badge badge-low">Low</span></td>
+      <td>Low</td>
+      <td>Remove page-specific pill classes (.pill-gc-*, .pill-log-*) and use global variants</td>
+    </tr>
+  </table>
+
+  <div class="annotation" style="margin-top: 24px;">
+    <strong>Estimated total effort:</strong> Items 1-3 and 6 are quick wins (1-2 hours total). Items 4-5 and 7 are medium effort (half a day). Items 8-12 are low effort (1-2 hours). Full cleanup could be done in a single focused day.
+  </div>
+</div>
+
+</div><!-- container -->
+
+</body>
+</html>

@@ -138,7 +138,7 @@
       <div class="points-form">
         <div class="points-row">
           <div class="points-field" style="flex: 1;">
-            <label class="points-field-label">Points Name</label>
+            <span class="points-field-label">Points Name</span>
             <Input
               value={pointsName}
               placeholder="Stars"
@@ -148,7 +148,7 @@
             />
           </div>
           <div class="points-field" style="flex: 0 0 90px;">
-            <label class="points-field-label">Icon</label>
+            <span class="points-field-label">Icon</span>
             <Input
               value={pointsIcon}
               placeholder="★"
@@ -159,7 +159,7 @@
           </div>
         </div>
         <div>
-          <label class="points-field-label">Value per Point (₹)</label>
+          <span class="points-field-label">Value per Point (₹)</span>
           <Input
             value={pointsRate}
             dataType="number"

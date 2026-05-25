@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tier Card — Membership + Loyalty Unified</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #0a0a0f;
+    color: #e4e4ed;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+  }
+
+  .page-title { font-size: 24px; font-weight: 800; color: #818cf8; margin-bottom: 8px; text-align: center; }
+  .page-subtitle { font-size: 14px; color: #8888a0; margin-bottom: 48px; text-align: center; max-width: 520px; line-height: 1.6; }
+
+  .scenarios { display: flex; flex-direction: column; gap: 60px; width: 100%; max-width: 700px; }
+
+  .scenario { display: flex; gap: 32px; align-items: flex-start; }
+  .scenario-label {
+    width: 180px; flex-shrink: 0; padding-top: 12px;
+  }
+  .scenario-title { font-size: 14px; font-weight: 700; color: #e4e4ed; margin-bottom: 4px; }
+  .scenario-desc { font-size: 12px; color: #6b7280; line-height: 1.5; }
+
+  .card-wrapper { flex: 1; max-width: 380px; }
+
+  /* Tier card styles — matching current dark theme */
+  .tier-card {
+    background: #12141e;
+    border: 1px solid #2a2d3a;
+    border-radius: 14px;
+    padding: 20px 22px;
+  }
+
+  .section-title {
+    font-size: 12px;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 14px;
+    font-weight: 500;
+  }
+
+  /* Active tier row */
+  .active-tier-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .tier-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid #2a2d3a;
+    border-radius: 20px;
+    padding: 5px 14px 5px 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #ffffff;
+  }
+  .tier-icon { font-size: 14px; }
+
+  .member-tag {
+    font-size: 11px;
+    font-weight: 600;
+    color: #fde047;
+    background: rgba(253, 224, 71, 0.1);
+    border: 1px solid rgba(253, 224, 71, 0.2);
+    padding: 3px 10px;
+    border-radius: 12px;
+  }
+
+  .days-left {
+    font-size: 11px;
+    color: #9ca3af;
+  }
+
+  /* Earn progress */
+  .earn-progress {
+    border-top: 1px solid #2a2d3a;
+    padding-top: 14px;
+    margin-top: 2px;
+  }
+
+  .earn-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .earn-label {
+    font-size: 12px;
+    color: #9ca3af;
+  }
+  .earn-hint {
+    font-size: 11px;
+    color: #9ca3af;
+  }
+
+  .progress-track {
+    width: 100%;
+    height: 6px;
+    background: #2a2d3a;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #6366f1, #818cf8);
+    border-radius: 3px;
+  }
+  .progress-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #6b7280;
+  }
+  .progress-total { color: #9ca3af; font-weight: 500; }
+
+  /* No membership variant */
+  .tier-header-simple {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  /* Max tier */
+  .max-tier-msg {
+    font-size: 12px;
+    color: #4ade80;
+    margin-top: 4px;
+  }
+
+  /* Annotations */
+  .annotation-group { margin-top: 60px; width: 100%; max-width: 700px; }
+  .annotation-title { font-size: 20px; font-weight: 700; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #2a2d3a; }
+  .annotation { display: flex; gap: 16px; margin-bottom: 16px; align-items: flex-start; }
+  .annotation-num {
+    width: 24px; height: 24px; background: #818cf8; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: white; flex-shrink: 0;
+  }
+  .annotation-text { font-size: 13px; line-height: 1.6; color: #c4c4d4; }
+  .annotation-text strong { color: #e4e4ed; }
+</style>
+</head>
+<body>
+
+<div class="page-title">Tier Card — Unified Membership + Loyalty</div>
+<div class="page-subtitle">
+  How the tier card adapts when a customer has a membership tier assigned
+  on top of their earned loyalty tier.
+</div>
+
+<div class="scenarios">
+
+  <!-- Scenario 1: Membership active, higher than earned -->
+  <div class="scenario">
+    <div class="scenario-label">
+      <div class="scenario-title">Membership > Earned</div>
+      <div class="scenario-desc">Earned: Bronze (1x)<br>Membership: Platinum (2x)<br>Shows Platinum + earn progress toward Silver</div>
+    </div>
+    <div class="card-wrapper">
+      <div class="tier-card">
+        <div class="section-title">Your Tier</div>
+        <div class="active-tier-row">
+          <div class="tier-badge">
+            <span class="tier-icon">&#9733;</span>
+            Platinum
+          </div>
+          <div style="text-align: right;">
+            <div class="member-tag">Member</div>
+            <div class="days-left" style="margin-top: 4px;">364d left</div>
+          </div>
+        </div>
+        <div class="earn-progress">
+          <div class="earn-header">
+            <span class="earn-label">Earning toward Silver</span>
+            <span class="earn-hint">2,509 pts to go</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" style="width: 16%"></div>
+          </div>
+          <div class="progress-labels">
+            <span>491 points</span>
+            <span class="progress-total">3,000</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scenario 2: No membership, just earned tier -->
+  <div class="scenario">
+    <div class="scenario-label">
+      <div class="scenario-title">No Membership</div>
+      <div class="scenario-desc">Earned: Bronze (1x)<br>No membership assigned<br>Same as current behavior</div>
+    </div>
+    <div class="card-wrapper">
+      <div class="tier-card">
+        <div class="section-title">Loyalty Tier</div>
+        <div class="tier-header-simple">
+          <div class="tier-badge">
+            <span class="tier-icon">&#9733;</span>
+            Bronze
+          </div>
+          <div class="earn-hint">2,509 pts to next tier</div>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" style="width: 16%"></div>
+        </div>
+        <div class="progress-labels">
+          <span>491 points</span>
+          <span class="progress-total">3,000</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scenario 3: Membership active, at highest tier -->
+  <div class="scenario">
+    <div class="scenario-label">
+      <div class="scenario-title">Membership at Max Tier</div>
+      <div class="scenario-desc">Earned: Bronze (1x)<br>Membership: Platinum (2x)<br>Platinum is the highest tier</div>
+    </div>
+    <div class="card-wrapper">
+      <div class="tier-card">
+        <div class="section-title">Your Tier</div>
+        <div class="active-tier-row">
+          <div class="tier-badge">
+            <span class="tier-icon">&#9733;</span>
+            Platinum
+          </div>
+          <div style="text-align: right;">
+            <div class="member-tag">Member</div>
+            <div class="days-left" style="margin-top: 4px;">364d left</div>
+          </div>
+        </div>
+        <div class="earn-progress">
+          <div class="earn-header">
+            <span class="earn-label">Earning toward Silver</span>
+            <span class="earn-hint">2,509 pts to go</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" style="width: 16%"></div>
+          </div>
+          <div class="progress-labels">
+            <span>491 points</span>
+            <span class="progress-total">3,000</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scenario 4: Earned is already high, no membership needed -->
+  <div class="scenario">
+    <div class="scenario-label">
+      <div class="scenario-title">Earned Gold, No Membership</div>
+      <div class="scenario-desc">Earned: Gold (1.5x)<br>No membership<br>Progress toward Platinum</div>
+    </div>
+    <div class="card-wrapper">
+      <div class="tier-card">
+        <div class="section-title">Loyalty Tier</div>
+        <div class="tier-header-simple">
+          <div class="tier-badge">
+            <span class="tier-icon">&#9733;</span>
+            Gold
+          </div>
+          <div class="earn-hint">4,200 pts to next tier</div>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" style="width: 58%"></div>
+        </div>
+        <div class="progress-labels">
+          <span>5,800 points</span>
+          <span class="progress-total">10,000</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scenario 5: Earned highest, no membership -->
+  <div class="scenario">
+    <div class="scenario-label">
+      <div class="scenario-title">Max Tier Earned</div>
+      <div class="scenario-desc">Earned: Platinum (2x)<br>No progress bar needed<br>Shows completion message</div>
+    </div>
+    <div class="card-wrapper">
+      <div class="tier-card">
+        <div class="section-title">Loyalty Tier</div>
+        <div class="tier-header-simple">
+          <div class="tier-badge">
+            <span class="tier-icon">&#9733;</span>
+            Platinum
+          </div>
+        </div>
+        <div class="max-tier-msg">You've reached the highest tier</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Annotations -->
+<div class="annotation-group">
+  <div class="annotation-title">Design Rules</div>
+  <div class="annotation">
+    <div class="annotation-num">1</div>
+    <div class="annotation-text"><strong>Active tier badge shows the effective tier</strong> — whichever is higher between earned and membership. If membership is active and higher, the badge shows the membership tier name.</div>
+  </div>
+  <div class="annotation">
+    <div class="annotation-num">2</div>
+    <div class="annotation-text"><strong>"Member" tag + days remaining</strong> appears only when the displayed tier comes from a membership. Absent when showing a purely earned tier.</div>
+  </div>
+  <div class="annotation">
+    <div class="annotation-num">3</div>
+    <div class="annotation-text"><strong>Section title changes</strong> — "Your Tier" when membership is active (it's an assigned tier), "Loyalty Tier" when showing purely earned (it's organic).</div>
+  </div>
+  <div class="annotation">
+    <div class="annotation-num">4</div>
+    <div class="annotation-text"><strong>Earn progress always shows the organic loyalty progression</strong> — "Earning toward Silver" (the next tier the customer can reach by accumulating points). This never changes based on membership. Label says "Earning toward X" to distinguish from the displayed tier.</div>
+  </div>
+  <div class="annotation">
+    <div class="annotation-num">5</div>
+    <div class="annotation-text"><strong>Separated by a divider</strong> — the active tier badge and the earn progress bar are visually separated. The top is "what you have now", the bottom is "what you're working toward".</div>
+  </div>
+</div>
+
+</body>
+</html>

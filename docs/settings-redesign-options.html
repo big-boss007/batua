@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings My Store — 3 Redesign Options</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f3f4f6;
+    color: #1a1a2e;
+    padding: 32px 16px 64px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .design-label {
+    text-align: center;
+    color: #9ca3af;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  .option-title {
+    text-align: center;
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 24px;
+  }
+  .options-row {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+  .option-card {
+    width: 420px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+  }
+
+  /* Shared styles */
+  .tab-bar {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 0 24px;
+  }
+  .tab { padding: 12px 16px; font-size: 13px; color: #9ca3af; font-weight: 500; }
+  .tab.active { color: #6366f1; border-bottom: 2px solid #6366f1; font-weight: 600; }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 12px;
+  }
+  .field-label { font-size: 12px; font-weight: 500; color: #6b7280; margin-bottom: 4px; }
+  .field-value {
+    padding: 8px 12px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #1a1a2e;
+  }
+  .pill-sm {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    background: #ede9fe;
+    color: #6366f1;
+  }
+  .btn-primary-sm {
+    padding: 6px 16px;
+    background: #6366f1;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .btn-outline-sm {
+    padding: 4px 10px;
+    background: none;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #6b7280;
+  }
+  .btn-filled-sm {
+    padding: 4px 10px;
+    background: #6366f1;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .divider { height: 1px; background: #e5e7eb; margin: 16px 0; }
+  code.mono {
+    font-family: 'SF Mono', monospace;
+    font-size: 12px;
+    padding: 6px 10px;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    color: #1a1a2e;
+  }
+
+  /* === OPTION 1: Two-column card layout === */
+  .opt1-content { padding: 24px; }
+  .opt1-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .opt1-card {
+    padding: 16px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+  }
+  .opt1-card.full-width { grid-column: 1 / -1; }
+  .opt1-card-label { font-size: 11px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .opt1-card-value { font-size: 15px; font-weight: 600; color: #1a1a2e; }
+  .opt1-card-value.small { font-size: 13px; font-family: 'SF Mono', monospace; }
+  .opt1-links { display: flex; gap: 8px; margin-top: 16px; }
+  .opt1-link-chip {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 12px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #1a1a2e;
+  }
+  .opt1-link-chip .icon { font-size: 14px; }
+  .opt1-actions { display: flex; justify-content: flex-end; margin-top: 16px; }
+
+  /* === OPTION 2: Header card + stacked sections === */
+  .opt2-header-card {
+    margin: 20px 24px 0;
+    padding: 20px;
+    background: linear-gradient(135deg, #6366f1, #818cf8);
+    border-radius: 12px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .opt2-store-name { font-size: 20px; font-weight: 700; }
+  .opt2-store-meta { font-size: 12px; opacity: 0.8; margin-top: 4px; }
+  .opt2-plan-badge {
+    padding: 4px 12px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .opt2-content { padding: 20px 24px 24px; }
+  .opt2-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .opt2-form-field { display: flex; flex-direction: column; gap: 3px; }
+  .opt2-links-row { display: flex; gap: 8px; }
+  .opt2-link-card {
+    flex: 1;
+    text-align: center;
+    padding: 12px 8px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+  }
+  .opt2-link-icon { font-size: 20px; margin-bottom: 4px; }
+  .opt2-link-name { font-size: 11px; font-weight: 600; color: #1a1a2e; }
+  .opt2-link-actions { display: flex; justify-content: center; gap: 4px; margin-top: 6px; }
+
+  /* === OPTION 3: Sidebar info + form === */
+  .opt3-layout { display: flex; }
+  .opt3-sidebar {
+    width: 160px;
+    padding: 24px 20px;
+    background: #f9fafb;
+    border-right: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .opt3-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: #6366f1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 18px;
+    color: #fff;
+  }
+  .opt3-store-name { font-size: 14px; font-weight: 700; color: #1a1a2e; }
+  .opt3-store-slug { font-size: 11px; color: #9ca3af; font-family: 'SF Mono', monospace; margin-top: 2px; }
+  .opt3-sidebar-item { display: flex; flex-direction: column; gap: 2px; }
+  .opt3-sidebar-label { font-size: 10px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; }
+  .opt3-sidebar-value { font-size: 12px; font-weight: 500; color: #1a1a2e; }
+  .opt3-main { flex: 1; padding: 24px; }
+  .opt3-form-fields { display: flex; flex-direction: column; gap: 14px; margin-bottom: 16px; }
+  .opt3-link-list { display: flex; flex-direction: column; gap: 8px; }
+  .opt3-link-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+  }
+  .opt3-link-left { display: flex; align-items: center; gap: 8px; }
+  .opt3-link-icon { font-size: 14px; }
+  .opt3-link-label { font-size: 12px; font-weight: 500; color: #1a1a2e; }
+  .opt3-link-btns { display: flex; gap: 4px; }
+
+  @media print {
+    body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  }
+  @page { size: A4 landscape; margin: 10mm; }
+</style>
+</head>
+<body>
+
+<div class="design-label">Settings — My Store Tab Redesign</div>
+
+<div class="options-row">
+
+<!-- OPTION 1: Two-column card layout -->
+<div>
+  <div class="option-title">Option 1: Card Grid</div>
+  <div class="option-card">
+    <div class="tab-bar">
+      <div class="tab active">My Store</div>
+      <div class="tab">Wallet Policies</div>
+      <div class="tab">Connectors</div>
+      <div class="tab">Notifications</div>
+    </div>
+    <div class="opt1-content">
+      <div class="opt1-grid">
+        <div class="opt1-card">
+          <div class="opt1-card-label">Store Name</div>
+          <div class="opt1-card-value">Chai & Co</div>
+        </div>
+        <div class="opt1-card">
+          <div class="opt1-card-label">Plan</div>
+          <div class="opt1-card-value"><span class="pill-sm">Growth</span></div>
+        </div>
+        <div class="opt1-card">
+          <div class="opt1-card-label">Domain</div>
+          <div class="opt1-card-value small">chaiandco.myshopify.co</div>
+        </div>
+        <div class="opt1-card">
+          <div class="opt1-card-label">Slug</div>
+          <div class="opt1-card-value small">chaiandco</div>
+        </div>
+        <div class="opt1-card full-width">
+          <div class="opt1-card-label">Storefront URL</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <code class="mono">/s/chaiandco</code>
+            <button class="btn-outline-sm">Copy</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="section-label">Customer Links</div>
+      <div class="opt1-links">
+        <div class="opt1-link-chip"><span class="icon">💰</span> Rewards</div>
+        <div class="opt1-link-chip"><span class="icon">🎁</span> Gift Cards</div>
+        <div class="opt1-link-chip"><span class="icon">🔗</span> Referrals</div>
+      </div>
+
+      <div class="opt1-actions">
+        <button class="btn-primary-sm">Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- OPTION 2: Hero header + compact form -->
+<div>
+  <div class="option-title">Option 2: Hero Header</div>
+  <div class="option-card">
+    <div class="tab-bar">
+      <div class="tab active">My Store</div>
+      <div class="tab">Wallet Policies</div>
+      <div class="tab">Connectors</div>
+      <div class="tab">Notifications</div>
+    </div>
+
+    <div class="opt2-header-card">
+      <div>
+        <div class="opt2-store-name">Chai & Co</div>
+        <div class="opt2-store-meta">chaiandco.myshopify.co · /s/chaiandco</div>
+      </div>
+      <div class="opt2-plan-badge">Growth</div>
+    </div>
+
+    <div class="opt2-content">
+      <div class="section-label" style="margin-top:0">Edit Details</div>
+      <div class="opt2-form-row">
+        <div class="opt2-form-field">
+          <div class="field-label">Store Name</div>
+          <div class="field-value">Chai & Co</div>
+        </div>
+        <div class="opt2-form-field">
+          <div class="field-label">Slug</div>
+          <div class="field-value">chaiandco</div>
+        </div>
+      </div>
+      <div class="opt2-form-row">
+        <div class="opt2-form-field">
+          <div class="field-label">Domain</div>
+          <div class="field-value">chaiandco.myshopify.co</div>
+        </div>
+        <div style="display:flex;align-items:flex-end">
+          <button class="btn-primary-sm">Save Changes</button>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="section-label">Customer Links</div>
+      <div class="opt2-links-row">
+        <div class="opt2-link-card">
+          <div class="opt2-link-icon">💰</div>
+          <div class="opt2-link-name">Rewards</div>
+          <div class="opt2-link-actions">
+            <button class="btn-outline-sm">Copy</button>
+            <button class="btn-filled-sm">Open</button>
+          </div>
+        </div>
+        <div class="opt2-link-card">
+          <div class="opt2-link-icon">🎁</div>
+          <div class="opt2-link-name">Gift Cards</div>
+          <div class="opt2-link-actions">
+            <button class="btn-outline-sm">Copy</button>
+            <button class="btn-filled-sm">Open</button>
+          </div>
+        </div>
+        <div class="opt2-link-card">
+          <div class="opt2-link-icon">🔗</div>
+          <div class="opt2-link-name">Referrals</div>
+          <div class="opt2-link-actions">
+            <button class="btn-outline-sm">Copy</button>
+            <button class="btn-filled-sm">Open</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- OPTION 3: Sidebar identity + form -->
+<div>
+  <div class="option-title">Option 3: Sidebar + Form</div>
+  <div class="option-card">
+    <div class="tab-bar">
+      <div class="tab active">My Store</div>
+      <div class="tab">Wallet Policies</div>
+      <div class="tab">Connectors</div>
+      <div class="tab">Notifications</div>
+    </div>
+    <div class="opt3-layout">
+      <div class="opt3-sidebar">
+        <div class="opt3-avatar">C</div>
+        <div>
+          <div class="opt3-store-name">Chai & Co</div>
+          <div class="opt3-store-slug">/s/chaiandco</div>
+        </div>
+        <div class="opt3-sidebar-item">
+          <div class="opt3-sidebar-label">Plan</div>
+          <div><span class="pill-sm">Growth</span></div>
+        </div>
+        <div class="opt3-sidebar-item">
+          <div class="opt3-sidebar-label">Domain</div>
+          <div class="opt3-sidebar-value">chaiandco.myshopify.co</div>
+        </div>
+      </div>
+      <div class="opt3-main">
+        <div class="section-label" style="margin-top:0">Edit Store</div>
+        <div class="opt3-form-fields">
+          <div class="opt2-form-field">
+            <div class="field-label">Store Name</div>
+            <div class="field-value">Chai & Co</div>
+          </div>
+          <div class="opt2-form-field">
+            <div class="field-label">Domain</div>
+            <div class="field-value">chaiandco.myshopify.co</div>
+          </div>
+          <div class="opt2-form-field">
+            <div class="field-label">Slug</div>
+            <div class="field-value">chaiandco</div>
+          </div>
+          <button class="btn-primary-sm">Save Changes</button>
+        </div>
+
+        <div class="divider"></div>
+        <div class="section-label">Customer Links</div>
+        <div class="opt3-link-list">
+          <div class="opt3-link-row">
+            <div class="opt3-link-left">
+              <span class="opt3-link-icon">💰</span>
+              <span class="opt3-link-label">Rewards Hub</span>
+            </div>
+            <div class="opt3-link-btns">
+              <button class="btn-outline-sm">Copy</button>
+              <button class="btn-filled-sm">Open</button>
+            </div>
+          </div>
+          <div class="opt3-link-row">
+            <div class="opt3-link-left">
+              <span class="opt3-link-icon">🎁</span>
+              <span class="opt3-link-label">Gift Cards</span>
+            </div>
+            <div class="opt3-link-btns">
+              <button class="btn-outline-sm">Copy</button>
+              <button class="btn-filled-sm">Open</button>
+            </div>
+          </div>
+          <div class="opt3-link-row">
+            <div class="opt3-link-left">
+              <span class="opt3-link-icon">🔗</span>
+              <span class="opt3-link-label">Referrals</span>
+            </div>
+            <div class="opt3-link-btns">
+              <button class="btn-outline-sm">Copy</button>
+              <button class="btn-filled-sm">Open</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>

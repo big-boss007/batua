@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unified Loyalty Page — Mockup</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f3f4f6;
+    color: #1f2937;
+  }
+
+  /* ─── Layout ─── */
+  .shell {
+    display: flex;
+    min-height: 100vh;
+  }
+  .sidebar {
+    width: 220px;
+    background: #fff;
+    border-right: 1px solid #e5e7eb;
+    padding: 20px 0;
+    flex-shrink: 0;
+  }
+  .sidebar-brand {
+    font-size: 18px;
+    font-weight: 800;
+    color: #6366f1;
+    padding: 0 20px 20px;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    font-size: 13px;
+    color: #6b7280;
+    cursor: pointer;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+  }
+  .nav-item:hover { background: #f9fafb; }
+  .nav-item.active {
+    background: #ede9fe;
+    color: #6366f1;
+    font-weight: 600;
+    border-right: 3px solid #6366f1;
+  }
+  .nav-icon { width: 18px; text-align: center; }
+
+  .main {
+    flex: 1;
+    padding: 32px 40px;
+    max-width: 1100px;
+  }
+
+  /* ─── Header ─── */
+  .page-header {
+    margin-bottom: 24px;
+  }
+  .page-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #111827;
+    margin-bottom: 4px;
+  }
+  .page-subtitle {
+    font-size: 13px;
+    color: #9ca3af;
+  }
+
+  /* ─── Tabs ─── */
+  .tabs {
+    display: flex;
+    border-bottom: 2px solid #e5e7eb;
+    margin-bottom: 24px;
+    gap: 0;
+  }
+  .tab {
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #6b7280;
+    cursor: pointer;
+    border: none;
+    background: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+  }
+  .tab:hover { color: #374151; }
+  .tab.active {
+    color: #6366f1;
+    font-weight: 600;
+    border-bottom-color: #6366f1;
+  }
+
+  /* ─── Tab content containers ─── */
+  .tab-content { display: none; }
+  .tab-content.visible { display: block; }
+
+  /* ─── Program & Tiers tab ─── */
+  .program-summary {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .program-info {
+    display: flex;
+    gap: 32px;
+  }
+  .program-field label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #9ca3af;
+    display: block;
+    margin-bottom: 2px;
+  }
+  .program-field .val {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+  }
+  .btn-sm {
+    height: 32px;
+    padding: 0 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid #d1d5db;
+    background: #fff;
+    color: #6b7280;
+  }
+
+  .tiers-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .tier-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+  .tier-rank {
+    font-size: 11px;
+    color: #9ca3af;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+  .tier-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 4px;
+  }
+  .tier-threshold {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 8px;
+  }
+  .tier-mult {
+    font-size: 12px;
+    font-weight: 700;
+    color: #6366f1;
+    background: #ede9fe;
+    padding: 2px 8px;
+    border-radius: 100px;
+    display: inline-block;
+  }
+
+  .section-hdr {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #9ca3af;
+    margin-bottom: 12px;
+    margin-top: 8px;
+  }
+
+  /* Members table */
+  .members-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .members-table th {
+    text-align: left;
+    padding: 10px 16px;
+    font-weight: 600;
+    color: #6b7280;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .members-table td {
+    padding: 10px 16px;
+    border-bottom: 1px solid #f3f4f6;
+    color: #374151;
+  }
+  .members-table tr:last-child td { border-bottom: none; }
+  .tier-pill {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .tier-bronze { background: #fef3c7; color: #92400e; }
+  .tier-silver { background: #f3f4f6; color: #374151; }
+  .tier-gold { background: #fef9c3; color: #854d0e; }
+  .tier-platinum { background: #ede9fe; color: #5b21b6; }
+
+  /* ─── Earning Rules tab ─── */
+  .rules-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .btn-primary {
+    height: 36px;
+    padding: 0 18px;
+    background: #6366f1;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .rule-item {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .rule-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .rule-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+  }
+  .rule-meta {
+    font-size: 12px;
+    color: #9ca3af;
+  }
+  .rule-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .pill {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .pill-blue { background: #dbeafe; color: #1d4ed8; }
+  .pill-green { background: #dcfce7; color: #166534; }
+  .pill-gray { background: #f3f4f6; color: #6b7280; }
+
+  /* ─── Campaigns tab ─── */
+  .campaign-item {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .campaign-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+  }
+  .campaign-meta {
+    font-size: 12px;
+    color: #9ca3af;
+  }
+  .campaign-dates {
+    font-size: 12px;
+    color: #6b7280;
+  }
+
+  .templates-section {
+    margin-top: 24px;
+  }
+  .templates-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .template-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 16px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .template-card:hover { border-color: #6366f1; }
+  .template-emoji { font-size: 24px; margin-bottom: 8px; }
+  .template-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 2px;
+  }
+  .template-desc {
+    font-size: 11px;
+    color: #9ca3af;
+    line-height: 1.4;
+  }
+
+  /* ─── Annotation ─── */
+  .annotation {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 24px;
+    font-size: 12px;
+    color: #92400e;
+    line-height: 1.5;
+  }
+  .annotation strong { font-weight: 700; }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <!-- ─── Sidebar ─── -->
+  <nav class="sidebar">
+    <div class="sidebar-brand">Batua</div>
+    <button class="nav-item"><span class="nav-icon">▦</span> Dashboard</button>
+    <button class="nav-item active"><span class="nav-icon">♥</span> Loyalty</button>
+    <button class="nav-item"><span class="nav-icon">⇄</span> Transactions</button>
+    <button class="nav-item"><span class="nav-icon">☖</span> Customers</button>
+    <button class="nav-item"><span class="nav-icon">☆</span> Gift Cards</button>
+    <button class="nav-item"><span class="nav-icon">→</span> Referrals</button>
+    <button class="nav-item"><span class="nav-icon">↗</span> Analytics</button>
+    <button class="nav-item"><span class="nav-icon">✉</span> Notifications</button>
+    <button class="nav-item"><span class="nav-icon">☸</span> Settings</button>
+  </nav>
+
+  <!-- ─── Main ─── -->
+  <div class="main">
+    <div class="page-header">
+      <h1 class="page-title">Loyalty</h1>
+      <p class="page-subtitle">Manage your loyalty program, tiers, earning rules, and campaigns</p>
+    </div>
+
+    <div class="annotation">
+      <strong>What changed:</strong> Previously split across 4 sidebar items (Rules, Loyalty, Memberships, Campaigns) — now unified under one "Loyalty" page with 3 tabs. Sidebar goes from 11 → 9 items.
+    </div>
+
+    <!-- ─── Tabs ─── -->
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('program')">Program & Tiers</button>
+      <button class="tab" onclick="showTab('rules')">Earning Rules</button>
+      <button class="tab" onclick="showTab('campaigns')">Campaigns</button>
+    </div>
+
+    <!-- ══════════════════════════════════════ -->
+    <!-- TAB 1: Program & Tiers -->
+    <!-- ══════════════════════════════════════ -->
+    <div id="tab-program" class="tab-content visible">
+      <!-- Program summary -->
+      <div class="program-summary">
+        <div class="program-info">
+          <div class="program-field">
+            <label>Program Name</label>
+            <span class="val">Rewards Club</span>
+          </div>
+          <div class="program-field">
+            <label>Evaluation Criteria</label>
+            <span class="val">Total Spend</span>
+          </div>
+          <div class="program-field">
+            <label>Evaluation Period</label>
+            <span class="val">Lifetime</span>
+          </div>
+        </div>
+        <button class="btn-sm">Edit Program</button>
+      </div>
+
+      <!-- Tiers -->
+      <div class="section-hdr">Tiers</div>
+      <div class="tiers-grid">
+        <div class="tier-card">
+          <div class="tier-rank">Rank 1</div>
+          <div class="tier-name">Bronze</div>
+          <div class="tier-threshold">₹0+</div>
+          <span class="tier-mult">1× earn</span>
+        </div>
+        <div class="tier-card">
+          <div class="tier-rank">Rank 2</div>
+          <div class="tier-name">Silver</div>
+          <div class="tier-threshold">₹5,000+</div>
+          <span class="tier-mult">1.5× earn</span>
+        </div>
+        <div class="tier-card">
+          <div class="tier-rank">Rank 3</div>
+          <div class="tier-name">Gold</div>
+          <div class="tier-threshold">₹15,000+</div>
+          <span class="tier-mult">2× earn</span>
+        </div>
+        <div class="tier-card">
+          <div class="tier-rank">Rank 4</div>
+          <div class="tier-name">Platinum</div>
+          <div class="tier-threshold">₹50,000+</div>
+          <span class="tier-mult">3× earn</span>
+        </div>
+      </div>
+
+      <!-- Members -->
+      <div class="section-hdr">Members (recent assignments)</div>
+      <table class="members-table">
+        <thead>
+          <tr>
+            <th>Customer</th>
+            <th>Tier</th>
+            <th>Status</th>
+            <th>Started</th>
+            <th>Expires</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Aarav Sharma</td>
+            <td><span class="tier-pill tier-gold">Gold</span></td>
+            <td><span class="pill pill-green">Active</span></td>
+            <td>15 Jan 2026</td>
+            <td>15 Jan 2027</td>
+          </tr>
+          <tr>
+            <td>Priya Patel</td>
+            <td><span class="tier-pill tier-silver">Silver</span></td>
+            <td><span class="pill pill-green">Active</span></td>
+            <td>3 Feb 2026</td>
+            <td>3 Feb 2027</td>
+          </tr>
+          <tr>
+            <td>Rohan Gupta</td>
+            <td><span class="tier-pill tier-platinum">Platinum</span></td>
+            <td><span class="pill pill-green">Active</span></td>
+            <td>20 Dec 2025</td>
+            <td>20 Dec 2026</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ══════════════════════════════════════ -->
+    <!-- TAB 2: Earning Rules -->
+    <!-- ══════════════════════════════════════ -->
+    <div id="tab-rules" class="tab-content">
+      <div class="rules-header">
+        <div></div>
+        <button class="btn-primary">+ New Rule</button>
+      </div>
+
+      <div class="rule-item">
+        <div class="rule-info">
+          <span class="rule-name">10% Points Back on All Orders</span>
+          <span class="rule-meta">127 entries · ₹3,200 earned · 84 customers</span>
+        </div>
+        <div class="rule-right">
+          <span class="pill pill-blue">reward</span>
+          <span class="pill pill-gray">order.completed</span>
+          <span class="pill pill-green">Active</span>
+        </div>
+      </div>
+
+      <div class="rule-item">
+        <div class="rule-info">
+          <span class="rule-name">Review Bonus ₹25</span>
+          <span class="rule-meta">42 entries · ₹1,050 earned · 38 customers</span>
+        </div>
+        <div class="rule-right">
+          <span class="pill pill-blue">reward</span>
+          <span class="pill pill-gray">review.submitted</span>
+          <span class="pill pill-green">Active</span>
+        </div>
+      </div>
+
+      <div class="rule-item">
+        <div class="rule-info">
+          <span class="rule-name">First Order Bonus ₹50</span>
+          <span class="rule-meta">19 entries · ₹950 earned · 19 customers</span>
+        </div>
+        <div class="rule-right">
+          <span class="pill pill-blue">reward</span>
+          <span class="pill pill-gray">order.completed</span>
+          <span class="pill pill-green">Active</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════ -->
+    <!-- TAB 3: Campaigns -->
+    <!-- ══════════════════════════════════════ -->
+    <div id="tab-campaigns" class="tab-content">
+      <div class="section-hdr">Active & Upcoming</div>
+
+      <div class="campaign-item">
+        <div class="rule-info">
+          <span class="campaign-name">Holi 3× Points Weekend</span>
+          <span class="campaign-meta">Multiplier · 3× on Order Reward</span>
+        </div>
+        <div class="rule-right">
+          <span class="campaign-dates">14 Mar – 16 Mar 2026</span>
+          <span class="pill pill-green">Active</span>
+        </div>
+      </div>
+
+      <div class="campaign-item">
+        <div class="rule-info">
+          <span class="campaign-name">Summer Sale Bonus</span>
+          <span class="campaign-meta">Bonus · Extra 50 ★ on orders above ₹2,000</span>
+        </div>
+        <div class="rule-right">
+          <span class="campaign-dates">1 Apr – 30 Apr 2026</span>
+          <span class="pill pill-gray">Upcoming</span>
+        </div>
+      </div>
+
+      <div class="templates-section">
+        <div class="section-hdr">Festive Templates</div>
+        <div class="templates-grid">
+          <div class="template-card">
+            <div class="template-emoji">🪔</div>
+            <div class="template-name">Diwali Dhamaka</div>
+            <div class="template-desc">5× points on all orders during Diwali week</div>
+          </div>
+          <div class="template-card">
+            <div class="template-emoji">🎄</div>
+            <div class="template-name">Christmas Cheer</div>
+            <div class="template-desc">Double points + bonus 100 ★ on first order</div>
+          </div>
+          <div class="template-card">
+            <div class="template-emoji">🏏</div>
+            <div class="template-name">IPL Season</div>
+            <div class="template-desc">2× points on match days</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function showTab(name) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('visible'));
+    document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('visible');
+    event.target.classList.add('active');
+  }
+</script>
+
+</body>
+</html>

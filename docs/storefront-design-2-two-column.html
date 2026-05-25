@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design 2: Two-Column Dashboard — Batua Storefront</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --border: #2a2d3a;
+    --brand: #6366f1;
+    --brand-light: #818cf8;
+    --text-primary: #ffffff;
+    --text-muted: #9ca3af;
+    --green: #4ade80;
+    --yellow: #fde047;
+    --radius-card: 12px;
+    --radius-inner: 8px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.3);
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text-primary);
+    min-height: 100vh;
+    padding: 32px 16px 48px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .design-label {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 24px;
+    font-weight: 500;
+  }
+
+  .container {
+    max-width: 880px;
+    margin: 0 auto;
+  }
+
+  /* Panel base */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow);
+  }
+
+  /* Header — full width */
+  .header-panel {
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .merchant-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-inner);
+    background: var(--brand);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 16px;
+    color: #fff;
+  }
+  .merchant-name {
+    font-size: 18px;
+    font-weight: 600;
+  }
+  .merchant-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .customer-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-muted);
+  }
+  .avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--brand), var(--brand-light));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 13px;
+    color: #fff;
+  }
+
+  /* Two-column layout */
+  .columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  /* Balance hero */
+  .balance-panel {
+    padding: 28px 24px 24px;
+    margin-bottom: 16px;
+  }
+  .balance-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 6px;
+  }
+  .balance-amount {
+    font-size: 44px;
+    font-weight: 700;
+    letter-spacing: -1.5px;
+    color: var(--green);
+    margin-bottom: 16px;
+  }
+  .balance-row {
+    display: flex;
+    gap: 24px;
+  }
+  .balance-stat {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .balance-stat strong {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+  .balance-stat .pending {
+    color: var(--yellow);
+  }
+
+  /* Bucket breakdown */
+  .bucket-panel {
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 14px;
+    font-weight: 500;
+  }
+  .bucket-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .bucket-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .bucket-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  .bucket-row:first-child {
+    padding-top: 0;
+  }
+  .bucket-label {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .bucket-value {
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .bucket-value.highlight {
+    color: var(--yellow);
+  }
+
+  /* Lifetime saved */
+  .lifetime-panel {
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface);
+    border: 1px solid rgba(99,102,241,0.25);
+  }
+  .lifetime-label {
+    font-size: 13px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .lifetime-icon {
+    font-size: 16px;
+  }
+  .lifetime-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--brand-light);
+  }
+
+  /* Tier progress */
+  .tier-panel {
+    padding: 22px 24px;
+    margin-bottom: 16px;
+  }
+  .tier-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .tier-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 16px 6px 10px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .tier-icon {
+    font-size: 16px;
+    color: #c0c0c0;
+  }
+  .tier-next {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .progress-track {
+    width: 100%;
+    height: 10px;
+    background: var(--border);
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--brand), var(--brand-light));
+    border-radius: 5px;
+  }
+  .progress-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .progress-labels span:last-child {
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+  .tier-perks {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+  .tier-perks-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 8px;
+  }
+  .tier-perk-tag {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    color: var(--brand-light);
+    background: rgba(99,102,241,0.12);
+    margin-right: 6px;
+    margin-bottom: 4px;
+  }
+
+  /* Activity feed */
+  .activity-panel {
+    padding: 22px 24px;
+  }
+  .activity-group-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 10px;
+    margin-top: 18px;
+  }
+  .activity-group-label:first-of-type {
+    margin-top: 0;
+  }
+  .activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0;
+  }
+  .activity-item + .activity-item {
+    border-top: 1px solid var(--border);
+  }
+  .activity-icon-wrap {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .activity-icon-wrap.credit {
+    background: rgba(74,222,128,0.12);
+  }
+  .activity-icon-wrap.hold {
+    background: rgba(253,224,71,0.12);
+  }
+  .activity-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .activity-desc {
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .activity-order {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .activity-amount {
+    font-size: 14px;
+    font-weight: 600;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .activity-amount.credit { color: var(--green); }
+  .activity-amount.hold { color: var(--yellow); }
+
+  /* Print styles */
+  @media print {
+    body {
+      background: #0f1117 !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      padding: 16px;
+    }
+    .panel {
+      box-shadow: none;
+      break-inside: avoid;
+    }
+  }
+
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+</style>
+</head>
+<body>
+
+<div class="design-label">Design 2: Two-Column Dashboard</div>
+
+<div class="container">
+  <!-- Header -->
+  <div class="panel header-panel">
+    <div class="header-left">
+      <div class="merchant-icon">H</div>
+      <div>
+        <div class="merchant-name">HomeVibes</div>
+        <div class="merchant-sub">Customer Wallet</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="customer-name">Advait Tiwari</div>
+      <div class="avatar">AT</div>
+    </div>
+  </div>
+
+  <!-- Two columns -->
+  <div class="columns">
+    <!-- Left column -->
+    <div class="col-left">
+      <!-- Balance -->
+      <div class="panel balance-panel">
+        <div class="balance-label">Spendable Balance</div>
+        <div class="balance-amount">&#8377;152.80</div>
+        <div class="balance-row">
+          <div class="balance-stat">Total: <strong>&#8377;221.40</strong></div>
+          <div class="balance-stat">Pending: <strong class="pending">&#8377;68.60</strong></div>
+        </div>
+      </div>
+
+      <!-- Buckets -->
+      <div class="panel bucket-panel">
+        <div class="section-title">Bucket Breakdown</div>
+        <div class="bucket-list">
+          <div class="bucket-row">
+            <div class="bucket-label">Earned</div>
+            <div class="bucket-value">&#8377;0.00</div>
+          </div>
+          <div class="bucket-row">
+            <div class="bucket-label">COD Pending</div>
+            <div class="bucket-value">&#8377;0.00</div>
+          </div>
+          <div class="bucket-row">
+            <div class="bucket-label">On Hold</div>
+            <div class="bucket-value highlight">&#8377;68.60</div>
+          </div>
+          <div class="bucket-row">
+            <div class="bucket-label">Expiring Soon</div>
+            <div class="bucket-value">&#8377;0.00</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lifetime -->
+      <div class="panel lifetime-panel">
+        <div class="lifetime-label"><span class="lifetime-icon">&#10024;</span> Lifetime Saved</div>
+        <div class="lifetime-value">&#8377;152.80</div>
+      </div>
+    </div>
+
+    <!-- Right column -->
+    <div class="col-right">
+      <!-- Tier -->
+      <div class="panel tier-panel">
+        <div class="section-title">Loyalty Tier</div>
+        <div class="tier-header">
+          <div class="tier-badge">
+            <span class="tier-icon">&#9733;</span>
+            Silver
+          </div>
+          <div class="tier-next">1,860 pts to next</div>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" style="width: 38%"></div>
+        </div>
+        <div class="progress-labels">
+          <span>1,140 points</span>
+          <span>3,000</span>
+        </div>
+        <div class="tier-perks">
+          <div class="tier-perks-label">Silver Perks</div>
+          <span class="tier-perk-tag">2x Cashback</span>
+          <span class="tier-perk-tag">Early Access</span>
+          <span class="tier-perk-tag">Free Shipping</span>
+        </div>
+      </div>
+
+      <!-- Activity -->
+      <div class="panel activity-panel">
+        <div class="section-title">Recent Activity</div>
+
+        <div class="activity-group-label">Yesterday</div>
+        <div class="activity-item">
+          <div class="activity-icon-wrap credit">&#8377;</div>
+          <div class="activity-info">
+            <div class="activity-desc">Cashback</div>
+            <div class="activity-order">Order #ORD-2851</div>
+          </div>
+          <div class="activity-amount credit">+&#8377;50</div>
+        </div>
+
+        <div class="activity-group-label">Last Week</div>
+        <div class="activity-item">
+          <div class="activity-icon-wrap hold">&#9202;</div>
+          <div class="activity-info">
+            <div class="activity-desc">COD Hold</div>
+            <div class="activity-order">Order #ORD-2734</div>
+          </div>
+          <div class="activity-amount hold">&#8377;68.60</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

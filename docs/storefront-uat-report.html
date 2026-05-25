@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UAT Report — Customer Storefront | Batua (Breeze Retention Suite)</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+    background: #f3f4f6;
+    color: #1f2937;
+    line-height: 1.6;
+    padding: 2rem 1rem;
+  }
+
+  .container { max-width: 960px; margin: 0 auto; }
+
+  /* ---- Header ---- */
+  .report-header {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    padding: 2rem 2.5rem;
+    margin-bottom: 2rem;
+  }
+  .report-header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: .25rem;
+  }
+  .report-header .subtitle {
+    font-size: 1.05rem;
+    color: #6b7280;
+    margin-bottom: 1.25rem;
+  }
+  .meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: .75rem 2rem;
+    font-size: .9rem;
+  }
+  .meta-grid dt { color: #6b7280; font-weight: 500; }
+  .meta-grid dd { font-weight: 600; margin-bottom: .5rem; }
+
+  /* ---- Summary ---- */
+  .summary-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    padding: 1.5rem 2.5rem;
+    margin-bottom: 2rem;
+  }
+  .summary-card h2 { font-size: 1.2rem; margin-bottom: 1rem; }
+  .summary-table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+  .summary-table th,
+  .summary-table td { padding: .6rem 1rem; text-align: left; border-bottom: 1px solid #e5e7eb; }
+  .summary-table th { color: #6b7280; font-weight: 600; }
+  .summary-table td.num { text-align: center; font-weight: 700; font-size: 1.1rem; }
+  .summary-table .pass-num { color: #16a34a; }
+  .summary-table .fail-num { color: #dc2626; }
+  .summary-table .bug-num  { color: #ea580c; }
+
+  /* ---- Section Headings ---- */
+  .section-heading {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 2rem 0 1rem;
+    padding-left: .25rem;
+    color: #374151;
+  }
+
+  /* ---- Test Card ---- */
+  .test-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.25rem;
+  }
+  .test-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: .75rem;
+  }
+  .test-id {
+    font-size: .8rem;
+    font-weight: 700;
+    color: #9ca3af;
+    margin-bottom: .15rem;
+  }
+  .test-title { font-size: 1.05rem; font-weight: 600; }
+  .test-body { font-size: .93rem; color: #4b5563; }
+  .test-body p { margin-bottom: .5rem; }
+
+  /* ---- Badge ---- */
+  .badge {
+    display: inline-block;
+    padding: .2rem .7rem;
+    border-radius: 9999px;
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .badge-pass { background: #dcfce7; color: #15803d; }
+  .badge-fail { background: #fee2e2; color: #b91c1c; }
+  .badge-bug  { background: #ffedd5; color: #c2410c; }
+
+  /* ---- Screenshots ---- */
+  .screenshot-wrap {
+    margin-top: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #f9fafb;
+  }
+  .screenshot-wrap img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+  .screenshot-caption {
+    font-size: .8rem;
+    color: #6b7280;
+    padding: .5rem .75rem;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  /* ---- Print ---- */
+  @media print {
+    body { background: #fff; padding: 0; }
+    .container { max-width: 100%; }
+    .report-header,
+    .summary-card,
+    .test-card {
+      box-shadow: none;
+      border-color: #d1d5db;
+      break-inside: avoid;
+    }
+    .screenshot-wrap { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <header class="report-header">
+    <h1>Customer Storefront</h1>
+    <p class="subtitle">UAT Report &mdash; Batua (Breeze Retention Suite)</p>
+    <dl class="meta-grid">
+      <dt>Date</dt>
+      <dd>2026-03-23</dd>
+      <dt>Environment</dt>
+      <dd>localhost:5174</dd>
+      <dt>Merchant</dt>
+      <dd>Chai &amp; Co</dd>
+      <dt>Customer</dt>
+      <dd>Ananya Iyer (+91 9001000001)</dd>
+      <dt>Route</dt>
+      <dd>/s/chaiandco</dd>
+      <dt>Tester</dt>
+      <dd>Manual / Claude</dd>
+    </dl>
+  </header>
+
+  <!-- Summary -->
+  <section class="summary-card">
+    <h2>Summary</h2>
+    <table class="summary-table">
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th style="text-align:center">Count</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Total Tests</td><td class="num">16</td></tr>
+        <tr><td>Pass</td><td class="num pass-num">16</td></tr>
+        <tr><td>Fail</td><td class="num fail-num">0</td></tr>
+        <tr><td>Bug</td><td class="num bug-num">0</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ===== Login Section ===== -->
+  <h2 class="section-heading">Customer Storefront &mdash; Login</h2>
+
+  <!-- TC-01 -->
+  <article class="test-card">
+    <div class="test-card-header">
+      <div>
+        <div class="test-id">TC-01</div>
+        <div class="test-title">Storefront Home</div>
+      </div>
+      <span class="badge badge-pass">Pass</span>
+    </div>
+    <div class="test-body">
+      <p>Navigate to <code>/s/chaiandco</code>. Verify Chai &amp; Co branding is displayed, the &ldquo;Your Rewards&rdquo; heading is visible, and the phone input shows the +91 country prefix.</p>
+    </div>
+    <div class="screenshot-wrap">
+      <img src="storefront-uat/08-storefront-home-login.png" alt="Storefront login page for Chai & Co">
+      <div class="screenshot-caption">Storefront home &mdash; Chai &amp; Co branding, &ldquo;Your Rewards&rdquo; heading, +91 phone input, View Rewards button</div>
+    </div>
+  </article>
+
+  <!-- TC-02 -->
+  <article class="test-card">
+    <div class="test-card-header">
+      <div>
+        <div class="test-id">TC-02</div>
+        <div class="test-title">Phone Input</div>
+      </div>
+      <span class="badge badge-pass">Pass</span>
+    </div>
+    <div class="test-body">
+      <p>Verify the phone input accepts 10-digit numbers and uses <code>inputmode=numeric</code> to show the numeric keyboard on mobile devices.</p>
+    </div>
+    <div class="screenshot-wrap">
+      <img src="storefront-uat/08-storefront-home-login.png" alt="Phone input with +91 prefix">
+      <div class="screenshot-caption">Phone input field with +91 prefix and numeric keyboard mode</div>
+    </div>
+  </article>
+
+  <!-- TC-03 -->
+  <article class="test-card">
+    <div class="test-card-header">
+      <div>
+        <div class="test-id">TC-03</div>
+        <div class="test-title">Check Gift Card Link</div>
+      </div>
+      <span class="badge badge-pass">Pass</span>
+    </div>
+    <div class="test-body">
+      <p>Verify the &ldquo;Check Gift Card&rdquo; link is present below the login form, providing access to the gift card balance checker without logging in.</p>
+    </div>
+    <div class="screenshot-wrap">
+      <img src="storefront-uat/08-storefront-home-login.png" alt="Check Gift Card link below login form">
+      <div class="screenshot-caption">Login page showing &ldquo;Check Gift Card&rdquo; link below the View Rewards button</div>
+    </div>
+  </article>
+
+  <!-- ===== Logged In Section ===== -->
+  <h2 class="section-heading">Customer Storefront &mdash; Logged In</h2>
+
+  <!-- TC-04 -->
+  <article class="test-card">
+    <div class="test-card-header">
+      <div>
+        <div class="test-id">TC-04</div>
+        <div class="test-title">Customer Login</div>
+      </div>
+      <span class="badge badge-pass">Pass</span>
+    </div>
+    <div class="test-body">
+      <p>Enter phone number 9001000001 and click &ldquo;View Rewards&rdquo;. The storefront displays &ldquo;Welcome back, Ananya Iyer&rdquo; with her Platinum tier badge and avatar.</p>
+    </div>
+    <div class="screenshot-wrap">
+      <img src="storefront-uat/09-storefront-logged-in.png" alt="Logged in view for Ananya Iyer">
+      <div class="screenshot-caption">Welcome back greeting with Platinum badge, avatar, and Switch button</div>
+    </div>
+  </article>
+
+  <!-- TC-05 -->
+  <article class="test-card">
+    <div class="test-card-header">
+      <div>
+        <div class="test-id">TC-05</div>
+        <div class="test-title">Campaign Banner</div>
+      </div>
+      <span class="badge badge-pass">Pass</span>
+    </div>
+    <div class="test-body">
+      <p>The multiplier campaign banner &ldquo;You&rsquo;re earning 2x Stars on every order&rdquo; is displayed prominently below the welcome section.</p>
+    </div>
+    <div class="screenshot-wrap">
+      <img src="storefront-uat/09-storefront-logged-in.png" alt="Campaign banner showing 2x Stars multiplier">
+      <div class="screenshot-caption">Campaign banner &mdash; &ldquo;You&rsquo;re earning 2x Stars on every order&rdquo;</div>
+    </div>
+  </article>
+
+  <!-- TC-06 -->
+  <article class="test-card">
+    <div class="test-card-header">
+      <div>
+        <div class="test-id">TC-06</div>
+        <div class="test-title">Balance Summary</div>
+      </div>
+      <span class="badge badge-pass">Pass</span>
+    </div>
+    <div class="test-body">
+      <p>Total Redeemable balance of &#8377;188.50 is displayed prominently at the top of the rewards dashboard.</p>
+    </div>
+    <div class="screenshot-wrap">
+      <img src="storefront-uat/09-storefront-logged-in.png" alt="Total Redeemable balance">
+      <div class="screenshot-caption">Total Redeemable &#8377;188.50 shown prominently</div>
+    </div>
+  </article>
+
+  <!-- TC-07 -->
+  <article class="test-card">
+    <div class="test-card-header">
+      <div>
+        <div class="test-id">TC-07</div>
+        <div class="test-title">Stars Breakdown</div>
+      </div>
+      <span class="badge badge-pass">Pass</span>
+    </div>
+    <div class="test-body">
+      <p>Stars Earned section displays 282 total stars with a detailed breakdown: Earned 204, Referral 51, Goodwill 27. The cash equivalent is shown as &asymp; &#8377;70.50.</p>
+    </div>
+    <div class="screenshot-wrap">
+      <img src="storefront-uat/09-storefront-logged-in.png" alt="Stars breakdown with cash equivalent">
+      <div class="screenshot-caption">Stars breakdown: 282 total (Earned 204, Referral 51, Goodwill 27) &asymp; &#8377;70.50</div>
+    </div>
+  </article>
+
+  <!-- TC-08 -->
+  <article class="test-card">
+    <div class="test-card-header">
+      <div>
+        <div class="test-id">TC-08</div>
+        <div class="test-title">Cash Balance</div>
+      </div>
+      <span class="badge badge-pass">Pass</span>
+    </div>
+    <div class="test-body">
+      <p>Cash Balance section shows &#8377;118.00 with attribution to Gift Card &#8377;118.00.</p>
+    </div>
+    <div class="screenshot-wrap">
+      <img src="storefront-uat/09-storefront-logged-in.png" alt="Cash balance with Gift Card attribution">
+      <div class="screenshot-caption">Cash Balance &#8377;118.00 with Gift Card attribution</div>
+    </div>
+  </article>
+
+  <!-- TC-09 -->
+  <article class="test-card">
+    <div class="test-card-header">
+      <div>
+        <div class="test-id">TC-09</div>
+        <div class="test-title">Dual Unit Display</div>
+      </div>
+      <span class="badge badge-pass">Pass</span>
+    </div>
+    <div class="test-body">
+      <p>Both points (Stars) and cash (&#8377;) values are shown correctly throughout the interface. The conversion rate of 4 Stars = &#8377;1 is applied accurately (282 Stars &asymp; &#8377;70.50).</p>
+    </div>
+    <div class="screenshot-wrap">
+      <img src="storefront-uat/09-storefront-logged-in.png" alt="Dual unit display with Stars and Rupees">
+      <div class="screenshot-caption">Dual unit display &mdash; Stars and &#8377; values with correct 4:1 conversion</div>
+    </div>
+  </article>
+
+  <!-- TC-10 -->
+  <article class="test-card">
+    <div class="test-card-header">
+      <div>
+        <div class="test-id">TC-10</div>
+        <div class="test-title">Switch User</div>
+      </div>
+      <span class="badge badge-pass">Pass</span>
+    </div>
+    <div class="test-body">
+      <p>The &ldquo;Switch&rdquo; button is visible next to the customer name, allowing the user to change to a different phone number.</p>
+    </div>
+    <div class="screenshot-wrap">
+      <img src="storefront-uat/09-storefront-logged-in.png" alt="Switch button for changing customer">
+      <div class="screenshot-caption">Switch button present next to customer name</div>
+    </div>
+  </article>
+
+  <!-- ===== Scrolled Content Section ===== -->
+  <h2 class="section-heading">Customer Storefront &mdash; Scrolled Content</h2>
+
+  <!-- TC-11 -->
+  <article class="test-card">
+    <div class="test-card-header">
+      <div>
+        <div class="test-id">TC-11</div>
+        <div class="test-title">Lifetime Saved</div>
+      </div>
+      <span class="badge badge-pass">Pass</span>
+    </div>
+    <div class="test-body">
+      <p>The &ldquo;Lifetime Saved&rdquo; metric displays &#8377;172.25, showing the total value the customer has saved through rewards.</p>
+    </div>
+    <div class="screenshot-wrap">
+      <img src="storefront-uat/10-storefront-transactions.png" alt="Lifetime Saved metric">
+      <div class="screenshot-caption">Lifetime Saved &#8377;172.25</div>
+    </div>
+  </article>
+
+  <!-- TC-12 -->
+  <article class="test-card">
+    <div class="test-card-header">
+      <div>
+        <div class="test-id">TC-12</div>
+        <div class="test-title">Loyalty Tier Display</div>
+      </div>
+      <span class="badge badge-pass">Pass</span>
+    </div>
+    <div class="test-body">
+      <p>The Platinum loyalty tier badge is displayed with the message &ldquo;You&rsquo;ve reached the highest tier&rdquo;, confirming the customer is at the top tier.</p>
+    </div>
+    <div class="screenshot-wrap">
+      <img src="storefront-uat/10-storefront-transactions.png" alt="Platinum tier badge">
+      <div class="screenshot-caption">Loyalty Tier &mdash; Platinum badge with &ldquo;You&rsquo;ve reached the highest tier&rdquo;</div>
+    </div>
+  </article>
+
+  <!-- TC-13 -->
+  <article class="test-card">
+    <div class="test-card-header">
+      <div>
+        <div class="test-id">TC-13</div>
+        <div class="test-title">Activity Feed</div>
+      </div>
+      <span class="badge badge-pass">Pass</span>
+    </div>
+    <div class="test-body">
+      <p>The transaction activity feed shows entries with dates, transaction types, star amounts, cash equivalents, and running balances. Visible entries include: 14 Mar &mdash; Earned +27 Stars (Goodwill Credit); 6 Mar &mdash; Earned +51 Stars (Referral Reward).</p>
+    </div>
+    <div class="screenshot-wrap">
+      <img src="storefront-uat/10-storefront-transactions.png" alt="Activity feed with transactions">
+      <div class="screenshot-caption">Activity feed showing Goodwill Credit and Referral Reward transactions with dates and balances</div>
+    </div>
+  </article>
+
+  <!-- ===== Balance Page Section ===== -->
+  <h2 class="section-heading">Customer Storefront &mdash; Balance Page</h2>
+
+  <!-- TC-14 -->
+  <article class="test-card">
+    <div class="test-card-header">
+      <div>
+        <div class="test-id">TC-14</div>
+        <div class="test-title">Balance Page</div>
+      </div>
+      <span class="badge badge-pass">Pass</span>
+    </div>
+    <div class="test-body">
+      <p>Navigate to <code>/s/chaiandco/balance</code>. The dedicated balance page renders correctly with Total Redeemable, Stars, and Cash sections.</p>
+    </div>
+    <div class="screenshot-wrap">
+      <img src="storefront-uat/11-storefront-balance.png" alt="Balance page overview">
+      <div class="screenshot-caption">Balance page &mdash; Total Redeemable, Stars Earned, and Cash Balance sections</div>
+    </div>
+  </article>
+
+  <!-- TC-15 -->
+  <article class="test-card">
+    <div class="test-card-header">
+      <div>
+        <div class="test-id">TC-15</div>
+        <div class="test-title">Balance Breakdown</div>
+      </div>
+      <span class="badge badge-pass">Pass</span>
+    </div>
+    <div class="test-body">
+      <p>The balance page shows the same breakdown as the home page: Stars 282 &asymp; &#8377;70.50, Cash &#8377;118.00. Values are consistent across both views.</p>
+    </div>
+    <div class="screenshot-wrap">
+      <img src="storefront-uat/11-storefront-balance.png" alt="Balance breakdown matching home page">
+      <div class="screenshot-caption">Balance breakdown consistent with home page &mdash; Stars 282 &asymp; &#8377;70.50, Cash &#8377;118.00</div>
+    </div>
+  </article>
+
+  <!-- TC-16 -->
+  <article class="test-card">
+    <div class="test-card-header">
+      <div>
+        <div class="test-id">TC-16</div>
+        <div class="test-title">Navigation Links</div>
+      </div>
+      <span class="badge badge-pass">Pass</span>
+    </div>
+    <div class="test-body">
+      <p>The balance page includes &ldquo;View full rewards dashboard&rdquo; and &ldquo;Change number&rdquo; links for navigating back to the main storefront or switching the logged-in customer.</p>
+    </div>
+    <div class="screenshot-wrap">
+      <img src="storefront-uat/11-storefront-balance.png" alt="Navigation links on balance page">
+      <div class="screenshot-caption">&ldquo;View full rewards dashboard&rdquo; and &ldquo;Change number&rdquo; navigation links</div>
+    </div>
+  </article>
+
+</div>
+</body>
+</html>

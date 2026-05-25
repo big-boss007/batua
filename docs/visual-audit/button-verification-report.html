@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Button Variant Verification Report</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f8fafc;
+    color: #1e293b;
+    line-height: 1.6;
+  }
+  .header {
+    background: linear-gradient(135deg, #16a34a, #15803d);
+    color: white;
+    padding: 36px 40px;
+    text-align: center;
+  }
+  .header h1 { font-size: 2rem; margin-bottom: 4px; }
+  .header p { opacity: 0.85; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+
+  .verdict-banner {
+    background: #f0fdf4;
+    border: 2px solid #bbf7d0;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .verdict-banner .icon { font-size: 2rem; }
+  .verdict-banner h2 { font-size: 1.2rem; color: #16a34a; }
+  .verdict-banner p { font-size: 0.9rem; color: #4b5563; margin-top: 2px; }
+
+  .original-claim {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 32px;
+  }
+  .original-claim h3 { color: #dc2626; font-size: 0.95rem; margin-bottom: 8px; }
+  .original-claim ul { padding-left: 20px; font-size: 0.9rem; color: #6b7280; }
+  .original-claim li { margin-bottom: 4px; }
+  .original-claim .strikethrough { text-decoration: line-through; }
+
+  .proof-section { margin-bottom: 40px; }
+  .proof-section h3 {
+    font-size: 1.1rem;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #7c6aff;
+  }
+
+  .proof-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .proof-card img { width: 100%; display: block; }
+  .proof-card .info {
+    padding: 16px 20px;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .proof-card .info .page-name {
+    font-weight: 700;
+    font-size: 1rem;
+    min-width: 160px;
+  }
+
+  .btn-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  .btn-tag .swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    display: inline-block;
+  }
+  .tag-primary { background: #f3f0ff; color: #7c6aff; border: 1px solid #ddd6fe; }
+  .tag-primary .swatch { background: #7c6aff; }
+  .tag-ghost { background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; }
+  .tag-ghost .swatch { background: transparent; border: 2px dashed #94a3b8; }
+  .tag-secondary { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+  .tag-secondary .swatch { background: #e2e8f0; }
+
+  .computed-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 0.9rem;
+  }
+  .computed-table th, .computed-table td {
+    padding: 10px 14px;
+    border: 1px solid #e2e8f0;
+    text-align: left;
+  }
+  .computed-table th { background: #f1f5f9; font-weight: 600; }
+  .computed-table code {
+    background: #f1f5f9;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+  }
+  .color-chip {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    vertical-align: middle;
+    margin-right: 6px;
+    border: 1px solid #d1d5db;
+  }
+
+  .method {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 32px;
+    font-size: 0.9rem;
+  }
+  .method h3 { font-size: 0.95rem; margin-bottom: 8px; color: #64748b; }
+  .method code {
+    background: #f1f5f9;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Button Variant Verification Report</h1>
+  <p>Audit finding #6 re-examined with computed style evidence</p>
+</div>
+
+<div class="container">
+
+<div class="verdict-banner">
+  <div class="icon">&#10003;</div>
+  <div>
+    <h2>VERIFIED: All primary buttons are consistently purple (#7c6aff)</h2>
+    <p>The original audit finding "Button Variant Inconsistency" was a false positive caused by low-resolution full-page screenshots where purple was compressed and appeared greenish. Section removed from the main audit report.</p>
+  </div>
+</div>
+
+<div class="original-claim">
+  <h3>Original Claims (all incorrect)</h3>
+  <ul>
+    <li class="strikethrough">VIP Tiers "Add Tier" button appears green instead of purple primary</li>
+    <li class="strikethrough">Wallet Policies "Save" button appears green instead of purple primary</li>
+    <li class="strikethrough">VIP Tiers "Reconfigure" and "Evaluate Tiers" are plain text links, not buttons</li>
+  </ul>
+</div>
+
+<div class="method">
+  <h3>Verification Method</h3>
+  <p>Each button was inspected in the live browser using <code>getComputedStyle(element).backgroundColor</code> via Chrome DevTools <code>evaluate_script</code>, then confirmed visually with viewport-level screenshots (not full-page) in light theme at 1440x900.</p>
+</div>
+
+<!-- Proof 1: Wallet Policies -->
+<div class="proof-section">
+  <h3>1. Wallet Policies &mdash; "Save" Button</h3>
+  <div class="proof-card">
+    <img src="proof-wallet-policies-save-btn.png" alt="Wallet Policies Save button proof">
+    <div class="info">
+      <span class="page-name">/admin/wallet-policies</span>
+      <span class="btn-tag tag-primary"><span class="swatch"></span> Save &rarr; btn-primary</span>
+    </div>
+  </div>
+</div>
+
+<!-- Proof 2: VIP Tiers -->
+<div class="proof-section">
+  <h3>2. VIP Tiers &mdash; "Add Tier", "Reconfigure", "Evaluate Tiers"</h3>
+  <div class="proof-card">
+    <img src="proof-vip-tiers-buttons.png" alt="VIP Tiers buttons proof">
+    <div class="info">
+      <span class="page-name">/admin/loyalty</span>
+      <span class="btn-tag tag-primary"><span class="swatch"></span> Add Tier &rarr; btn-primary</span>
+      <span class="btn-tag tag-ghost"><span class="swatch"></span> Reconfigure &rarr; btn-ghost</span>
+      <span class="btn-tag tag-secondary"><span class="swatch"></span> Evaluate Tiers &rarr; btn-secondary</span>
+    </div>
+  </div>
+</div>
+
+<!-- Proof 3: Earn Rules -->
+<div class="proof-section">
+  <h3>3. Earn Rules &mdash; "+ New Rule" (reference comparison)</h3>
+  <div class="proof-card">
+    <img src="proof-earn-rules-btn.png" alt="Earn Rules button proof">
+    <div class="info">
+      <span class="page-name">/admin/rules</span>
+      <span class="btn-tag tag-primary"><span class="swatch"></span> + New Rule &rarr; btn-primary</span>
+    </div>
+  </div>
+</div>
+
+<!-- Computed Styles Table -->
+<div class="proof-section">
+  <h3>4. Computed Style Evidence (from browser runtime)</h3>
+  <table class="computed-table">
+    <tr>
+      <th>Button</th>
+      <th>Page</th>
+      <th>CSS Class</th>
+      <th>Computed backgroundColor</th>
+      <th>Computed color</th>
+    </tr>
+    <tr>
+      <td>Save</td>
+      <td>/admin/wallet-policies</td>
+      <td><code>btn-primary</code></td>
+      <td><span class="color-chip" style="background:#7c6aff"></span><code>rgb(124, 106, 255)</code></td>
+      <td><code>rgb(255, 255, 255)</code></td>
+    </tr>
+    <tr>
+      <td>Add Tier</td>
+      <td>/admin/loyalty</td>
+      <td><code>btn-primary</code></td>
+      <td><span class="color-chip" style="background:#7c6aff"></span><code>rgb(124, 106, 255)</code></td>
+      <td><code>rgb(255, 255, 255)</code></td>
+    </tr>
+    <tr>
+      <td>Reconfigure</td>
+      <td>/admin/loyalty</td>
+      <td><code>btn-ghost</code></td>
+      <td><span class="color-chip" style="background:transparent; border: 2px dashed #94a3b8"></span><code>rgba(0, 0, 0, 0)</code></td>
+      <td><code>var(--color-text)</code></td>
+    </tr>
+    <tr>
+      <td>Evaluate Tiers</td>
+      <td>/admin/loyalty</td>
+      <td><code>btn-secondary</code></td>
+      <td><span class="color-chip" style="background:#e2e8f0"></span><code>var(--color-surface-2)</code></td>
+      <td><code>var(--color-text)</code></td>
+    </tr>
+  </table>
+
+  <p style="margin-top: 12px; font-size: 0.85rem; color: #64748b;">
+    All <code>btn-primary</code> buttons resolve to <code>#7c6aff</code> (purple), defined in <code>app.css</code> line 301 as
+    <code>--button-color: var(--color-primary)</code> where <code>--color-primary: #7c6aff</code> (line 9).
+    No local CSS overrides were found in either page component.
+  </p>
+</div>
+
+</div>
+</body>
+</html>

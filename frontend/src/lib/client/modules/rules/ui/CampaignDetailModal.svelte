@@ -363,7 +363,4 @@
 
   .perf-value.green { color: #22c55e; }
 
-  .deactivate-btn {
-    align-self: flex-start;
-  }
 </style>

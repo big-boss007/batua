@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modal Padding Fix — Test Report</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; background: #f8fafc; color: #1e293b; line-height: 1.6; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 40px 24px; }
+  header { text-align: center; margin-bottom: 36px; }
+  header h1 { font-size: 24px; font-weight: 700; }
+  header p { color: #64748b; font-size: 14px; margin-top: 4px; }
+  .summary { display: flex; gap: 16px; justify-content: center; margin-bottom: 32px; }
+  .stat { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 24px; text-align: center; }
+  .stat .val { font-size: 24px; font-weight: 800; color: #22c55e; }
+  .stat .lbl { font-size: 11px; color: #64748b; text-transform: uppercase; }
+  .change-box { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px 20px; margin-bottom: 32px; }
+  .change-box h3 { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+  .change-box code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+  .change-box ul { padding-left: 20px; font-size: 13px; color: #475569; }
+  .change-box li { margin-bottom: 4px; }
+  .test-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 28px; overflow: hidden; }
+  .test-card-header { padding: 14px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+  .test-card-header h2 { font-size: 16px; font-weight: 700; }
+  .test-badge { padding: 3px 12px; border-radius: 8px; font-size: 11px; font-weight: 700; background: #f0fdf4; color: #22c55e; }
+  .test-details { padding: 12px 20px; font-size: 13px; color: #64748b; border-bottom: 1px solid #e2e8f0; }
+  .screenshots { display: grid; grid-template-columns: 1fr 1fr; }
+  .screenshots img { width: 100%; display: block; }
+  .shot-label { position: relative; }
+  .shot-label::before { content: attr(data-label); position: absolute; top: 8px; left: 8px; padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; z-index: 1; }
+  .shot-label.before::before { background: rgba(239,68,68,0.9); color: #fff; }
+  .shot-label.after::before { background: rgba(34,197,94,0.9); color: #fff; }
+  .metrics { padding: 12px 20px; font-size: 12px; color: #64748b; display: flex; gap: 24px; flex-wrap: wrap; }
+  .metrics span { font-family: monospace; }
+  .callout { padding: 12px 20px; font-size: 12px; color: #92400e; background: #fffbeb; border-top: 1px solid #e2e8f0; }
+  footer { text-align: center; color: #94a3b8; font-size: 11px; margin-top: 32px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>Modal Padding Fix &mdash; Test Report</h1>
+  <p>Viewport: 1366 &times; 650 (simulating user's Chrome with tabs/bookmarks) &bull; 31 March 2026</p>
+</header>
+
+<div class="summary">
+  <div class="stat"><div class="val">2/2</div><div class="lbl">Tests Passed</div></div>
+  <div class="stat"><div class="val">48px</div><div class="lbl">Top/Bottom Gap</div></div>
+  <div class="stat"><div class="val">12px</div><div class="lbl">Border Radius</div></div>
+  <div class="stat"><div class="val">554px</div><div class="lbl">Max Modal Height</div></div>
+</div>
+
+<div class="change-box">
+  <h3>What changed</h3>
+  <ul>
+    <li><strong><code>+layout.svelte</code></strong> (admin): Added <code>:global(.modal .modal-content)</code> with <code>max-height: calc(100vh - 96px) !important</code>, <code>margin: 48px auto !important</code>, <code>border-radius</code>, and <code>overflow: hidden</code>. This uses Svelte's <code>:global()</code> which compiles into the component bundle &mdash; no CSS caching issues.</li>
+    <li><strong><code>+layout.svelte</code></strong> (admin): Added <code>:global(.modal .slot-content)</code> with <code>flex: 1 !important; min-height: 0 !important</code> so content scrolls within the constrained modal.</li>
+    <li><strong><code>app.css</code></strong>: <code>--modal-fit-content-max-height: calc(100vh - 96px)</code>, <code>--modal-header-border-radius</code>, <code>--modal-footer-border-radius</code>, <code>--modal-content-overflow: hidden</code></li>
+    <li><strong><code>customers/+page.svelte</code></strong> + <strong><code>WalletActionModal.svelte</code></strong>: Replaced <code>85vh</code> overrides with <code>calc(100vh - 96px)</code></li>
+  </ul>
+</div>
+
+<!-- TEST 1: New Rule Modal (initial view) -->
+<div class="test-card">
+  <div class="test-card-header">
+    <h2>Test 1a: New Rule Modal &mdash; Initial View</h2>
+    <span class="test-badge">PASS</span>
+  </div>
+  <div class="test-details">
+    Page: <code>/admin/rules</code> &rarr; Click "+ New Rule" &bull; Modal size: <code>fit-content</code> &bull; Content overflows &rarr; scrollable
+  </div>
+  <div class="screenshots">
+    <div class="shot-label before" data-label="Before"><img src="modal-bottom-padding.png" alt="Before - bottom flush to viewport"></div>
+    <div class="shot-label after" data-label="After"><img src="final-rules-modal.png" alt="After - 48px bottom gap, rounded corners"></div>
+  </div>
+  <div class="metrics">
+    <span>topGap=48px</span> <span>bottomGap=48px</span> <span>maxHeight=554px</span> <span>borderRadius=12px</span> <span>overflow=hidden</span> <span>scrollable=true</span>
+  </div>
+</div>
+
+<!-- TEST 1b: New Rule Modal (scrolled to bottom) -->
+<div class="test-card">
+  <div class="test-card-header">
+    <h2>Test 1b: New Rule Modal &mdash; Scrolled to Bottom</h2>
+    <span class="test-badge">PASS</span>
+  </div>
+  <div class="test-details">
+    Same modal, scrolled to bottom &bull; Cancel / Create Rule buttons fully visible with rounded bottom corners
+  </div>
+  <div class="screenshots">
+    <div class="shot-label before" data-label="Before (flush)"><img src="modal-short-viewport.png" alt="Before - buttons cropped at viewport edge"></div>
+    <div class="shot-label after" data-label="After (scrolled)"><img src="final-rules-modal-scrolled.png" alt="After - buttons visible with bottom gap"></div>
+  </div>
+  <div class="callout">
+    Key fix: Content scrolls inside the modal panel. The Cancel/Create Rule buttons are accessible by scrolling down. The modal panel itself never touches the viewport edges.
+  </div>
+</div>
+
+<!-- TEST 2: Customer Detail Modal -->
+<div class="test-card">
+  <div class="test-card-header">
+    <h2>Test 2: Customer Detail Modal</h2>
+    <span class="test-badge">PASS</span>
+  </div>
+  <div class="test-details">
+    Page: <code>/admin/customers</code> &rarr; Click any customer row &bull; Modal size: <code>fit-content</code> / <code>large</code> &bull; Content overflows &rarr; scrollable
+  </div>
+  <div class="screenshots">
+    <div class="shot-label before" data-label="Before"><img src="modal-corners-fixed.png" alt="Before - bottom flush to viewport"></div>
+    <div class="shot-label after" data-label="After"><img src="final-customer-modal.png" alt="After - 48px bottom gap, rounded corners"></div>
+  </div>
+  <div class="metrics">
+    <span>topGap=48px</span> <span>bottomGap=48px</span> <span>maxHeight=554px</span> <span>borderRadius=12px</span> <span>overflow=hidden</span> <span>scrollable=true</span>
+  </div>
+</div>
+
+<footer>
+  Modal Padding Test Report &bull; Tested at 1366&times;650 viewport &bull; All admin modals globally affected via <code>:global()</code> in <code>+layout.svelte</code>
+</footer>
+
+</div>
+</body>
+</html>

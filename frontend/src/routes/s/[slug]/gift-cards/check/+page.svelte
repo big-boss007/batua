@@ -16,6 +16,7 @@
 
   let { data }: { data: { prefilledCode: string | null } } = $props();
 
+  // svelte-ignore state_referenced_locally
   let codeValue = $state(data.prefilledCode ?? '');
   let loading = $state(false);
   let error: string | null = $state(null);

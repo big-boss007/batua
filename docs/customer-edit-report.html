@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Customer Edit Profile — Implementation Report</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: #f5f5f7; color: #1a1a2e; padding: 40px; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  h1 { font-size: 28px; font-weight: 700; margin-bottom: 6px; }
+  .subtitle { font-size: 14px; color: #6b7280; margin-bottom: 40px; }
+  .state { margin-bottom: 48px; }
+  .state-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .state-number {
+    width: 32px; height: 32px; border-radius: 50%; background: #7c6aff; color: #fff;
+    display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0;
+  }
+  .state-title { font-size: 18px; font-weight: 600; }
+  .state-desc { font-size: 13px; color: #6b7280; margin-bottom: 16px; margin-left: 44px; }
+  .screenshot {
+    border-radius: 12px; overflow: hidden; border: 1px solid #e5e7eb;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  }
+  .screenshot img { width: 100%; display: block; }
+  .summary {
+    background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 28px;
+    margin-top: 48px;
+  }
+  .summary h2 { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
+  .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .summary-item h3 { font-size: 13px; font-weight: 600; color: #7c6aff; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px; }
+  .summary-item ul { list-style: none; padding: 0; }
+  .summary-item li { font-size: 13px; color: #374151; padding: 3px 0; padding-left: 16px; position: relative; }
+  .summary-item li::before { content: ""; position: absolute; left: 0; top: 10px; width: 6px; height: 6px; border-radius: 50%; background: #d1d5db; }
+  .badge {
+    display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
+    background: #d1fae5; color: #065f46; margin-left: 8px;
+  }
+  .files { margin-top: 24px; }
+  .files h3 { font-size: 13px; font-weight: 600; color: #7c6aff; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px; }
+  .files code {
+    display: block; font-size: 12px; color: #374151; padding: 3px 0; font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+  .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #9ca3af; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>Customer Edit Profile <span class="badge">Implemented</span></h1>
+<p class="subtitle">Option B: Dedicated edit section below info card in the Customer Detail modal. Tested on Dal Dynasty merchant.</p>
+
+<!-- State 1 -->
+<div class="state">
+  <div class="state-header">
+    <div class="state-number">1</div>
+    <div class="state-title">Resting State</div>
+  </div>
+  <p class="state-desc">Customer Detail modal for "Unnamed Customer" (+91 99802 12345). The "Edit customer details" link is visible at the bottom of the info card. No email is set.</p>
+  <div class="screenshot">
+    <img src="customer-edit-screenshots/01-resting-state.png" alt="Resting state with edit link" />
+  </div>
+</div>
+
+<!-- State 2 -->
+<div class="state">
+  <div class="state-header">
+    <div class="state-number">2</div>
+    <div class="state-title">Edit Form Expanded</div>
+  </div>
+  <p class="state-desc">After clicking "Edit customer details", a form section appears with Name and Email inputs (empty placeholders) and a read-only Phone field with the hint "Phone cannot be changed". Cancel and Save Changes buttons at the bottom.</p>
+  <div class="screenshot">
+    <img src="customer-edit-screenshots/02-edit-form-open.png" alt="Edit form expanded with empty fields" />
+  </div>
+</div>
+
+<!-- State 3 -->
+<div class="state">
+  <div class="state-header">
+    <div class="state-number">3</div>
+    <div class="state-title">Form Filled</div>
+  </div>
+  <p class="state-desc">User has entered "Vineet Kumar" as name and "vineet.kumar@gmail.com" as email. Ready to save.</p>
+  <div class="screenshot">
+    <img src="customer-edit-screenshots/03-form-filled.png" alt="Form filled with name and email" />
+  </div>
+</div>
+
+<!-- State 4 -->
+<div class="state">
+  <div class="state-header">
+    <div class="state-number">4</div>
+    <div class="state-title">After Save</div>
+  </div>
+  <p class="state-desc">Save successful. The info card updates immediately: name shows "Vineet Kumar", avatar changes to "VK", email shows "vineet.kumar@gmail.com". The edit form collapses back to the link. A success toast appears.</p>
+  <div class="screenshot">
+    <img src="customer-edit-screenshots/04-after-save.png" alt="After save - updated info card" />
+  </div>
+</div>
+
+<!-- State 5 -->
+<div class="state">
+  <div class="state-header">
+    <div class="state-number">5</div>
+    <div class="state-title">Customer List Updated</div>
+  </div>
+  <p class="state-desc">The customers table now shows "Vineet Kumar" with email "vineet.kumar@gmail.com" instead of "Unnamed" with no email.</p>
+  <div class="screenshot">
+    <img src="customer-edit-screenshots/05-list-updated.png" alt="Customer list showing updated name and email" />
+  </div>
+</div>
+
+<!-- State 6 -->
+<div class="state">
+  <div class="state-header">
+    <div class="state-number">6</div>
+    <div class="state-title">Influencers Page Updated</div>
+  </div>
+  <p class="state-desc">The influencers page also reflects the updated name: "Vineet Kumar (+91 99802 12345)" with code VINEET10. This confirms the customer data flows through correctly across all views.</p>
+  <div class="screenshot">
+    <img src="customer-edit-screenshots/06-influencers-updated.png" alt="Influencers page showing Vineet Kumar" />
+  </div>
+</div>
+
+<!-- Summary -->
+<div class="summary">
+  <h2>Implementation Summary</h2>
+  <div class="summary-grid">
+    <div class="summary-item">
+      <h3>Backend Changes</h3>
+      <ul>
+        <li>Added <code>UpdateCustomerRequest</code> type (name, email optional fields)</li>
+        <li>Added <code>update_customer</code> storage function with merchant ownership check via wallet join</li>
+        <li>Added <code>update_customer</code> handler at <code>PUT /admin/merchants/{merchant_id}/customers/{customer_id}</code></li>
+        <li>Route registered in admin router</li>
+      </ul>
+    </div>
+    <div class="summary-item">
+      <h3>Frontend Changes</h3>
+      <ul>
+        <li>Added <code>updateCustomer()</code> API call in customers remote.ts</li>
+        <li>Exported from customers barrel (index.ts)</li>
+        <li>Added Option B edit form UI in CustomerDetail.svelte</li>
+        <li>"Edit customer details" link at bottom of info card</li>
+        <li>Expands dedicated form with Name, Email inputs and read-only Phone</li>
+        <li>Save calls API, refreshes modal data, collapses form</li>
+      </ul>
+    </div>
+  </div>
+  <div class="files">
+    <h3>Files Changed</h3>
+    <code>src/services/admin/types.rs</code>
+    <code>src/services/admin/storage.rs</code>
+    <code>src/services/admin/handler.rs</code>
+    <code>src/services/admin/mod.rs</code>
+    <code>frontend/src/lib/client/modules/customers/remote.ts</code>
+    <code>frontend/src/lib/client/modules/customers/index.ts</code>
+    <code>frontend/src/lib/client/modules/customers/ui/CustomerDetail.svelte</code>
+  </div>
+</div>
+
+<div class="footer">
+  Generated 2 Apr 2026 &mdash; Batua Admin &mdash; Customer Edit Profile Feature
+</div>
+
+</div>
+</body>
+</html>

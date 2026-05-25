@@ -1,0 +1,1542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Competitive Analysis — Batua (Breeze Retention Suite)</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface-2: #22252f;
+    --surface-3: #2a2d3a;
+    --border: #333847;
+    --text: #e4e6ed;
+    --text-muted: #9499a8;
+    --text-dim: #6b7085;
+    --accent: #6c5ce7;
+    --accent-light: #a29bfe;
+    --green: #00b894;
+    --green-bg: rgba(0,184,148,0.1);
+    --red: #e17055;
+    --red-bg: rgba(225,112,85,0.1);
+    --yellow: #fdcb6e;
+    --yellow-bg: rgba(253,203,110,0.1);
+    --blue: #74b9ff;
+    --blue-bg: rgba(116,185,255,0.1);
+    --orange: #e17055;
+    --cyan: #81ecec;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  /* Header */
+  .hero {
+    text-align: center;
+    padding: 60px 0 48px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 48px;
+  }
+  .hero-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--accent), #a29bfe);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 12px;
+    background: linear-gradient(135deg, #fff 0%, var(--text-muted) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .hero .subtitle {
+    font-size: 15px;
+    color: var(--text-muted);
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  .hero .meta {
+    margin-top: 16px;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  /* Section headers */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 56px 0 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-header .icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .section-header h2 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+  .section-header .count {
+    margin-left: auto;
+    background: var(--surface-2);
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 12px;
+  }
+
+  /* Executive Summary */
+  .exec-summary {
+    background: linear-gradient(135deg, rgba(108,92,231,0.08), rgba(162,155,254,0.04));
+    border: 1px solid rgba(108,92,231,0.2);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 48px;
+  }
+  .exec-summary h2 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: var(--accent-light);
+  }
+  .exec-summary p {
+    font-size: 15px;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+  .exec-summary strong { color: var(--text); }
+
+  /* Feature Matrix */
+  .matrix-wrapper {
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    margin-bottom: 48px;
+  }
+  .matrix-wrapper table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    min-width: 900px;
+  }
+  .matrix-wrapper th {
+    background: var(--surface-2);
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 11px;
+    padding: 14px 12px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    white-space: nowrap;
+  }
+  .matrix-wrapper th:first-child {
+    text-align: left;
+    min-width: 160px;
+    position: sticky;
+    left: 0;
+    z-index: 2;
+  }
+  .matrix-wrapper th.batua-col {
+    background: rgba(108,92,231,0.15);
+    color: var(--accent-light);
+  }
+  .matrix-wrapper td {
+    padding: 12px;
+    text-align: center;
+    border-bottom: 1px solid rgba(51,56,71,0.5);
+    white-space: nowrap;
+  }
+  .matrix-wrapper td:first-child {
+    text-align: left;
+    font-weight: 600;
+    color: var(--text);
+    position: sticky;
+    left: 0;
+    background: var(--surface);
+    z-index: 1;
+  }
+  .matrix-wrapper tr:nth-child(even) td { background: var(--surface); }
+  .matrix-wrapper tr:nth-child(even) td:first-child { background: var(--surface); }
+  .matrix-wrapper tr:nth-child(odd) td { background: var(--bg); }
+  .matrix-wrapper tr:nth-child(odd) td:first-child { background: var(--bg); }
+  .matrix-wrapper tr:hover td { background: var(--surface-2) !important; }
+  .matrix-wrapper .batua-col {
+    background: rgba(108,92,231,0.06) !important;
+  }
+
+  .cell-yes {
+    color: var(--green);
+    font-weight: 700;
+  }
+  .cell-no {
+    color: var(--text-dim);
+  }
+  .cell-best {
+    color: var(--yellow);
+    font-weight: 700;
+  }
+  .cell-partial {
+    color: var(--blue);
+    font-size: 12px;
+  }
+
+  /* Competitor Cards */
+  .competitor-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .competitor-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .competitor-card:hover {
+    border-color: var(--accent);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-2);
+  }
+  .card-header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .card-num {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .card-header h3 {
+    font-size: 17px;
+    font-weight: 700;
+  }
+  .card-header .tagline {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .overlap-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+  .overlap-high { background: var(--red-bg); color: var(--red); }
+  .overlap-medium { background: var(--yellow-bg); color: var(--yellow); }
+  .overlap-low { background: var(--green-bg); color: var(--green); }
+
+  .card-body {
+    padding: 20px 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 700px) {
+    .card-body { grid-template-columns: 1fr; }
+  }
+
+  .card-body .info-group h4 {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+
+  .meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 16px;
+  }
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+  }
+  .meta-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-dim);
+    font-weight: 600;
+  }
+  .meta-value {
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .feature-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .feature-tag {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 5px;
+    background: var(--surface-3);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+  .feature-tag.has { background: var(--green-bg); color: var(--green); border-color: rgba(0,184,148,0.2); }
+  .feature-tag.missing { background: var(--red-bg); color: var(--red); border-color: rgba(225,112,85,0.2); }
+  .feature-tag.best { background: var(--yellow-bg); color: var(--yellow); border-color: rgba(253,203,110,0.2); }
+
+  .pricing-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .pricing-table th {
+    text-align: left;
+    color: var(--text-dim);
+    font-weight: 600;
+    padding: 4px 8px 4px 0;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .pricing-table td {
+    padding: 4px 8px 4px 0;
+    color: var(--text-muted);
+  }
+  .pricing-table td:first-child {
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .card-advantage {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, rgba(108,92,231,0.06), rgba(108,92,231,0.02));
+    border: 1px solid rgba(108,92,231,0.15);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .card-advantage h4 {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--accent-light) !important;
+    margin-bottom: 6px !important;
+  }
+  .card-advantage p {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .notable-customers {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-style: italic;
+    margin-top: 4px;
+  }
+
+  /* Complementary section */
+  .complementary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+  }
+  .comp-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .comp-card h3 {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .comp-card .comp-meta {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+  }
+  .comp-card .comp-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    line-height: 1.5;
+  }
+  .comp-card .comp-overlap {
+    font-size: 12px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: var(--surface-2);
+    border-left: 3px solid var(--accent);
+  }
+  .comp-card .comp-overlap strong {
+    color: var(--accent-light);
+  }
+
+  /* Market section */
+  .market-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  @media (max-width: 700px) {
+    .market-stats { grid-template-columns: 1fr; }
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+  }
+  .stat-card .stat-value {
+    font-size: 32px;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent-light), var(--cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .stat-card .stat-label {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+  .stat-card .stat-sub {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
+
+  .trends-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 32px;
+  }
+  @media (max-width: 700px) {
+    .trends-grid { grid-template-columns: 1fr; }
+  }
+  .trend-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .trend-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .trend-card h4 {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .trend-card .trend-detail {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .trend-card .trend-relevance {
+    font-size: 11px;
+    color: var(--accent-light);
+    margin-top: 6px;
+    font-weight: 600;
+  }
+
+  /* Buyer needs */
+  .buyer-needs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  @media (max-width: 700px) {
+    .buyer-needs { grid-template-columns: 1fr; }
+  }
+  .need-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .need-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: var(--surface-3);
+    color: var(--text-dim);
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .need-item strong {
+    font-size: 13px;
+    display: block;
+    margin-bottom: 2px;
+  }
+  .need-item span {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* Moat section */
+  .moat-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  @media (max-width: 700px) {
+    .moat-grid { grid-template-columns: 1fr; }
+  }
+  .moat-card {
+    background: linear-gradient(135deg, rgba(108,92,231,0.08), rgba(108,92,231,0.02));
+    border: 1px solid rgba(108,92,231,0.2);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .moat-card h4 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--accent-light);
+    margin-bottom: 6px;
+  }
+  .moat-card p {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  /* Threats */
+  .threat-table-wrapper {
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    margin-bottom: 32px;
+  }
+  .threat-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .threat-table th {
+    background: var(--surface-2);
+    color: var(--text-dim);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 11px;
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .threat-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(51,56,71,0.5);
+    vertical-align: top;
+  }
+  .threat-table tr:last-child td { border-bottom: none; }
+  .threat-table tr:nth-child(even) td { background: var(--surface); }
+  .severity-high { color: var(--red); font-weight: 700; }
+  .severity-medium { color: var(--yellow); font-weight: 700; }
+
+  /* Checklist */
+  .checklist {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    list-style: none;
+  }
+  .checklist li {
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(51,56,71,0.4);
+    font-size: 13px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .check-box {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* COD cards */
+  .cod-cards {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  /* Enterprise mini cards */
+  .enterprise-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+  @media (max-width: 700px) {
+    .enterprise-grid { grid-template-columns: 1fr; }
+  }
+  .ent-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+  }
+  .ent-card h3 {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .ent-card .ent-meta {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+  .ent-card p {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .section-desc {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+    line-height: 1.6;
+  }
+
+  /* App Store rating */
+  .rating {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--yellow);
+    font-weight: 600;
+  }
+  .rating .stars {
+    letter-spacing: -1px;
+  }
+  .rating .reviews {
+    color: var(--text-dim);
+    font-weight: 400;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-badge">Competitive Intelligence</div>
+    <h1>Batua (Breeze Retention Suite)</h1>
+    <p class="subtitle">Competitive landscape analysis covering 21 competitors across Indian loyalty apps, global Shopify leaders, retention/engagement stack, COD/checkout tools, and enterprise platforms.</p>
+    <p class="meta">Last updated: 26 March 2026</p>
+  </div>
+
+  <!-- Executive Summary -->
+  <div class="exec-summary">
+    <h2>Executive Summary</h2>
+    <p>Batua occupies a unique niche: <strong>an all-in-one loyalty mechanics platform specifically built for Indian Shopify D2C merchants</strong>. No existing player combines all of: wallet/store credit, loyalty tiers, gift cards, referrals, campaigns, memberships, COD management, customer storefront, and a rules engine &mdash; at an India-appropriate price point.</p>
+    <br>
+    <p>The closest global competitors (<strong>Smile.io, Yotpo</strong>) lack India-specific features and the wallet/COD layer. The closest Indian players (<strong>GoKwik, WebEngage</strong>) operate in adjacent spaces (checkout optimisation, engagement) rather than loyalty mechanics. Enterprise platforms (<strong>Antavo, Capillary, Talon.One</strong>) are too expensive and not Shopify-native.</p>
+  </div>
+
+  <!-- Feature Matrix -->
+  <div class="section-header">
+    <div class="icon" style="background: var(--blue-bg); color: var(--blue);">&#9638;</div>
+    <h2>Feature Comparison Matrix</h2>
+  </div>
+
+  <div class="matrix-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Capability</th>
+          <th class="batua-col">Batua</th>
+          <th>Smile.io</th>
+          <th>Yotpo</th>
+          <th>LoyaltyLion</th>
+          <th>Rise.ai</th>
+          <th>ReferralCandy</th>
+          <th>GoKwik</th>
+          <th>BON</th>
+          <th>Growave</th>
+          <th>Flits</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Points Program</td>
+          <td class="batua-col cell-yes">&#10003;</td>
+          <td class="cell-yes">&#10003;</td>
+          <td class="cell-yes">&#10003;</td>
+          <td class="cell-yes">&#10003;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-yes">&#10003;</td>
+          <td class="cell-yes">&#10003;</td>
+          <td class="cell-no">&mdash;</td>
+        </tr>
+        <tr>
+          <td>VIP Tiers</td>
+          <td class="batua-col cell-yes">&#10003;</td>
+          <td class="cell-yes">&#10003;</td>
+          <td class="cell-yes">&#10003;</td>
+          <td class="cell-yes">&#10003;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-yes">&#10003;</td>
+          <td class="cell-yes">&#10003;</td>
+          <td class="cell-no">&mdash;</td>
+        </tr>
+        <tr>
+          <td>Referrals</td>
+          <td class="batua-col cell-yes">&#10003;</td>
+          <td class="cell-yes">&#10003;</td>
+          <td class="cell-yes">&#10003;</td>
+          <td class="cell-yes">&#10003;</td>
+          <td class="cell-partial">Basic</td>
+          <td class="cell-best">Best</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-yes">&#10003;</td>
+          <td class="cell-partial">Basic</td>
+          <td class="cell-no">&mdash;</td>
+        </tr>
+        <tr>
+          <td>Gift Cards</td>
+          <td class="batua-col cell-yes">&#10003;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-best">Best</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-no">&mdash;</td>
+        </tr>
+        <tr>
+          <td>Wallet / Store Credit</td>
+          <td class="batua-col cell-yes">&#10003;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-partial">Limited</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-yes">&#10003;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-yes">&#10003;</td>
+        </tr>
+        <tr>
+          <td>Campaigns</td>
+          <td class="batua-col cell-yes">&#10003;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-partial">Via SMS</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-no">&mdash;</td>
+        </tr>
+        <tr>
+          <td>Memberships</td>
+          <td class="batua-col cell-yes">&#10003;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-partial">Basic</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-no">&mdash;</td>
+        </tr>
+        <tr>
+          <td>COD Management</td>
+          <td class="batua-col cell-yes">&#10003;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-best">Core</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-no">&mdash;</td>
+        </tr>
+        <tr>
+          <td>Rules Engine</td>
+          <td class="batua-col cell-yes">&#10003;</td>
+          <td class="cell-partial">Basic</td>
+          <td class="cell-partial">Basic</td>
+          <td class="cell-partial">Basic</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-partial">ML</td>
+          <td class="cell-partial">Basic</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-no">&mdash;</td>
+        </tr>
+        <tr>
+          <td>Customer Storefront</td>
+          <td class="batua-col cell-yes">&#10003;</td>
+          <td class="cell-partial">Widget</td>
+          <td class="cell-partial">Widget</td>
+          <td class="cell-partial">Page</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-partial">Widget</td>
+          <td class="cell-partial">Checkout</td>
+          <td class="cell-partial">Widget</td>
+          <td class="cell-partial">Widget</td>
+          <td class="cell-partial">Acct page</td>
+        </tr>
+        <tr>
+          <td>India Localisation</td>
+          <td class="batua-col cell-yes">&#10003;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-partial">Partial</td>
+          <td class="cell-yes">&#10003;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-no">&mdash;</td>
+          <td class="cell-yes">&#10003;</td>
+        </tr>
+        <tr>
+          <td>Shopify Native</td>
+          <td class="batua-col cell-yes">&#10003;</td>
+          <td class="cell-yes">&#10003;</td>
+          <td class="cell-yes">&#10003;</td>
+          <td class="cell-yes">&#10003;</td>
+          <td class="cell-yes">&#10003;</td>
+          <td class="cell-yes">&#10003;</td>
+          <td class="cell-yes">&#10003;</td>
+          <td class="cell-yes">&#10003;</td>
+          <td class="cell-yes">&#10003;</td>
+          <td class="cell-yes">&#10003;</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Direct Competitors -->
+  <div class="section-header">
+    <div class="icon" style="background: var(--red-bg); color: var(--red);">&#9888;</div>
+    <h2>Direct Competitors</h2>
+    <span class="count">6 companies</span>
+  </div>
+
+  <div class="competitor-grid">
+
+    <!-- 1. Smile.io -->
+    <div class="competitor-card">
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="card-num">1</div>
+          <div>
+            <h3>Smile.io</h3>
+            <div class="tagline">Global Shopify Loyalty Leader</div>
+          </div>
+        </div>
+        <span class="overlap-badge overlap-high">High Overlap</span>
+      </div>
+      <div class="card-body">
+        <div class="info-group">
+          <h4>Company</h4>
+          <div class="meta-grid">
+            <div class="meta-item"><span class="meta-label">Founded</span><span class="meta-value">2012</span></div>
+            <div class="meta-item"><span class="meta-label">HQ</span><span class="meta-value">Ontario, Canada</span></div>
+            <div class="meta-item"><span class="meta-label">Merchants</span><span class="meta-value">100,000+</span></div>
+            <div class="meta-item"><span class="meta-label">App Store</span><span class="meta-value"><span class="rating"><span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span> 4.8 <span class="reviews">(6K+)</span></span></span></div>
+          </div>
+          <p class="notable-customers">Polaroid, Topps, Liquid Death, Birchbox</p>
+        </div>
+        <div class="info-group">
+          <h4>Pricing</h4>
+          <table class="pricing-table">
+            <tr><th>Plan</th><th>Price</th><th>Limits</th></tr>
+            <tr><td>Free</td><td>$0</td><td>200 orders/mo</td></tr>
+            <tr><td>Starter</td><td>$49/mo</td><td>Branding, nudges</td></tr>
+            <tr><td>Growth</td><td>$199/mo</td><td>VIP, analytics</td></tr>
+            <tr><td>Plus</td><td>$999/mo</td><td>Shopify Plus, API</td></tr>
+          </table>
+        </div>
+        <div class="info-group">
+          <h4>Features</h4>
+          <div class="feature-tags">
+            <span class="feature-tag has">Points</span>
+            <span class="feature-tag has">VIP Tiers</span>
+            <span class="feature-tag has">Referrals</span>
+            <span class="feature-tag has">Widget</span>
+            <span class="feature-tag missing">No Gift Cards</span>
+            <span class="feature-tag missing">No Wallet</span>
+            <span class="feature-tag missing">No COD</span>
+            <span class="feature-tag missing">No Campaigns</span>
+            <span class="feature-tag missing">No India</span>
+          </div>
+        </div>
+        <div class="info-group">
+          <h4>India Relevance</h4>
+          <p style="font-size: 13px; color: var(--text-muted);">None. No COD handling, no UPI, no INR-specific logic, no WhatsApp. USD pricing is expensive for Indian SMBs.</p>
+        </div>
+        <div class="card-advantage">
+          <h4>Batua's Advantage</h4>
+          <p>Wallet/store-credit, gift cards, COD management, campaigns, memberships, India-first pricing and localisation. Smile.io covers ~40% of what Batua offers.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Yotpo -->
+    <div class="competitor-card">
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="card-num">2</div>
+          <div>
+            <h3>Yotpo Loyalty &amp; Referrals</h3>
+            <div class="tagline">Mid-market suite: Reviews + SMS + Loyalty</div>
+          </div>
+        </div>
+        <span class="overlap-badge overlap-high">High Overlap</span>
+      </div>
+      <div class="card-body">
+        <div class="info-group">
+          <h4>Company</h4>
+          <div class="meta-grid">
+            <div class="meta-item"><span class="meta-label">Founded</span><span class="meta-value">2011</span></div>
+            <div class="meta-item"><span class="meta-label">HQ</span><span class="meta-value">New York + Tel Aviv</span></div>
+            <div class="meta-item"><span class="meta-label">Target</span><span class="meta-value">$1M+ revenue brands</span></div>
+            <div class="meta-item"><span class="meta-label">App Store</span><span class="meta-value"><span class="rating"><span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span> 4.7 <span class="reviews">(2.5K+)</span></span></span></div>
+          </div>
+          <p class="notable-customers">Steve Madden, Princess Polly, Moroccan Oil</p>
+        </div>
+        <div class="info-group">
+          <h4>Pricing</h4>
+          <table class="pricing-table">
+            <tr><th>Plan</th><th>Price</th></tr>
+            <tr><td>Free</td><td>100 orders/mo</td></tr>
+            <tr><td>Gold</td><td>~$199/mo</td></tr>
+            <tr><td>Enterprise</td><td>$500&ndash;$1,500+/mo</td></tr>
+          </table>
+          <p style="font-size:11px;color:var(--text-dim);margin-top:4px;">Bundle discounts with Yotpo Reviews/SMS</p>
+        </div>
+        <div class="card-advantage">
+          <h4>Batua's Advantage</h4>
+          <p>India-focused, wallet + COD features, affordable pricing. Yotpo's suite approach (reviews + loyalty + SMS) is strong but irrelevant for India-specific needs.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. LoyaltyLion -->
+    <div class="competitor-card">
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="card-num">3</div>
+          <div>
+            <h3>LoyaltyLion</h3>
+            <div class="tagline">Mid-market UK/Europe loyalty platform</div>
+          </div>
+        </div>
+        <span class="overlap-badge overlap-medium">Medium Overlap</span>
+      </div>
+      <div class="card-body">
+        <div class="info-group">
+          <h4>Company</h4>
+          <div class="meta-grid">
+            <div class="meta-item"><span class="meta-label">Founded</span><span class="meta-value">2012</span></div>
+            <div class="meta-item"><span class="meta-label">HQ</span><span class="meta-value">London, UK</span></div>
+            <div class="meta-item"><span class="meta-label">App Store</span><span class="meta-value"><span class="rating"><span class="stars">&#9733;&#9733;&#9733;&#9733;</span> 4.6 <span class="reviews">(1K+)</span></span></span></div>
+          </div>
+        </div>
+        <div class="info-group">
+          <h4>Pricing</h4>
+          <table class="pricing-table">
+            <tr><th>Plan</th><th>Price</th></tr>
+            <tr><td>Classic</td><td>~$399/mo</td></tr>
+            <tr><td>Advanced</td><td>~$729/mo</td></tr>
+            <tr><td>Plus</td><td>Custom</td></tr>
+          </table>
+          <p style="font-size:11px;color:var(--red);margin-top:4px;">Most expensive entry point of all competitors</p>
+        </div>
+        <div class="card-advantage">
+          <h4>Batua's Advantage</h4>
+          <p>10x cheaper entry point, all India-specific features, wallet/gift-card/COD layer that LoyaltyLion completely lacks.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. Rise.ai -->
+    <div class="competitor-card">
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="card-num">4</div>
+          <div>
+            <h3>Rise.ai</h3>
+            <div class="tagline">Gift Cards &amp; Store Credit specialist</div>
+          </div>
+        </div>
+        <span class="overlap-badge overlap-medium">Medium Overlap</span>
+      </div>
+      <div class="card-body">
+        <div class="info-group">
+          <h4>Company</h4>
+          <div class="meta-grid">
+            <div class="meta-item"><span class="meta-label">Founded</span><span class="meta-value">2015</span></div>
+            <div class="meta-item"><span class="meta-label">HQ</span><span class="meta-value">Tel Aviv, Israel</span></div>
+            <div class="meta-item"><span class="meta-label">App Store</span><span class="meta-value"><span class="rating"><span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span> 4.8 <span class="reviews">(1K+)</span></span></span></div>
+          </div>
+          <p class="notable-customers">Mejuri, SKIMS</p>
+        </div>
+        <div class="info-group">
+          <h4>Pricing</h4>
+          <table class="pricing-table">
+            <tr><td>Starter</td><td>$19.99/mo</td></tr>
+            <tr><td>Small Biz</td><td>$59.99/mo</td></tr>
+            <tr><td>Pro</td><td>$199.99/mo</td></tr>
+            <tr><td>Premium</td><td>$599.99/mo</td></tr>
+          </table>
+        </div>
+        <div class="info-group">
+          <h4>Features</h4>
+          <div class="feature-tags">
+            <span class="feature-tag best">Best Gift Cards</span>
+            <span class="feature-tag has">Store Credit</span>
+            <span class="feature-tag has">Bulk Issuance</span>
+            <span class="feature-tag has">Corporate Gifting</span>
+            <span class="feature-tag missing">No Points</span>
+            <span class="feature-tag missing">No Tiers</span>
+            <span class="feature-tag missing">No COD</span>
+          </div>
+        </div>
+        <div class="card-advantage">
+          <h4>Batua's Advantage</h4>
+          <p>Rise.ai excels at gift cards/store credit, but lacks points, tiers, referrals, campaigns, memberships, and COD management. Batua is a superset.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. ReferralCandy -->
+    <div class="competitor-card">
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="card-num">5</div>
+          <div>
+            <h3>ReferralCandy</h3>
+            <div class="tagline">Best-in-class referral program (referrals only)</div>
+          </div>
+        </div>
+        <span class="overlap-badge overlap-medium">Medium Overlap</span>
+      </div>
+      <div class="card-body">
+        <div class="info-group">
+          <h4>Company</h4>
+          <div class="meta-grid">
+            <div class="meta-item"><span class="meta-label">Founded</span><span class="meta-value">2010</span></div>
+            <div class="meta-item"><span class="meta-label">HQ</span><span class="meta-value">Singapore</span></div>
+            <div class="meta-item"><span class="meta-label">App Store</span><span class="meta-value"><span class="rating"><span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span> 4.8 <span class="reviews">(2K+)</span></span></span></div>
+          </div>
+        </div>
+        <div class="info-group">
+          <h4>Pricing</h4>
+          <table class="pricing-table">
+            <tr><th>Plan</th><th>Price</th><th>Commission</th></tr>
+            <tr><td>Premium</td><td>$59/mo</td><td>3.5% rev</td></tr>
+            <tr><td>Plus</td><td>$299/mo</td><td>1.5% rev</td></tr>
+          </table>
+          <p style="font-size:11px;color:var(--yellow);margin-top:4px;">Commission on referral revenue can be expensive at scale</p>
+        </div>
+        <div class="card-advantage">
+          <h4>Batua's Advantage</h4>
+          <p>Integrated referrals within a full suite eliminates need for separate tools. No commission on referral revenue.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. Flits -->
+    <div class="competitor-card">
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="card-num">6</div>
+          <div>
+            <h3>Flits</h3>
+            <div class="tagline">India-origin wallet &amp; customer account app</div>
+          </div>
+        </div>
+        <span class="overlap-badge overlap-medium">Medium Overlap</span>
+      </div>
+      <div class="card-body">
+        <div class="info-group">
+          <h4>Company</h4>
+          <div class="meta-grid">
+            <div class="meta-item"><span class="meta-label">Origin</span><span class="meta-value">India (Gujarat)</span></div>
+            <div class="meta-item"><span class="meta-label">Target</span><span class="meta-value">Indian Shopify merchants</span></div>
+          </div>
+        </div>
+        <div class="info-group">
+          <h4>Pricing</h4>
+          <p style="font-size:13px;color:var(--text-muted);">Free tier + paid plans ($4.99&ndash;$29.99/mo)</p>
+          <div class="feature-tags" style="margin-top:8px;">
+            <span class="feature-tag has">Wallet</span>
+            <span class="feature-tag has">Store Credit</span>
+            <span class="feature-tag has">Wishlists</span>
+            <span class="feature-tag has">India-native</span>
+            <span class="feature-tag missing">No Tiers</span>
+            <span class="feature-tag missing">No Referrals</span>
+            <span class="feature-tag missing">No Gift Cards</span>
+            <span class="feature-tag missing">No Campaigns</span>
+          </div>
+        </div>
+        <div class="card-advantage">
+          <h4>Batua's Advantage</h4>
+          <p>Flits is a "customer account" app, not a full loyalty suite. Batua is a comprehensive loyalty platform; Flits is a wallet widget.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Budget Competitors -->
+  <div class="section-header">
+    <div class="icon" style="background: var(--yellow-bg); color: var(--yellow);">&#36;</div>
+    <h2>Budget Competitors</h2>
+    <span class="count">3 apps</span>
+  </div>
+
+  <p class="section-desc">Low-cost Shopify loyalty apps targeting price-sensitive merchants. They cover basic points/tiers/referrals well but lack depth, wallet, gift cards, COD, and India-specific features.</p>
+
+  <div class="complementary-grid">
+    <div class="comp-card">
+      <h3>BON Loyalty</h3>
+      <div class="comp-meta">~2021 &middot; Vietnam &middot; <span class="rating"><span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span> 4.9 <span class="reviews">(2.5K+)</span></span></div>
+      <p class="comp-desc">Points, VIP tiers, referrals, custom rewards, POS integration. Fastest-growing loyalty app. Undercuts Smile.io significantly.</p>
+      <div class="comp-overlap"><strong>Pricing:</strong> Free (250 orders/mo) &rarr; $25 &rarr; $99 &rarr; $349/mo</div>
+    </div>
+    <div class="comp-card">
+      <h3>Joy Loyalty</h3>
+      <div class="comp-meta">~2021 &middot; Vietnam (Avada Commerce) &middot; <span class="rating"><span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span> 4.9 <span class="reviews">(1.5K+)</span></span></div>
+      <p class="comp-desc">Basic points, VIP tiers, referrals, multi-language. Good enough for basic loyalty without a dedicated tool.</p>
+      <div class="comp-overlap"><strong>Pricing:</strong> Free (250 orders/mo) &rarr; $29 &rarr; $99 &rarr; $499/mo</div>
+    </div>
+    <div class="comp-card">
+      <h3>Growave</h3>
+      <div class="comp-meta">2016 &middot; Kazakhstan &middot; <span class="rating"><span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span> 4.8 <span class="reviews">(2K+)</span></span></div>
+      <p class="comp-desc">Loyalty + reviews + wishlists + social login + Instagram UGC. "Replace 5 apps with 1" positioning. Jack of all trades.</p>
+      <div class="comp-overlap"><strong>Pricing:</strong> Free (100 orders) &rarr; $49 &rarr; $149 &rarr; $349/mo</div>
+    </div>
+  </div>
+
+  <!-- Indian Retention Stack -->
+  <div class="section-header">
+    <div class="icon" style="background: var(--green-bg); color: var(--green);">&#9881;</div>
+    <h2>Indian Retention / Engagement Stack</h2>
+    <span class="count">5 platforms</span>
+  </div>
+
+  <p class="section-desc">These platforms handle <strong>communication and engagement</strong> (send the right message at the right time), while Batua handles <strong>loyalty mechanics</strong> (points, wallet, rewards). They are potential <strong>integration partners</strong>, not direct competitors.</p>
+
+  <div class="complementary-grid">
+    <div class="comp-card">
+      <h3>WebEngage</h3>
+      <div class="comp-meta">2011 &middot; Mumbai &middot; $30M+ funded &middot; 40K+ customers</div>
+      <p class="comp-desc">CDP, visual journey builder, multi-channel engagement (Push, Email, SMS, WhatsApp, In-App). Used by Pepperfry, FirstCry, Dream11, Myntra.</p>
+      <div class="comp-overlap"><strong>Overlap:</strong> Low-medium. Different stack layer. <strong>Integration opp:</strong> Deliver Batua loyalty notifications via WebEngage channels.</div>
+    </div>
+    <div class="comp-card">
+      <h3>MoEngage</h3>
+      <div class="comp-meta">2014 &middot; Bengaluru &middot; $100M+ funded (Series E)</div>
+      <p class="comp-desc">AI-powered engagement, Sherpa AI analytics, journey orchestration. Used by Flipkart, Ola, Bigbasket, 1mg, Byju's.</p>
+      <div class="comp-overlap"><strong>Overlap:</strong> Low. Communication layer vs. loyalty mechanics. Starts ~$999/mo.</div>
+    </div>
+    <div class="comp-card">
+      <h3>CleverTap</h3>
+      <div class="comp-meta">2013 &middot; Mumbai/SF &middot; $250M+ funded &middot; $2.2B+ valuation</div>
+      <p class="comp-desc">Real-time analytics, RFM analysis, Clever.AI predictive engine. Used by Vodafone, Domino's, PharmEasy, Jio. Most well-funded Indian engagement platform.</p>
+      <div class="comp-overlap"><strong>Overlap:</strong> Low. Not a loyalty engine. Essentials from ~$75/mo.</div>
+    </div>
+    <div class="comp-card">
+      <h3>Xeno</h3>
+      <div class="comp-meta">~2015 &middot; Bengaluru &middot; Omnichannel retail CRM</div>
+      <p class="comp-desc">Unified online + offline CRM, AI segmentation, campaign management. Serves Benetton India, Taco Bell India, Chaayos.</p>
+      <div class="comp-overlap"><strong>Overlap:</strong> Low. Bridges offline retail + online; Batua is pure e-commerce loyalty.</div>
+    </div>
+    <div class="comp-card">
+      <h3>Wigzo</h3>
+      <div class="comp-meta">~2015 &middot; Delhi &middot; ~$3M funded</div>
+      <p class="comp-desc">Email/SMS/WhatsApp automation, cart abandonment, product recs. More affordable than the big 3 ($49&ndash;99/mo). SMB-friendly.</p>
+      <div class="comp-overlap"><strong>Overlap:</strong> Low. Marketing automation, not loyalty mechanics. Could be complementary.</div>
+    </div>
+  </div>
+
+  <!-- COD / Checkout Competitors -->
+  <div class="section-header">
+    <div class="icon" style="background: var(--red-bg); color: var(--orange);">&#8377;</div>
+    <h2>COD / Checkout Competitors</h2>
+    <span class="count">3 players</span>
+  </div>
+
+  <p class="section-desc">Partial overlap on COD-to-prepaid conversion. These tools focus on checkout optimisation and COD risk, while Batua uses wallet cashback as a retention-driven prepaid incentive.</p>
+
+  <div class="competitor-grid cod-cards">
+    <!-- GoKwik -->
+    <div class="competitor-card">
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="card-num" style="background: var(--orange);">!</div>
+          <div>
+            <h3>GoKwik</h3>
+            <div class="tagline">The COD Threat &mdash; AI-powered checkout &amp; RTO reduction</div>
+          </div>
+        </div>
+        <span class="overlap-badge overlap-high">High Threat</span>
+      </div>
+      <div class="card-body">
+        <div class="info-group">
+          <h4>Company</h4>
+          <div class="meta-grid">
+            <div class="meta-item"><span class="meta-label">Founded</span><span class="meta-value">2020</span></div>
+            <div class="meta-item"><span class="meta-label">HQ</span><span class="meta-value">Bengaluru</span></div>
+            <div class="meta-item"><span class="meta-label">Funding</span><span class="meta-value">$100M+ (Series B)</span></div>
+            <div class="meta-item"><span class="meta-label">Merchants</span><span class="meta-value">5,000+</span></div>
+          </div>
+          <p class="notable-customers">Boat, Mamaearth, Wow Skin Science, Plum, mCaffeine</p>
+        </div>
+        <div class="info-group">
+          <h4>Products</h4>
+          <div class="feature-tags">
+            <span class="feature-tag best">KwikCOD (risk scoring)</span>
+            <span class="feature-tag has">KwikCheckout (1-click)</span>
+            <span class="feature-tag has">RTO Prediction (ML)</span>
+            <span class="feature-tag has">COD-to-Prepaid</span>
+            <span class="feature-tag has">Address Intelligence</span>
+            <span class="feature-tag" style="background:var(--red-bg);color:var(--red);border-color:rgba(225,112,85,0.3);">KwikRewards (expanding!)</span>
+          </div>
+          <p style="font-size:12px;color:var(--text-muted);margin-top:8px;"><strong>Pricing:</strong> Transaction-based (1&ndash;3% of order value)</p>
+        </div>
+        <div class="card-advantage">
+          <h4>Key Distinction</h4>
+          <p>Batua incentivises prepaid via <strong>wallet cashback</strong> (creates long-term retention/stickiness). GoKwik uses <strong>checkout discounts</strong> (one-time). GoKwik's ML-based RTO prediction is more sophisticated, but Batua's approach builds customer loyalty, not just converts a single transaction. <strong>Watch KwikRewards expansion closely.</strong></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="complementary-grid" style="margin-top: 16px;">
+    <div class="comp-card">
+      <h3>Razorpay Magic Checkout</h3>
+      <div class="comp-meta">One-click checkout with COD-to-prepaid conversion</div>
+      <p class="comp-desc">Includes prepaid selection discounts. With Razorpay's payment data advantage and massive merchant base, they could build loyalty features into their payment ecosystem.</p>
+      <div class="comp-overlap"><strong>Threat level:</strong> <span style="color:var(--red);font-weight:700;">High (long-term)</span> &mdash; payment data moat is hard to compete with</div>
+    </div>
+    <div class="comp-card">
+      <h3>Shiprocket</h3>
+      <div class="comp-meta">India's largest shipping aggregator</div>
+      <p class="comp-desc">COD-to-prepaid nudges, COD remittance, NDR management. Not a loyalty tool but overlaps on COD conversion. Complementary on shipping.</p>
+      <div class="comp-overlap"><strong>Threat level:</strong> <span style="color:var(--yellow);font-weight:700;">Medium</span> &mdash; competitive on COD conversion only</div>
+    </div>
+  </div>
+
+  <!-- Enterprise -->
+  <div class="section-header">
+    <div class="icon" style="background: var(--surface-3); color: var(--text-dim);">&#9670;</div>
+    <h2>Enterprise Loyalty Platforms</h2>
+    <span class="count">4 platforms</span>
+  </div>
+
+  <p class="section-desc">Too expensive and not Shopify-native. Wrong market segment for D2C SMBs, but useful for understanding enterprise-grade loyalty mechanics.</p>
+
+  <div class="enterprise-grid">
+    <div class="ent-card">
+      <h3>Capillary Technologies</h3>
+      <div class="ent-meta">2012 &middot; Bengaluru &middot; Warburg Pincus, Sequoia India</div>
+      <p>Enterprise CRM + loyalty for large retail chains (Tata, Puma, KFC India, Bata). Custom integrations, not a Shopify app. $50K+/year.</p>
+    </div>
+    <div class="ent-card">
+      <h3>Antavo</h3>
+      <div class="ent-meta">2012 &middot; Budapest, Hungary</div>
+      <p>Enterprise loyalty with gamification, headless API-first engine, coalition loyalty. Serves KFC, BMW. $30K&ndash;50K+/year. No India presence.</p>
+    </div>
+    <div class="ent-card">
+      <h3>Talon.One</h3>
+      <div class="ent-meta">2015 &middot; Berlin &middot; ~$50M+ funded</div>
+      <p>Rules-based promotion engine (coupons, discounts, points, referrals). API-first. Serves Adidas, Carlsberg, Ticketmaster. $50K+/year. Conceptually closest to Batua's rules engine.</p>
+    </div>
+    <div class="ent-card">
+      <h3>Zinrelo</h3>
+      <div class="ent-meta">~2014 &middot; Sunnyvale, CA (with India ops)</div>
+      <p>Mid-market to enterprise "360-degree loyalty." Has a Shopify app. Custom/quote-based pricing. Not India-first &mdash; no COD/UPI optimisation.</p>
+    </div>
+  </div>
+
+  <!-- Market Context -->
+  <div class="section-header">
+    <div class="icon" style="background: var(--blue-bg); color: var(--blue);">&#9650;</div>
+    <h2>Indian D2C Loyalty Market Context</h2>
+  </div>
+
+  <div class="market-stats">
+    <div class="stat-card">
+      <div class="stat-value">$12&ndash;15B</div>
+      <div class="stat-label">India D2C Market (2024)</div>
+      <div class="stat-sub">Projected $60&ndash;100B by 2030</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">$2&ndash;3B</div>
+      <div class="stat-label">Indian Loyalty Market (2024)</div>
+      <div class="stat-sub">15&ndash;20% CAGR</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">30&ndash;50K</div>
+      <div class="stat-label">Active Shopify Merchants in India</div>
+      <div class="stat-sub">~$20&ndash;50M addressable SaaS market</div>
+    </div>
+  </div>
+
+  <h3 style="font-size:17px;font-weight:700;margin-bottom:16px;">Key Market Trends</h3>
+
+  <div class="trends-grid">
+    <div class="trend-card">
+      <div class="trend-icon" style="background: var(--red-bg); color: var(--red);">&#8377;</div>
+      <div>
+        <h4>COD Reduction</h4>
+        <div class="trend-detail">60&ndash;65% of orders are COD. RTO on COD: 25&ndash;40% vs. 5&ndash;10% prepaid. Every COD order costs merchants 2&ndash;5% more.</div>
+        <div class="trend-relevance">Core Batua value prop &mdash; wallet cashback for prepaid</div>
+      </div>
+    </div>
+    <div class="trend-card">
+      <div class="trend-icon" style="background: var(--green-bg); color: var(--green);">&#9993;</div>
+      <div>
+        <h4>WhatsApp Commerce</h4>
+        <div class="trend-detail">500M+ WhatsApp users in India. D2C brands using it for order updates, marketing, support, and increasingly loyalty engagement.</div>
+        <div class="trend-relevance">Opportunity: WhatsApp-native loyalty notifications</div>
+      </div>
+    </div>
+    <div class="trend-card">
+      <div class="trend-icon" style="background: var(--blue-bg); color: var(--blue);">&#9889;</div>
+      <div>
+        <h4>UPI Integration</h4>
+        <div class="trend-detail">14B+ transactions/month. UPI Autopay, Lite, and credit-on-UPI are growing rapidly.</div>
+        <div class="trend-relevance">Opportunity: wallet balance usable via UPI checkout</div>
+      </div>
+    </div>
+    <div class="trend-card">
+      <div class="trend-icon" style="background: var(--yellow-bg); color: var(--yellow);">&#9733;</div>
+      <div>
+        <h4>Prepaid Incentives</h4>
+        <div class="trend-detail">Brands offering 5&ndash;15% off for prepaid, currently via simple coupons. Wallet cashback creates stickiness unlike one-time coupons.</div>
+        <div class="trend-relevance">Wallet cashback > coupons (retention advantage)</div>
+      </div>
+    </div>
+    <div class="trend-card">
+      <div class="trend-icon" style="background: rgba(162,155,254,0.1); color: var(--accent-light);">&#9826;</div>
+      <div>
+        <h4>Tier / Membership Programs</h4>
+        <div class="trend-detail">Consumers expect tiers inspired by Tata Neu, Flipkart Plus, Zomato Gold. D2C brands launching membership programs.</div>
+        <div class="trend-relevance">Batua enables this for D2C brands as SaaS</div>
+      </div>
+    </div>
+    <div class="trend-card">
+      <div class="trend-icon" style="background: rgba(129,236,236,0.1); color: var(--cyan);">&#9875;</div>
+      <div>
+        <h4>Gift Cards &amp; Referrals</h4>
+        <div class="trend-detail">Digital gift cards growing 20&ndash;30% annually. WOM is #1 discovery channel for Indian consumers. Most referral programs are basic.</div>
+        <div class="trend-relevance">Both modules fill clear market gaps</div>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="font-size:17px;font-weight:700;margin-bottom:16px;">What Indian D2C Brands Look For</h3>
+
+  <div class="buyer-needs">
+    <div class="need-item"><div class="need-num">1</div><div><strong>Affordable pricing</strong><span>INR-denominated, starting under $50/mo. Free tier essential.</span></div></div>
+    <div class="need-item"><div class="need-num">2</div><div><strong>Shopify-native</strong><span>Must install from App Store or integrate seamlessly.</span></div></div>
+    <div class="need-item"><div class="need-num">3</div><div><strong>Quick setup</strong><span>Under 30 minutes. Teams are 3&ndash;10 people.</span></div></div>
+    <div class="need-item"><div class="need-num">4</div><div><strong>COD handling</strong><span>Any tool reducing COD% and RTO is immediately valuable.</span></div></div>
+    <div class="need-item"><div class="need-num">5</div><div><strong>WhatsApp integration</strong><span>Push loyalty updates via WhatsApp, not just email.</span></div></div>
+    <div class="need-item"><div class="need-num">6</div><div><strong>Hindi / regional languages</strong><span>Important for Tier 2/3 city targeting.</span></div></div>
+    <div class="need-item"><div class="need-num">7</div><div><strong>Indian payment support</strong><span>UPI, Paytm, PhonePe. INR wallet balances.</span></div></div>
+    <div class="need-item"><div class="need-num">8</div><div><strong>ROI proof</strong><span>Repeat rate improvement, AOV increase, COD reduction %.</span></div></div>
+    <div class="need-item"><div class="need-num">9</div><div><strong>Customer storefront</strong><span>Branded loyalty page end-customers interact with.</span></div></div>
+  </div>
+
+  <!-- Batua's Moat -->
+  <div class="section-header">
+    <div class="icon" style="background: linear-gradient(135deg, var(--accent), #a29bfe); color: #fff;">&#9813;</div>
+    <h2>Batua's Competitive Moat</h2>
+  </div>
+
+  <div class="moat-grid">
+    <div class="moat-card">
+      <h4>All-in-One for India</h4>
+      <p>Wallet + Loyalty + Gift Cards + Referrals + Campaigns + Memberships + COD Management in one platform. No competitor offers all seven.</p>
+    </div>
+    <div class="moat-card">
+      <h4>COD-Aware Loyalty</h4>
+      <p>Wallet cashback as a prepaid incentive is a loyalty mechanic that creates long-term stickiness, unlike GoKwik's one-time checkout discounts.</p>
+    </div>
+    <div class="moat-card">
+      <h4>Customer Storefront (/s/{slug})</h4>
+      <p>A branded, merchant-specific storefront for customers to view balance, earn rules, gift cards, and referral links. No competitor has this.</p>
+    </div>
+    <div class="moat-card">
+      <h4>India-First Architecture</h4>
+      <p>Built from day one for INR, Indian merchants, and Indian consumer behaviour patterns. Not a global platform with India bolted on.</p>
+    </div>
+  </div>
+
+  <!-- Threats -->
+  <h3 style="font-size:17px;font-weight:700;margin-bottom:16px;">Key Risks / Threats</h3>
+
+  <div class="threat-table-wrapper">
+    <table class="threat-table">
+      <thead>
+        <tr>
+          <th style="width:30%;">Threat</th>
+          <th style="width:12%;">Severity</th>
+          <th>Mitigation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>GoKwik expanding into rewards</strong> (KwikRewards)</td>
+          <td><span class="severity-high">High</span></td>
+          <td>Differentiate on depth &mdash; full loyalty suite vs. checkout cashback</td>
+        </tr>
+        <tr>
+          <td><strong>Razorpay ecosystem</strong> building loyalty into payments</td>
+          <td><span class="severity-high">High</span></td>
+          <td>Integrate with Razorpay rather than compete; wallet is complementary</td>
+        </tr>
+        <tr>
+          <td><strong>Price sensitivity</strong> &mdash; Indian D2C brands churn fast</td>
+          <td><span class="severity-high">High</span></td>
+          <td>Generous free tier, prove ROI fast, embed deeply in merchant workflow</td>
+        </tr>
+        <tr>
+          <td><strong>Shopify building native loyalty</strong></td>
+          <td><span class="severity-medium">Medium</span></td>
+          <td>Stay ahead on India-specific features Shopify won't build</td>
+        </tr>
+        <tr>
+          <td><strong>WebEngage / MoEngage adding loyalty modules</strong></td>
+          <td><span class="severity-medium">Medium</span></td>
+          <td>Focus on Shopify-native; they serve broader martech</td>
+        </tr>
+        <tr>
+          <td><strong>In-house builds</strong> by larger D2C brands</td>
+          <td><span class="severity-medium">Medium</span></td>
+          <td>Target SMB/mid-market who can't afford custom engineering</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Benchmarking Checklist -->
+  <div class="section-header">
+    <div class="icon" style="background: var(--surface-3); color: var(--text-muted);">&#9745;</div>
+    <h2>Benchmarking Checklist</h2>
+  </div>
+
+  <ul class="checklist">
+    <li><div class="check-box"></div>Monitor GoKwik's KwikRewards expansion &mdash; feature launches, merchant adoption</li>
+    <li><div class="check-box"></div>Track Smile.io / Yotpo pricing changes or India-specific moves</li>
+    <li><div class="check-box"></div>Watch Razorpay Magic Checkout for loyalty feature additions</li>
+    <li><div class="check-box"></div>Check Shopify changelog for native loyalty/points features</li>
+    <li><div class="check-box"></div>Monitor Flits feature roadmap &mdash; closest India-origin competitor</li>
+    <li><div class="check-box"></div>Track WebEngage / MoEngage for loyalty module announcements</li>
+    <li><div class="check-box"></div>Survey Indian D2C brands quarterly on tool preferences and pain points</li>
+    <li><div class="check-box"></div>Compare app store ratings and review velocity vs. BON, Joy, Smile.io</li>
+    <li><div class="check-box"></div>Benchmark pricing against Indian merchant willingness-to-pay data</li>
+  </ul>
+
+</div>
+
+</body>
+</html>

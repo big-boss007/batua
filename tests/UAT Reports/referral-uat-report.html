@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Referral System UAT Report</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #f5f6f8;
+    color: #1a1a2e;
+    line-height: 1.6;
+    padding: 2rem;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  h1 {
+    font-size: 2rem;
+    margin-bottom: 0.25rem;
+    color: #16213e;
+  }
+
+  .subtitle {
+    color: #555;
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+  }
+
+  /* Summary table */
+  .summary-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+
+  .summary-card h2 {
+    font-size: 1.15rem;
+    margin-bottom: 1rem;
+    color: #16213e;
+  }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .summary-stat {
+    text-align: center;
+    padding: 1rem;
+    border-radius: 8px;
+  }
+
+  .summary-stat .number {
+    font-size: 2rem;
+    font-weight: 700;
+    display: block;
+  }
+
+  .summary-stat .label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #666;
+  }
+
+  .stat-total { background: #eef0f7; }
+  .stat-total .number { color: #16213e; }
+  .stat-pass { background: #e8f5e9; }
+  .stat-pass .number { color: #2e7d32; }
+  .stat-fail { background: #fce4ec; }
+  .stat-fail .number { color: #c62828; }
+  .stat-bug { background: #fff3e0; }
+  .stat-bug .number { color: #e65100; }
+  .stat-skip { background: #e8eaf6; }
+  .stat-skip .number { color: #3949ab; }
+
+  /* Summary table */
+  .summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+  }
+
+  .summary-table th {
+    text-align: left;
+    padding: 0.6rem 0.8rem;
+    background: #f5f6f8;
+    border-bottom: 2px solid #ddd;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .summary-table td {
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #eee;
+  }
+
+  .summary-table tr:hover { background: #fafafa; }
+
+  /* Badges */
+  .badge {
+    display: inline-block;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .badge-pass { background: #e8f5e9; color: #2e7d32; }
+  .badge-fail { background: #fce4ec; color: #c62828; }
+  .badge-bug { background: #fff3e0; color: #e65100; }
+  .badge-skip { background: #e8eaf6; color: #3949ab; }
+
+  /* Section headers */
+  .section-header {
+    margin: 2.5rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #5c6bc0;
+  }
+
+  .section-header h2 {
+    font-size: 1.35rem;
+    color: #283593;
+  }
+
+  .section-header p {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 0.25rem;
+  }
+
+  /* Test case cards */
+  .test-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    border-left: 4px solid #ccc;
+  }
+
+  .test-card.pass { border-left-color: #4caf50; }
+  .test-card.fail { border-left-color: #f44336; }
+  .test-card.bug { border-left-color: #ff9800; }
+
+  .test-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+
+  .test-card-header h3 {
+    font-size: 1rem;
+    color: #1a1a2e;
+  }
+
+  .test-id {
+    font-size: 0.8rem;
+    color: #999;
+    font-weight: 400;
+    margin-right: 0.5rem;
+  }
+
+  .test-steps {
+    font-size: 0.88rem;
+    color: #555;
+    margin-bottom: 0.75rem;
+  }
+
+  .test-steps ol {
+    padding-left: 1.25rem;
+  }
+
+  .test-steps li {
+    margin-bottom: 0.2rem;
+  }
+
+  .test-notes {
+    font-size: 0.85rem;
+    color: #666;
+    background: #f9f9fb;
+    padding: 0.6rem 0.9rem;
+    border-radius: 6px;
+    margin-bottom: 0.75rem;
+  }
+
+  .test-notes strong { color: #333; }
+
+  .test-screenshot {
+    margin-top: 0.75rem;
+  }
+
+  .test-screenshot img {
+    max-width: 100%;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+
+  .test-screenshot figcaption {
+    font-size: 0.8rem;
+    color: #888;
+    margin-top: 0.4rem;
+    text-align: center;
+  }
+
+  /* Bug details */
+  .bug-detail {
+    background: #fff8f0;
+    border: 1px solid #ffe0b2;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.88rem;
+  }
+
+  .bug-detail strong { color: #e65100; }
+
+  .bug-detail code {
+    background: #ffecd2;
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    font-size: 0.82rem;
+  }
+
+  /* Footer */
+  .report-footer {
+    margin-top: 3rem;
+    padding-top: 1rem;
+    border-top: 1px solid #ddd;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #999;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>Referral System UAT Report</h1>
+<p class="subtitle">Batua Project &mdash; 21 March 2026 &mdash; Merchant: Chai &amp; Co (<code>chaiandco</code>)</p>
+
+<!-- ============ SUMMARY ============ -->
+<div class="summary-card">
+  <h2>Executive Summary</h2>
+  <div class="summary-grid">
+    <div class="summary-stat stat-total">
+      <span class="number">20</span>
+      <span class="label">Total Tests</span>
+    </div>
+    <div class="summary-stat stat-pass">
+      <span class="number">13</span>
+      <span class="label">Passed</span>
+    </div>
+    <div class="summary-stat stat-bug">
+      <span class="number">5</span>
+      <span class="label">Bugs Found</span>
+    </div>
+    <div class="summary-stat stat-fail">
+      <span class="number">2</span>
+      <span class="label">Failed</span>
+    </div>
+    <div class="summary-stat stat-skip">
+      <span class="number">0</span>
+      <span class="label">Skipped</span>
+    </div>
+  </div>
+
+  <table class="summary-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Test Case</th>
+        <th>Stakeholder</th>
+        <th>Result</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>Program tab &mdash; view/edit referral program settings</td><td>Merchant Admin</td><td><span class="badge badge-bug">BUG</span></td></tr>
+      <tr><td>2</td><td>Program tab &mdash; update program settings</td><td>Merchant Admin</td><td><span class="badge badge-fail">FAIL</span></td></tr>
+      <tr><td>3</td><td>Codes tab &mdash; view list of referral codes</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>4</td><td>Codes tab &mdash; create auto-generated code</td><td>Merchant Admin</td><td><span class="badge badge-fail">FAIL</span></td></tr>
+      <tr><td>5</td><td>Codes tab &mdash; create vanity code (UI)</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>6</td><td>Codes tab &mdash; create creator/influencer code (UI)</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>7</td><td>Analytics tab &mdash; view referral analytics</td><td>Merchant Admin</td><td><span class="badge badge-bug">BUG</span></td></tr>
+      <tr><td>8</td><td>Conversions tab &mdash; view conversion list with fraud signals</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>9</td><td>Program tab &mdash; data not loaded on page load</td><td>Merchant Admin</td><td><span class="badge badge-bug">BUG</span></td></tr>
+      <tr><td>10</td><td>Analytics tab &mdash; suspicious count missing from UI</td><td>Merchant Admin</td><td><span class="badge badge-bug">BUG</span></td></tr>
+      <tr><td>11</td><td>Storefront refer page &mdash; initial load behavior</td><td>Referrer</td><td><span class="badge badge-bug">BUG</span></td></tr>
+      <tr><td>12</td><td>Enter phone number to see referral code</td><td>Referrer</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>13</td><td>View referral card with code, stats, share buttons</td><td>Referrer</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>14</td><td>Copy referral link</td><td>Referrer</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>15</td><td>WhatsApp share link</td><td>Referrer</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>16</td><td>Phone number with no account</td><td>Referrer</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>17</td><td>Customer with no referral code</td><td>Referrer</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>18</td><td>Referee landing page with reward offer</td><td>Referee</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>19</td><td>Shop Now CTA button</td><td>Referee</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>20</td><td>Invalid/non-existent referral code</td><td>Referee</td><td><span class="badge badge-pass">PASS</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ============ STAKEHOLDER 1: MERCHANT ADMIN ============ -->
+<div class="section-header">
+  <h2>Stakeholder 1: Merchant Admin</h2>
+  <p>Admin panel at <code>/admin/referrals</code> &mdash; 4 tabs: Program, Codes, Analytics, Conversions</p>
+</div>
+
+<!-- Test 1 -->
+<div class="test-card bug">
+  <div class="test-card-header">
+    <h3><span class="test-id">#1</span> Program Tab &mdash; View/Edit Referral Program Settings</h3>
+    <span class="badge badge-bug">BUG</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Navigate to <code>/admin/referrals</code></li>
+      <li>Program tab is selected by default</li>
+      <li>Observe form fields: Referrer Reward, Referee Reward, Max Referrals, Program Active toggle</li>
+    </ol>
+  </div>
+  <div class="bug-detail">
+    <strong>Bug:</strong> All form fields display <code>0</code> on page load instead of the actual database values.
+    The API (<code>GET /referrals/programs/{merchant_id}</code>) returns correct data
+    (referrer: 60, referee: 32, max_referrals: 16), but the frontend form is not populated with the response.
+    This was confirmed across multiple page reloads.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="referral-uat/01-admin-program-tab.png" alt="Program tab showing 0 values">
+      <figcaption>Program tab on load &mdash; all fields show 0 despite API returning correct data</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 2 -->
+<div class="test-card fail">
+  <div class="test-card-header">
+    <h3><span class="test-id">#2</span> Program Tab &mdash; Update Program Settings</h3>
+    <span class="badge badge-fail">FAIL</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Fill Referrer Reward = 60, Referee Reward = 32</li>
+      <li>Click "Update Program" button</li>
+      <li>Check API response</li>
+    </ol>
+  </div>
+  <div class="bug-detail">
+    <strong>Failure:</strong> The <code>POST /referrals/programs</code> API returns <strong>422 Unprocessable Entity</strong>.
+    Response: <code>"missing field `merchant_id` at line 1 column 104"</code>.
+    The frontend sends the request body without the required <code>merchant_id</code> field.
+    No error feedback is shown to the user &mdash; the form appears to succeed silently.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="referral-uat/02-admin-program-update.png" alt="Program update form filled">
+      <figcaption>Form after filling values and clicking Update &mdash; no error shown despite 422 response</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 3 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#3</span> Codes Tab &mdash; View List of Referral Codes</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Click "Codes" tab</li>
+      <li>Observe "All Codes" table below the create form</li>
+      <li>Verify codes match database records</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> All 4 codes (RAJESH2, VIKRAM1, KIRAN4, POOJA3) displayed correctly with
+    Customer ID, Conversions count, and Active status badge. Table columns: CODE, CUSTOMER ID, VANITY, CREATOR, CONVERSIONS, STATUS.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="referral-uat/03-admin-codes-tab.png" alt="Codes tab with create form and list">
+      <figcaption>Codes tab showing create form and code list table</figcaption>
+    </figure>
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="referral-uat/04-admin-codes-list-scrolled.png" alt="Full codes list scrolled">
+      <figcaption>All 4 referral codes visible with correct stats</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 4 -->
+<div class="test-card fail">
+  <div class="test-card-header">
+    <h3><span class="test-id">#4</span> Codes Tab &mdash; Create Auto-Generated Code</h3>
+    <span class="badge badge-fail">FAIL</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Enter Customer ID <code>c0000000-0000-0000-0000-000000000019</code> (Sunita Mishra)</li>
+      <li>Leave Vanity and Creator toggles off</li>
+      <li>Click "Create Code" button</li>
+      <li>Check if new code appears in list</li>
+    </ol>
+  </div>
+  <div class="bug-detail">
+    <strong>Failure:</strong> The <code>POST /referrals/codes</code> API returns <strong>422 Unprocessable Entity</strong>.
+    Response: <code>"missing field `merchant_id` at line 1 column 126"</code>.
+    Same root cause as the program update &mdash; the frontend does not include <code>merchant_id</code> in the request body.
+    The form clears after submit without showing any error, giving the false impression of success. The new code is not created in the database.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="referral-uat/05-admin-create-code-auto.png" alt="Form after code creation attempt">
+      <figcaption>Form cleared after submit &mdash; no error feedback despite 422 API response</figcaption>
+    </figure>
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="referral-uat/06-admin-new-code-in-list.png" alt="Code list unchanged">
+      <figcaption>Code list unchanged &mdash; new code was not created</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 5 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#5</span> Codes Tab &mdash; Create Vanity Code (UI)</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Toggle "Vanity code" switch ON</li>
+      <li>Observe that a custom code text field appears</li>
+      <li>Enter custom code "SUNITA2026"</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Toggling the "Vanity code" switch correctly reveals a text input with placeholder
+    "Custom code (e.g. JOHN10)". The form layout adapts cleanly. Note: actual submission would fail
+    due to the same missing <code>merchant_id</code> bug (not re-tested).
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="referral-uat/07-admin-vanity-code-form.png" alt="Vanity code form">
+      <figcaption>Vanity code toggle ON with custom code field visible</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 6 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#6</span> Codes Tab &mdash; Create Creator/Influencer Code (UI)</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Toggle "Creator / influencer code" switch ON</li>
+      <li>Observe that a "Commission rate (%)" number field appears</li>
+      <li>Enter commission rate 10</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Toggling the "Creator / influencer code" switch correctly reveals a commission rate
+    number input. Both vanity and creator toggles can be enabled simultaneously, allowing influencer vanity codes.
+    Form layout adapts cleanly with all fields visible.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="referral-uat/08-admin-creator-code-form.png" alt="Creator code form">
+      <figcaption>Creator toggle ON with commission rate field &mdash; both vanity and creator enabled</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 7 -->
+<div class="test-card bug">
+  <div class="test-card-header">
+    <h3><span class="test-id">#7</span> Analytics Tab &mdash; View Referral Analytics</h3>
+    <span class="badge badge-bug">BUG</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Click "Analytics" tab</li>
+      <li>Observe analytics cards: Total Codes, Total Referrals, Conversions, Conversion Rate</li>
+      <li>Verify conversion rate calculation</li>
+    </ol>
+  </div>
+  <div class="bug-detail">
+    <strong>Bug:</strong> The conversion rate displays as <code>0.3%</code> but should be <code>28.6%</code>.
+    The API returns <code>conversion_rate: 0.2857</code> (a decimal fraction). The UI appears to format this
+    as <code>(0.2857).toFixed(1) + "%"</code> = "0.3%" instead of correctly computing
+    <code>(0.2857 * 100).toFixed(1) + "%"</code> = "28.6%". The other metrics (4 Total Codes, 14 Total Referrals, 4 Conversions) display correctly.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="referral-uat/09-admin-analytics-tab.png" alt="Analytics tab">
+      <figcaption>Analytics tab &mdash; conversion rate shows 0.3% instead of 28.6%</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 8 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#8</span> Conversions Tab &mdash; View Conversion List with Fraud Signals</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Click "Conversions" tab</li>
+      <li>Observe conversion table: Referrer, Referee, Order, Fraud Signals, Date</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Conversions table displays correctly with 1 conversion record.
+    Columns: Referrer (truncated UUID), Referee (truncated UUID), Order (<code>order:ref-3</code>),
+    Fraud Signals (green "clean" badge), Date (<code>21 Mar 2026, 01:47 am</code>).
+    The date formatting and fraud signal badge rendering are correct.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="referral-uat/10-admin-conversions-tab.png" alt="Conversions tab">
+      <figcaption>Conversions tab with fraud signal badges and formatted dates</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 9 -->
+<div class="test-card bug">
+  <div class="test-card-header">
+    <h3><span class="test-id">#9</span> Program Tab &mdash; Data Not Populated on Load (Confirmed)</h3>
+    <span class="badge badge-bug">BUG</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Navigate to <code>/admin/referrals</code> (fresh page load)</li>
+      <li>Verify API call succeeds with <code>GET /referrals/programs/{id}</code> returning 200</li>
+      <li>Check form field values</li>
+    </ol>
+  </div>
+  <div class="bug-detail">
+    <strong>Bug (confirmed):</strong> Reproduced consistently across multiple reloads. The API returns:
+    <code>referrer_reward_amount: 60, referee_reward_amount: 32, max_referrals_per_customer: 16, is_active: true</code>.
+    The form shows: <code>0, 0, 0, true</code>. The form state is initialized with defaults (0) and never
+    updated from the API response. Only the <code>is_active</code> toggle reflects the correct state.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="referral-uat/20-admin-program-reload.png" alt="Program tab on fresh reload">
+      <figcaption>Fresh page reload &mdash; form fields still show 0 despite API returning correct data</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 10 -->
+<div class="test-card bug">
+  <div class="test-card-header">
+    <h3><span class="test-id">#10</span> Analytics Tab &mdash; Suspicious Count Missing from UI</h3>
+    <span class="badge badge-bug">BUG</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Click "Analytics" tab</li>
+      <li>Check for "Suspicious" or "Flagged" metric card</li>
+      <li>Verify API response includes <code>total_suspicious</code></li>
+    </ol>
+  </div>
+  <div class="bug-detail">
+    <strong>Bug:</strong> The API response includes <code>total_suspicious: 0</code> but this metric is not
+    displayed in the analytics UI. Only 4 cards are shown (Total Codes, Total Referrals, Conversions,
+    Conversion Rate). A "Suspicious" or "Flagged" count card should be added for fraud monitoring.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="referral-uat/09-admin-analytics-tab.png" alt="Analytics tab missing suspicious count">
+      <figcaption>Analytics tab shows 4 metrics but omits the suspicious/flagged count from the API response</figcaption>
+    </figure>
+  </div>
+</div>
+
+
+<!-- ============ STAKEHOLDER 2: REFERRER (STOREFRONT) ============ -->
+<div class="section-header">
+  <h2>Stakeholder 2: Customer Storefront &mdash; Referrer</h2>
+  <p>Storefront page at <code>/s/{slug}/refer</code> &mdash; dark themed card UI</p>
+</div>
+
+<!-- Test 11 -->
+<div class="test-card bug">
+  <div class="test-card-header">
+    <h3><span class="test-id">#11</span> Storefront Refer Page &mdash; Initial Load Behavior</h3>
+    <span class="badge badge-bug">BUG</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Navigate directly to <code>/s/chaiandco/refer</code></li>
+      <li>Observe what renders on first load</li>
+    </ol>
+  </div>
+  <div class="bug-detail">
+    <strong>Bug:</strong> On initial page load, the page skips the phone input screen and immediately shows
+    "You don't have a referral code yet. Make your first purchase to get one!" This implies it is looking up a
+    phone number that was previously stored (e.g., from a cookie or URL state from the wallet page), but
+    the user has not entered any phone number yet. A fresh visitor should see the phone input form first.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="referral-uat/11-storefront-refer-landing.png" alt="Initial refer page load">
+      <figcaption>First load skips phone input &mdash; shows "no code" message without user entering a number</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 12 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#12</span> Enter Phone Number to See Referral Code</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Click "Try a different number" to get to the phone input</li>
+      <li>Enter phone number <code>9000000004</code> (Vikram Singh)</li>
+      <li>Click "View Rewards"</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Phone input form displays correctly with "+91" country code prefix, placeholder
+    "9876543210", and a "View Rewards" button (disabled until 10 digits entered). After entering a valid phone
+    and clicking submit, the referral card loads correctly.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="referral-uat/12-storefront-phone-input.png" alt="Phone input form">
+      <figcaption>Phone input form with +91 prefix and View Rewards button</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 13 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#13</span> View Referral Card with Code, Stats, Share Buttons</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>After phone lookup, observe the referral card</li>
+      <li>Verify code, reward amount, referral/conversion stats, and share buttons</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Referral card displays beautifully with dark theme:
+    "Refer &amp; Earn" heading, "Share your code and earn Rs.60.00 for each referral" (matches DB),
+    code "VIKRAM1" in dashed box, stats (2 REFERRALS, 1 CONVERSIONS matching DB),
+    "Share on WhatsApp" (green button) and "Copy Link" (outlined button).
+    "Change number" link at top. Card design is polished and professional.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="referral-uat/13-storefront-referral-card.png" alt="Referral card">
+      <figcaption>Referral card with code VIKRAM1, stats, and share buttons</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 14 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#14</span> Copy Referral Link</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Click "Copy Link" button</li>
+      <li>Check for visual feedback (toast or button text change)</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> The Copy Link button works (uses clipboard API). Minor observation: no visible
+    toast or button text change on click to confirm the copy succeeded. Users may not know the link was copied.
+    This is a minor UX improvement opportunity, not a blocker.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="referral-uat/14-storefront-copy-link.png" alt="Copy link clicked">
+      <figcaption>After clicking Copy Link &mdash; no visible confirmation feedback</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 15 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#15</span> WhatsApp Share Link</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Inspect "Share on WhatsApp" button</li>
+      <li>Verify it is a clickable green button</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> The "Share on WhatsApp" button renders correctly with the expected green
+    (#25D366) styling. The button uses a Svelte event handler (no inline onclick or href visible).
+    The button is expected to open a <code>wa.me</code> or <code>api.whatsapp.com</code> URL with the
+    referral link as pre-filled text. Functional verification requires a mobile device or WhatsApp Web session.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="referral-uat/13-storefront-referral-card.png" alt="WhatsApp share button">
+      <figcaption>Green "Share on WhatsApp" button visible on referral card</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 16 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#16</span> Phone Number with No Account</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Click "Try a different number"</li>
+      <li>Enter non-existent phone <code>9999999999</code></li>
+      <li>Click "View Rewards"</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Correctly displays "No account found for this phone number." with a handshake
+    emoji and "Try a different number" link. Clean error state &mdash; no stack traces or technical errors exposed.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="referral-uat/15-storefront-no-account.png" alt="No account found">
+      <figcaption>Graceful error for non-existent phone number</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 17 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#17</span> Customer with No Referral Code</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Click "Try a different number"</li>
+      <li>Enter phone <code>9000000019</code> (Sunita Mishra &mdash; has account but no referral code)</li>
+      <li>Click "View Rewards"</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Correctly displays "You don't have a referral code yet. Make your first purchase
+    to get one!" with "Try a different number" link. Differentiates correctly between "no account" and
+    "account exists but no referral code".
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="referral-uat/16-storefront-no-referral-code.png" alt="No referral code">
+      <figcaption>Customer exists but has no referral code &mdash; appropriate message shown</figcaption>
+    </figure>
+  </div>
+</div>
+
+
+<!-- ============ STAKEHOLDER 3: REFEREE (STOREFRONT) ============ -->
+<div class="section-header">
+  <h2>Stakeholder 3: Customer Storefront &mdash; Referee</h2>
+  <p>Referral landing page at <code>/s/{slug}/refer/{code}</code> &mdash; dark themed card UI</p>
+</div>
+
+<!-- Test 18 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#18</span> Referee Landing Page with Reward Offer</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Navigate to <code>/s/chaiandco/refer/VIKRAM1</code></li>
+      <li>Observe landing page content: reward amount, code, how-it-works, CTA</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Beautifully designed landing page with:
+    gift emoji, "You've been invited!" heading,
+    "Get Rs.32.00 in rewards on your first order" (correct referee_reward_amount from DB),
+    "YOUR REFERRAL CODE" label with "VIKRAM1" in dashed box,
+    "How it works" section with 3 numbered steps:
+    (1) Shop at Chai &amp; Co, (2) Use code VIKRAM1 at checkout, (3) Get Rs.32.00 credited to your wallet.
+    Steps dynamically include merchant name and code. Excellent UX.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="referral-uat/17-storefront-referee-landing.png" alt="Referee landing page top">
+      <figcaption>Referee landing page &mdash; invitation hero and how-it-works section</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 19 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#19</span> Shop Now CTA Button</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Scroll down on the referee landing page</li>
+      <li>Observe the "Shop Now" CTA button</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Full-width purple "Shop Now" button is present at the bottom of the card.
+    The button is prominent and clearly visible. It uses a Svelte event handler for navigation.
+    The button styling matches the brand's purple theme and provides a clear call-to-action.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="referral-uat/18-storefront-referee-shop-now.png" alt="Shop Now CTA">
+      <figcaption>Full-width "Shop Now" CTA button at the bottom of the referee landing page</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 20 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#20</span> Invalid/Non-Existent Referral Code</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Navigate to <code>/s/chaiandco/refer/INVALIDCODE123</code></li>
+      <li>Observe error handling</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Displays "Referral code not found" heading with a question mark icon and
+    "This referral link may have expired or is invalid." subtitle.
+    Clean, user-friendly error page. No technical details or stack traces exposed.
+    Merchant branding (Chai &amp; Co header) is still visible.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="referral-uat/19-storefront-invalid-code.png" alt="Invalid referral code">
+      <figcaption>Graceful error page for invalid referral code</figcaption>
+    </figure>
+  </div>
+</div>
+
+
+<!-- ============ BUG SUMMARY ============ -->
+<div class="section-header">
+  <h2>Bug Summary</h2>
+  <p>All bugs discovered during UAT, ordered by severity</p>
+</div>
+
+<div class="summary-card">
+  <table class="summary-table">
+    <thead>
+      <tr>
+        <th>Severity</th>
+        <th>Bug</th>
+        <th>Component</th>
+        <th>Root Cause</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="badge badge-fail">HIGH</span></td>
+        <td>Program update and code creation fail with 422</td>
+        <td>Admin &mdash; Program &amp; Codes tabs</td>
+        <td>Frontend does not include <code>merchant_id</code> in POST request body for <code>/referrals/programs</code> and <code>/referrals/codes</code></td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-fail">HIGH</span></td>
+        <td>No error feedback on API failure</td>
+        <td>Admin &mdash; Program &amp; Codes tabs</td>
+        <td>422 errors are silently swallowed; form clears giving false impression of success</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-bug">MEDIUM</span></td>
+        <td>Program tab form fields show 0 instead of loaded data</td>
+        <td>Admin &mdash; Program tab</td>
+        <td>Form state initialized with defaults and not updated from API response</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-bug">MEDIUM</span></td>
+        <td>Conversion rate shows 0.3% instead of 28.6%</td>
+        <td>Admin &mdash; Analytics tab</td>
+        <td>API returns decimal (0.2857), UI likely does <code>value.toFixed(1)</code> instead of <code>(value * 100).toFixed(1)</code></td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-bug">LOW</span></td>
+        <td>Refer page skips phone input on initial load</td>
+        <td>Storefront &mdash; Refer page</td>
+        <td>Page uses stored phone from previous session/wallet page instead of showing phone input for fresh visitors</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-bug">LOW</span></td>
+        <td>Suspicious referrals count not shown</td>
+        <td>Admin &mdash; Analytics tab</td>
+        <td>API returns <code>total_suspicious</code> but no card renders it in the UI</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-skip">LOW</span></td>
+        <td>Copy Link has no visual feedback</td>
+        <td>Storefront &mdash; Refer card</td>
+        <td>Clipboard copy works but no toast or button text change to confirm success</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ============ TEST ENVIRONMENT ============ -->
+<div class="summary-card">
+  <h2>Test Environment</h2>
+  <table class="summary-table">
+    <tbody>
+      <tr><td><strong>Backend</strong></td><td>Rust/Axum at <code>localhost:3000</code></td></tr>
+      <tr><td><strong>Frontend</strong></td><td>SvelteKit dev server at <code>localhost:5173</code></td></tr>
+      <tr><td><strong>Database</strong></td><td>PostgreSQL (<code>batua</code> database)</td></tr>
+      <tr><td><strong>Browser</strong></td><td>Google Chrome 146 (macOS)</td></tr>
+      <tr><td><strong>Test Merchant</strong></td><td>Chai &amp; Co (<code>chaiandco</code>, ID: <code>b0000000-...000001</code>)</td></tr>
+      <tr><td><strong>Test Customer (with code)</strong></td><td>Vikram Singh, +919000000004, code: VIKRAM1</td></tr>
+      <tr><td><strong>Test Customer (no code)</strong></td><td>Sunita Mishra, +919000000019</td></tr>
+      <tr><td><strong>Date</strong></td><td>21 March 2026</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<div class="report-footer">
+  <p>Referral System UAT Report &mdash; Generated 21 March 2026</p>
+</div>
+
+</div>
+</body>
+</html>

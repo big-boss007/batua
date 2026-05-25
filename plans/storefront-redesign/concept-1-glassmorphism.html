@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Concept 1: Glassmorphism Fintech</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #0a0a0f;
+    color: #e4e4ed;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+  }
+
+  .page-title {
+    font-size: 28px;
+    font-weight: 800;
+    color: #7c6aff;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+  .page-subtitle {
+    font-size: 14px;
+    color: #8888a0;
+    margin-bottom: 40px;
+    text-align: center;
+    max-width: 500px;
+    line-height: 1.6;
+  }
+
+  .phone {
+    width: 375px;
+    min-height: 812px;
+    background: #0a0a0f;
+    border-radius: 40px;
+    border: 3px solid #2a2a3a;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 25px 80px rgba(124, 106, 255, 0.15);
+  }
+
+  .notch {
+    width: 150px;
+    height: 28px;
+    background: #000;
+    border-radius: 0 0 20px 20px;
+    margin: 0 auto;
+  }
+
+  .screen {
+    padding: 12px 20px 40px;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0 16px;
+    border-bottom: 1px solid #2a2a3a;
+    margin-bottom: 20px;
+  }
+  .logo {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #7c6aff, #6b5ce7);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 16px;
+    color: white;
+  }
+  .brand-name {
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .phone-badge {
+    margin-left: auto;
+    font-size: 11px;
+    color: #8888a0;
+    background: #1a1a26;
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+
+  /* Balance Card — Glassmorphism */
+  .balance-card {
+    background: linear-gradient(135deg, rgba(124, 106, 255, 0.3) 0%, rgba(107, 92, 231, 0.15) 100%);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(124, 106, 255, 0.25);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .balance-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -30%;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(124, 106, 255, 0.2) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .balance-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 8px;
+  }
+  .balance-amount {
+    font-size: 40px;
+    font-weight: 800;
+    color: white;
+    line-height: 1.1;
+    margin-bottom: 4px;
+  }
+  .balance-amount .currency {
+    font-size: 24px;
+    font-weight: 600;
+    opacity: 0.7;
+    vertical-align: top;
+    margin-right: 2px;
+  }
+  .balance-sub {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 20px;
+  }
+
+  /* Bucket chips */
+  .bucket-row {
+    display: flex;
+    gap: 8px;
+  }
+  .bucket-chip {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  .bucket-chip-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.45);
+    margin-bottom: 4px;
+  }
+  .bucket-chip-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: white;
+  }
+  .bucket-chip-bar {
+    height: 3px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    margin-top: 8px;
+    overflow: hidden;
+  }
+  .bucket-chip-fill {
+    height: 100%;
+    background: #7c6aff;
+    border-radius: 2px;
+  }
+
+  /* Tier Card — Ring Progress */
+  .tier-card {
+    background: #12121a;
+    border: 1px solid #2a2a3a;
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .tier-ring {
+    width: 64px;
+    height: 64px;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .tier-ring svg {
+    transform: rotate(-90deg);
+  }
+  .tier-ring-bg {
+    fill: none;
+    stroke: #2a2a3a;
+    stroke-width: 5;
+  }
+  .tier-ring-fill {
+    fill: none;
+    stroke: #7c6aff;
+    stroke-width: 5;
+    stroke-linecap: round;
+    stroke-dasharray: 163.36;
+    stroke-dashoffset: 137.22; /* 163.36 * (1 - 0.16) */
+  }
+  .tier-ring-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 13px;
+    font-weight: 700;
+    color: #7c6aff;
+  }
+  .tier-info {
+    flex: 1;
+  }
+  .tier-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #e4e4ed;
+    margin-bottom: 2px;
+  }
+  .tier-target {
+    font-size: 12px;
+    color: #8888a0;
+    margin-bottom: 6px;
+  }
+  .tier-points {
+    font-size: 11px;
+    color: #6b7280;
+  }
+  .tier-arrow {
+    color: #8888a0;
+    font-size: 18px;
+  }
+
+  /* Quick Actions */
+  .quick-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .quick-action {
+    flex: 1;
+    background: #12121a;
+    border: 1px solid #2a2a3a;
+    border-radius: 14px;
+    padding: 14px 8px;
+    text-align: center;
+  }
+  .quick-action-icon {
+    font-size: 22px;
+    margin-bottom: 6px;
+  }
+  .quick-action-label {
+    font-size: 10px;
+    font-weight: 500;
+    color: #8888a0;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  /* Transactions */
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .section-title {
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .section-link {
+    font-size: 12px;
+    color: #7c6aff;
+    font-weight: 500;
+  }
+
+  .tx-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .tx-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #12121a;
+    border-radius: 12px;
+  }
+  .tx-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .tx-icon.credit {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+  }
+  .tx-icon.debit {
+    background: rgba(239, 68, 68, 0.12);
+    color: #ef4444;
+  }
+  .tx-icon.transfer {
+    background: rgba(124, 106, 255, 0.12);
+    color: #7c6aff;
+  }
+  .tx-details {
+    flex: 1;
+  }
+  .tx-label {
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .tx-meta {
+    font-size: 11px;
+    color: #6b7280;
+    margin-top: 1px;
+  }
+  .tx-amount {
+    font-size: 14px;
+    font-weight: 600;
+    text-align: right;
+  }
+  .tx-amount.credit { color: #10b981; }
+  .tx-amount.debit { color: #ef4444; }
+  .tx-amount.transfer { color: #7c6aff; }
+  .tx-time {
+    font-size: 10px;
+    color: #6b7280;
+    text-align: right;
+    margin-top: 1px;
+  }
+
+  /* Annotations */
+  .annotation-group {
+    margin-top: 60px;
+    width: 100%;
+    max-width: 700px;
+  }
+  .annotation-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #e4e4ed;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #2a2a3a;
+  }
+  .annotation {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    align-items: flex-start;
+  }
+  .annotation-num {
+    width: 28px;
+    height: 28px;
+    background: #7c6aff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+  }
+  .annotation-text {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #c4c4d4;
+  }
+  .annotation-text strong {
+    color: #e4e4ed;
+  }
+</style>
+</head>
+<body>
+
+<div class="page-title">Concept 1: Glassmorphism Fintech</div>
+<div class="page-subtitle">
+  A premium, modern fintech aesthetic. Glassmorphism balance card with frosted-glass effect,
+  circular tier progress ring, chip-style bucket breakdown, and quick action shortcuts.
+</div>
+
+<div class="phone">
+  <div class="notch"></div>
+  <div class="screen">
+
+    <!-- Header -->
+    <div class="header">
+      <div class="logo">H</div>
+      <div class="brand-name">HomeVibes</div>
+      <div class="phone-badge">+91 •••• 1234</div>
+    </div>
+
+    <!-- Balance Card -->
+    <div class="balance-card">
+      <div class="balance-label">Your Balance</div>
+      <div class="balance-amount"><span class="currency">₹</span>491</div>
+      <div class="balance-sub">₹662 total · ₹171 pending</div>
+
+      <div class="bucket-row">
+        <div class="bucket-chip">
+          <div class="bucket-chip-label">Earned</div>
+          <div class="bucket-chip-value">₹491</div>
+          <div class="bucket-chip-bar">
+            <div class="bucket-chip-fill" style="width: 100%"></div>
+          </div>
+        </div>
+        <div class="bucket-chip">
+          <div class="bucket-chip-label">COD Pending</div>
+          <div class="bucket-chip-value">₹0</div>
+          <div class="bucket-chip-bar">
+            <div class="bucket-chip-fill" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tier Card with Ring -->
+    <div class="tier-card">
+      <div class="tier-ring">
+        <svg width="64" height="64" viewBox="0 0 64 64">
+          <circle class="tier-ring-bg" cx="32" cy="32" r="26"/>
+          <circle class="tier-ring-fill" cx="32" cy="32" r="26"/>
+        </svg>
+        <div class="tier-ring-text">16%</div>
+      </div>
+      <div class="tier-info">
+        <div class="tier-name">Progress to Silver</div>
+        <div class="tier-target">491 / 3,000 points</div>
+        <div class="tier-points">Earn 2,509 more to unlock Silver</div>
+      </div>
+      <div class="tier-arrow">›</div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+      <div class="quick-action">
+        <div class="quick-action-icon">💳</div>
+        <div class="quick-action-label">Gift Card</div>
+      </div>
+      <div class="quick-action">
+        <div class="quick-action-icon">📊</div>
+        <div class="quick-action-label">Details</div>
+      </div>
+      <div class="quick-action">
+        <div class="quick-action-icon">🎁</div>
+        <div class="quick-action-label">Refer</div>
+      </div>
+    </div>
+
+    <!-- Transactions -->
+    <div class="section-header">
+      <div class="section-title">Recent Activity</div>
+      <div class="section-link">View All</div>
+    </div>
+
+    <div class="tx-list">
+      <div class="tx-item">
+        <div class="tx-icon transfer">⇄</div>
+        <div class="tx-details">
+          <div class="tx-label">Transferred</div>
+          <div class="tx-meta">Earned Credit</div>
+        </div>
+        <div>
+          <div class="tx-amount transfer">₹86.10</div>
+          <div class="tx-time">1 day ago</div>
+        </div>
+      </div>
+
+      <div class="tx-item">
+        <div class="tx-icon credit">+</div>
+        <div class="tx-details">
+          <div class="tx-label">Cashback Earned</div>
+          <div class="tx-meta">Order #1042</div>
+        </div>
+        <div>
+          <div class="tx-amount credit">+₹125.00</div>
+          <div class="tx-time">3 days ago</div>
+        </div>
+      </div>
+
+      <div class="tx-item">
+        <div class="tx-icon debit">−</div>
+        <div class="tx-details">
+          <div class="tx-label">Redeemed</div>
+          <div class="tx-meta">Order #1038</div>
+        </div>
+        <div>
+          <div class="tx-amount debit">−₹200.00</div>
+          <div class="tx-time">5 days ago</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Annotations -->
+<div class="annotation-group">
+  <div class="annotation-title">Key Design Changes</div>
+
+  <div class="annotation">
+    <div class="annotation-num">1</div>
+    <div class="annotation-text">
+      <strong>Glassmorphism Balance Card:</strong> Frosted-glass effect with subtle radial glow replaces the flat gradient. Feels premium and modern, like a credit card floating in space.
+    </div>
+  </div>
+
+  <div class="annotation">
+    <div class="annotation-num">2</div>
+    <div class="annotation-text">
+      <strong>Chip-style Bucket Breakdown:</strong> Instead of inline progress bars, buckets are shown as distinct chips with their own mini progress bars. Cleaner separation, easier to scan.
+    </div>
+  </div>
+
+  <div class="annotation">
+    <div class="annotation-num">3</div>
+    <div class="annotation-text">
+      <strong>Circular Tier Progress Ring:</strong> Replaces the linear progress bar with a ring chart — more visually engaging and immediately communicates completion percentage at a glance.
+    </div>
+  </div>
+
+  <div class="annotation">
+    <div class="annotation-num">4</div>
+    <div class="annotation-text">
+      <strong>Quick Action Grid:</strong> Promotes Gift Card, Balance Details, and Referral into always-visible icon buttons instead of burying them as text links at the bottom.
+    </div>
+  </div>
+
+  <div class="annotation">
+    <div class="annotation-num">5</div>
+    <div class="annotation-text">
+      <strong>Human-readable Labels:</strong> "EarnedCredit" → "Earned", "CodPending" → "COD Pending". Raw bucket type names are replaced with friendly labels throughout.
+    </div>
+  </div>
+
+  <div class="annotation">
+    <div class="annotation-num">6</div>
+    <div class="annotation-text">
+      <strong>Compact Header:</strong> Phone number shown as a masked badge in the header bar, freeing up vertical space previously used by the "Showing rewards for your account" banner.
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

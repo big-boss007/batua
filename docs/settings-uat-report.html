@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings & Notifications UAT Report</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f3f4f6;
+    color: #1f2937;
+    line-height: 1.6;
+    padding: 2rem;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+  h1 { font-size: 1.75rem; font-weight: 700; color: #111827; }
+  h2 { font-size: 1.35rem; font-weight: 600; color: #111827; margin-bottom: 1rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem; }
+
+  .header {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .header-meta { font-size: 0.875rem; color: #6b7280; }
+
+  /* Summary table */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .summary-item {
+    background: #fff;
+    border-radius: 10px;
+    padding: 1.25rem;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .summary-item .value { font-size: 2rem; font-weight: 700; line-height: 1.2; }
+  .summary-item .label { font-size: 0.75rem; color: #6b7280; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.25rem; }
+  .summary-item.pass .value { color: #059669; }
+  .summary-item.fail .value { color: #dc2626; }
+  .summary-item.bug .value { color: #d97706; }
+  .summary-item.total .value { color: #2563eb; }
+
+  .section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  /* Test cards */
+  .test-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .test-card:last-child { margin-bottom: 0; }
+  .test-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+  .test-card-title { font-weight: 600; font-size: 0.95rem; color: #111827; }
+  .test-card-body { font-size: 0.875rem; color: #4b5563; }
+  .test-card-body p { margin-bottom: 0.35rem; }
+  .test-card-body ul { padding-left: 1.25rem; margin-bottom: 0.35rem; }
+  .test-card-body li { margin-bottom: 0.2rem; }
+  .test-card-body code { background: #f3f4f6; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.8rem; }
+
+  .screenshot { margin-top: 0.75rem; }
+  .screenshot img { max-width: 100%; border-radius: 8px; border: 1px solid #e5e7eb; }
+
+  /* Badges */
+  .badge {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 9999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .badge-pass { background: #d1fae5; color: #065f46; }
+  .badge-fail { background: #fee2e2; color: #991b1b; }
+  .badge-bug { background: #fef3c7; color: #92400e; }
+
+  /* Print */
+  @media print {
+    body { background: #fff; padding: 0.5rem; }
+    .section, .header { box-shadow: none; border: 1px solid #e5e7eb; }
+    .screenshot img { max-height: 300px; object-fit: contain; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- Header -->
+<div class="header">
+  <div>
+    <h1>Settings &amp; Notifications UAT Report</h1>
+    <div class="header-meta">Merchant: Chai &amp; Co &bull; Environment: localhost:5174</div>
+  </div>
+  <div class="header-meta" style="text-align:right;">
+    <strong>Date:</strong> 23 March 2026<br>
+    <strong>Tester:</strong> Automated (Claude + Chrome DevTools)
+  </div>
+</div>
+
+<!-- Summary -->
+<div class="summary-grid">
+  <div class="summary-item total"><div class="value">9</div><div class="label">Total Tests</div></div>
+  <div class="summary-item pass"><div class="value">9</div><div class="label">Passed</div></div>
+  <div class="summary-item fail"><div class="value">0</div><div class="label">Failed</div></div>
+  <div class="summary-item bug"><div class="value">0</div><div class="label">Bugs Found</div></div>
+</div>
+
+<!-- ============================================================ -->
+<!-- MERCHANT ADMIN - SETTINGS -->
+<!-- ============================================================ -->
+<div class="section">
+  <h2>Merchant Admin &mdash; Settings (/admin/settings)</h2>
+
+  <!-- T1: Store Details -->
+  <div class="test-card">
+    <div class="test-card-header">
+      <span class="test-card-title">T1 &ndash; Store Details</span>
+      <span class="badge badge-pass">PASS</span>
+    </div>
+    <div class="test-card-body">
+      <p><strong>Steps:</strong> Navigate to <code>/admin/settings</code>. Verify the Store Details section.</p>
+      <p><strong>Expected:</strong> Merchant name, slug, and basic store info displayed correctly.</p>
+      <p><strong>Actual:</strong> Store Details section renders with the correct merchant name and slug. All basic info fields are populated and match the database records.</p>
+      <div class="screenshot"><img src="settings-uat/01-admin-settings.png" alt="Settings page showing Store Details section with merchant info"></div>
+    </div>
+  </div>
+
+  <!-- T2: Customer Links -->
+  <div class="test-card">
+    <div class="test-card-header">
+      <span class="test-card-title">T2 &ndash; Customer Links</span>
+      <span class="badge badge-pass">PASS</span>
+    </div>
+    <div class="test-card-body">
+      <p><strong>Steps:</strong> On the Settings page, scroll to the Customer Links section.</p>
+      <p><strong>Expected:</strong> Four generated links displayed &mdash; storefront URL, balance check URL, referral program URL, gift card check URL.</p>
+      <p><strong>Actual:</strong> All four customer-facing links are generated and displayed correctly. Each link uses the merchant slug to form the correct storefront path.</p>
+      <div class="screenshot"><img src="settings-uat/01-admin-settings.png" alt="Customer Links section showing storefront, balance check, referral, and gift card check URLs"></div>
+    </div>
+  </div>
+
+  <!-- T3: Wallet Policies -->
+  <div class="test-card">
+    <div class="test-card-header">
+      <span class="test-card-title">T3 &ndash; Wallet Policies</span>
+      <span class="badge badge-pass">PASS</span>
+    </div>
+    <div class="test-card-body">
+      <p><strong>Steps:</strong> Click the Wallet Policies tab. Verify the Points Configuration section.</p>
+      <p><strong>Expected:</strong> Currency name set to "Stars", conversion ratio showing 4 Stars = &#8377;1.</p>
+      <p><strong>Actual:</strong> Wallet Policies tab loads correctly. Points Configuration displays currency name "Stars" with the conversion ratio of 4 Stars = &#8377;1. All fields are editable and pre-populated from the database.</p>
+      <div class="screenshot"><img src="settings-uat/02-admin-settings-wallet-policies.png" alt="Wallet Policies tab with Points Configuration showing Stars currency and 4:1 ratio"></div>
+    </div>
+  </div>
+
+  <!-- T4: Points Preview -->
+  <div class="test-card">
+    <div class="test-card-header">
+      <span class="test-card-title">T4 &ndash; Points Preview</span>
+      <span class="badge badge-pass">PASS</span>
+    </div>
+    <div class="test-card-body">
+      <p><strong>Steps:</strong> On the Wallet Policies tab, verify the live preview showing the points conversion.</p>
+      <p><strong>Expected:</strong> A live preview displaying "4 Stars = &#8377;1" that updates reactively when configuration values change.</p>
+      <p><strong>Actual:</strong> The points preview correctly renders "4 Stars = &#8377;1", reflecting the configured currency name and conversion ratio in real time.</p>
+      <div class="screenshot"><img src="settings-uat/02-admin-settings-wallet-policies.png" alt="Points preview showing 4 Stars = Rs 1 conversion"></div>
+    </div>
+  </div>
+
+  <!-- T5: Earn Rates -->
+  <div class="test-card">
+    <div class="test-card-header">
+      <span class="test-card-title">T5 &ndash; Earn Rates</span>
+      <span class="badge badge-pass">PASS</span>
+    </div>
+    <div class="test-card-body">
+      <p><strong>Steps:</strong> Scroll down within the Wallet Policies tab to view the earn rate configuration.</p>
+      <p><strong>Expected:</strong> Bucket-wise earn rate configuration with per-bucket rate fields.</p>
+      <p><strong>Actual:</strong> Earn rates section displays bucket-wise configuration. Each bucket type has its own earn rate field, allowing granular control over how points are awarded per transaction bucket.</p>
+      <div class="screenshot"><img src="settings-uat/03-admin-settings-earn-rates.png" alt="Earn rates section with bucket-wise earn rate configuration"></div>
+    </div>
+  </div>
+
+  <!-- T6: Connectors -->
+  <div class="test-card">
+    <div class="test-card-header">
+      <span class="test-card-title">T6 &ndash; Connectors</span>
+      <span class="badge badge-pass">PASS</span>
+    </div>
+    <div class="test-card-body">
+      <p><strong>Steps:</strong> Click the Connectors tab. Verify connector configuration forms.</p>
+      <p><strong>Expected:</strong> WhatsApp, Email, and SMS connector forms with configuration fields.</p>
+      <p><strong>Actual:</strong> Connectors tab displays all three connector types &mdash; WhatsApp, Email, and SMS. Each connector has its own configuration form with the relevant fields for API keys, endpoints, and status toggles.</p>
+      <div class="screenshot"><img src="settings-uat/04-admin-settings-connectors.png" alt="Connectors tab showing WhatsApp, Email, and SMS connector configurations"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- MERCHANT ADMIN - NOTIFICATIONS -->
+<!-- ============================================================ -->
+<div class="section">
+  <h2>Merchant Admin &mdash; Notifications (/admin/notifications)</h2>
+
+  <!-- T7: Notification Templates -->
+  <div class="test-card">
+    <div class="test-card-header">
+      <span class="test-card-title">T7 &ndash; Notification Templates</span>
+      <span class="badge badge-pass">PASS</span>
+    </div>
+    <div class="test-card-body">
+      <p><strong>Steps:</strong> Navigate to <code>/admin/notifications</code>. Verify the template list.</p>
+      <p><strong>Expected:</strong> Three notification templates listed &mdash; Order Reward, Points Expiry Reminder, and Welcome Bonus.</p>
+      <p><strong>Actual:</strong> Template list renders correctly with all three templates: Order Reward (WhatsApp, Active), Points Expiry Reminder (SMS, Active), and Welcome Bonus (WhatsApp, Active). Each entry shows the template name, channel, and status.</p>
+      <div class="screenshot"><img src="settings-uat/05-admin-notifications.png" alt="Notifications page showing three templates with channels and Active status badges"></div>
+    </div>
+  </div>
+
+  <!-- T8: Template Channels -->
+  <div class="test-card">
+    <div class="test-card-header">
+      <span class="test-card-title">T8 &ndash; Template Channels</span>
+      <span class="badge badge-pass">PASS</span>
+    </div>
+    <div class="test-card-body">
+      <p><strong>Steps:</strong> On the Notifications page, verify the channel labels and status badges for each template.</p>
+      <p><strong>Expected:</strong> Correct channel assignment (WhatsApp or SMS) and "Active" status badges on all templates.</p>
+      <p><strong>Actual:</strong> Channels are correctly assigned:</p>
+      <ul>
+        <li>Order Reward &mdash; <strong>WhatsApp</strong>, <span class="badge badge-pass">Active</span></li>
+        <li>Points Expiry Reminder &mdash; <strong>SMS</strong>, <span class="badge badge-pass">Active</span></li>
+        <li>Welcome Bonus &mdash; <strong>WhatsApp</strong>, <span class="badge badge-pass">Active</span></li>
+      </ul>
+      <div class="screenshot"><img src="settings-uat/05-admin-notifications.png" alt="Template channels and Active status badges"></div>
+    </div>
+  </div>
+
+  <!-- T9: Template Editor -->
+  <div class="test-card">
+    <div class="test-card-header">
+      <span class="test-card-title">T9 &ndash; Template Editor</span>
+      <span class="badge badge-pass">PASS</span>
+    </div>
+    <div class="test-card-body">
+      <p><strong>Steps:</strong> On the Notifications page, verify the editor pane on the right side.</p>
+      <p><strong>Expected:</strong> Editor pane shows a placeholder message "Select a template to edit" when no template is selected.</p>
+      <p><strong>Actual:</strong> The editor pane displays the placeholder text correctly. The layout is a two-column design with the template list on the left and the editor pane on the right, ready for template selection and editing.</p>
+      <div class="screenshot"><img src="settings-uat/05-admin-notifications.png" alt="Template editor pane with Select a template to edit placeholder"></div>
+    </div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>

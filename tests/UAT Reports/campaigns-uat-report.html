@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Campaigns UAT Report</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #f5f6f8;
+    color: #1a1a2e;
+    line-height: 1.6;
+    padding: 2rem;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  h1 {
+    font-size: 2rem;
+    margin-bottom: 0.25rem;
+    color: #16213e;
+  }
+
+  .subtitle {
+    color: #555;
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+  }
+
+  /* Summary table */
+  .summary-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+
+  .summary-card h2 {
+    font-size: 1.15rem;
+    margin-bottom: 1rem;
+    color: #16213e;
+  }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .summary-stat {
+    text-align: center;
+    padding: 1rem;
+    border-radius: 8px;
+  }
+
+  .summary-stat .number {
+    font-size: 2rem;
+    font-weight: 700;
+    display: block;
+  }
+
+  .summary-stat .label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #666;
+  }
+
+  .stat-total { background: #eef0f7; }
+  .stat-total .number { color: #16213e; }
+  .stat-pass { background: #e8f5e9; }
+  .stat-pass .number { color: #2e7d32; }
+  .stat-fail { background: #fce4ec; }
+  .stat-fail .number { color: #c62828; }
+  .stat-bug { background: #fff3e0; }
+  .stat-bug .number { color: #e65100; }
+  .stat-skip { background: #e8eaf6; }
+  .stat-skip .number { color: #3949ab; }
+
+  /* Summary table */
+  .summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+  }
+
+  .summary-table th {
+    text-align: left;
+    padding: 0.6rem 0.8rem;
+    background: #f5f6f8;
+    border-bottom: 2px solid #ddd;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .summary-table td {
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #eee;
+  }
+
+  .summary-table tr:hover { background: #fafafa; }
+
+  /* Badges */
+  .badge {
+    display: inline-block;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .badge-pass { background: #e8f5e9; color: #2e7d32; }
+  .badge-fail { background: #fce4ec; color: #c62828; }
+  .badge-bug { background: #fff3e0; color: #e65100; }
+  .badge-skip { background: #e8eaf6; color: #3949ab; }
+
+  /* Section headers */
+  .section-header {
+    margin: 2.5rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #5c6bc0;
+  }
+
+  .section-header h2 {
+    font-size: 1.35rem;
+    color: #283593;
+  }
+
+  .section-header p {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 0.25rem;
+  }
+
+  /* Test case cards */
+  .test-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    border-left: 4px solid #ccc;
+  }
+
+  .test-card.pass { border-left-color: #4caf50; }
+  .test-card.fail { border-left-color: #f44336; }
+  .test-card.bug { border-left-color: #ff9800; }
+
+  .test-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+
+  .test-card-header h3 {
+    font-size: 1rem;
+    color: #1a1a2e;
+  }
+
+  .test-id {
+    font-size: 0.8rem;
+    color: #999;
+    font-weight: 400;
+    margin-right: 0.5rem;
+  }
+
+  .test-steps {
+    font-size: 0.88rem;
+    color: #555;
+    margin-bottom: 0.75rem;
+  }
+
+  .test-steps ol {
+    padding-left: 1.25rem;
+  }
+
+  .test-steps li {
+    margin-bottom: 0.2rem;
+  }
+
+  .test-notes {
+    font-size: 0.85rem;
+    color: #666;
+    background: #f9f9fb;
+    padding: 0.6rem 0.9rem;
+    border-radius: 6px;
+    margin-bottom: 0.75rem;
+  }
+
+  .test-notes strong { color: #333; }
+
+  .test-screenshot {
+    margin-top: 0.75rem;
+  }
+
+  .test-screenshot img {
+    max-width: 100%;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+
+  .test-screenshot figcaption {
+    font-size: 0.8rem;
+    color: #888;
+    margin-top: 0.4rem;
+    text-align: center;
+  }
+
+  /* Bug details */
+  .bug-detail {
+    background: #fff8f0;
+    border: 1px solid #ffe0b2;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.88rem;
+  }
+
+  .bug-detail strong { color: #e65100; }
+
+  .bug-detail code {
+    background: #ffecd2;
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    font-size: 0.82rem;
+  }
+
+  /* Footer */
+  .report-footer {
+    margin-top: 3rem;
+    padding-top: 1rem;
+    border-top: 1px solid #ddd;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #999;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>Campaigns UAT Report</h1>
+<p class="subtitle">Batua Project &mdash; 21 March 2026 &mdash; Merchant: Chai &amp; Co (<code>chaiandco</code>)</p>
+
+<!-- ============ SUMMARY ============ -->
+<div class="summary-card">
+  <h2>Executive Summary</h2>
+  <div class="summary-grid">
+    <div class="summary-stat stat-total">
+      <span class="number">12</span>
+      <span class="label">Total Tests</span>
+    </div>
+    <div class="summary-stat stat-pass">
+      <span class="number">10</span>
+      <span class="label">Passed</span>
+    </div>
+    <div class="summary-stat stat-bug">
+      <span class="number">2</span>
+      <span class="label">Bugs Found</span>
+    </div>
+    <div class="summary-stat stat-fail">
+      <span class="number">0</span>
+      <span class="label">Failed</span>
+    </div>
+    <div class="summary-stat stat-skip">
+      <span class="number">0</span>
+      <span class="label">Skipped</span>
+    </div>
+  </div>
+
+  <table class="summary-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Test Case</th>
+        <th>Stakeholder</th>
+        <th>Result</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>View campaigns page</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>2</td><td>Active campaign card</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>3</td><td>Festive templates grid</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>4</td><td>Diwali template</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>5</td><td>Navratri template</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>6</td><td>Holi template</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>7</td><td>National holiday templates</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>8</td><td>International templates</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>9</td><td>Template cards are clickable</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>10</td><td>Category badges color coding</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>11</td><td>No create custom campaign button</td><td>Merchant Admin</td><td><span class="badge badge-bug">BUG</span></td></tr>
+      <tr><td>12</td><td>No campaign management actions</td><td>Merchant Admin</td><td><span class="badge badge-bug">BUG</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ============ STAKEHOLDER 1: MERCHANT ADMIN ============ -->
+<div class="section-header">
+  <h2>Stakeholder 1: Merchant Admin</h2>
+  <p>Admin panel at <code>/admin/campaigns</code> &mdash; Active &amp; Upcoming Campaigns, Festive Templates</p>
+</div>
+
+<!-- Test 1 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#1</span> View Campaigns Page</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Navigate to <code>/admin/campaigns</code></li>
+      <li>Observe page title "Campaigns" with subtitle "Boost engagement with festive and seasonal reward campaigns"</li>
+      <li>Verify two sections: Active &amp; Upcoming Campaigns, Festive Templates</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Page loads correctly with the expected title, subtitle, and both sections rendered.
+    Layout is clean with clear visual separation between active campaigns and festive templates.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="campaigns-uat/01-admin-campaigns-page.png" alt="Campaigns page">
+      <figcaption>Campaigns page with Active &amp; Upcoming Campaigns and Festive Templates sections</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 2 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#2</span> Active Campaign Card</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Observe "Summer Sale 2x" campaign card in the Active &amp; Upcoming section</li>
+      <li>Verify "ACTIVE" badge (green), type: multiplier, dates, and multiplier value</li>
+      <li>Cross-check against database record</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> "Summer Sale 2x" campaign displayed as a card with green "ACTIVE" badge.
+    Type: multiplier, Dates: 18 Mar 2026 &ndash; 17 Apr 2026, Multiplier: 2x (purple badge).
+    All values match the database record exactly.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="campaigns-uat/01-admin-campaigns-page.png" alt="Active campaign card">
+      <figcaption>"Summer Sale 2x" campaign card with ACTIVE badge and correct metadata</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 3 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#3</span> Festive Templates Grid</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Scroll to "Festive Templates" section</li>
+      <li>Verify subtitle "Select a template to create a new campaign with pre-configured settings"</li>
+      <li>Count template cards and check grid layout</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> "Festive Templates" section renders correctly with the expected subtitle.
+    10 template cards displayed in a 3-column grid layout. Each card shows: festival name,
+    category badge, description, multiplier, and duration. Layout is responsive and well-organized.
+  </div>
+</div>
+
+<!-- Test 4 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#4</span> Diwali Template</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Locate the Diwali template card in the grid</li>
+      <li>Verify name, badge, description, multiplier, and duration</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Diwali template card displays correctly.
+    Name: Diwali, Badge: "religious",
+    Description: "Festival of lights &mdash; peak shopping season across India",
+    Multiplier: 3x, Duration: 10 days. All values match expected configuration.
+  </div>
+</div>
+
+<!-- Test 5 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#5</span> Navratri Template</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Locate the Navratri template card in the grid</li>
+      <li>Verify name, badge, description, multiplier, and duration</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Navratri template card displays correctly.
+    Name: Navratri, Badge: "religious",
+    Description: "Nine nights of celebration with high consumer spending",
+    Multiplier: 2x, Duration: 9 days. All values match expected configuration.
+  </div>
+</div>
+
+<!-- Test 6 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#6</span> Holi Template</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Locate the Holi template card in the grid</li>
+      <li>Verify name, badge, description, multiplier, and duration</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Holi template card displays correctly.
+    Name: Holi, Badge: "religious",
+    Description: "Festival of colors &mdash; spring shopping boost",
+    Multiplier: 2x, Duration: 3 days. All values match expected configuration.
+  </div>
+</div>
+
+<!-- Test 7 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#7</span> National Holiday Templates</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Locate Republic Day and Independence Day template cards</li>
+      <li>Verify badge, multiplier, and duration for both</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Both national holiday templates display correctly.
+    Republic Day: "national" badge, 1.5x multiplier, 3 days.
+    Independence Day: "national" badge, 1.5x multiplier, 3 days.
+    Both show appropriate descriptions and consistent styling within the "national" category.
+  </div>
+</div>
+
+<!-- Test 8 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#8</span> International Templates</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Locate Christmas, New Year, and Valentine's Day template cards</li>
+      <li>Verify badge, multiplier, and duration for each</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> All three international templates display correctly.
+    Christmas: "international" badge, 2x multiplier, 7 days.
+    New Year: "international" badge, 2x multiplier, 5 days.
+    Valentine's Day: "international" badge, 1.5x multiplier, 3 days.
+    Consistent styling within the "international" category.
+  </div>
+</div>
+
+<!-- Test 9 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#9</span> Template Cards Are Clickable</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Hover over each of the 10 template cards</li>
+      <li>Verify cursor changes to pointer indicating clickability</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> All 10 template cards have <code>cursor: pointer</code> on hover,
+    indicating they are interactive. Presumably clicking a template creates a campaign
+    from its pre-configured settings.
+  </div>
+</div>
+
+<!-- Test 10 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#10</span> Category Badges Color Coding</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Compare badge styling across "religious", "national", and "international" categories</li>
+      <li>Verify visual distinction between categories</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Category badges are color-coded consistently.
+    "religious" badges styled with one color scheme, "national" badges with another,
+    and "international" badges with a third. Visual distinction between categories
+    is clear and helps merchants quickly identify template types.
+  </div>
+</div>
+
+<!-- Test 11 -->
+<div class="test-card bug">
+  <div class="test-card-header">
+    <h3><span class="test-id">#11</span> No Create Custom Campaign Button</h3>
+    <span class="badge badge-bug">BUG</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Scan the entire campaigns page for a "Create Campaign" or "New Campaign" button</li>
+      <li>Check page header, both sections, and any floating action buttons</li>
+    </ol>
+  </div>
+  <div class="bug-detail">
+    <strong>Bug (MEDIUM):</strong> No visible "Create Campaign" or "New Campaign" button exists for custom campaigns.
+    Only festive templates are available for creating campaigns. Merchants wanting to create a custom
+    multiplier campaign (e.g., "Flash Sale", "Anniversary Sale") have no option to do so.
+    <br><br>
+    <strong>Root cause:</strong> Create campaign form/modal not implemented; only template-based creation is available.
+  </div>
+</div>
+
+<!-- Test 12 -->
+<div class="test-card bug">
+  <div class="test-card-header">
+    <h3><span class="test-id">#12</span> No Campaign Management Actions</h3>
+    <span class="badge badge-bug">BUG</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Inspect the active "Summer Sale 2x" campaign card for action buttons</li>
+      <li>Look for edit, deactivate, or delete options</li>
+      <li>Check for context menus or hover-revealed actions</li>
+    </ol>
+  </div>
+  <div class="bug-detail">
+    <strong>Bug (MEDIUM):</strong> The active campaign card has no edit, deactivate, or delete buttons.
+    Merchants cannot modify dates, multiplier, or toggle active/inactive from the UI.
+    There is no way to end the "Summer Sale 2x" campaign early if needed.
+    <br><br>
+    <strong>Root cause:</strong> Campaign CRUD operations not fully implemented in the admin UI.
+    The backend may support these operations, but the frontend does not expose them.
+  </div>
+</div>
+
+
+<!-- ============ BUG SUMMARY ============ -->
+<div class="section-header">
+  <h2>Bug Summary</h2>
+  <p>All bugs discovered during UAT, ordered by severity</p>
+</div>
+
+<div class="summary-card">
+  <table class="summary-table">
+    <thead>
+      <tr>
+        <th>Severity</th>
+        <th>Bug</th>
+        <th>Component</th>
+        <th>Root Cause</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="badge badge-bug">MEDIUM</span></td>
+        <td>No create custom campaign button</td>
+        <td>Admin &mdash; Campaigns page</td>
+        <td>Only festive template-based creation available; no custom campaign form/modal implemented</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-bug">MEDIUM</span></td>
+        <td>No campaign management actions (edit/deactivate/delete)</td>
+        <td>Admin &mdash; Campaigns page</td>
+        <td>Active campaigns cannot be modified or ended from the UI; CRUD operations not exposed in frontend</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ============ TEST ENVIRONMENT ============ -->
+<div class="summary-card">
+  <h2>Test Environment</h2>
+  <table class="summary-table">
+    <tbody>
+      <tr><td><strong>Backend</strong></td><td>Rust/Axum at <code>localhost:3000</code></td></tr>
+      <tr><td><strong>Frontend</strong></td><td>SvelteKit dev server at <code>localhost:5174</code></td></tr>
+      <tr><td><strong>Database</strong></td><td>PostgreSQL (<code>batua</code> database)</td></tr>
+      <tr><td><strong>Test Merchant</strong></td><td>Chai &amp; Co (<code>chaiandco</code>)</td></tr>
+      <tr><td><strong>Active Campaign</strong></td><td>Summer Sale 2x (multiplier 2x, 18 Mar &ndash; 17 Apr 2026)</td></tr>
+      <tr><td><strong>Date</strong></td><td>21 March 2026</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<div class="report-footer">
+  <p>Campaigns UAT Report &mdash; Generated 21 March 2026</p>
+</div>
+
+</div>
+</body>
+</html>

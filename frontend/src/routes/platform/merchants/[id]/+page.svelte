@@ -13,7 +13,9 @@
   let merchant: PlatformMerchant | null = $derived(data.merchant ?? null);
   let stats: MerchantStats | null = $derived(data.stats ?? null);
 
+  // svelte-ignore state_referenced_locally
   let currentPlan = $state(data.merchant?.plan_tier ?? 'free');
+  // svelte-ignore state_referenced_locally
   let isActive = $state(data.merchant?.is_active ?? false);
 
   const planItems = [

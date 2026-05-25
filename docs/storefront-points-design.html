@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Storefront — Points + Money Design</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: #0e0f13;
+    color: #e2e2e8;
+    display: flex;
+    gap: 48px;
+    padding: 32px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .phone-frame {
+    width: 390px;
+    background: #1a1d27;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    flex-shrink: 0;
+  }
+
+  .frame-label {
+    text-align: center;
+    padding: 16px;
+    font-size: 11px;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 600;
+    background: #0e0f13;
+  }
+
+  /* --- Merchant Header --- */
+  .merchant-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 24px;
+    background: #1a1d27;
+    border-bottom: 1px solid #2a2d3a;
+  }
+  .merchant-logo {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #6366f1, #818cf8);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 700; color: #fff;
+  }
+  .merchant-name { font-size: 15px; font-weight: 600; }
+
+  /* --- Profile Bar --- */
+  .profile-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 24px;
+  }
+  .profile-left { display: flex; align-items: center; gap: 14px; }
+  .avatar {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #818cf8);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 16px; color: #fff;
+  }
+  .greeting-text { font-size: 13px; color: #9ca3af; }
+  .customer-name { font-size: 20px; font-weight: 700; margin-top: 2px; }
+  .greeting-meta { font-size: 12px; color: #9ca3af; margin-top: 2px; }
+  .meta-tier { color: #818cf8; font-weight: 600; }
+  .switch-btn {
+    font-size: 12px; color: #818cf8; background: none;
+    border: 1px solid #2a2d3a; padding: 5px 14px; border-radius: 20px;
+  }
+
+  /* --- Multiplier Strip --- */
+  .multiplier-strip {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 12px 24px;
+    background: linear-gradient(90deg, rgba(99,102,241,0.12), rgba(129,140,248,0.06));
+    border-top: 1px solid #2a2d3a; border-bottom: 1px solid #2a2d3a;
+    font-size: 13px; font-weight: 600; color: #818cf8;
+  }
+  .mult-val { font-weight: 700; color: #4ade80; }
+
+  /* --- Balance Card --- */
+  .balance-hero { text-align: center; padding: 28px 24px 24px; }
+  .balance-eyebrow {
+    font-size: 12px; color: #9ca3af; text-transform: uppercase;
+    letter-spacing: 0.8px; margin-bottom: 6px;
+  }
+  .balance-points {
+    font-size: 42px; font-weight: 700; color: #4ade80;
+    line-height: 1; letter-spacing: -1px;
+  }
+  .balance-unit {
+    font-size: 16px; font-weight: 600; color: #6ee7b7;
+    margin-left: 4px; letter-spacing: 0;
+  }
+  .balance-worth {
+    margin-top: 8px; font-size: 14px; color: #9ca3af;
+  }
+  .balance-worth-amount { color: #c4b5fd; font-weight: 600; }
+  .balance-detail {
+    display: flex; justify-content: center; gap: 24px;
+    margin-top: 10px; font-size: 13px; color: #9ca3af;
+  }
+  .balance-pending { color: #fde047; }
+
+  /* --- Bucket Grid --- */
+  .bucket-section { padding: 20px 24px; }
+  .section-title {
+    font-size: 12px; color: #9ca3af; text-transform: uppercase;
+    letter-spacing: 0.8px; margin-bottom: 14px; font-weight: 500;
+  }
+  .bucket-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .bucket-item {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid #2a2d3a; border-radius: 10px; padding: 14px 16px;
+  }
+  .bucket-label {
+    font-size: 11px; color: #9ca3af; text-transform: uppercase;
+    letter-spacing: 0.5px; margin-bottom: 6px;
+  }
+  .bucket-value { font-size: 17px; font-weight: 600; color: #fff; }
+  .bucket-sub { font-size: 11px; color: #6b7280; margin-top: 2px; }
+  .bucket-money { color: #c4b5fd; }
+  .highlight { color: #fde047; }
+
+  /* --- Divider --- */
+  .divider { height: 1px; background: #2a2d3a; }
+
+  /* --- Lifetime Strip --- */
+  .lifetime-strip {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 24px;
+    background: rgba(99,102,241,0.06);
+    border-top: 1px solid #2a2d3a; border-bottom: 1px solid #2a2d3a;
+  }
+  .lifetime-label { font-size: 13px; color: #9ca3af; }
+  .lifetime-value { font-size: 16px; font-weight: 700; color: #818cf8; }
+
+  /* --- Tier Card --- */
+  .tier-section { padding: 20px 24px; }
+  .tier-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .tier-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(255,255,255,0.06); border: 1px solid #2a2d3a;
+    border-radius: 20px; padding: 5px 14px 5px 10px;
+    font-size: 13px; font-weight: 600;
+  }
+  .tier-hint { font-size: 12px; color: #9ca3af; }
+  .progress-track {
+    width: 100%; height: 6px; background: #2a2d3a;
+    border-radius: 3px; overflow: hidden; margin-bottom: 6px;
+  }
+  .progress-fill {
+    height: 100%; background: linear-gradient(90deg, #6366f1, #818cf8);
+    border-radius: 3px;
+  }
+  .progress-labels {
+    display: flex; justify-content: space-between;
+    font-size: 11px; color: #9ca3af;
+  }
+  .progress-total { color: #fff; font-weight: 500; }
+
+  /* --- Transaction List --- */
+  .tx-section { padding: 20px 24px; }
+  .tx-item {
+    display: flex; align-items: center; gap: 16px; padding: 14px 0;
+  }
+  .tx-item + .tx-item { border-top: 1px solid #2a2d3a; }
+  .tx-indicator {
+    width: 4px; height: 32px; border-radius: 2px; flex-shrink: 0;
+  }
+  .ind-credit { background: #4ade80; }
+  .ind-debit { background: #f87171; }
+  .tx-details { display: flex; flex-direction: column; flex: 1; }
+  .tx-label { font-size: 13px; font-weight: 500; }
+  .tx-meta { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+  .tx-right { display: flex; flex-direction: column; align-items: flex-end; }
+  .tx-amount { font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .tx-amount-credit { color: #4ade80; }
+  .tx-amount-debit { color: #fff; }
+  .tx-running { font-size: 10px; color: #9ca3af; margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .tx-currency-hint { font-size: 10px; color: #6b7280; margin-top: 1px; font-variant-numeric: tabular-nums; }
+
+  /* --- Referral Card --- */
+  .referral-card { padding: 20px 24px; }
+  .referral-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .referral-subtitle { font-size: 13px; color: #9ca3af; margin-bottom: 16px; }
+  .referral-code-box {
+    display: flex; align-items: center; justify-content: center;
+    padding: 16px; background: rgba(255,255,255,0.03);
+    border: 2px dashed #2a2d3a; border-radius: 10px; margin-bottom: 16px;
+  }
+  .referral-code {
+    font-family: 'SF Mono', monospace; font-size: 22px; font-weight: 700;
+    color: #818cf8; letter-spacing: 0.05em;
+  }
+
+  /* --- Bottom Actions --- */
+  .bottom-actions { display: flex; gap: 8px; padding: 20px 24px; }
+  .bottom-action {
+    flex: 1; padding: 14px; text-align: center;
+    border: 1px solid #2a2d3a; border-radius: 12px;
+    font-size: 12px; font-weight: 500; color: #9ca3af;
+    text-decoration: none;
+  }
+  .bottom-action-primary {
+    background: #6366f1; border-color: #6366f1; color: #fff;
+  }
+
+  /* --- Annotation --- */
+  .annotation {
+    position: relative;
+    margin: 32px 0 0;
+    padding: 16px 20px;
+    background: rgba(99,102,241,0.08);
+    border: 1px solid rgba(99,102,241,0.2);
+    border-radius: 12px;
+    font-size: 12px;
+    color: #a5b4fc;
+    line-height: 1.6;
+  }
+  .annotation strong { color: #c4b5fd; }
+  .annotation-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; margin-bottom: 8px; color: #818cf8;
+  }
+  .side-notes {
+    width: 390px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-top: 40px;
+  }
+  .note-card {
+    padding: 16px 20px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid #2a2d3a;
+    border-radius: 12px;
+    font-size: 12px;
+    color: #9ca3af;
+    line-height: 1.6;
+  }
+  .note-card h4 { color: #e2e2e8; font-size: 13px; margin-bottom: 8px; }
+  .note-card code {
+    background: rgba(99,102,241,0.15);
+    color: #a5b4fc; padding: 1px 5px; border-radius: 3px;
+    font-size: 11px;
+  }
+  .note-card .tag {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 10px; font-weight: 600; margin-right: 4px;
+  }
+  .tag-points { background: rgba(74,222,128,0.15); color: #4ade80; }
+  .tag-money { background: rgba(196,181,253,0.15); color: #c4b5fd; }
+  .vs { display: flex; align-items: center; gap: 12px; margin: 12px 0; }
+  .vs-arrow { color: #6366f1; font-size: 18px; }
+</style>
+</head>
+<body>
+
+<!-- ========== CURRENT DESIGN ========== -->
+<div>
+  <div class="phone-frame">
+    <div class="frame-label">Current — Everything in ₹</div>
+    <div class="merchant-header">
+      <div class="merchant-logo">C</div>
+      <div class="merchant-name">Chai & Co</div>
+    </div>
+    <div class="profile-bar">
+      <div class="profile-left">
+        <div class="avatar">PS</div>
+        <div>
+          <div class="greeting-text">Welcome back,</div>
+          <div class="customer-name">Priya Sharma</div>
+          <div class="greeting-meta"><span class="meta-tier">Gold</span> · Member · 330d left</div>
+        </div>
+      </div>
+      <button class="switch-btn">Switch</button>
+    </div>
+    <div class="multiplier-strip">
+      ⚡ <span>You're earning <span class="mult-val">1.5x</span> on every order</span>
+    </div>
+    <div class="divider"></div>
+    <div class="balance-hero">
+      <div class="balance-eyebrow">Spendable Balance</div>
+      <div class="balance-points">₹500.00</div>
+      <div class="balance-detail">
+        ₹700.00 total · <span class="balance-pending">₹200.00 pending</span>
+      </div>
+    </div>
+    <div class="bucket-section">
+      <div class="section-title">Bucket Breakdown</div>
+      <div class="bucket-grid">
+        <div class="bucket-item"><div class="bucket-label">Earned</div><div class="bucket-value">₹350.00</div></div>
+        <div class="bucket-item"><div class="bucket-label">Gift Card</div><div class="bucket-value">₹500.00</div></div>
+        <div class="bucket-item"><div class="bucket-label">Referral</div><div class="bucket-value">₹100.00</div></div>
+        <div class="bucket-item"><div class="bucket-label">COD Pending</div><div class="bucket-value highlight">₹200.00</div></div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="tx-section">
+      <div class="section-title">Recent Activity</div>
+      <div class="tx-item">
+        <div class="tx-indicator ind-credit"></div>
+        <div class="tx-details">
+          <span class="tx-label">Earned</span>
+          <span class="tx-meta">Earned Credit · Today</span>
+        </div>
+        <div class="tx-right">
+          <span class="tx-amount tx-amount-credit">+₹80.00</span>
+          <span class="tx-running">bal ₹500.00</span>
+        </div>
+      </div>
+      <div class="tx-item">
+        <div class="tx-indicator ind-debit"></div>
+        <div class="tx-details">
+          <span class="tx-label">Redeemed</span>
+          <span class="tx-meta">Earned Credit · 5 days ago</span>
+        </div>
+        <div class="tx-right">
+          <span class="tx-amount tx-amount-debit">-₹75.00</span>
+          <span class="tx-running">bal ₹420.00</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="annotation">
+    <div class="annotation-title">Problems</div>
+    <strong>1.</strong> Balance shows ₹ but is computed from <code>earning_unit</code> (points)<br>
+    <strong>2.</strong> Gift cards (real ₹) and earned credits (points) shown identically<br>
+    <strong>3.</strong> If conversion_rate ≠ 1.0, the ₹ values are wrong<br>
+    <strong>4.</strong> No merchant branding of the point unit
+  </div>
+</div>
+
+<!-- ========== NEW DESIGN ========== -->
+<div>
+  <div class="phone-frame">
+    <div class="frame-label">New — Points + Money, Separated</div>
+    <div class="merchant-header">
+      <div class="merchant-logo">C</div>
+      <div class="merchant-name">Chai & Co</div>
+    </div>
+    <div class="profile-bar">
+      <div class="profile-left">
+        <div class="avatar">PS</div>
+        <div>
+          <div class="greeting-text">Welcome back,</div>
+          <div class="customer-name">Priya Sharma</div>
+          <div class="greeting-meta"><span class="meta-tier">Gold</span> · Member · 330d left</div>
+        </div>
+      </div>
+      <button class="switch-btn">Switch</button>
+    </div>
+    <div class="multiplier-strip">
+      ⚡ <span>You're earning <span class="mult-val">1.5x</span> Stars on every order</span>
+    </div>
+    <div class="divider"></div>
+
+    <!-- NEW: Primary balance = points -->
+    <div class="balance-hero">
+      <div class="balance-eyebrow">Your Stars</div>
+      <div class="balance-points">1,400<span class="balance-unit">★</span></div>
+      <div class="balance-worth">worth <span class="balance-worth-amount">₹350</span></div>
+      <div class="balance-detail">
+        2,000 total · <span class="balance-pending">600 pending</span>
+      </div>
+    </div>
+
+    <!-- NEW: Separate money balance -->
+    <div style="padding: 0 24px 20px;">
+      <div style="background: rgba(196,181,253,0.06); border: 1px solid #2a2d3a; border-radius: 12px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;">
+        <div>
+          <div style="font-size: 11px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Cash Balance</div>
+          <div style="font-size: 22px; font-weight: 700; color: #c4b5fd;">₹500</div>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-size: 11px; color: #6b7280;">Gift Card ₹500</div>
+          <div style="font-size: 11px; color: #6b7280;">Refund ₹0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NEW: Redeemable summary -->
+    <div class="lifetime-strip">
+      <div>
+        <div style="font-size: 11px; color: #9ca3af;">Total Redeemable</div>
+        <div style="font-size: 12px; color: #6b7280; margin-top: 2px;">1,400 ★ + ₹500 cash</div>
+      </div>
+      <div style="font-size: 20px; font-weight: 700; color: #818cf8;">₹850</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Bucket grid — now shows unit-appropriate values -->
+    <div class="bucket-section">
+      <div class="section-title">Breakdown</div>
+      <div class="bucket-grid">
+        <div class="bucket-item">
+          <div class="bucket-label">Earned</div>
+          <div class="bucket-value">1,000 ★</div>
+          <div class="bucket-sub bucket-money">≈ ₹250</div>
+        </div>
+        <div class="bucket-item">
+          <div class="bucket-label">Gift Card</div>
+          <div class="bucket-value bucket-money">₹500</div>
+          <div class="bucket-sub">cash value</div>
+        </div>
+        <div class="bucket-item">
+          <div class="bucket-label">Referral</div>
+          <div class="bucket-value">400 ★</div>
+          <div class="bucket-sub bucket-money">≈ ₹100</div>
+        </div>
+        <div class="bucket-item">
+          <div class="bucket-label">COD Pending</div>
+          <div class="bucket-value highlight">600 ★</div>
+          <div class="bucket-sub" style="color:#fde04780;">pending delivery</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Tier — stays points-based (already is) -->
+    <div class="tier-section">
+      <div class="tier-header">
+        <div class="tier-badge">★ Gold</div>
+        <div class="tier-hint">6,000 ★ to Platinum</div>
+      </div>
+      <div class="progress-track"><div class="progress-fill" style="width:60%"></div></div>
+      <div class="progress-labels">
+        <span>9,000 ★ earned</span>
+        <span class="progress-total">15,000 ★</span>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Transactions — show in native unit -->
+    <div class="tx-section">
+      <div class="section-title">Recent Activity</div>
+      <div class="tx-item">
+        <div class="tx-indicator ind-credit"></div>
+        <div class="tx-details">
+          <span class="tx-label">Earned</span>
+          <span class="tx-meta">Earned Credit · Today</span>
+        </div>
+        <div class="tx-right">
+          <span class="tx-amount tx-amount-credit">+320 ★</span>
+          <span class="tx-currency-hint">≈ ₹80</span>
+        </div>
+      </div>
+      <div class="tx-item">
+        <div class="tx-indicator ind-debit"></div>
+        <div class="tx-details">
+          <span class="tx-label">Redeemed</span>
+          <span class="tx-meta">Earned Credit · 5 days ago</span>
+        </div>
+        <div class="tx-right">
+          <span class="tx-amount tx-amount-debit">-300 ★</span>
+          <span class="tx-currency-hint">≈ ₹75</span>
+        </div>
+      </div>
+      <div class="tx-item">
+        <div class="tx-indicator ind-credit"></div>
+        <div class="tx-details">
+          <span class="tx-label">Gift Card Claimed</span>
+          <span class="tx-meta">Gift Card · 10 days ago</span>
+        </div>
+        <div class="tx-right">
+          <span class="tx-amount tx-amount-credit" style="color:#c4b5fd;">+₹500</span>
+          <span class="tx-currency-hint" style="color:#6b7280;">cash</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Referral — show in points -->
+    <div class="referral-card">
+      <div class="referral-title">Refer & Earn</div>
+      <div class="referral-subtitle">Share your code and earn <strong style="color:#4ade80">400 ★</strong> for each referral</div>
+      <div class="referral-code-box"><span class="referral-code">PRIYA10</span></div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="bottom-actions">
+      <a class="bottom-action">Gift Card</a>
+      <a class="bottom-action bottom-action-primary">Refer & Earn</a>
+    </div>
+  </div>
+
+  <div class="side-notes">
+    <div class="note-card">
+      <h4>Bucket Classification</h4>
+      <span class="tag tag-points">POINTS</span> earned_credit, cod_pending, referral_reward, goodwill_credit, membership_benefit<br><br>
+      <span class="tag tag-money">MONEY</span> gift_card, customer_funded, refund_credit<br><br>
+      Points buckets show <code>earning_unit</code> + "★"<br>
+      Money buckets show <code>currency_equivalent</code> + "₹"
+    </div>
+
+    <div class="note-card">
+      <h4>Merchant Config (new fields)</h4>
+      <code>points_name</code> = "Stars" (default: "Points")<br>
+      <code>points_icon</code> = "★" (default: "pts")<br>
+      <code>points_to_currency_rate</code> = 0.25 (1 Star = ₹0.25)<br><br>
+      This means: 4 Stars = ₹1<br>
+      Balance: 1,400 ★ = ₹350
+    </div>
+
+    <div class="note-card">
+      <h4>Display Rules</h4>
+      <strong>Balance card:</strong> Shows points as primary number, ₹ equivalent below<br><br>
+      <strong>Cash balance:</strong> Separate card below — gift cards + refunds + customer-funded, always in ₹<br><br>
+      <strong>Total redeemable:</strong> (points × rate) + cash = ₹ total. This is what gets applied at checkout<br><br>
+      <strong>Transactions:</strong> Each row shows in its native unit. Points transactions show ★, gift card transactions show ₹
+    </div>
+
+    <div class="note-card">
+      <h4>Backend Changes</h4>
+      1. Add <code>points_name</code>, <code>points_icon</code>, <code>points_to_currency_rate</code> to merchants table<br><br>
+      2. Balance endpoint adds <code>points_balance</code> and <code>cash_balance</code> split<br><br>
+      3. <code>build_wallet_balance</code> returns both <code>earning_unit</code> and <code>currency_equivalent</code> sums per bucket<br><br>
+      4. Storefront API includes merchant point config in response
+    </div>
+
+    <div class="note-card">
+      <h4>Edge Cases</h4>
+      <strong>Conversion rate = 1.0:</strong> 1 point = ₹1 → "500 Stars (worth ₹500)". Still shows both but they happen to match.<br><br>
+      <strong>Gift card redemption:</strong> Always in ₹. No points conversion needed.<br><br>
+      <strong>Mixed redemption at checkout:</strong> "Using 400 ★ (₹100) + ₹200 Gift Card = ₹300 off"<br><br>
+      <strong>Referral rewards:</strong> Stored as points in earning_unit. Shown as "400 ★" not "₹100"
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -13,7 +13,9 @@
     onCancel: () => void;
   } = $props();
 
+  // svelte-ignore state_referenced_locally
   let stackingMode = $state(config.campaign_stacking_mode);
+  // svelte-ignore state_referenced_locally
   let maxMultiplier = $state(config.max_campaign_multiplier);
 
   type StackingOption = {
@@ -248,16 +250,6 @@
     display: flex;
     align-items: center;
     gap: var(--space-2);
-  }
-
-  .cap-input {
-    width: 80px;
-    padding: var(--space-2) var(--space-3);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    font-size: var(--font-size-sm);
-    text-align: center;
-    font-family: var(--font-mono);
   }
 
   .cap-suffix {

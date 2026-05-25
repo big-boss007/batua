@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings UAT Report</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f3f4f6;
+    color: #1f2937;
+    line-height: 1.6;
+    padding: 2rem;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  h1 { font-size: 1.75rem; font-weight: 700; color: #111827; }
+  h2 { font-size: 1.35rem; font-weight: 600; color: #111827; margin-bottom: 1rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem; }
+
+  .header {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .header-meta { font-size: 0.875rem; color: #6b7280; }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .summary-item {
+    background: #fff;
+    border-radius: 10px;
+    padding: 1.25rem;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .summary-item .value { font-size: 2rem; font-weight: 700; line-height: 1.2; }
+  .summary-item .label { font-size: 0.75rem; color: #6b7280; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.25rem; }
+  .summary-item.pass .value { color: #059669; }
+  .summary-item.fail .value { color: #dc2626; }
+  .summary-item.bug .value { color: #d97706; }
+  .summary-item.total .value { color: #2563eb; }
+  .summary-item.skip .value { color: #6b7280; }
+
+  .section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  .test-case {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .test-case.pass { border-left: 4px solid #059669; }
+  .test-case.fail { border-left: 4px solid #dc2626; }
+  .test-case.bug { border-left: 4px solid #d97706; }
+  .test-case.skip { border-left: 4px solid #6b7280; }
+
+  .test-case h3 { display: flex; align-items: center; gap: 0.75rem; }
+
+  .badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .badge-pass { background: #d1fae5; color: #065f46; }
+  .badge-fail { background: #fee2e2; color: #991b1b; }
+  .badge-bug { background: #fef3c7; color: #92400e; }
+  .badge-skip { background: #f3f4f6; color: #4b5563; }
+
+  .severity {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    margin-left: 0.5rem;
+  }
+  .severity-high { background: #fee2e2; color: #991b1b; }
+  .severity-medium { background: #fef3c7; color: #92400e; }
+  .severity-low { background: #f3f4f6; color: #4b5563; }
+
+  .test-id {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+    background: #f3f4f6;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-family: monospace;
+  }
+
+  .steps { margin: 0.75rem 0; padding-left: 1.5rem; }
+  .steps li { margin-bottom: 0.25rem; font-size: 0.9rem; }
+
+  .screenshot-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+  .screenshot-grid img {
+    width: 100%;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+    cursor: pointer;
+  }
+  .screenshot-grid img:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  .screenshot-caption {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+    text-align: center;
+  }
+
+  .notes {
+    background: #f9fafb;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    margin-top: 0.75rem;
+  }
+  .notes strong { color: #374151; }
+
+  .bug-detail {
+    background: #fffbeb;
+    border: 1px solid #fcd34d;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    margin-top: 0.75rem;
+  }
+  .bug-detail p { margin-bottom: 0.25rem; }
+
+  .bug-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    margin-top: 1rem;
+  }
+  .bug-table th {
+    text-align: left;
+    padding: 0.6rem 0.8rem;
+    background: #f9fafb;
+    border-bottom: 2px solid #e5e7eb;
+    font-weight: 600;
+  }
+  .bug-table td {
+    padding: 0.6rem 0.8rem;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: top;
+  }
+
+  .env-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+  .env-table td {
+    padding: 0.4rem 0.8rem;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .env-table td:first-child {
+    font-weight: 600;
+    color: #374151;
+    width: 200px;
+  }
+
+  .data-check {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+    margin-top: 0.75rem;
+    font-family: monospace;
+  }
+
+  @media print {
+    body { background: #fff; padding: 1rem; }
+    .section, .header, .summary-item { box-shadow: none; border: 1px solid #e5e7eb; }
+    .test-case { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div>
+      <h1>Settings UAT Report</h1>
+      <p class="header-meta">Batua Project &mdash; 26 March 2026 &mdash; Merchant: Sherwani Studio (<code>sherwanistudio</code>)</p>
+    </div>
+    <div class="header-meta">
+      Generated by Claude Code UAT Agent
+    </div>
+  </div>
+
+  <!-- SUMMARY GRID -->
+  <div class="summary-grid">
+    <div class="summary-item total"><span class="value">10</span><span class="label">Total Tests</span></div>
+    <div class="summary-item pass"><span class="value">9</span><span class="label">Passed</span></div>
+    <div class="summary-item fail"><span class="value">0</span><span class="label">Failed</span></div>
+    <div class="summary-item bug"><span class="value">1</span><span class="label">Bugs</span></div>
+    <div class="summary-item skip"><span class="value">0</span><span class="label">Skipped</span></div>
+  </div>
+
+  <!-- BUG SUMMARY TABLE -->
+  <div class="section">
+    <h2>Bug Summary</h2>
+    <table class="bug-table">
+      <thead><tr><th>ID</th><th>Severity</th><th>Test Case</th><th>Description</th><th>Root Cause</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="test-id">#7</span></td>
+          <td><span class="severity severity-medium">MEDIUM</span></td>
+          <td>Tab Click Navigation</td>
+          <td>Clicking the Notifications tab via the Tabs component intermittently navigates away from the Settings page entirely (to Gift Cards or Referrals)</td>
+          <td>The Tabs component <code>onchange</code> handler calls <code>goto()</code> with <code>replaceState: true</code>, but concurrently the <code>currentMerchantId.subscribe</code> callback re-fires <code>loadSettingsData</code>, causing a race condition where SvelteKit performs an unexpected client-side navigation. The <code>.subscribe()</code> pattern (lines 51-66 in +page.svelte) fires on every page mount and may trigger navigation side-effects.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- STAKEHOLDER: MERCHANT ADMIN -->
+  <div class="section">
+    <h2>Merchant Admin &mdash; Settings</h2>
+
+    <!-- Test #1 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#1</span> My Store Tab &mdash; Page Load (Light Mode) <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Navigate to http://localhost:5174/admin/settings</li>
+        <li>Verify the page loads with "Settings" title and 3 tabs: My Store, Connectors, Notifications</li>
+        <li>Verify My Store tab is selected by default</li>
+        <li>Verify Store Details section shows Store Name, Domain, Slug fields and Save Changes button</li>
+        <li>Verify right panel shows Plan pill, Storefront URL, and Customer Links</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="settings-uat/01-settings-my-store-light.png" alt="Settings My Store tab in light mode">
+          <p class="screenshot-caption">Settings page &mdash; My Store tab, light mode. Store details + plan info + customer links.</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Page loads correctly. Title is "Settings". Three tabs visible: My Store (selected), Connectors, Notifications. Left panel shows editable fields for Store Name ("Sherwani Studio"), Domain ("sherwanistudio.myshopify.com"), and Slug ("sherwanistudio"). Right panel shows Plan "Growth" pill and Storefront URL <code>/s/sherwanistudio</code>. Customer Links section lists 3 links with copy and open-in-new-tab icon buttons: Rewards Hub, Gift Card Check, Referral Program. All API calls return 200.
+      </div>
+    </div>
+
+    <!-- Test #2 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#2</span> My Store Tab &mdash; Store Details Match DB <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Compare displayed store name, domain, and slug with database values</li>
+        <li>Verify Plan tier matches DB</li>
+        <li>Verify Storefront URL matches slug pattern</li>
+      </ol>
+      <div class="notes">
+        <strong>Notes:</strong> All values match the database exactly:<br>
+        &bull; Store Name: "Sherwani Studio" (DB: <code>name = 'Sherwani Studio'</code>)<br>
+        &bull; Domain: "sherwanistudio.myshopify.com" (DB: <code>domain = 'sherwanistudio.myshopify.com'</code>)<br>
+        &bull; Slug: "sherwanistudio" (DB: <code>slug = 'sherwanistudio'</code>)<br>
+        &bull; Plan: "Growth" (DB: <code>plan_tier = 'growth'</code>)<br>
+        &bull; Storefront URL: <code>/s/sherwanistudio</code> (derived from slug)
+      </div>
+    </div>
+
+    <!-- Test #3 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#3</span> Customer Links Section <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Verify 3 customer-facing links are displayed with icons</li>
+        <li>Verify each link has a copy button and an open-in-new-tab button</li>
+        <li>Verify link paths are correct</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="settings-uat/01-settings-my-store-light.png" alt="Customer links section">
+          <p class="screenshot-caption">Customer Links section with 3 storefront links and action buttons</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Three customer links are displayed:<br>
+        &bull; Rewards Hub: <code>/s/sherwanistudio</code> (icon: money bag emoji)<br>
+        &bull; Gift Card Check: <code>/s/sherwanistudio/gift-cards/check</code> (icon: gift emoji)<br>
+        &bull; Referral Program: <code>/s/sherwanistudio/refer</code> (icon: link emoji)<br>
+        Each link row has a copy-to-clipboard button (clipboard icon) and an open-in-new-tab button (external link icon). Hover states work correctly &mdash; link row border highlights on hover, buttons show primary color on hover.
+      </div>
+    </div>
+
+    <!-- Test #4 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#4</span> Connectors Tab <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Navigate to http://localhost:5174/admin/settings?tab=connectors</li>
+        <li>Verify tab switches to Connectors and URL updates</li>
+        <li>Verify connectors table shows existing connector</li>
+        <li>Verify "Add Connector" button is present</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="settings-uat/02-settings-connectors-tab.png" alt="Connectors tab">
+          <p class="screenshot-caption">Connectors tab showing whatsapp-bsp/interakt connector and Add Connector button</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Connectors tab displays correctly. Table has 4 columns: Capability, Vendor, Priority, Status. One connector row is shown: whatsapp-bsp / interakt / priority 1 / Active (green pill). "Add Connector" button with primary styling is visible below the table. URL correctly shows <code>?tab=connectors</code>.
+      </div>
+    </div>
+
+    <!-- Test #5 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#5</span> Connectors Data Matches DB <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Compare connector data in UI with database</li>
+      </ol>
+      <div class="notes">
+        <strong>Notes:</strong> Connector data matches exactly:<br>
+        &bull; Capability: "whatsapp-bsp" (DB: <code>capability = 'whatsapp-bsp'</code>)<br>
+        &bull; Vendor: "interakt" (DB: <code>vendor = 'interakt'</code>)<br>
+        &bull; Priority: 1 (DB: <code>priority = 1</code>)<br>
+        &bull; Status: Active (DB: <code>is_active = true</code>)<br>
+        Only 1 connector exists for this merchant, matching the single table row displayed.
+      </div>
+    </div>
+
+    <!-- Test #6 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#6</span> Notifications Tab <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Navigate to http://localhost:5174/admin/settings?tab=notifications</li>
+        <li>Verify tab switches to Notifications and URL updates</li>
+        <li>Verify notification templates are listed with template body, variables, preview, and save button</li>
+        <li>Verify active toggle is present for each template</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="settings-uat/03-settings-notifications-tab.png" alt="Notifications tab">
+          <p class="screenshot-caption">Notifications tab showing 3 notification templates with body, variables, and preview</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Notifications tab shows 3 templates:<br>
+        &bull; <strong>Order Reward</strong> (whatsapp / en) &mdash; Active toggle ON. Body: "Hi {{customer_name}}! You earned {{points}} {{points_name}} on your order..." Variables: customer_name, points, points_name, order_amount, storefront_url. Preview renders with highlighted variable pills.<br>
+        &bull; <strong>Points Expiry Reminder</strong> (sms / en) &mdash; Active toggle ON. Body: "{{customer_name}}, your {{points}} {{points_name}} at {{merchant_name}} expire in {{days}} days..." Variables: customer_name, points, points_name, merchant_name, days.<br>
+        &bull; <strong>Welcome Bonus</strong> (whatsapp / en) &mdash; Active toggle ON. Body: "Welcome to {{merchant_name}}, {{customer_name}}! You've received {{points}} {{points_name}} as a welcome gift." Variables: merchant_name, customer_name, points, points_name.<br>
+        Each template has a "Save Template" button.
+      </div>
+    </div>
+
+    <!-- Test #7 -->
+    <div class="test-case bug">
+      <h3><span class="test-id">#7</span> Tab Click Navigation <span class="badge badge-bug">BUG</span> <span class="severity severity-medium">MEDIUM</span></h3>
+      <ol class="steps">
+        <li>On the Settings page, click the Connectors or Notifications tab</li>
+        <li>Observe that the page intermittently navigates away from Settings entirely</li>
+        <li>Destinations observed: /admin/gift-cards, /admin/referrals</li>
+      </ol>
+      <div class="notes">
+        <strong>Notes:</strong> When clicking tabs via the Tabs component, the page intermittently navigates to unrelated routes (/admin/gift-cards or /admin/referrals) instead of staying on the settings page with the selected tab. Direct URL navigation (e.g. ?tab=connectors, ?tab=notifications) works correctly every time. The bug is intermittent and appears related to a race condition between the <code>goto()</code> call in <code>handleTabChange</code> and the store subscription callbacks on lines 51-66 of <code>+page.svelte</code>.
+      </div>
+      <div class="bug-detail">
+        <p><strong>Expected:</strong> Clicking a tab should switch tab content and update URL to <code>?tab=connectors</code> or <code>?tab=notifications</code></p>
+        <p><strong>Actual:</strong> Page navigates away from Settings to Gift Cards or Referrals</p>
+        <p><strong>Workaround:</strong> Direct URL navigation (<code>/admin/settings?tab=notifications</code>) works reliably</p>
+        <p><strong>Root cause:</strong> The <code>currentMerchantId.subscribe()</code> callback (line 60) fires when the merchant store updates, calling <code>loadSettingsData()</code> which may interfere with the <code>goto()</code> call in <code>handleTabChange()</code>. The <code>.subscribe()</code> pattern is a known anti-pattern in Svelte 5 runes-based components.</p>
+        <p><strong>Reproduction rate:</strong> Intermittent (~50% of tab clicks during testing)</p>
+      </div>
+    </div>
+
+    <!-- Test #8 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#8</span> URL Tab Parameter <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Navigate to /admin/settings (no tab param) &mdash; verify My Store tab selected</li>
+        <li>Navigate to /admin/settings?tab=store &mdash; verify My Store tab selected</li>
+        <li>Navigate to /admin/settings?tab=connectors &mdash; verify Connectors tab selected</li>
+        <li>Navigate to /admin/settings?tab=notifications &mdash; verify Notifications tab selected</li>
+      </ol>
+      <div class="notes">
+        <strong>Notes:</strong> Direct URL navigation with <code>?tab=</code> parameter works correctly for all 3 tabs. Default (no param) correctly selects "My Store". The <code>+page.ts</code> load function reads the <code>tab</code> query parameter and passes it as <code>activeTab</code> to the page component. The component uses <code>tabIds.indexOf()</code> to map to the correct tab index.
+      </div>
+    </div>
+
+    <!-- Test #9 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#9</span> Dark Mode <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Switch to dark mode</li>
+        <li>Verify Settings page renders correctly with dark backgrounds</li>
+        <li>Check text readability, input fields, card borders, sidebar contrast</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="settings-uat/04-settings-my-store-dark.png" alt="Settings page in dark mode">
+          <p class="screenshot-caption">My Store tab in dark mode &mdash; good contrast, readable text, visible borders</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Dark mode renders correctly. Sidebar background is dark with readable text. Input fields have dark backgrounds with light text. The "Growth" plan pill retains its branded color. Customer Links cards have visible borders. Store Details label text is muted but readable. Save Changes button retains primary purple color. All elements adapt properly to the dark theme.
+      </div>
+    </div>
+
+    <!-- Test #10 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#10</span> Console &amp; Network Check <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Review console messages across all settings page interactions</li>
+        <li>Review network requests for failed API calls</li>
+      </ol>
+      <div class="notes">
+        <strong>Notes:</strong> Zero console errors on the Settings page (favicon 404 not observed in this session). All API calls return 200:<br>
+        &bull; <code>GET /admin/merchants?page=1&limit=50</code> &rarr; 200<br>
+        &bull; <code>GET /notifications/connectors?merchant_id=b0000000-...050</code> &rarr; 200<br>
+        &bull; <code>GET /notifications/templates?merchant_id=b0000000-...050</code> &rarr; 200<br>
+        No failed network requests. Data loads instantly on page mount.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- DATA INTEGRITY SECTION -->
+  <div class="section">
+    <h2>Data Integrity Checks</h2>
+
+    <div class="test-case pass">
+      <h3><span class="test-id">DI-1</span> Merchant Settings Match DB <span class="badge badge-pass">PASS</span></h3>
+      <div class="data-check">
+        SQL: SELECT name, domain, slug, plan_tier FROM merchants WHERE slug = 'sherwanistudio';<br><br>
+        DB: name='Sherwani Studio', domain='sherwanistudio.myshopify.com', slug='sherwanistudio', plan_tier='growth'<br>
+        UI: Store Name='Sherwani Studio', Domain='sherwanistudio.myshopify.com', Slug='sherwanistudio', Plan='Growth'<br><br>
+        Additional DB fields not shown in UI:<br>
+        &mdash; currency='INR', timezone='Asia/Kolkata', is_active=true<br>
+        &mdash; points_name='Jewels', points_icon='ring emoji', points_to_currency_rate=0.1<br>
+        &mdash; campaign_stacking_mode='multiplicative', max_campaign_multiplier=10<br><br>
+        Result: MATCH
+      </div>
+    </div>
+
+    <div class="test-case pass">
+      <h3><span class="test-id">DI-2</span> Connectors Match DB <span class="badge badge-pass">PASS</span></h3>
+      <div class="data-check">
+        SQL: SELECT capability, vendor, priority, is_active FROM connectors WHERE merchant_id = 'b0000000-...-050';<br><br>
+        DB: capability='whatsapp-bsp', vendor='interakt', priority=1, is_active=true<br>
+        UI: Capability='whatsapp-bsp', Vendor='interakt', Priority='1', Status='Active'<br><br>
+        Count: DB has 1 row, UI shows 1 row.<br>
+        Result: MATCH
+      </div>
+    </div>
+
+    <div class="test-case pass">
+      <h3><span class="test-id">DI-3</span> Notification Templates Match DB <span class="badge badge-pass">PASS</span></h3>
+      <div class="data-check">
+        SQL: SELECT name, channel, locale, is_active, body_template FROM notification_templates<br>
+        WHERE merchant_id = 'b0000000-...-050';<br><br>
+        DB has 3 templates:<br>
+        1. name='Order Reward', channel='whatsapp', locale='en', is_active=true<br>
+        2. name='Points Expiry Reminder', channel='sms', locale='en', is_active=true<br>
+        3. name='Welcome Bonus', channel='whatsapp', locale='en', is_active=true<br><br>
+        UI shows 3 templates: Order Reward (whatsapp/en/Active), Points Expiry Reminder (sms/en/Active), Welcome Bonus (whatsapp/en/Active)<br>
+        Template bodies match exactly between DB and UI preview.<br><br>
+        Result: MATCH
+      </div>
+    </div>
+  </div>
+
+  <!-- ENVIRONMENT SECTION -->
+  <div class="section">
+    <h2>Test Environment</h2>
+    <table class="env-table">
+      <tr><td>Date</td><td>26 March 2026, 23:35 IST</td></tr>
+      <tr><td>Backend URL</td><td>http://localhost:3000</td></tr>
+      <tr><td>Frontend URL</td><td>http://localhost:5174</td></tr>
+      <tr><td>Database</td><td>batua (local PostgreSQL)</td></tr>
+      <tr><td>Merchant</td><td>Sherwani Studio (ID: b0000000-0000-0000-0000-000000000050, slug: sherwanistudio)</td></tr>
+      <tr><td>Browser</td><td>Chromium (Playwright MCP)</td></tr>
+      <tr><td>Total Screenshots</td><td>4</td></tr>
+      <tr><td>Git Branch</td><td>release</td></tr>
+      <tr><td>Tabs Tested</td><td>My Store, Connectors, Notifications</td></tr>
+      <tr><td>DB Tables Verified</td><td>merchants, connectors, notification_templates</td></tr>
+    </table>
+  </div>
+
+</div>
+</body>
+</html>

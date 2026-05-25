@@ -57,16 +57,16 @@
     expire: ['Campaign ended', 'Policy change', 'Fraud/abuse', 'Account cleanup', 'Other']
   };
 
-  const _initAction = initialAction;
-  const _initUnit = initialUnit;
-
-  let action: WalletActionType = $state(_initAction);
-  let unit: WalletUnitType = $state(_initUnit);
+  // svelte-ignore state_referenced_locally
+  let action: WalletActionType = $state(initialAction);
+  // svelte-ignore state_referenced_locally
+  let unit: WalletUnitType = $state(initialUnit);
   let step: WalletActionStep = $state('form');
 
+  // svelte-ignore state_referenced_locally
   let selectedBucket: string = $state(
-    _initAction === 'add'
-      ? (_initUnit === 'cash' ? ADD_CASH_BUCKETS[0] : ADD_POINTS_BUCKETS[0])
+    initialAction === 'add'
+      ? (initialUnit === 'cash' ? ADD_CASH_BUCKETS[0] : ADD_POINTS_BUCKETS[0])
       : ''
   );
   let selectedExpireBuckets = $state(new SvelteSet<string>());
@@ -354,10 +354,10 @@
 
         <!-- Bucket Selector -->
         <div class="wa-field">
-          <label class="wa-label">
+          <span class="wa-label">
             {action === 'expire' ? 'Select bucket(s) to expire' : (action === 'remove' ? 'Remove from bucket' : 'Bucket')}
             <span class="wa-req">*</span>
-          </label>
+          </span>
 
           {#if action === 'expire'}
             <div class="wa-bucket-list">
@@ -404,9 +404,9 @@
         {#if action !== 'expire'}
           <div class="wa-row">
             <div class="wa-field">
-              <label class="wa-label">
+              <span class="wa-label">
                 {unit === 'cash' ? 'Amount (₹)' : 'Points'} <span class="wa-req">*</span>
-              </label>
+              </span>
               <div class="wa-amount-wrap">
                 {#if unit === 'cash'}
                   <span class="wa-amount-prefix">₹</span>
@@ -436,8 +436,8 @@
             </div>
             {#if action === 'add'}
               <div class="wa-field">
-                <label class="wa-label">Expiry (days)</label>
-                <input class="wa-input" type="number" min="1" placeholder="Policy default" bind:value={expiryDaysStr} />
+                <label class="wa-label" for="wa-expiry-days">Expiry (days)</label>
+                <input id="wa-expiry-days" class="wa-input" type="number" min="1" placeholder="Policy default" bind:value={expiryDaysStr} />
                 <div class="wa-hint">Leave blank for wallet policy default</div>
               </div>
             {/if}
@@ -446,7 +446,7 @@
 
         <!-- Reason -->
         <div class="wa-field">
-          <label class="wa-label">Reason <span class="wa-req">*</span></label>
+          <span class="wa-label">Reason <span class="wa-req">*</span></span>
           <div class="wa-pills">
             {#each REASON_PILLS[action] as pill (pill)}
               <button
@@ -464,8 +464,8 @@
 
         <!-- Reference -->
         <div class="wa-field">
-          <label class="wa-label">Internal Reference</label>
-          <input class="wa-input" placeholder="e.g. Shopify #1234, support ticket #567" bind:value={reference} />
+          <label class="wa-label" for="wa-internal-ref">Internal Reference</label>
+          <input id="wa-internal-ref" class="wa-input" placeholder="e.g. Shopify #1234, support ticket #567" bind:value={reference} />
         </div>
 
         <!-- Notify (add only) -->

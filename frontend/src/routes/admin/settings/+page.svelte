@@ -33,6 +33,7 @@
 
   const tabIds = ['store', 'connectors', 'notifications'] as const;
   const tabItems = ['My Store', 'Connectors', 'Notifications'];
+  // svelte-ignore state_referenced_locally
   let activeTabIndex = $state(
     Math.max(0, tabIds.indexOf(data.activeTab as (typeof tabIds)[number]))
   );
@@ -405,12 +406,6 @@
   .info-label {
     font-size: var(--font-size-sm);
     color: var(--color-text-muted);
-  }
-
-  .info-url-row {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
   }
 
   .info-url {

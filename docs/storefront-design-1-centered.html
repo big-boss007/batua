@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design 1: Centered Card — Batua Storefront</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --border: #2a2d3a;
+    --brand: #6366f1;
+    --brand-light: #818cf8;
+    --text-primary: #ffffff;
+    --text-muted: #9ca3af;
+    --green: #4ade80;
+    --yellow: #fde047;
+    --radius-card: 12px;
+    --radius-inner: 8px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.3);
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text-primary);
+    min-height: 100vh;
+    padding: 32px 16px 48px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Design label */
+  .design-label {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 24px;
+    font-weight: 500;
+  }
+
+  /* Main card */
+  .card {
+    max-width: 420px;
+    margin: 0 auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  /* Merchant header */
+  .header {
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .merchant-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-inner);
+    background: var(--brand);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    color: #fff;
+  }
+  .merchant-name {
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .merchant-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 1px;
+  }
+  .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--brand), var(--brand-light));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 13px;
+    color: #fff;
+  }
+
+  /* Balance hero */
+  .balance-hero {
+    padding: 28px 24px 24px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .balance-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 6px;
+  }
+  .balance-amount {
+    font-size: 40px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    color: var(--green);
+  }
+  .balance-meta {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 14px;
+  }
+  .balance-meta-item {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .balance-meta-item span {
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .balance-meta-item .pending {
+    color: var(--yellow);
+  }
+
+  /* Bucket grid */
+  .bucket-section {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-title {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 14px;
+    font-weight: 500;
+  }
+  .bucket-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .bucket-item {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-inner);
+    padding: 12px 14px;
+  }
+  .bucket-item-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+  .bucket-item-value {
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .bucket-item-value.highlight {
+    color: var(--yellow);
+  }
+
+  /* Lifetime saved */
+  .lifetime {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(99, 102, 241, 0.06);
+  }
+  .lifetime-label {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .lifetime-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--brand-light);
+  }
+
+  /* Tier progress */
+  .tier-section {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .tier-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .tier-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 14px 5px 10px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .tier-icon {
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+  .tier-next {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .progress-track {
+    width: 100%;
+    height: 8px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--brand);
+    border-radius: 4px;
+    transition: width 0.5s ease;
+  }
+  .progress-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .progress-labels span:last-child {
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
+  /* Activity */
+  .activity-section {
+    padding: 20px 24px 24px;
+  }
+  .activity-group-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 10px;
+    margin-top: 16px;
+  }
+  .activity-group-label:first-of-type {
+    margin-top: 0;
+  }
+  .activity-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+  }
+  .activity-item + .activity-item {
+    border-top: 1px solid var(--border);
+  }
+  .activity-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .activity-dot.credit { background: var(--green); }
+  .activity-dot.hold { background: var(--yellow); }
+  .activity-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .activity-desc {
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .activity-order {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .activity-amount {
+    font-size: 14px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .activity-amount.credit { color: var(--green); }
+  .activity-amount.hold { color: var(--yellow); }
+
+  /* Print styles */
+  @media print {
+    body {
+      background: #0f1117 !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      padding: 20px;
+    }
+    .card {
+      box-shadow: none;
+      break-inside: avoid;
+    }
+  }
+
+  @page {
+    size: A4;
+    margin: 15mm;
+  }
+</style>
+</head>
+<body>
+
+<div class="design-label">Design 1: Centered Card</div>
+
+<div class="card">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div class="merchant-icon">H</div>
+      <div>
+        <div class="merchant-name">HomeVibes</div>
+        <div class="merchant-sub">Your Wallet</div>
+      </div>
+    </div>
+    <div class="avatar">AT</div>
+  </div>
+
+  <!-- Balance Hero -->
+  <div class="balance-hero">
+    <div class="balance-label">Spendable Balance</div>
+    <div class="balance-amount">&#8377;152.80</div>
+    <div class="balance-meta">
+      <div class="balance-meta-item">Total <span>&#8377;221.40</span></div>
+      <div class="balance-meta-item">Pending <span class="pending">&#8377;68.60</span></div>
+    </div>
+  </div>
+
+  <!-- Buckets -->
+  <div class="bucket-section">
+    <div class="section-title">Bucket Breakdown</div>
+    <div class="bucket-grid">
+      <div class="bucket-item">
+        <div class="bucket-item-label">Earned</div>
+        <div class="bucket-item-value">&#8377;0.00</div>
+      </div>
+      <div class="bucket-item">
+        <div class="bucket-item-label">COD Pending</div>
+        <div class="bucket-item-value">&#8377;0.00</div>
+      </div>
+      <div class="bucket-item">
+        <div class="bucket-item-label">On Hold</div>
+        <div class="bucket-item-value highlight">&#8377;68.60</div>
+      </div>
+      <div class="bucket-item">
+        <div class="bucket-item-label">Expiring Soon</div>
+        <div class="bucket-item-value">&#8377;0.00</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lifetime Saved -->
+  <div class="lifetime">
+    <div class="lifetime-label">Lifetime Saved</div>
+    <div class="lifetime-value">&#8377;152.80</div>
+  </div>
+
+  <!-- Tier Progress -->
+  <div class="tier-section">
+    <div class="section-title">Loyalty Tier</div>
+    <div class="tier-header">
+      <div class="tier-badge">
+        <div class="tier-icon">&#9733;</div>
+        Silver
+      </div>
+      <div class="tier-next">1,860 pts to next tier</div>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" style="width: 38%"></div>
+    </div>
+    <div class="progress-labels">
+      <span>1,140 points</span>
+      <span>3,000</span>
+    </div>
+  </div>
+
+  <!-- Activity -->
+  <div class="activity-section">
+    <div class="section-title">Recent Activity</div>
+
+    <div class="activity-group-label">Yesterday</div>
+    <div class="activity-item">
+      <div class="activity-dot credit"></div>
+      <div class="activity-info">
+        <div class="activity-desc">Cashback</div>
+        <div class="activity-order">Order #ORD-2851</div>
+      </div>
+      <div class="activity-amount credit">+&#8377;50</div>
+    </div>
+
+    <div class="activity-group-label">Last Week</div>
+    <div class="activity-item">
+      <div class="activity-dot hold"></div>
+      <div class="activity-info">
+        <div class="activity-desc">COD Hold</div>
+        <div class="activity-order">Order #ORD-2734</div>
+      </div>
+      <div class="activity-amount hold">&#8377;68.60</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

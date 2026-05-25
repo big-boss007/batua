@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Concept 3: Clean Minimal (Apple Wallet Inspired)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #0a0a0f;
+    color: #e4e4ed;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+  }
+
+  .page-title {
+    font-size: 28px;
+    font-weight: 800;
+    color: #10b981;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+  .page-subtitle {
+    font-size: 14px;
+    color: #8888a0;
+    margin-bottom: 40px;
+    text-align: center;
+    max-width: 500px;
+    line-height: 1.6;
+  }
+
+  .phone {
+    width: 375px;
+    min-height: 812px;
+    background: #0a0a0f;
+    border-radius: 40px;
+    border: 3px solid #2a2a3a;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 25px 80px rgba(16, 185, 129, 0.08);
+  }
+
+  .notch {
+    width: 150px;
+    height: 28px;
+    background: #000;
+    border-radius: 0 0 20px 20px;
+    margin: 0 auto;
+  }
+
+  .screen {
+    padding: 12px 20px 40px;
+  }
+
+  /* Header — Ultra minimal */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0 24px;
+  }
+  .logo-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #7c6aff, #6b5ce7);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    color: white;
+  }
+  .brand-name {
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .change-btn {
+    font-size: 12px;
+    color: #7c6aff;
+    font-weight: 500;
+  }
+
+  /* Hero Balance — Big number, nothing else */
+  .balance-hero {
+    text-align: center;
+    padding: 32px 0 28px;
+  }
+  .balance-eyebrow {
+    font-size: 12px;
+    color: #8888a0;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .balance-number {
+    font-size: 56px;
+    font-weight: 800;
+    color: white;
+    line-height: 1;
+    letter-spacing: -2px;
+    margin-bottom: 8px;
+  }
+  .balance-number .currency {
+    font-size: 30px;
+    font-weight: 600;
+    opacity: 0.4;
+    vertical-align: top;
+    letter-spacing: 0;
+    margin-right: 2px;
+  }
+  .balance-detail {
+    font-size: 13px;
+    color: #6b7280;
+  }
+  .balance-detail .pending {
+    color: #f59e0b;
+  }
+
+  /* Divider */
+  .divider {
+    height: 1px;
+    background: #1a1a26;
+    margin: 0 -20px;
+  }
+
+  /* Stats Row */
+  .stats-row {
+    display: flex;
+    padding: 20px 0;
+  }
+  .stat {
+    flex: 1;
+    text-align: center;
+    position: relative;
+  }
+  .stat:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 4px;
+    bottom: 4px;
+    width: 1px;
+    background: #1a1a26;
+  }
+  .stat-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 2px;
+  }
+  .stat-label {
+    font-size: 10px;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Tier Section — Inline minimal */
+  .tier-section {
+    padding: 20px 0;
+  }
+  .tier-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .tier-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .tier-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #7c6aff;
+  }
+  .tier-label {
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .tier-right {
+    font-size: 12px;
+    color: #8888a0;
+  }
+
+  /* Segmented progress */
+  .tier-progress {
+    display: flex;
+    gap: 3px;
+    height: 4px;
+    margin-bottom: 8px;
+  }
+  .tier-segment {
+    flex: 1;
+    background: #1a1a26;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .tier-segment.filled {
+    background: #7c6aff;
+  }
+  .tier-segment.partial {
+    background: linear-gradient(90deg, #7c6aff 64%, #1a1a26 64%);
+  }
+  .tier-hint {
+    font-size: 11px;
+    color: #6b7280;
+  }
+
+  /* Transactions — Clean list */
+  .tx-section {
+    padding-top: 8px;
+  }
+  .tx-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0 12px;
+  }
+  .tx-title {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #8888a0;
+  }
+
+  .tx-date-group {
+    margin-bottom: 4px;
+  }
+  .tx-date {
+    font-size: 11px;
+    color: #4b5563;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+    padding: 8px 0 6px;
+  }
+
+  .tx-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid #12121a;
+  }
+  .tx-item:last-child {
+    border-bottom: none;
+  }
+
+  .tx-indicator {
+    width: 4px;
+    height: 32px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .tx-indicator.credit { background: #10b981; }
+  .tx-indicator.debit { background: #ef4444; }
+  .tx-indicator.transfer { background: #7c6aff; }
+
+  .tx-details { flex: 1; }
+  .tx-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #e4e4ed;
+  }
+  .tx-meta {
+    font-size: 12px;
+    color: #4b5563;
+    margin-top: 2px;
+  }
+
+  .tx-right {
+    text-align: right;
+  }
+  .tx-amount {
+    font-size: 14px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .tx-amount.credit { color: #10b981; }
+  .tx-amount.debit { color: #e4e4ed; }
+  .tx-amount.transfer { color: #8888a0; }
+  .tx-time {
+    font-size: 11px;
+    color: #4b5563;
+    margin-top: 2px;
+  }
+
+  /* Bottom Actions */
+  .bottom-actions {
+    display: flex;
+    gap: 8px;
+    padding-top: 24px;
+  }
+  .bottom-action {
+    flex: 1;
+    padding: 14px;
+    text-align: center;
+    border: 1px solid #2a2a3a;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #8888a0;
+  }
+  .bottom-action.primary {
+    background: #7c6aff;
+    border-color: #7c6aff;
+    color: white;
+  }
+
+  /* Annotations */
+  .annotation-group {
+    margin-top: 60px;
+    width: 100%;
+    max-width: 700px;
+  }
+  .annotation-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #e4e4ed;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #2a2a3a;
+  }
+  .annotation {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    align-items: flex-start;
+  }
+  .annotation-num {
+    width: 28px;
+    height: 28px;
+    background: #10b981;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #000;
+    flex-shrink: 0;
+  }
+  .annotation-text {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #c4c4d4;
+  }
+  .annotation-text strong {
+    color: #e4e4ed;
+  }
+</style>
+</head>
+<body>
+
+<div class="page-title">Concept 3: Clean Minimal</div>
+<div class="page-subtitle">
+  A premium, Apple Wallet-inspired design. Maximum whitespace, oversized hero balance,
+  elegant segmented progress, and a clean transaction list grouped by date.
+</div>
+
+<div class="phone">
+  <div class="notch"></div>
+  <div class="screen">
+
+    <!-- Header -->
+    <div class="header">
+      <div class="logo-group">
+        <div class="logo">H</div>
+        <div class="brand-name">HomeVibes</div>
+      </div>
+      <div class="change-btn">Switch</div>
+    </div>
+
+    <!-- Hero Balance -->
+    <div class="balance-hero">
+      <div class="balance-eyebrow">Spendable Balance</div>
+      <div class="balance-number"><span class="currency">₹</span>491</div>
+      <div class="balance-detail">
+        ₹662 total · <span class="pending">₹171 pending</span>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Stats Row -->
+    <div class="stats-row">
+      <div class="stat">
+        <div class="stat-value">₹491</div>
+        <div class="stat-label">Earned</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">₹0</div>
+        <div class="stat-label">COD Pending</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">₹171</div>
+        <div class="stat-label">On Hold</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Tier Progress -->
+    <div class="tier-section">
+      <div class="tier-row">
+        <div class="tier-left">
+          <div class="tier-dot"></div>
+          <div class="tier-label">Silver</div>
+        </div>
+        <div class="tier-right">491 / 3,000</div>
+      </div>
+      <div class="tier-progress">
+        <div class="tier-segment filled"></div>
+        <div class="tier-segment"></div>
+        <div class="tier-segment"></div>
+        <div class="tier-segment"></div>
+        <div class="tier-segment"></div>
+        <div class="tier-segment"></div>
+      </div>
+      <div class="tier-hint">2,509 points to Silver</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Transactions -->
+    <div class="tx-section">
+      <div class="tx-header">
+        <div class="tx-title">Activity</div>
+      </div>
+
+      <div class="tx-date-group">
+        <div class="tx-date">Yesterday</div>
+        <div class="tx-item">
+          <div class="tx-indicator transfer"></div>
+          <div class="tx-details">
+            <div class="tx-label">Transferred</div>
+            <div class="tx-meta">Earned Credit</div>
+          </div>
+          <div class="tx-right">
+            <div class="tx-amount transfer">₹86.10</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tx-date-group">
+        <div class="tx-date">March 17</div>
+        <div class="tx-item">
+          <div class="tx-indicator credit"></div>
+          <div class="tx-details">
+            <div class="tx-label">Cashback Earned</div>
+            <div class="tx-meta">Order #1042</div>
+          </div>
+          <div class="tx-right">
+            <div class="tx-amount credit">+₹125.00</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tx-date-group">
+        <div class="tx-date">March 15</div>
+        <div class="tx-item">
+          <div class="tx-indicator debit"></div>
+          <div class="tx-details">
+            <div class="tx-label">Redeemed</div>
+            <div class="tx-meta">Order #1038</div>
+          </div>
+          <div class="tx-right">
+            <div class="tx-amount debit">-₹200.00</div>
+          </div>
+        </div>
+        <div class="tx-item">
+          <div class="tx-indicator credit"></div>
+          <div class="tx-details">
+            <div class="tx-label">Cashback Earned</div>
+            <div class="tx-meta">Order #1038</div>
+          </div>
+          <div class="tx-right">
+            <div class="tx-amount credit">+₹50.00</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Actions -->
+    <div class="bottom-actions">
+      <div class="bottom-action">Gift Card</div>
+      <div class="bottom-action primary">Refer & Earn</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Annotations -->
+<div class="annotation-group">
+  <div class="annotation-title">Key Design Changes</div>
+
+  <div class="annotation">
+    <div class="annotation-num">1</div>
+    <div class="annotation-text">
+      <strong>Hero Balance:</strong> The balance is THE centerpiece — massive 56px font, center-aligned, with nothing competing for attention. Pending amount called out in amber. No gradient card, no chrome.
+    </div>
+  </div>
+
+  <div class="annotation">
+    <div class="annotation-num">2</div>
+    <div class="annotation-text">
+      <strong>Stats Row:</strong> Bucket breakdown as a three-column stat row with subtle dividers. Adds a third "On Hold" metric. Clean, scannable, no progress bars needed.
+    </div>
+  </div>
+
+  <div class="annotation">
+    <div class="annotation-num">3</div>
+    <div class="annotation-text">
+      <strong>Segmented Tier Progress:</strong> Instead of a single bar, progress to Silver is shown as 6 discrete segments. Feels like filling up a meter in a game — each segment is a mini-milestone.
+    </div>
+  </div>
+
+  <div class="annotation">
+    <div class="annotation-num">4</div>
+    <div class="annotation-text">
+      <strong>Date-Grouped Transactions:</strong> Transactions grouped by date (Yesterday, March 17, March 15) instead of a flat list. Gives temporal context and makes it easy to correlate with purchases.
+    </div>
+  </div>
+
+  <div class="annotation">
+    <div class="annotation-num">5</div>
+    <div class="annotation-text">
+      <strong>Color-Bar Indicators:</strong> Each transaction has a thin vertical color bar (green=credit, red=debit, purple=transfer) instead of icon circles. Subtler, more elegant, and takes less space.
+    </div>
+  </div>
+
+  <div class="annotation">
+    <div class="annotation-num">6</div>
+    <div class="annotation-text">
+      <strong>Horizontal Dividers as Architecture:</strong> Thin dividers separate content zones instead of cards. Removes visual clutter of card borders/shadows while maintaining clear section hierarchy.
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

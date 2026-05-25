@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design 5 — All States</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: #0a0b0f;
+    color: #e2e2e8;
+    padding: 40px 24px;
+  }
+  h1 { text-align: center; font-size: 24px; font-weight: 700; margin-bottom: 6px; }
+  .page-sub { text-align: center; font-size: 13px; color: #6b7280; margin-bottom: 40px; }
+
+  .state-row {
+    display: flex; gap: 28px; justify-content: center;
+    flex-wrap: wrap; margin-bottom: 48px;
+  }
+  .state-col { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .state-label {
+    text-align: center; padding: 8px 18px;
+    border-radius: 20px; font-size: 11px; font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  .sl-blue { background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.25); color: #a5b4fc; }
+  .sl-green { background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.2); color: #4ade80; }
+  .sl-yellow { background: rgba(253,224,71,0.1); border: 1px solid rgba(253,224,71,0.2); color: #fde047; }
+  .sl-gray { background: rgba(156,163,175,0.1); border: 1px solid rgba(156,163,175,0.2); color: #9ca3af; }
+  .sl-red { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.2); color: #f87171; }
+  .state-desc {
+    max-width: 340px; text-align: center; font-size: 11px;
+    color: #6b7280; line-height: 1.5;
+  }
+
+  /* --- Phone --- */
+  .phone {
+    width: 360px; background: #1a1d27;
+    border-radius: 24px; overflow: hidden;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.4);
+  }
+
+  /* --- Shared --- */
+  .hdr {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 20px; border-bottom: 1px solid #2a2d3a;
+  }
+  .hdr-logo {
+    width: 30px; height: 30px; border-radius: 8px;
+    background: linear-gradient(135deg, #6366f1, #818cf8);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: #fff;
+  }
+  .hdr-name { font-size: 13px; font-weight: 600; }
+
+  .prof {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px;
+  }
+  .prof-left { display: flex; align-items: center; gap: 11px; }
+  .prof-av {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #818cf8);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 13px; color: #fff;
+  }
+  .prof-greet { font-size: 11px; color: #9ca3af; }
+  .prof-name { font-size: 16px; font-weight: 700; margin-top: 1px; }
+  .prof-meta { font-size: 10px; color: #9ca3af; margin-top: 1px; }
+  .prof-tier { color: #818cf8; font-weight: 600; }
+  .prof-switch {
+    font-size: 10px; color: #818cf8; background: none;
+    border: 1px solid #2a2d3a; padding: 4px 11px; border-radius: 14px;
+  }
+
+  .mult-strip {
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+    padding: 9px 20px; font-size: 11px; font-weight: 600; color: #818cf8;
+    background: linear-gradient(90deg, rgba(99,102,241,0.1), rgba(129,140,248,0.04));
+    border-top: 1px solid #2a2d3a; border-bottom: 1px solid #2a2d3a;
+  }
+  .mult-v { color: #4ade80; font-weight: 700; }
+
+  .div { height: 1px; background: #2a2d3a; }
+
+  /* Tier compact */
+  .tier-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 20px; background: rgba(255,255,255,0.01);
+    border-top: 1px solid #2a2d3a; border-bottom: 1px solid #2a2d3a;
+  }
+  .tier-badge-sm {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: rgba(255,255,255,0.06); border: 1px solid #2a2d3a;
+    border-radius: 12px; padding: 3px 9px 3px 7px;
+    font-size: 10px; font-weight: 600;
+  }
+  .tier-prog-mini { display: flex; align-items: center; gap: 5px; }
+  .tier-prog-track {
+    width: 50px; height: 4px; background: #2a2d3a; border-radius: 2px; overflow: hidden;
+  }
+  .tier-prog-fill { height: 100%; background: #818cf8; border-radius: 2px; }
+  .tier-prog-text { font-size: 9px; color: #9ca3af; }
+
+  /* Transactions */
+  .sec { padding: 16px 20px; }
+  .sec-title {
+    font-size: 10px; color: #9ca3af; text-transform: uppercase;
+    letter-spacing: 0.8px; margin-bottom: 10px; font-weight: 500;
+  }
+  .tx { display: flex; align-items: center; gap: 12px; padding: 10px 0; }
+  .tx + .tx { border-top: 1px solid #2a2d3a; }
+  .tx-bar { width: 3px; height: 26px; border-radius: 2px; flex-shrink: 0; }
+  .tx-bar-g { background: #4ade80; }
+  .tx-bar-r { background: #f87171; }
+  .tx-bar-p { background: #c4b5fd; }
+  .tx-bar-y { background: #fde047; }
+  .tx-body { flex: 1; }
+  .tx-lbl { font-size: 11px; font-weight: 500; }
+  .tx-sub { font-size: 9px; color: #9ca3af; margin-top: 1px; }
+  .tx-end { text-align: right; }
+  .tx-amt { font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .tx-g { color: #4ade80; }
+  .tx-w { color: #fff; }
+  .tx-p { color: #c4b5fd; }
+  .tx-hint { font-size: 8px; color: #6b7280; margin-top: 1px; font-variant-numeric: tabular-nums; }
+
+  /* Bottom actions */
+  .btm { display: flex; gap: 8px; padding: 14px 20px; }
+  .btm-a {
+    flex: 1; padding: 11px; text-align: center;
+    border: 1px solid #2a2d3a; border-radius: 10px;
+    font-size: 11px; font-weight: 500; color: #9ca3af; text-decoration: none;
+  }
+  .btm-p { background: #6366f1; border-color: #6366f1; color: #fff; }
+
+  /* Stars section */
+  .stars-card {
+    margin: 0 20px; border-radius: 14px; padding: 16px 16px;
+    background: rgba(74,222,128,0.04);
+    border: 1px solid rgba(74,222,128,0.12);
+  }
+  .stars-top { display: flex; justify-content: space-between; align-items: center; }
+  .stars-label { font-size: 9px; color: #6ee7b7; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+  .stars-num { font-size: 24px; font-weight: 700; color: #4ade80; margin-top: 3px; }
+  .stars-right { text-align: right; }
+  .stars-inr { font-size: 13px; font-weight: 600; color: #fff; }
+  .stars-pending { font-size: 9px; color: #9ca3af; margin-top: 2px; }
+  .stars-breakdown {
+    display: flex; gap: 14px; margin-top: 10px; padding-top: 10px;
+    border-top: 1px solid rgba(74,222,128,0.1);
+    font-size: 9px; color: #9ca3af;
+  }
+  .stars-breakdown span { color: #fff; font-weight: 500; }
+  .stars-expiry {
+    display: flex; align-items: center; gap: 5px;
+    margin-top: 8px; font-size: 10px; color: #f87171;
+  }
+  .expiry-dot {
+    width: 5px; height: 5px; border-radius: 50%; background: #f87171;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* Cash section */
+  .cash-card {
+    margin: 10px 20px 0; border-radius: 14px; padding: 14px 16px;
+    background: rgba(196,181,253,0.04);
+    border: 1px solid rgba(196,181,253,0.12);
+  }
+  .cash-top { display: flex; justify-content: space-between; align-items: center; }
+  .cash-label { font-size: 9px; color: #c4b5fd; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+  .cash-num { font-size: 24px; font-weight: 700; color: #c4b5fd; margin-top: 3px; }
+  .cash-detail { font-size: 9px; color: #9ca3af; text-align: right; }
+
+  /* Total redeemable */
+  .total-hero { text-align: center; padding: 20px 20px 14px; }
+  .total-eyebrow { font-size: 10px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 5px; }
+  .total-num { font-size: 34px; font-weight: 700; color: #fff; line-height: 1; }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center; padding: 40px 24px;
+  }
+  .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+  .empty-text { font-size: 12px; color: #9ca3af; line-height: 1.5; }
+
+  /* Phone input */
+  .phone-input-area { padding: 20px 24px; }
+  .phone-input-label { font-size: 12px; color: #9ca3af; margin-bottom: 8px; }
+  .phone-input-box {
+    display: flex; gap: 8px;
+  }
+  .phone-input {
+    flex: 1; background: rgba(255,255,255,0.05); border: 1px solid #2a2d3a;
+    border-radius: 10px; padding: 12px 14px; color: #fff; font-size: 14px;
+  }
+  .phone-submit {
+    background: #6366f1; border: none; border-radius: 10px;
+    padding: 12px 20px; color: #fff; font-size: 13px; font-weight: 600;
+  }
+
+  /* Section header */
+  .section-header {
+    text-align: center; padding: 28px 24px 12px;
+  }
+  .section-header h2 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .section-header p { font-size: 13px; color: #9ca3af; }
+
+  .row-label {
+    text-align: center; font-size: 18px; font-weight: 700;
+    color: #fff; margin-bottom: 20px; width: 100%;
+  }
+  .row-label-sub {
+    font-size: 12px; font-weight: 400; color: #6b7280;
+    display: block; margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Design 5 — All Customer States</h1>
+<p class="page-sub">Stacked Sections · Merchant: Chai & Co · 4 Stars = ₹1</p>
+
+<!-- ===================== STATE A: Full — Points + Cash + Expiry ===================== -->
+<div class="state-row">
+
+<div class="state-col">
+  <div class="state-label sl-green">State A — Power User (Points + Cash + Expiring)</div>
+  <div class="phone">
+    <div class="hdr"><div class="hdr-logo">C</div><div class="hdr-name">Chai & Co</div></div>
+    <div class="prof">
+      <div class="prof-left">
+        <div class="prof-av">PS</div>
+        <div>
+          <div class="prof-greet">Welcome back,</div>
+          <div class="prof-name">Priya Sharma</div>
+          <div class="prof-meta"><span class="prof-tier">Gold</span> · Member · 330d left</div>
+        </div>
+      </div>
+      <button class="prof-switch">Switch</button>
+    </div>
+    <div class="mult-strip">⚡ Earning <span class="mult-v">1.5x</span> Stars on every order</div>
+
+    <div class="total-hero">
+      <div class="total-eyebrow">Total Redeemable</div>
+      <div class="total-num">₹850</div>
+    </div>
+
+    <div class="stars-card">
+      <div class="stars-top">
+        <div>
+          <div class="stars-label">Stars Earned</div>
+          <div class="stars-num">1,400 ★</div>
+        </div>
+        <div class="stars-right">
+          <div class="stars-inr">≈ ₹350</div>
+          <div class="stars-pending">+600 pending</div>
+        </div>
+      </div>
+      <div class="stars-breakdown">
+        Earned <span>1,000</span> · Referral <span>400</span> · COD <span style="color:#fde047;">600</span>
+      </div>
+      <div class="stars-expiry">
+        <div class="expiry-dot"></div>
+        142 ★ expiring in 8 days
+      </div>
+    </div>
+
+    <div class="cash-card">
+      <div class="cash-top">
+        <div>
+          <div class="cash-label">Cash Balance</div>
+          <div class="cash-num">₹500</div>
+        </div>
+        <div class="cash-detail">Gift Card ₹500<br>Refund ₹0</div>
+      </div>
+    </div>
+
+    <div style="height:16px;"></div>
+    <div class="tier-row">
+      <div class="tier-left"><div class="tier-badge-sm">★ Gold</div></div>
+      <div class="tier-prog-mini">
+        <div class="tier-prog-track"><div class="tier-prog-fill" style="width:60%"></div></div>
+        <div class="tier-prog-text">9K / 15K ★</div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-title">Recent Activity</div>
+      <div class="tx"><div class="tx-bar tx-bar-g"></div><div class="tx-body"><div class="tx-lbl">Earned</div><div class="tx-sub">Earned Credit · Today</div></div><div class="tx-end"><div class="tx-amt tx-g">+320 ★</div><div class="tx-hint">≈ ₹80</div></div></div>
+      <div class="tx"><div class="tx-bar tx-bar-r"></div><div class="tx-body"><div class="tx-lbl">Redeemed</div><div class="tx-sub">Earned Credit · 5d ago</div></div><div class="tx-end"><div class="tx-amt tx-w">-300 ★</div><div class="tx-hint">≈ ₹75</div></div></div>
+      <div class="tx"><div class="tx-bar tx-bar-p"></div><div class="tx-body"><div class="tx-lbl">Gift Card Claimed</div><div class="tx-sub">Gift Card · 10d ago</div></div><div class="tx-end"><div class="tx-amt tx-p">+₹500</div><div class="tx-hint">cash</div></div></div>
+    </div>
+    <div class="div"></div>
+    <div class="btm"><a class="btm-a">Gift Card</a><a class="btm-a btm-p">Refer & Earn</a></div>
+  </div>
+  <div class="state-desc">Gold member, 1,400★ + ₹500 gift card, 142★ expiring soon, COD pending. All sections visible. Maximum info state.</div>
+</div>
+
+<!-- ========== STATE B: Points Only, No Cash, No Expiry ========== -->
+<div class="state-col">
+  <div class="state-label sl-blue">State B — Points Only (No Cash, No Expiry)</div>
+  <div class="phone">
+    <div class="hdr"><div class="hdr-logo">C</div><div class="hdr-name">Chai & Co</div></div>
+    <div class="prof">
+      <div class="prof-left">
+        <div class="prof-av">RK</div>
+        <div>
+          <div class="prof-greet">Welcome back,</div>
+          <div class="prof-name">Ravi Kumar</div>
+          <div class="prof-meta"><span class="prof-tier">Silver</span></div>
+        </div>
+      </div>
+      <button class="prof-switch">Switch</button>
+    </div>
+    <div class="mult-strip">⚡ Earning <span class="mult-v">1.25x</span> Stars on every order</div>
+
+    <div class="total-hero">
+      <div class="total-eyebrow">Total Redeemable</div>
+      <div class="total-num">₹175</div>
+    </div>
+
+    <div class="stars-card">
+      <div class="stars-top">
+        <div>
+          <div class="stars-label">Stars Earned</div>
+          <div class="stars-num">700 ★</div>
+        </div>
+        <div class="stars-right">
+          <div class="stars-inr">≈ ₹175</div>
+        </div>
+      </div>
+      <div class="stars-breakdown">
+        Earned <span>700</span>
+      </div>
+      <!-- No expiry line — nothing expiring soon -->
+      <!-- No cash card — cash balance is ₹0 -->
+    </div>
+
+    <div style="height:16px;"></div>
+    <div class="tier-row">
+      <div class="tier-left"><div class="tier-badge-sm">★ Silver</div></div>
+      <div class="tier-prog-mini">
+        <div class="tier-prog-track"><div class="tier-prog-fill" style="width:70%"></div></div>
+        <div class="tier-prog-text">3.5K / 5K ★</div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-title">Recent Activity</div>
+      <div class="tx"><div class="tx-bar tx-bar-g"></div><div class="tx-body"><div class="tx-lbl">Earned</div><div class="tx-sub">Earned Credit · 5d ago</div></div><div class="tx-end"><div class="tx-amt tx-g">+180 ★</div><div class="tx-hint">≈ ₹45</div></div></div>
+      <div class="tx"><div class="tx-bar tx-bar-g"></div><div class="tx-body"><div class="tx-lbl">Earned</div><div class="tx-sub">Earned Credit · 20d ago</div></div><div class="tx-end"><div class="tx-amt tx-g">+140 ★</div><div class="tx-hint">≈ ₹35</div></div></div>
+    </div>
+    <div class="div"></div>
+    <div class="btm"><a class="btm-a">Gift Card</a><a class="btm-a btm-p">Refer & Earn</a></div>
+  </div>
+  <div class="state-desc">No cash balance → cash card hidden. No expiring points → expiry line hidden. Clean, focused view. Most common state for regular customers.</div>
+</div>
+
+<!-- ========== STATE C: Cash Only, No Points ========== -->
+<div class="state-col">
+  <div class="state-label sl-yellow">State C — Cash Only (Gift Card, No Points)</div>
+  <div class="phone">
+    <div class="hdr"><div class="hdr-logo">C</div><div class="hdr-name">Chai & Co</div></div>
+    <div class="prof">
+      <div class="prof-left">
+        <div class="prof-av">MR</div>
+        <div>
+          <div class="prof-greet">Welcome back,</div>
+          <div class="prof-name">Meera Reddy</div>
+          <div class="prof-meta" style="color:#6b7280;">No tier yet</div>
+        </div>
+      </div>
+      <button class="prof-switch">Switch</button>
+    </div>
+    <div class="mult-strip">✦ Earning <span class="mult-v">1x</span> Stars on every order</div>
+
+    <div class="total-hero">
+      <div class="total-eyebrow">Total Redeemable</div>
+      <div class="total-num">₹500</div>
+    </div>
+
+    <!-- Stars section — 0 stars, still show it but minimal -->
+    <div class="stars-card" style="border-color:rgba(74,222,128,0.06);">
+      <div class="stars-top">
+        <div>
+          <div class="stars-label">Stars Earned</div>
+          <div class="stars-num" style="color:#6b7280;">0 ★</div>
+        </div>
+        <div class="stars-right">
+          <div class="stars-inr" style="color:#6b7280;">₹0</div>
+        </div>
+      </div>
+      <div style="margin-top:10px; padding-top:10px; border-top:1px solid rgba(74,222,128,0.06); font-size:10px; color:#6b7280;">
+        Place your first order to start earning Stars
+      </div>
+    </div>
+
+    <div class="cash-card">
+      <div class="cash-top">
+        <div>
+          <div class="cash-label">Cash Balance</div>
+          <div class="cash-num">₹500</div>
+        </div>
+        <div class="cash-detail">Gift Card ₹500</div>
+      </div>
+    </div>
+
+    <div style="height:16px;"></div>
+    <!-- No tier row — no tier assigned -->
+    <div class="sec">
+      <div class="sec-title">Recent Activity</div>
+      <div class="tx"><div class="tx-bar tx-bar-p"></div><div class="tx-body"><div class="tx-lbl">Gift Card Claimed</div><div class="tx-sub">Gift Card · 5d ago</div></div><div class="tx-end"><div class="tx-amt tx-p">+₹500</div><div class="tx-hint">cash</div></div></div>
+    </div>
+    <div class="div"></div>
+    <div class="btm"><a class="btm-a">Gift Card</a><a class="btm-a btm-p">Refer & Earn</a></div>
+  </div>
+  <div class="state-desc">Only a gift card, no orders yet. Stars section shows 0 with CTA to start earning. Cash card visible. No tier row. Guides the user toward their first order.</div>
+</div>
+
+</div>
+
+<!-- ===================== ROW 2 ===================== -->
+<div class="state-row">
+
+<!-- ========== STATE D: Brand New User (Zero Balance) ========== -->
+<div class="state-col">
+  <div class="state-label sl-gray">State D — New User (Zero Everything)</div>
+  <div class="phone">
+    <div class="hdr"><div class="hdr-logo">C</div><div class="hdr-name">Chai & Co</div></div>
+    <div class="prof">
+      <div class="prof-left">
+        <div class="prof-av">VS</div>
+        <div>
+          <div class="prof-greet">Welcome,</div>
+          <div class="prof-name">Vikram Singh</div>
+        </div>
+      </div>
+      <button class="prof-switch">Switch</button>
+    </div>
+    <div class="mult-strip">✦ Earning <span class="mult-v">1x</span> Stars on every order</div>
+
+    <div class="empty-state">
+      <div class="empty-icon">✦</div>
+      <div class="empty-title">No Stars yet</div>
+      <div class="empty-text">Place your first order to start earning Stars.<br>Every ₹1 spent earns you Stars!</div>
+    </div>
+
+    <!-- No cash card (₹0) -->
+    <!-- No tier row (no tier) -->
+    <!-- No transactions -->
+
+    <div class="div"></div>
+    <div style="padding:16px 20px;">
+      <div style="text-align:center; font-size:12px; color:#9ca3af; margin-bottom:12px;">Quick actions</div>
+      <div style="display:flex; gap:8px;">
+        <a class="btm-a" style="flex:1;">Check Gift Card</a>
+        <a class="btm-a btm-p" style="flex:1;">Refer & Earn</a>
+      </div>
+    </div>
+  </div>
+  <div class="state-desc">Brand new — no points, no cash, no tier, no transactions. Friendly empty state with CTA. Cash card hidden. Tier row hidden.</div>
+</div>
+
+<!-- ========== STATE E: COD Pending Only ========== -->
+<div class="state-col">
+  <div class="state-label sl-yellow">State E — COD Pending (Nothing Spendable)</div>
+  <div class="phone">
+    <div class="hdr"><div class="hdr-logo">C</div><div class="hdr-name">Chai & Co</div></div>
+    <div class="prof">
+      <div class="prof-left">
+        <div class="prof-av">AP</div>
+        <div>
+          <div class="prof-greet">Welcome back,</div>
+          <div class="prof-name">Anita Patel</div>
+          <div class="prof-meta"><span class="prof-tier">Bronze</span></div>
+        </div>
+      </div>
+      <button class="prof-switch">Switch</button>
+    </div>
+    <div class="mult-strip">✦ Earning <span class="mult-v">1x</span> Stars on every order</div>
+
+    <div class="total-hero">
+      <div class="total-eyebrow">Total Redeemable</div>
+      <div class="total-num" style="color:#6b7280;">₹0</div>
+    </div>
+
+    <div class="stars-card" style="border-color:rgba(253,224,71,0.15); background:rgba(253,224,71,0.03);">
+      <div class="stars-top">
+        <div>
+          <div class="stars-label" style="color:#fde047;">Stars Pending</div>
+          <div class="stars-num" style="color:#fde047;">160 ★</div>
+        </div>
+        <div class="stars-right">
+          <div class="stars-inr" style="color:#6b7280;">≈ ₹40</div>
+          <div class="stars-pending" style="color:#fde047;">all pending</div>
+        </div>
+      </div>
+      <div style="margin-top:10px; padding-top:10px; border-top:1px solid rgba(253,224,71,0.08); font-size:10px; color:#9ca3af;">
+        Stars will unlock once your order is delivered
+      </div>
+    </div>
+
+    <!-- No cash card (₹0) -->
+
+    <div style="height:16px;"></div>
+    <div class="tier-row">
+      <div class="tier-left"><div class="tier-badge-sm">★ Bronze</div></div>
+      <div class="tier-prog-mini">
+        <div class="tier-prog-track"><div class="tier-prog-fill" style="width:24%"></div></div>
+        <div class="tier-prog-text">1.2K / 5K ★</div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-title">Recent Activity</div>
+      <div class="tx"><div class="tx-bar tx-bar-y"></div><div class="tx-body"><div class="tx-lbl">Order (COD)</div><div class="tx-sub">Pending Delivery · 2d ago</div></div><div class="tx-end"><div class="tx-amt" style="color:#fde047;">+160 ★</div><div class="tx-hint">pending</div></div></div>
+    </div>
+    <div class="div"></div>
+    <div class="btm"><a class="btm-a">Gift Card</a><a class="btm-a btm-p">Refer & Earn</a></div>
+  </div>
+  <div class="state-desc">Only COD pending — nothing spendable. Stars card turns yellow themed to signal "pending". Total redeemable shows ₹0 (dimmed). Cash card hidden.</div>
+</div>
+
+<!-- ========== STATE F: Expiry Warning Heavy ========== -->
+<div class="state-col">
+  <div class="state-label sl-red">State F — Expiry Urgency</div>
+  <div class="phone">
+    <div class="hdr"><div class="hdr-logo">C</div><div class="hdr-name">Chai & Co</div></div>
+    <div class="prof">
+      <div class="prof-left">
+        <div class="prof-av">AN</div>
+        <div>
+          <div class="prof-greet">Welcome back,</div>
+          <div class="prof-name">Arjun Nair</div>
+          <div class="prof-meta"><span class="prof-tier">Silver</span></div>
+        </div>
+      </div>
+      <button class="prof-switch">Switch</button>
+    </div>
+    <div class="mult-strip">⚡ Earning <span class="mult-v">1.25x</span> Stars on every order</div>
+
+    <div class="total-hero">
+      <div class="total-eyebrow">Total Redeemable</div>
+      <div class="total-num">₹225</div>
+    </div>
+
+    <div class="stars-card" style="border-color:rgba(248,113,113,0.2);">
+      <div class="stars-top">
+        <div>
+          <div class="stars-label">Stars Earned</div>
+          <div class="stars-num">900 ★</div>
+        </div>
+        <div class="stars-right">
+          <div class="stars-inr">≈ ₹225</div>
+        </div>
+      </div>
+      <div class="stars-breakdown">
+        Earned <span>500</span> · Referral <span>400</span>
+      </div>
+      <div class="stars-expiry">
+        <div class="expiry-dot"></div>
+        <strong>500 ★ expiring tomorrow!</strong>
+      </div>
+    </div>
+
+    <!-- No cash card -->
+
+    <div style="height:16px;"></div>
+    <div class="tier-row">
+      <div class="tier-left"><div class="tier-badge-sm">★ Silver</div></div>
+      <div class="tier-prog-mini">
+        <div class="tier-prog-track"><div class="tier-prog-fill" style="width:40%"></div></div>
+        <div class="tier-prog-text">2K / 5K ★</div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-title">Recent Activity</div>
+      <div class="tx"><div class="tx-bar tx-bar-g"></div><div class="tx-body"><div class="tx-lbl">Referral Reward</div><div class="tx-sub">Referral · 1d ago</div></div><div class="tx-end"><div class="tx-amt tx-g">+400 ★</div><div class="tx-hint">≈ ₹100</div></div></div>
+      <div class="tx"><div class="tx-bar tx-bar-g"></div><div class="tx-body"><div class="tx-lbl">Earned</div><div class="tx-sub">Earned Credit · 85d ago</div></div><div class="tx-end"><div class="tx-amt tx-g">+500 ★</div><div class="tx-hint" style="color:#f87171;">expires tomorrow</div></div></div>
+    </div>
+    <div class="div"></div>
+    <div class="btm"><a class="btm-a">Gift Card</a><a class="btm-a btm-p">Refer & Earn</a></div>
+  </div>
+  <div class="state-desc">500★ expiring tomorrow — red pulsing dot, bold warning. Also shown per-transaction. Creates urgency to redeem. Stars card border turns red-tinted.</div>
+</div>
+
+</div>
+
+<!-- ===================== ROW 3: Pre-login ===================== -->
+<div class="state-row">
+
+<!-- ========== STATE G: Pre-Login ========== -->
+<div class="state-col">
+  <div class="state-label sl-gray">State G — Pre-Login (Phone Entry)</div>
+  <div class="phone">
+    <div class="hdr"><div class="hdr-logo">C</div><div class="hdr-name">Chai & Co</div></div>
+
+    <div class="section-header">
+      <h2>Your Rewards</h2>
+      <p>Check your Stars balance and recent activity</p>
+    </div>
+
+    <div class="phone-input-area">
+      <div class="phone-input-label">Enter your phone number</div>
+      <div class="phone-input-box">
+        <div class="phone-input">+91 98765 43210</div>
+        <button class="phone-submit">Go</button>
+      </div>
+    </div>
+
+    <div style="height:24px;"></div>
+    <div class="div"></div>
+
+    <div style="padding:20px 24px;">
+      <div style="display:flex; gap:10px;">
+        <a class="btm-a" style="flex:1;">
+          <div style="font-size:18px; margin-bottom:4px;">🎁</div>
+          Check Gift Card
+        </a>
+        <a class="btm-a" style="flex:1;">
+          <div style="font-size:18px; margin-bottom:4px;">🤝</div>
+          Referral Rewards
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="state-desc">Before phone entry. Uses merchant's points name ("Stars") in the subtitle. Quick links to gift card check and referrals — don't need login.</div>
+</div>
+
+<!-- ========== STATE H: Not Found ========== -->
+<div class="state-col">
+  <div class="state-label sl-red">State H — Phone Not Found</div>
+  <div class="phone">
+    <div class="hdr"><div class="hdr-logo">C</div><div class="hdr-name">Chai & Co</div></div>
+
+    <div style="display:flex; flex-direction:column; align-items:center; text-align:center; padding:48px 24px; gap:12px;">
+      <div style="width:48px; height:48px; border-radius:50%; background:#fef2f2; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:700; color:#ef4444;">!</div>
+      <p style="font-size:14px; color:#9ca3af;">No rewards found for this number</p>
+      <button style="background:none; border:none; color:#818cf8; font-size:14px; font-weight:500; padding:8px 16px; border-radius:8px; cursor:pointer;">Try a different number</button>
+    </div>
+
+    <div class="div"></div>
+    <div style="padding:20px 24px;">
+      <div style="display:flex; gap:10px;">
+        <a class="btm-a" style="flex:1;">Check Gift Card</a>
+        <a class="btm-a btm-p" style="flex:1;">Refer & Earn</a>
+      </div>
+    </div>
+  </div>
+  <div class="state-desc">Phone not recognized. Error state with retry. Quick actions still available — they might have a gift card code even without an account.</div>
+</div>
+
+</div>
+
+<!-- ===================== VISIBILITY RULES TABLE ===================== -->
+<div style="max-width:1000px; margin:0 auto; margin-top:16px;">
+  <h2 style="font-size:16px; font-weight:700; margin-bottom:16px; text-align:center;">Conditional Visibility Rules</h2>
+  <table style="width:100%; border-collapse:collapse; font-size:11px; color:#9ca3af;">
+    <thead>
+      <tr style="border-bottom:1px solid #2a2d3a;">
+        <th style="text-align:left; padding:8px 10px; color:#e2e2e8;">Element</th>
+        <th style="text-align:center; padding:8px 6px; color:#4ade80;">A</th>
+        <th style="text-align:center; padding:8px 6px; color:#818cf8;">B</th>
+        <th style="text-align:center; padding:8px 6px; color:#fde047;">C</th>
+        <th style="text-align:center; padding:8px 6px; color:#9ca3af;">D</th>
+        <th style="text-align:center; padding:8px 6px; color:#fde047;">E</th>
+        <th style="text-align:center; padding:8px 6px; color:#f87171;">F</th>
+        <th style="text-align:left; padding:8px 10px; color:#e2e2e8;">Show When</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom:1px solid #1a1d27;"><td style="padding:6px 10px;">Total Redeemable</td><td style="text-align:center;">✅</td><td style="text-align:center;">✅</td><td style="text-align:center;">✅</td><td style="text-align:center;">❌</td><td style="text-align:center;">✅</td><td style="text-align:center;">✅</td><td style="padding:6px 10px;">Any balance exists (even if ₹0 with pending)</td></tr>
+      <tr style="border-bottom:1px solid #1a1d27;"><td style="padding:6px 10px;">Stars card</td><td style="text-align:center;">✅</td><td style="text-align:center;">✅</td><td style="text-align:center;">✅ (0★)</td><td style="text-align:center;">❌</td><td style="text-align:center;">✅ (yellow)</td><td style="text-align:center;">✅</td><td style="padding:6px 10px;">Always when logged in + has wallet (show 0★ with CTA if empty)</td></tr>
+      <tr style="border-bottom:1px solid #1a1d27;"><td style="padding:6px 10px;">Stars breakdown line</td><td style="text-align:center;">✅</td><td style="text-align:center;">✅</td><td style="text-align:center;">❌</td><td style="text-align:center;">❌</td><td style="text-align:center;">❌</td><td style="text-align:center;">✅</td><td style="padding:6px 10px;">When points > 0 and multiple source buckets exist</td></tr>
+      <tr style="border-bottom:1px solid #1a1d27;"><td style="padding:6px 10px;">Expiry warning</td><td style="text-align:center;">✅</td><td style="text-align:center;">❌</td><td style="text-align:center;">❌</td><td style="text-align:center;">❌</td><td style="text-align:center;">❌</td><td style="text-align:center;">✅</td><td style="padding:6px 10px;">When entries with expires_at within 30 days exist</td></tr>
+      <tr style="border-bottom:1px solid #1a1d27;"><td style="padding:6px 10px;">Cash card</td><td style="text-align:center;">✅</td><td style="text-align:center;">❌</td><td style="text-align:center;">✅</td><td style="text-align:center;">❌</td><td style="text-align:center;">❌</td><td style="text-align:center;">❌</td><td style="padding:6px 10px; color:#4ade80;">Only when cash_balance > 0</td></tr>
+      <tr style="border-bottom:1px solid #1a1d27;"><td style="padding:6px 10px;">Pending count</td><td style="text-align:center;">✅</td><td style="text-align:center;">❌</td><td style="text-align:center;">❌</td><td style="text-align:center;">❌</td><td style="text-align:center;">✅</td><td style="text-align:center;">❌</td><td style="padding:6px 10px;">When pending (held) amount > 0</td></tr>
+      <tr style="border-bottom:1px solid #1a1d27;"><td style="padding:6px 10px;">Multiplier strip</td><td style="text-align:center;">✅</td><td style="text-align:center;">✅</td><td style="text-align:center;">✅</td><td style="text-align:center;">✅</td><td style="text-align:center;">✅</td><td style="text-align:center;">✅</td><td style="padding:6px 10px;">Always (uses "Stars" name)</td></tr>
+      <tr style="border-bottom:1px solid #1a1d27;"><td style="padding:6px 10px;">Tier row</td><td style="text-align:center;">✅</td><td style="text-align:center;">✅</td><td style="text-align:center;">❌</td><td style="text-align:center;">❌</td><td style="text-align:center;">✅</td><td style="text-align:center;">✅</td><td style="padding:6px 10px;">When customer has a tier assigned</td></tr>
+      <tr style="border-bottom:1px solid #1a1d27;"><td style="padding:6px 10px;">Empty state</td><td style="text-align:center;">❌</td><td style="text-align:center;">❌</td><td style="text-align:center;">❌</td><td style="text-align:center;">✅</td><td style="text-align:center;">❌</td><td style="text-align:center;">❌</td><td style="padding:6px 10px;">When total balance = 0 AND no transactions AND no cash</td></tr>
+      <tr><td style="padding:6px 10px;">Stars card color</td><td style="text-align:center; color:#4ade80;">Green</td><td style="text-align:center; color:#4ade80;">Green</td><td style="text-align:center; color:#6b7280;">Gray</td><td style="text-align:center;">—</td><td style="text-align:center; color:#fde047;">Yellow</td><td style="text-align:center; color:#f87171;">Red-tint</td><td style="padding:6px 10px;">Green=spendable, Yellow=all pending, Red-tint=expiry imminent, Gray=empty</td></tr>
+    </tbody>
+  </table>
+</div>
+
+</body>
+</html>

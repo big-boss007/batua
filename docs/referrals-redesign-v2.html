@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Referrals Redesign v2 — Split Navigation</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f1f3f5; color: #1a1a2e; }
+
+  .page-header-bar { text-align: center; padding: 40px 40px 0; }
+  .page-header-bar h1 { font-size: 26px; font-weight: 700; }
+  .page-header-bar p { font-size: 14px; color: #9ca3af; margin-top: 4px; max-width: 600px; margin-left: auto; margin-right: auto; }
+
+  .section-break { max-width: 1100px; margin: 48px auto 0; padding: 0 40px; }
+  .section-break-title { font-size: 20px; font-weight: 700; color: #1a1a2e; margin-bottom: 4px; }
+  .section-break-sub { font-size: 13px; color: #9ca3af; }
+  .section-break-hr { height: 2px; background: linear-gradient(90deg, #6366f1, #c7d2fe); border-radius: 2px; margin-top: 12px; }
+
+  .state-grid { display: flex; flex-direction: column; gap: 48px; padding: 24px 40px 60px; max-width: 1100px; margin: 0 auto; }
+
+  .state { background: white; border-radius: 16px; border: 1px solid #e5e7eb; overflow: hidden; }
+  .state-label { padding: 14px 24px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; background: #f9fafb; border-bottom: 1px solid #e5e7eb; color: #6b7280; display: flex; align-items: center; gap: 10px; }
+  .state-num { width: 24px; height: 24px; border-radius: 50%; background: #6366f1; color: white; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+  .state-num.green { background: #22c55e; }
+  .state-body { padding: 32px; display: flex; gap: 0; }
+
+  /* Sidebar mock */
+  .mock-sidebar { width: 210px; flex-shrink: 0; border-right: 1px solid #e5e7eb; padding-right: 20px; margin-right: 24px; }
+  .sidebar-section { margin-bottom: 16px; }
+  .sidebar-parent { display: flex; align-items: center; gap: 8px; padding: 8px 10px; font-size: 13px; font-weight: 600; color: #6366f1; border-radius: 8px; }
+  .sidebar-parent-icon { font-size: 14px; }
+  .sidebar-chevron { margin-left: auto; font-size: 10px; color: #6366f1; }
+  .sidebar-children { display: flex; flex-direction: column; padding-left: 8px; margin-top: 2px; }
+  .sidebar-child { display: flex; align-items: center; gap: 8px; padding: 6px 10px 6px 28px; font-size: 12px; font-weight: 500; color: #6b7280; border-radius: 8px; position: relative; text-decoration: none; }
+  .sidebar-child::before { content: ''; position: absolute; left: 18px; top: 0; bottom: 0; width: 1px; background: #e5e7eb; }
+  .sidebar-child.active { color: #6366f1; font-weight: 600; background: rgba(99, 102, 241, 0.08); }
+  .sidebar-child.active::before { background: #6366f1; width: 2px; }
+  .sidebar-child-dot { width: 5px; height: 5px; border-radius: 50%; background: #d1d5db; flex-shrink: 0; }
+  .sidebar-child.active .sidebar-child-dot { background: #6366f1; }
+
+  .sidebar-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; font-size: 13px; font-weight: 500; color: #6b7280; border-radius: 8px; }
+  .sidebar-item-icon { font-size: 14px; width: 20px; text-align: center; }
+
+  /* Page content */
+  .mock-page { flex: 1; min-width: 0; }
+  .mock-page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
+  .mock-title { font-size: 22px; font-weight: 700; color: #1a1a2e; }
+  .mock-subtitle { font-size: 13px; color: #9ca3af; margin-top: 3px; }
+
+  /* Cards */
+  .card { border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; }
+  .card-header-bar { padding: 14px 20px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
+  .card-title { font-size: 15px; font-weight: 600; color: #374151; }
+  .card-body { padding: 20px; }
+
+  /* Setup hero */
+  .setup-hero { text-align: center; padding: 40px 24px; }
+  .setup-icon { font-size: 44px; margin-bottom: 14px; }
+  .setup-title { font-size: 18px; font-weight: 700; color: #1a1a2e; margin-bottom: 6px; }
+  .setup-desc { font-size: 13px; color: #6b7280; max-width: 380px; margin: 0 auto 20px; line-height: 1.6; }
+
+  .setup-steps { display: flex; gap: 16px; justify-content: center; margin-bottom: 24px; max-width: 480px; margin-left: auto; margin-right: auto; }
+  .setup-step { flex: 1; text-align: center; padding: 14px 10px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; }
+  .setup-step-num { width: 24px; height: 24px; border-radius: 50%; background: #6366f1; color: white; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; margin: 0 auto 6px; }
+  .setup-step-label { font-size: 11px; font-weight: 600; color: #374151; }
+  .setup-step-desc { font-size: 10px; color: #9ca3af; margin-top: 2px; }
+
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; border: none; cursor: pointer; }
+  .btn-primary { background: #6366f1; color: white; }
+  .btn-secondary { background: white; color: #374151; border: 1px solid #d1d5db; }
+  .btn-ghost { background: none; color: #6b7280; border: 1px solid #e5e7eb; }
+  .btn-sm { padding: 6px 14px; font-size: 12px; }
+  .btn-danger { background: white; color: #ef4444; border: 1px solid #fecaca; }
+
+  /* Config form */
+  .config-grid { display: grid; grid-template-columns: 1fr 240px; gap: 20px; }
+  .config-form { display: flex; flex-direction: column; gap: 18px; }
+  .config-preview { background: linear-gradient(165deg, #eff6ff, #eef2ff); border: 1px solid #c7d2fe; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; }
+
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field-label { font-size: 12px; font-weight: 600; color: #6b7280; }
+  .field-input { padding: 9px 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 13px; color: #374151; background: white; }
+  .input-with-suffix { display: flex; align-items: center; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; width: fit-content; }
+  .input-with-suffix input, .input-with-suffix .input-num { padding: 9px 12px; border: none; font-size: 14px; font-weight: 600; color: #374151; background: white; width: 80px; outline: none; }
+  .input-with-suffix .input-suffix { padding: 9px 12px; background: #f9fafb; border-left: 1px solid #e5e7eb; font-size: 12px; color: #6b7280; font-weight: 500; white-space: nowrap; }
+  .field-hint { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+
+  .toggle-row { display: flex; align-items: center; gap: 12px; }
+  .toggle { width: 38px; height: 20px; border-radius: 10px; background: #d1d5db; position: relative; cursor: pointer; flex-shrink: 0; }
+  .toggle.on { background: #6366f1; }
+  .toggle-dot { width: 16px; height: 16px; border-radius: 50%; background: white; position: absolute; top: 2px; left: 2px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  .toggle.on .toggle-dot { left: 20px; }
+  .toggle-label { font-size: 13px; color: #374151; font-weight: 500; }
+
+  .preview-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #6366f1; }
+  .preview-flow { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+  .preview-box { padding: 6px 12px; background: white; border: 1px solid #e5e7eb; border-radius: 8px; text-align: center; }
+  .preview-box-label { font-size: 8px; color: #9ca3af; text-transform: uppercase; }
+  .preview-box-val { font-size: 14px; font-weight: 700; color: #374151; margin-top: 1px; }
+  .preview-arrow { color: #d1d5db; font-size: 16px; }
+  .preview-note { font-size: 10px; color: #9ca3af; margin-top: 8px; }
+
+  /* Status bar */
+  .status-bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; margin-bottom: 20px; }
+  .status-text { font-size: 12px; font-weight: 500; color: #065f46; display: flex; align-items: center; gap: 6px; }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; }
+
+  /* Metrics */
+  .metrics-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+  .metric-card { padding: 14px; background: white; border: 1px solid #e5e7eb; border-radius: 10px; }
+  .metric-val { font-size: 20px; font-weight: 700; color: #1a1a2e; }
+  .metric-label { font-size: 10px; color: #9ca3af; font-weight: 500; margin-top: 2px; }
+
+  /* Tables */
+  .codes-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .codes-title { font-size: 14px; font-weight: 600; }
+  .codes-count { font-size: 11px; color: #9ca3af; font-weight: 500; }
+
+  .codes-table { width: 100%; border-collapse: collapse; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; }
+  .codes-table th { text-align: left; padding: 9px 12px; font-size: 10px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.04em; background: #f9fafb; border-bottom: 1px solid #e5e7eb; }
+  .codes-table td { padding: 9px 12px; font-size: 12px; border-bottom: 1px solid #f3f4f6; }
+  .codes-table tr:last-child td { border-bottom: none; }
+
+  .code-mono { font-family: 'SF Mono', monospace; font-size: 11px; padding: 2px 7px; background: #f3f4f6; border-radius: 4px; font-weight: 600; }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; }
+  .pill-green { background: #d1fae5; color: #065f46; }
+  .pill-blue { background: #dbeafe; color: #1d4ed8; }
+  .pill-purple { background: #ede9fe; color: #6d28d9; }
+  .pill-gray { background: #f3f4f6; color: #6b7280; }
+
+  .fraud-pill { padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; background: #fef3c7; color: #92400e; }
+  .clean-pill { padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; background: #d1fae5; color: #065f46; }
+
+  /* Modal */
+  .modal-overlay { background: rgba(0,0,0,0.08); border-radius: 12px; padding: 24px; display: flex; align-items: center; justify-content: center; }
+  .modal-panel { background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.12); width: 420px; overflow: hidden; }
+  .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; border-bottom: 1px solid #e5e7eb; }
+  .modal-title { font-size: 15px; font-weight: 600; }
+  .modal-close { background: none; border: none; font-size: 18px; color: #9ca3af; cursor: pointer; }
+  .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+  .modal-footer { padding: 12px 20px; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: 10px; }
+
+  .section-divider { height: 1px; background: #e5e7eb; margin: 20px 0; }
+
+  .note { margin-top: 24px; padding: 14px 18px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; font-size: 12px; color: #1e40af; line-height: 1.6; }
+
+  /* Sidebar nav diagram */
+  .nav-diagram { max-width: 300px; margin: 20px auto 0; }
+  .nav-diagram-box { border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; background: white; }
+</style>
+</head>
+<body>
+
+<div class="page-header-bar">
+  <h1>Referrals Redesign v2</h1>
+  <p>Split into two sub-pages under Referrals: <strong>Referral Program</strong> (setup, config, dashboard) and <strong>Influencers</strong> (creator codes, commissions)</p>
+</div>
+
+<!-- NAV STRUCTURE -->
+<div style="max-width: 1100px; margin: 32px auto 0; padding: 0 40px;">
+  <div class="nav-diagram">
+    <div class="nav-diagram-box">
+      <div style="padding: 12px 16px; background: #f9fafb; border-bottom: 1px solid #e5e7eb; font-size: 11px; font-weight: 700; text-transform: uppercase; color: #6b7280; letter-spacing: 0.05em;">Sidebar Structure</div>
+      <div style="padding: 12px;">
+        <div class="sidebar-parent">
+          <span class="sidebar-parent-icon">→</span> Referrals
+          <span class="sidebar-chevron">▾</span>
+        </div>
+        <div class="sidebar-children">
+          <div class="sidebar-child active">
+            <span class="sidebar-child-dot"></span> Referral Program
+          </div>
+          <div class="sidebar-child">
+            <span class="sidebar-child-dot"></span> Influencers
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION A: REFERRAL PROGRAM -->
+<!-- ============================================================ -->
+<div class="section-break">
+  <div class="section-break-title">A. Referral Program</div>
+  <div class="section-break-sub">/admin/referrals — Program setup, configuration, metrics, all codes, and conversions</div>
+  <div class="section-break-hr"></div>
+</div>
+
+<div class="state-grid">
+
+<!-- STATE A1: EMPTY -->
+<div class="state">
+  <div class="state-label"><span class="state-num">A1</span> Empty — No referral program configured</div>
+  <div class="state-body">
+    <div class="mock-sidebar">
+      <div class="sidebar-parent"><span class="sidebar-parent-icon">→</span> Referrals <span class="sidebar-chevron">▾</span></div>
+      <div class="sidebar-children">
+        <div class="sidebar-child active"><span class="sidebar-child-dot"></span> Referral Program</div>
+        <div class="sidebar-child"><span class="sidebar-child-dot"></span> Influencers</div>
+      </div>
+      <div style="margin-top: 12px;">
+        <div class="sidebar-item"><span class="sidebar-item-icon">↗</span> Analytics</div>
+        <div class="sidebar-item"><span class="sidebar-item-icon">✉</span> Notifications</div>
+      </div>
+    </div>
+    <div class="mock-page">
+      <div class="mock-page-header">
+        <div><div class="mock-title">Referral Program</div><div class="mock-subtitle">Grow your customer base through word-of-mouth</div></div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <div class="setup-hero">
+            <div class="setup-icon">🔗</div>
+            <div class="setup-title">Set up your referral program</div>
+            <div class="setup-desc">Reward customers for bringing in their friends. Configure rewards, share codes, and track conversions.</div>
+            <div class="setup-steps">
+              <div class="setup-step"><div class="setup-step-num">1</div><div class="setup-step-label">Set Rewards</div><div class="setup-step-desc">Referrer & referee amounts</div></div>
+              <div class="setup-step"><div class="setup-step-num">2</div><div class="setup-step-label">Configure</div><div class="setup-step-desc">Limits & activation</div></div>
+              <div class="setup-step"><div class="setup-step-num">3</div><div class="setup-step-label">Share</div><div class="setup-step-desc">Customers share from storefront</div></div>
+            </div>
+            <button class="btn btn-primary">Set Up Referral Program</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STATE A2: SETUP -->
+<div class="state">
+  <div class="state-label"><span class="state-num">A2</span> Setup — Creating the program</div>
+  <div class="state-body">
+    <div class="mock-sidebar">
+      <div class="sidebar-parent"><span class="sidebar-parent-icon">→</span> Referrals <span class="sidebar-chevron">▾</span></div>
+      <div class="sidebar-children">
+        <div class="sidebar-child active"><span class="sidebar-child-dot"></span> Referral Program</div>
+        <div class="sidebar-child"><span class="sidebar-child-dot"></span> Influencers</div>
+      </div>
+    </div>
+    <div class="mock-page">
+      <div class="mock-page-header">
+        <div><div class="mock-title">Referral Program</div><div class="mock-subtitle">Configure your referral program</div></div>
+      </div>
+      <div class="config-grid">
+        <div class="card">
+          <div class="card-header-bar"><span class="card-title">Program Settings</span></div>
+          <div class="card-body">
+            <div class="config-form">
+              <div class="field-row">
+                <div class="field">
+                  <label class="field-label">Referrer Reward</label>
+                  <div class="input-with-suffix"><div class="input-num">100</div><span class="input-suffix">💎 Jewels</span></div>
+                  <div class="field-hint">Earned per successful referral</div>
+                </div>
+                <div class="field">
+                  <label class="field-label">Referee Reward</label>
+                  <div class="input-with-suffix"><div class="input-num">50</div><span class="input-suffix">💎 Jewels</span></div>
+                  <div class="field-hint">Earned by the new customer</div>
+                </div>
+              </div>
+              <div class="section-divider" style="margin: 4px 0;"></div>
+              <div class="toggle-row"><div class="toggle on"><div class="toggle-dot"></div></div><span class="toggle-label">Limit referrals per customer</span></div>
+              <div class="field" style="max-width: 180px;"><label class="field-label">Max Referrals</label><div class="field-input">10</div><div class="field-hint">0 = unlimited</div></div>
+              <div class="section-divider" style="margin: 4px 0;"></div>
+              <div class="toggle-row"><div class="toggle on"><div class="toggle-dot"></div></div><span class="toggle-label">Program active</span></div>
+              <div style="display: flex; gap: 10px; padding-top: 6px;">
+                <button class="btn btn-primary btn-sm">Activate Program</button>
+                <button class="btn btn-ghost btn-sm">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="config-preview">
+          <span class="preview-label">How it works</span>
+          <div class="preview-flow">
+            <div class="preview-box"><div class="preview-box-label">Referrer</div><div class="preview-box-val">+100</div></div>
+            <span class="preview-arrow">→</span>
+            <div class="preview-box"><div class="preview-box-label">Code</div><div class="preview-box-val">🔗</div></div>
+            <span class="preview-arrow">→</span>
+            <div class="preview-box"><div class="preview-box-label">Referee</div><div class="preview-box-val">+50</div></div>
+          </div>
+          <div class="preview-note">Both earn Jewels when the referee places their first order</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STATE A3: ACTIVE DASHBOARD -->
+<div class="state">
+  <div class="state-label"><span class="state-num">A3</span> Active Dashboard — Program running, all codes & conversions</div>
+  <div class="state-body">
+    <div class="mock-sidebar">
+      <div class="sidebar-parent"><span class="sidebar-parent-icon">→</span> Referrals <span class="sidebar-chevron">▾</span></div>
+      <div class="sidebar-children">
+        <div class="sidebar-child active"><span class="sidebar-child-dot"></span> Referral Program</div>
+        <div class="sidebar-child"><span class="sidebar-child-dot"></span> Influencers</div>
+      </div>
+    </div>
+    <div class="mock-page">
+      <div class="mock-page-header">
+        <div><div class="mock-title">Referral Program</div><div class="mock-subtitle">Manage your referral program</div></div>
+        <button class="btn btn-secondary btn-sm">Edit Program</button>
+      </div>
+
+      <div class="status-bar">
+        <span class="status-text"><span class="status-dot"></span> Active — Referrer: 100 💎 &middot; Referee: 50 💎 &middot; Max 10/customer</span>
+        <button class="btn btn-danger btn-sm">Pause</button>
+      </div>
+
+      <div class="metrics-row">
+        <div class="metric-card"><div class="metric-val">24</div><div class="metric-label">Total Codes</div></div>
+        <div class="metric-card"><div class="metric-val">156</div><div class="metric-label">Referrals</div></div>
+        <div class="metric-card"><div class="metric-val">89</div><div class="metric-label">Conversions</div></div>
+        <div class="metric-card"><div class="metric-val">57%</div><div class="metric-label">Conversion Rate</div></div>
+      </div>
+
+      <div class="codes-header">
+        <div style="display: flex; align-items: baseline; gap: 8px;">
+          <span class="codes-title">All Referral Codes</span>
+          <span class="codes-count">24 codes</span>
+        </div>
+      </div>
+      <table class="codes-table">
+        <thead><tr><th>Code</th><th>Mobile</th><th>Type</th><th>Conversions</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="code-mono">PRIYA2024</span></td>
+            <td style="color: #6b7280;">+91 98765 43210</td>
+            <td><span class="pill pill-purple">Creator</span></td>
+            <td style="font-weight: 600;">23</td>
+            <td><span class="pill pill-green">Active</span></td>
+          </tr>
+          <tr>
+            <td><span class="code-mono">REF-7K2M</span></td>
+            <td style="color: #6b7280;">+91 87654 32109</td>
+            <td><span class="pill pill-gray">Standard</span></td>
+            <td style="font-weight: 600;">8</td>
+            <td><span class="pill pill-green">Active</span></td>
+          </tr>
+          <tr>
+            <td><span class="code-mono">REF-9P4Q</span></td>
+            <td style="color: #6b7280;">+91 76543 21098</td>
+            <td><span class="pill pill-gray">Standard</span></td>
+            <td style="font-weight: 600;">3</td>
+            <td><span class="pill pill-green">Active</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="section-divider"></div>
+
+      <div class="codes-header"><span class="codes-title">Recent Conversions</span></div>
+      <table class="codes-table">
+        <thead><tr><th>Referrer</th><th>Referee</th><th>Order</th><th>Status</th><th>Date</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>+91 98765 43210</td>
+            <td>+91 91234 56789</td>
+            <td>ord_9x2k</td>
+            <td><span class="clean-pill">Clean</span></td>
+            <td style="color: #9ca3af;">25 Mar, 11:42 AM</td>
+          </tr>
+          <tr>
+            <td>+91 87654 32109</td>
+            <td>+91 81234 56780</td>
+            <td>ord_3m7n</td>
+            <td><span class="fraud-pill">Same IP</span></td>
+            <td style="color: #9ca3af;">24 Mar, 3:15 PM</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION B: INFLUENCERS -->
+<!-- ============================================================ -->
+<div class="section-break">
+  <div class="section-break-title">B. Influencers</div>
+  <div class="section-break-sub">/admin/influencers — Creator/influencer codes with vanity codes and commissions</div>
+  <div class="section-break-hr"></div>
+</div>
+
+<div class="state-grid">
+
+<!-- STATE B1: EMPTY -->
+<div class="state">
+  <div class="state-label"><span class="state-num green">B1</span> Empty — No influencers yet</div>
+  <div class="state-body">
+    <div class="mock-sidebar">
+      <div class="sidebar-parent"><span class="sidebar-parent-icon">→</span> Referrals <span class="sidebar-chevron">▾</span></div>
+      <div class="sidebar-children">
+        <div class="sidebar-child"><span class="sidebar-child-dot"></span> Referral Program</div>
+        <div class="sidebar-child active"><span class="sidebar-child-dot"></span> Influencers</div>
+      </div>
+    </div>
+    <div class="mock-page">
+      <div class="mock-page-header">
+        <div><div class="mock-title">Influencers</div><div class="mock-subtitle">Manage creator and influencer partnerships</div></div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <div class="setup-hero">
+            <div class="setup-icon">🎤</div>
+            <div class="setup-title">No influencers yet</div>
+            <div class="setup-desc">Add creators and influencers with vanity codes. They'll earn Jewels 💎 for every successful referral through their code.</div>
+            <button class="btn btn-primary">+ Add Influencer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STATE B2: ADD INFLUENCER MODAL -->
+<div class="state">
+  <div class="state-label"><span class="state-num green">B2</span> Add Influencer — Modal from "+ Add Influencer" button</div>
+  <div class="state-body">
+    <div class="mock-sidebar">
+      <div class="sidebar-parent"><span class="sidebar-parent-icon">→</span> Referrals <span class="sidebar-chevron">▾</span></div>
+      <div class="sidebar-children">
+        <div class="sidebar-child"><span class="sidebar-child-dot"></span> Referral Program</div>
+        <div class="sidebar-child active"><span class="sidebar-child-dot"></span> Influencers</div>
+      </div>
+    </div>
+    <div class="mock-page">
+      <div class="modal-overlay">
+        <div class="modal-panel">
+          <div class="modal-header">
+            <span class="modal-title">Add Influencer</span>
+            <button class="modal-close">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div style="padding: 10px 14px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; font-size: 11px; color: #1e40af; line-height: 1.5;">
+              Influencers get a vanity code and earn Jewels 💎 on every referred order. The customer must already exist in the system.
+            </div>
+            <div class="field">
+              <label class="field-label">Mobile Number</label>
+              <div class="field-input" style="display: flex; align-items: center; gap: 8px;"><span style="color: #9ca3af;">+91</span> 98765 43210</div>
+              <div class="field-hint">Must be an existing customer</div>
+            </div>
+            <div class="field">
+              <label class="field-label">Vanity Code</label>
+              <div class="field-input">PRIYA2024</div>
+              <div class="field-hint">Uppercase letters and numbers. The code the influencer will share.</div>
+            </div>
+            <div class="field">
+              <label class="field-label">Commission Rate</label>
+              <div class="input-with-suffix" style="width: fit-content;">
+                <div class="input-num" style="width: 60px; text-align: center;">5</div>
+                <span class="input-suffix">%</span>
+              </div>
+              <div class="field-hint">Percentage of order value earned as Jewels 💎 per referral</div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-ghost btn-sm">Cancel</button>
+            <button class="btn btn-primary btn-sm">Add Influencer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STATE B3: INFLUENCERS LIST -->
+<div class="state">
+  <div class="state-label"><span class="state-num green">B3</span> Influencers List — Active influencer partnerships</div>
+  <div class="state-body">
+    <div class="mock-sidebar">
+      <div class="sidebar-parent"><span class="sidebar-parent-icon">→</span> Referrals <span class="sidebar-chevron">▾</span></div>
+      <div class="sidebar-children">
+        <div class="sidebar-child"><span class="sidebar-child-dot"></span> Referral Program</div>
+        <div class="sidebar-child active"><span class="sidebar-child-dot"></span> Influencers</div>
+      </div>
+    </div>
+    <div class="mock-page">
+      <div class="mock-page-header">
+        <div><div class="mock-title">Influencers</div><div class="mock-subtitle">Manage creator and influencer partnerships</div></div>
+        <button class="btn btn-primary btn-sm">+ Add Influencer</button>
+      </div>
+
+      <div class="metrics-row" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="metric-card"><div class="metric-val">3</div><div class="metric-label">Active Influencers</div></div>
+        <div class="metric-card"><div class="metric-val">31</div><div class="metric-label">Total Conversions</div></div>
+        <div class="metric-card"><div class="metric-val">4,250 💎</div><div class="metric-label">Commissions Earned</div></div>
+      </div>
+
+      <table class="codes-table">
+        <thead><tr><th>Influencer</th><th>Code</th><th>Commission</th><th>Conversions</th><th>Earned</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>
+              <div style="font-weight: 600; font-size: 13px;">Priya Sharma</div>
+              <div style="font-size: 11px; color: #9ca3af;">+91 98765 43210</div>
+            </td>
+            <td><span class="code-mono">PRIYA2024</span></td>
+            <td style="font-weight: 600;">5%</td>
+            <td style="font-weight: 600;">23</td>
+            <td style="font-weight: 600; color: #059669;">2,850 💎</td>
+            <td><span class="pill pill-green">Active</span></td>
+          </tr>
+          <tr>
+            <td>
+              <div style="font-weight: 600; font-size: 13px;">Amit Patel</div>
+              <div style="font-size: 11px; color: #9ca3af;">+91 76543 21098</div>
+            </td>
+            <td><span class="code-mono">AMIT10</span></td>
+            <td style="font-weight: 600;">3%</td>
+            <td style="font-weight: 600;">5</td>
+            <td style="font-weight: 600; color: #059669;">890 💎</td>
+            <td><span class="pill pill-green">Active</span></td>
+          </tr>
+          <tr>
+            <td>
+              <div style="font-weight: 600; font-size: 13px;">Neha Gupta</div>
+              <div style="font-size: 11px; color: #9ca3af;">+91 65432 10987</div>
+            </td>
+            <td><span class="code-mono">NEHA15</span></td>
+            <td style="font-weight: 600;">4%</td>
+            <td style="font-weight: 600;">3</td>
+            <td style="font-weight: 600; color: #059669;">510 💎</td>
+            <td><span class="pill pill-green">Active</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div style="max-width: 1100px; margin: 0 auto; padding: 0 40px 60px;">
+  <div class="note">
+    <strong>Key design decisions:</strong><br>
+    1. <strong>Two sub-pages under Referrals</strong> — "Referral Program" owns program config + all codes + conversions. "Influencers" owns creator partnerships.<br>
+    2. <strong>Referral Program page</strong> has no "Create Code" button — standard codes are auto-generated from the storefront by customers.<br>
+    3. <strong>Influencers page</strong> has its own metrics (active count, conversions, commissions earned) and a dedicated table with name, code, commission %, earnings.<br>
+    4. <strong>Mobile number everywhere</strong> — no internal customer IDs shown to merchants.<br>
+    5. <strong>Creator codes on Referral Program page</strong> show as <span class="pill pill-purple" style="font-size: 9px;">Creator</span> type in the all-codes table, linking the two views.
+  </div>
+</div>
+
+</body>
+</html>

@@ -19,10 +19,15 @@
     onCancel?: () => void;
   } = $props();
 
+  // svelte-ignore state_referenced_locally
   let name = $state(tier?.name ?? '');
+  // svelte-ignore state_referenced_locally
   let rank = $state(String(tier?.rank ?? 1));
+  // svelte-ignore state_referenced_locally
   let threshold = $state(String(tier?.threshold ?? 0));
+  // svelte-ignore state_referenced_locally
   let earnRateMultiplier = $state(String(tier?.earn_rate_multiplier ?? 1));
+  // svelte-ignore state_referenced_locally
   let benefitsJson = $state(tier ? JSON.stringify(tier.benefits, null, 2) : '{}');
   let submitting = $state(false);
   let benefitsError = $state<string | null>(null);

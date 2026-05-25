@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Competitive Analysis — Wallet Credit/Debit/Expire Operations</title>
+  <style>
+    :root {
+      --primary: #6366f1;
+      --success: #22c55e;
+      --error: #ef4444;
+      --warning: #f59e0b;
+      --text: #1e1e2e;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --surface: #ffffff;
+      --surface-2: #f8f9fb;
+      --surface-3: #f1f3f5;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--surface-3); color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* Header */
+    .report-header {
+      background: linear-gradient(135deg, #312e81 0%, #4f46e5 50%, #6366f1 100%);
+      color: #fff; padding: 48px 40px 40px; position: relative; overflow: hidden;
+    }
+    .report-header::after {
+      content: ''; position: absolute; top: -50%; right: -20%; width: 60%; height: 200%;
+      background: radial-gradient(ellipse, rgba(255,255,255,0.08) 0%, transparent 70%);
+    }
+    .report-header h1 { font-size: 28px; font-weight: 800; margin-bottom: 8px; position: relative; z-index: 1; }
+    .report-header .subtitle { font-size: 15px; opacity: 0.85; max-width: 700px; position: relative; z-index: 1; }
+    .report-meta {
+      display: flex; gap: 24px; margin-top: 20px; font-size: 12px; opacity: 0.7;
+      position: relative; z-index: 1;
+    }
+
+    .container { max-width: 1280px; margin: 0 auto; padding: 32px 40px; }
+
+    /* Executive Summary */
+    .exec-summary {
+      background: var(--surface); border-radius: 12px; padding: 28px 32px;
+      border: 1px solid var(--border); margin-bottom: 32px;
+    }
+    .exec-summary h2 { font-size: 18px; font-weight: 700; margin-bottom: 16px; color: var(--primary); }
+    .exec-summary p { font-size: 14px; color: var(--muted); margin-bottom: 12px; }
+    .key-findings { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-top: 20px; }
+    .finding-card {
+      padding: 16px 20px; border-radius: 10px; border: 1px solid var(--border);
+      background: var(--surface-2);
+    }
+    .finding-card .number { font-size: 32px; font-weight: 800; color: var(--primary); }
+    .finding-card .label { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .finding-card .detail { font-size: 13px; color: var(--text); margin-top: 6px; font-weight: 500; }
+
+    /* Capability Matrix */
+    .matrix-section {
+      background: var(--surface); border-radius: 12px; padding: 28px 32px;
+      border: 1px solid var(--border); margin-bottom: 32px; overflow-x: auto;
+    }
+    .matrix-section h2 { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+    .matrix-section .section-subtitle { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+
+    table {
+      width: 100%; border-collapse: collapse; font-size: 13px;
+    }
+    thead th {
+      background: var(--surface-2); padding: 10px 14px; text-align: left;
+      font-weight: 700; font-size: 12px; text-transform: uppercase;
+      letter-spacing: 0.04em; color: var(--muted); border-bottom: 2px solid var(--border);
+      position: sticky; top: 0; white-space: nowrap;
+    }
+    thead th:first-child { border-radius: 8px 0 0 0; }
+    thead th:last-child { border-radius: 0 8px 0 0; }
+    tbody td {
+      padding: 10px 14px; border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    tbody tr:hover { background: #f9fafb; }
+    tbody tr:last-child td { border-bottom: none; }
+    .platform-name { font-weight: 700; white-space: nowrap; }
+    .platform-tier { font-size: 10px; color: var(--muted); display: block; margin-top: 2px; }
+
+    .badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+    .badge-yes { background: #dcfce7; color: #166534; }
+    .badge-partial { background: #fef3c7; color: #92400e; }
+    .badge-no { background: #fee2e2; color: #991b1b; }
+    .badge-native { background: #dbeafe; color: #1e40af; }
+
+    .detail-text { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+
+    /* Deep Dives */
+    .platform-deep-dive {
+      background: var(--surface); border-radius: 12px;
+      border: 1px solid var(--border); margin-bottom: 24px; overflow: hidden;
+    }
+    .dive-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 28px; border-bottom: 1px solid var(--border);
+      cursor: pointer; user-select: none;
+    }
+    .dive-header:hover { background: #fafbfc; }
+    .dive-title-group { display: flex; align-items: center; gap: 12px; }
+    .dive-logo {
+      width: 36px; height: 36px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 14px; color: #fff;
+    }
+    .dive-name { font-size: 16px; font-weight: 700; }
+    .dive-category { font-size: 12px; color: var(--muted); }
+    .dive-badges { display: flex; gap: 6px; }
+    .dive-expand { font-size: 18px; color: var(--muted); transition: transform 0.2s; }
+    .dive-content { padding: 24px 28px; display: block; }
+    .dive-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .dive-item { }
+    .dive-item h4 { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+    .dive-item p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+    .dive-item ul { font-size: 13px; color: var(--muted); padding-left: 18px; line-height: 1.8; }
+    .dive-item li { margin-bottom: 2px; }
+    .dive-full { grid-column: 1 / -1; }
+    .dive-callout {
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 14px 18px; margin-top: 16px;
+      font-size: 13px; color: var(--text); grid-column: 1 / -1;
+    }
+    .dive-callout strong { color: var(--primary); }
+
+    /* Gap Analysis */
+    .gap-section {
+      background: var(--surface); border-radius: 12px; padding: 28px 32px;
+      border: 1px solid var(--border); margin-bottom: 32px;
+    }
+    .gap-section h2 { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+    .gap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .gap-card {
+      border: 1px solid var(--border); border-radius: 10px; padding: 20px;
+      background: var(--surface-2);
+    }
+    .gap-card.opportunity { border-left: 4px solid var(--success); }
+    .gap-card.standard { border-left: 4px solid var(--primary); }
+    .gap-card.differentiator { border-left: 4px solid var(--warning); }
+    .gap-card h4 { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+    .gap-card p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+    .gap-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+    .gap-label.opp { color: var(--success); }
+    .gap-label.std { color: var(--primary); }
+    .gap-label.diff { color: var(--warning); }
+
+    /* Recommendations */
+    .rec-section {
+      background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+      border-radius: 12px; padding: 28px 32px;
+      border: 1px solid #bbf7d0; margin-bottom: 32px;
+    }
+    .rec-section h2 { font-size: 18px; font-weight: 700; margin-bottom: 16px; color: #166534; }
+    .rec-list { display: flex; flex-direction: column; gap: 12px; }
+    .rec-item {
+      display: flex; gap: 14px; padding: 16px 20px;
+      background: rgba(255,255,255,0.7); border-radius: 10px;
+      border: 1px solid #bbf7d0;
+    }
+    .rec-number {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: #166534; color: #fff; display: flex;
+      align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 800; flex-shrink: 0;
+    }
+    .rec-text h4 { font-size: 14px; font-weight: 700; color: #166534; margin-bottom: 4px; }
+    .rec-text p { font-size: 13px; color: #166534; opacity: 0.8; }
+
+    .footer {
+      text-align: center; padding: 24px; font-size: 12px; color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ════════ HEADER ════════ -->
+  <div class="report-header">
+    <h1>Wallet Operations: Competitive Analysis</h1>
+    <p class="subtitle">How do loyalty/store-credit platforms handle credit issuance, debits, and expiry? Feature-by-feature comparison across 13 competitors to inform Batua's wallet action design.</p>
+    <div class="report-meta">
+      <span>Prepared for: Batua (Breeze Retention Suite)</span>
+      <span>Date: 31 March 2026</span>
+      <span>Platforms analysed: 13</span>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- ════════ EXECUTIVE SUMMARY ════════ -->
+    <div class="exec-summary">
+      <h2>Executive Summary</h2>
+      <p>We surveyed 13 loyalty, store-credit, and wallet platforms across Shopify-native, SMB apps, and enterprise solutions. The goal: understand how competitors let merchant admins <strong>issue credits</strong>, <strong>debit/remove balances</strong>, and <strong>force-expire</strong> points or cash from individual customer wallets.</p>
+      <p>The findings revealed that issue and debit are table-stakes features offered by every platform, while force-expire was a significant industry gap. <strong>Batua has now shipped all three operations</strong> — Add, Remove, and Expire — for both cash and points, with a unified tab-based modal, per-bucket targeting, and graded confirmation. Batua is the first Shopify-ecosystem app to offer per-customer force expiry.</p>
+
+      <div class="key-findings">
+        <div class="finding-card" style="border-left: 4px solid var(--success);">
+          <div class="number" style="color: var(--success);">6/6</div>
+          <div class="label">wallet operations shipped in Batua</div>
+          <div class="detail">Add, Remove, Expire — for both cash and points — all live with full admin UI</div>
+        </div>
+        <div class="finding-card" style="border-left: 4px solid var(--warning);">
+          <div class="number">2/13</div>
+          <div class="label">competitors offer per-customer force-expire</div>
+          <div class="detail">Only Antavo (enterprise) and Open Loyalty (open-source). Batua is the 3rd — and first in Shopify ecosystem.</div>
+        </div>
+        <div class="finding-card" style="border-left: 4px solid var(--primary);">
+          <div class="number">Only</div>
+          <div class="label">platform with unified cash + points modal</div>
+          <div class="detail">No other platform offers a single UI for both cash and points wallet operations with per-bucket targeting</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════ CAPABILITY MATRIX ════════ -->
+    <div class="matrix-section">
+      <h2>Feature Capability Matrix</h2>
+      <p class="section-subtitle">Side-by-side comparison across all 6 wallet operations (issue/debit x cash/points + force-expire)</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Platform</th>
+            <th>Issue Credit (Cash)</th>
+            <th>Issue Points</th>
+            <th>Debit Cash</th>
+            <th>Debit Points</th>
+            <th>Force Expire (Per-Customer)</th>
+            <th>Bulk Ops</th>
+            <th>Audit Trail</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Shopify Native -->
+          <tr>
+            <td>
+              <span class="platform-name">Shopify Native</span>
+              <span class="platform-tier">Built-in (free)</span>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Credit/Debit selector, amount, optional expiry date, customer notification toggle</div>
+            </td>
+            <td><span class="badge badge-no">No</span>
+              <div class="detail-text">No native points system</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">"Debit" adjustment type on customer profile. GraphQL API: storeCreditAccountDebit mutation</div>
+            </td>
+            <td><span class="badge badge-no">N/A</span></td>
+            <td><span class="badge badge-no">No</span>
+              <div class="detail-text">Uses soonest-expiring-first (FEFO), but no manual force-expire</div>
+            </td>
+            <td><span class="badge badge-partial">API only</span></td>
+            <td><span class="badge badge-partial">Partial</span>
+              <div class="detail-text">Transaction history visible, but no reason/note field</div>
+            </td>
+          </tr>
+
+          <!-- Rise.ai -->
+          <tr>
+            <td>
+              <span class="platform-name">Rise.ai</span>
+              <span class="platform-tier">Store Credit Specialist</span>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Dedicated "Issue Store Credit" button. Fields: email, amount, reason dropdown, internal note, expiry options (never/dynamic/fixed), notification toggle</div>
+            </td>
+            <td><span class="badge badge-no">N/A</span>
+              <div class="detail-text">Cash/credit only, no points</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">"Adjust Balance" (silent) or negative values in bulk CSV. Also "Disable Gift Card" for full deactivation</div>
+            </td>
+            <td><span class="badge badge-no">N/A</span></td>
+            <td><span class="badge badge-no">No</span>
+              <div class="detail-text">Expiry set at issuance (per-credit), not force-expirable after</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">CSV upload (email, amount, reason, expiry). Workflows for automated issuance on triggers.</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Tagged as "Manually Issued" with reason + internal note preserved</div>
+            </td>
+          </tr>
+
+          <!-- Smile.io -->
+          <tr>
+            <td>
+              <span class="platform-name">Smile.io</span>
+              <span class="platform-tier">SMB Loyalty</span>
+            </td>
+            <td><span class="badge badge-no">N/A</span>
+              <div class="detail-text">Points-only system, no direct cash credits</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">"Adjust balance" on customer profile. Positive number = add. No email sent for manual adjustments.</div>
+            </td>
+            <td><span class="badge badge-no">N/A</span></td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Negative number in same "Adjust balance" field. Also "Refund points" on specific redemptions.</div>
+            </td>
+            <td><span class="badge badge-no">No</span>
+              <div class="detail-text">Global inactivity-based expiry only (3 days to 2 years). No per-customer force-expire. Growth+ plans only.</div>
+            </td>
+            <td><span class="badge badge-partial">Via API</span>
+              <div class="detail-text">No bulk UI. Possible via API or Zapier integrations.</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Activity card on customer profile shows full history</div>
+            </td>
+          </tr>
+
+          <!-- Yotpo -->
+          <tr>
+            <td>
+              <span class="platform-name">Yotpo Loyalty</span>
+              <span class="platform-tier">SMB Loyalty</span>
+            </td>
+            <td><span class="badge badge-no">N/A</span>
+              <div class="detail-text">Points-only. Rewards converted to Shopify discount codes.</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">"Adjust Points Balance" button. Fields: amount, reason/history entry, visibility toggle (customer-facing or internal).</div>
+            </td>
+            <td><span class="badge badge-no">N/A</span></td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Negative number in same field. Warning: affects lifetime points and VIP tier status.</div>
+            </td>
+            <td><span class="badge badge-no">No</span>
+              <div class="detail-text">Global only: date-based or activity-based. Premium+ plans. Changing retroactively affects all.</div>
+            </td>
+            <td><span class="badge badge-partial">CSV export only</span>
+              <div class="detail-text">Earning History CSV report. No bulk import for adjustments.</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Earning History section + CSV export</div>
+            </td>
+          </tr>
+
+          <!-- LoyaltyLion -->
+          <tr>
+            <td>
+              <span class="platform-name">LoyaltyLion</span>
+              <span class="platform-tier">Mid-Market Loyalty</span>
+            </td>
+            <td><span class="badge badge-no">N/A</span>
+              <div class="detail-text">Points-only system</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Actions > "Give points". Amount + reason (customer-visible). Immediately approved/claimable.</div>
+            </td>
+            <td><span class="badge badge-no">N/A</span></td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Actions > "Remove points". Also per-entry "Remove" button for undo. Bulk removal via support email only.</div>
+            </td>
+            <td><span class="badge badge-no">No</span>
+              <div class="detail-text">4 global expiry methods (Last Purchase, Last Balance Change, Date Earned, Calendar Date). No per-customer override.</div>
+            </td>
+            <td><span class="badge badge-partial">Limited</span>
+              <div class="detail-text">Bulk add via admin, bulk remove requires support@loyaltylion.com</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Customer history table with per-entry remove/approve actions</div>
+            </td>
+          </tr>
+
+          <!-- Growave -->
+          <tr>
+            <td>
+              <span class="platform-name">Growave</span>
+              <span class="platform-tier">Shopify All-in-One</span>
+            </td>
+            <td><span class="badge badge-no">N/A</span>
+              <div class="detail-text">Points-only loyalty</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Customer profile > Edit points > Add. Amount + reason.</div>
+            </td>
+            <td><span class="badge badge-no">N/A</span></td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Edit points > Deduct. Cannot go negative (blocked with warning).</div>
+            </td>
+            <td><span class="badge badge-no">No</span>
+              <div class="detail-text">Global expiry with 2 reminder emails. Resets on activity/redemption. Retroactive.</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">CSV import: add to balance OR set exact value. Notifications suppressed during bulk. Max 10 MB.</div>
+            </td>
+            <td><span class="badge badge-partial">Partial</span>
+              <div class="detail-text">Balance change notification to customer. Shopify Flow integration.</div>
+            </td>
+          </tr>
+
+          <!-- BON Loyalty -->
+          <tr>
+            <td>
+              <span class="platform-name">BON Loyalty</span>
+              <span class="platform-tier">Shopify SMB</span>
+            </td>
+            <td><span class="badge badge-no">N/A</span>
+              <div class="detail-text">Points-only</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Customer profile > Add/Deduct toggle. Amount + reason.</div>
+            </td>
+            <td><span class="badge badge-no">N/A</span></td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Same Add/Deduct toggle. Reason field included.</div>
+            </td>
+            <td><span class="badge badge-no">No</span>
+              <div class="detail-text">Global expiry settings only</div>
+            </td>
+            <td><span class="badge badge-partial">Limited</span>
+              <div class="detail-text">Basic bulk tools via Shopify Flow</div>
+            </td>
+            <td><span class="badge badge-partial">Partial</span>
+              <div class="detail-text">Points history on customer profile</div>
+            </td>
+          </tr>
+
+          <!-- Zinrelo -->
+          <tr>
+            <td>
+              <span class="platform-name">Zinrelo</span>
+              <span class="platform-tier">Mid-Market</span>
+            </td>
+            <td><span class="badge badge-no">N/A</span>
+              <div class="detail-text">Points-based with redemption to coupons</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Admin panel > Members > Award Points. Amount + reason.</div>
+            </td>
+            <td><span class="badge badge-no">N/A</span></td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Deduct Points on customer profile. Reason required.</div>
+            </td>
+            <td><span class="badge badge-no">No</span>
+              <div class="detail-text">Global expiry rules only. Configurable expiry period.</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">CSV bulk import for points, with reason column</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Detailed transaction history with activity logs</div>
+            </td>
+          </tr>
+
+          <!-- Kangaroo -->
+          <tr>
+            <td>
+              <span class="platform-name">Kangaroo Rewards</span>
+              <span class="platform-tier">Omnichannel Loyalty</span>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">API: intent: "reward_store_credit" for monetary credits</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Business Portal + API. POST /customers/{id}/actions with intent: "reward"</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Via API and Business Portal adjustments</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Negative adjustments + DELETE /transactions/{id} for cancellation</div>
+            </td>
+            <td><span class="badge badge-no">No</span>
+              <div class="detail-text">Rolling period OR inactivity-based expiry. Both global-only. Expiry notification campaigns available.</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">batch_calculate API for multiple adjustments. Import Transactions feature.</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Real-time balance + lifetime view on customer profile</div>
+            </td>
+          </tr>
+
+          <!-- Talon.One -->
+          <tr>
+            <td>
+              <span class="platform-name">Talon.One</span>
+              <span class="platform-tier">Enterprise</span>
+            </td>
+            <td><span class="badge badge-partial">Via Rules</span>
+              <div class="detail-text">Credits issued through campaign rules or manual loyalty point operations</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Customer > Loyalty Points tab > Add Points. Reason field. Choose immediate or program-default activation.</div>
+            </td>
+            <td><span class="badge badge-partial">Via Rules</span></td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">"Deduct Points" on customer profile. Can exceed balance if negative-balance enabled.</div>
+            </td>
+            <td><span class="badge badge-partial">Partial</span>
+              <div class="detail-text">Rule Builder can extend expiry. No "force expire now" button. Program-level config.</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">CSV import: customerprofileid, amount, startdate, expirydate, subledgerid, reason</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Dedicated Audit Logs. SOC 2, ISO, GDPR compliant. Filter by user/entity.</div>
+            </td>
+          </tr>
+
+          <!-- Antavo -->
+          <tr>
+            <td>
+              <span class="platform-name">Antavo</span>
+              <span class="platform-tier">Enterprise</span>
+            </td>
+            <td><span class="badge badge-partial">Via Workflows</span>
+              <div class="detail-text">Credits issued through workflow engine or manual operations</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Manual point awards from customer profile. Workflow engine for automated issuance.</div>
+            </td>
+            <td><span class="badge badge-partial">Via Workflows</span></td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Point deduction on customer profile. Also automated via workflow rules.</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">"Modify point expiration" page with per-customer date picker. Also supports 3-way ops: Add / Deduct / Spend (deduct affects tier, spend does not).</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Workflow engine + API for batch operations</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Full audit trail with workflow execution logs</div>
+            </td>
+          </tr>
+
+          <!-- Open Loyalty -->
+          <tr>
+            <td>
+              <span class="platform-name">Open Loyalty</span>
+              <span class="platform-tier">Open Source</span>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">"Add units" with wallet type, comment, external ID, custom attributes. Override expiry/locking rules per-transfer.</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Same "Add units" flow for multiple wallet types</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">"Deduct units" first-class action. Also cancel specific transfers.</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Deduct + cancel + block/unblock (reserve units)</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Force-expire individual transfers. Bulk expire via Actions menu. Block/unblock units. Logged in mass actions log.</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Bulk activate, cancel, expire. CSV import. P2P transfers. Mass actions log for audit.</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Full transfer history, mass actions log, custom attributes on transfers</div>
+            </td>
+          </tr>
+
+          <!-- Marsello -->
+          <tr>
+            <td>
+              <span class="platform-name">Marsello</span>
+              <span class="platform-tier">SMB Loyalty</span>
+            </td>
+            <td><span class="badge badge-no">N/A</span>
+              <div class="detail-text">Points-only</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Actions > "Adjust points balance". Positive number. Optional email with custom message.</div>
+            </td>
+            <td><span class="badge badge-no">N/A</span></td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Negative number. Warning: can go below zero (no floor guard).</div>
+            </td>
+            <td><span class="badge badge-no">No</span>
+              <div class="detail-text">Global inactivity-based only (6mo / 1yr / 2yr). Goodwill postponement when first enabling.</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">CSV import: add-to or replace-balance modes. Up to 24hr processing.</div>
+            </td>
+            <td><span class="badge badge-partial">Partial</span>
+              <div class="detail-text">Activity feed on customer profile. VIP tier lock feature.</div>
+            </td>
+          </tr>
+
+          <!-- Kangaroo already above -->
+
+          <!-- Batua (Current) -->
+          <tr style="background: #f5f3ff;">
+            <td>
+              <span class="platform-name" style="color: var(--primary);">Batua (Current)</span>
+              <span class="platform-tier" style="color: var(--primary);">Our Platform</span>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Wallet Action modal > Add tab. Per-bucket targeting (Store Credit, Customer Funded). Amount, expiry days, reason pill + free text, internal reference, notification toggle. Balance preview.</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Same modal, points unit. Buckets: Courtesy Points, Reward Points. Shows points-to-cash conversion. Per-bucket expiry override.</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Remove tab with per-bucket targeting. Shows bucket balance, max validation. Type-to-confirm (echo amount). Reason pill + free text + internal ref.</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Same Remove tab for points. Per-bucket debit with balance guard. Confirmation step with amount echo.</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Expire tab with multi-bucket checkbox selection. Irreversibility warning banner. Type "EXPIRE" to confirm. Per-bucket amount preview. Industry-first for Shopify ecosystem.</div>
+            </td>
+            <td><span class="badge badge-partial">Backend only</span>
+              <div class="detail-text">bulk-credit supports multiple customer_ids. UI is per-customer.</div>
+            </td>
+            <td><span class="badge badge-yes">Yes</span>
+              <div class="detail-text">Full ledger history on customer detail. Wallet action success shows transaction ID, amount affected, new balance.</div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ════════ DEEP DIVES ════════ -->
+    <div style="margin-bottom: 32px;">
+      <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">Platform Deep Dives</h2>
+
+      <!-- Shopify Native -->
+      <div class="platform-deep-dive">
+        <div class="dive-header">
+          <div class="dive-title-group">
+            <div class="dive-logo" style="background: #96bf48;">S</div>
+            <div>
+              <div class="dive-name">Shopify Native Store Credit</div>
+              <div class="dive-category">Built-in (July 2024) -- No app needed</div>
+            </div>
+          </div>
+          <div class="dive-badges">
+            <span class="badge badge-native">Platform Native</span>
+            <span class="badge badge-yes">Credit + Debit</span>
+          </div>
+        </div>
+        <div class="dive-content">
+          <div class="dive-grid">
+            <div class="dive-item">
+              <h4>Issue Flow</h4>
+              <p>Customers > Select customer > Store credit panel > Edit > <strong>Credit</strong> adjustment type > Enter amount > Optional expiry date > Toggle "Notify customer" > Save</p>
+            </div>
+            <div class="dive-item">
+              <h4>Debit Flow</h4>
+              <p>Same path but select <strong>Debit</strong> adjustment type. Fails if amount exceeds balance. GraphQL: <code>storeCreditAccountDebit</code> mutation.</p>
+            </div>
+            <div class="dive-item">
+              <h4>Fields Available</h4>
+              <ul>
+                <li>Amount (required, max $15,000/customer)</li>
+                <li>Currency (dropdown if multi-currency)</li>
+                <li>Expiry date (optional, specific date)</li>
+                <li>Customer notification toggle</li>
+                <li><strong>No reason/note field</strong> -- notable gap</li>
+              </ul>
+            </div>
+            <div class="dive-item">
+              <h4>Key Limitations</h4>
+              <ul>
+                <li>Requires "New Customer Accounts" (email OTP login)</li>
+                <li>No reason/comment field for audit</li>
+                <li>No points system (cash only)</li>
+                <li>Staff need dedicated permission grants</li>
+                <li>Uses FEFO (first-expiring, first-out) for redemption</li>
+              </ul>
+            </div>
+            <div class="dive-callout">
+              <strong>Batua Opportunity:</strong> Shopify's lack of a "reason" field is a glaring omission for merchant support teams. By including reason categories + free-text notes, Batua provides better auditability out of the box.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rise.ai -->
+      <div class="platform-deep-dive">
+        <div class="dive-header">
+          <div class="dive-title-group">
+            <div class="dive-logo" style="background: #ff6b35;">R</div>
+            <div>
+              <div class="dive-name">Rise.ai</div>
+              <div class="dive-category">Store Credit & Gift Card Specialist</div>
+            </div>
+          </div>
+          <div class="dive-badges">
+            <span class="badge badge-yes">Best-in-class Credit UI</span>
+          </div>
+        </div>
+        <div class="dive-content">
+          <div class="dive-grid">
+            <div class="dive-item">
+              <h4>Issue Flow (Best in Class)</h4>
+              <ul>
+                <li>Dedicated "Issue Store Credit" button in header, wallet list, and customer detail</li>
+                <li>Customer email (auto-creates wallet if new)</li>
+                <li>Amount + reason dropdown + internal note</li>
+                <li>Expiry: "Never" / dynamic (30d, 60d) / fixed date</li>
+                <li>Email notification toggle</li>
+                <li>Tagged as "Manually Issued" in records</li>
+              </ul>
+            </div>
+            <div class="dive-item">
+              <h4>Debit Mechanisms</h4>
+              <ul>
+                <li>"Adjust Balance" -- silent, no customer notification</li>
+                <li>"Change Balance" on gift cards -- set to any value</li>
+                <li>Negative values in bulk CSV imports</li>
+                <li>"Disable Gift Card" for full deactivation</li>
+              </ul>
+            </div>
+            <div class="dive-item">
+              <h4>Bulk Operations</h4>
+              <ul>
+                <li>CSV upload: email, first name, last name, amount, tag, reason, "Expires on" column</li>
+                <li>Automated workflows for trigger-based issuance</li>
+                <li>Refund-to-store-credit flows</li>
+              </ul>
+            </div>
+            <div class="dive-item">
+              <h4>Unique Differentiators</h4>
+              <ul>
+                <li>Multi-channel entry points for issuance</li>
+                <li>Flexible expiry at individual credit level</li>
+                <li>Internal note vs customer-facing reason separation</li>
+                <li>Gift card lifecycle management</li>
+              </ul>
+            </div>
+            <div class="dive-callout">
+              <strong>Batua Takeaway:</strong> Rise.ai's "reason dropdown + internal note" separation is excellent UX. The reason category (Refund, Goodwill, etc.) enables reporting, while the free-text note serves the support team. Adopt this pattern.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Smile.io -->
+      <div class="platform-deep-dive">
+        <div class="dive-header">
+          <div class="dive-title-group">
+            <div class="dive-logo" style="background: #7c3aed;">S</div>
+            <div>
+              <div class="dive-name">Smile.io</div>
+              <div class="dive-category">SMB Loyalty Points</div>
+            </div>
+          </div>
+          <div class="dive-badges">
+            <span class="badge badge-yes">Add/Remove Points</span>
+            <span class="badge badge-no">No Force Expire</span>
+          </div>
+        </div>
+        <div class="dive-content">
+          <div class="dive-grid">
+            <div class="dive-item">
+              <h4>Adjustment Flow</h4>
+              <p>Single "Adjust balance" button on customer profile Points card. Positive number to add, negative to remove. No email notification sent. Visible in customer Activity card history.</p>
+            </div>
+            <div class="dive-item">
+              <h4>Redemption Reversal</h4>
+              <p>Separate "Refund points" action on specific redemption entries. Two paths: Customer Profile > Activity card, or Program > Activity. Refunds points and removes unused coupon.</p>
+            </div>
+            <div class="dive-item">
+              <h4>Expiry (Global Only)</h4>
+              <ul>
+                <li>Inactivity-based: 3 days to 2 years</li>
+                <li>Warning + last-chance email thresholds</li>
+                <li>Growth, Plus, Enterprise plans only</li>
+                <li>Disabling does NOT restore expired points</li>
+              </ul>
+            </div>
+            <div class="dive-item">
+              <h4>Key Design Pattern</h4>
+              <p>Single numeric field for both add and debit (sign determines direction) is the simplest possible UI. However, it increases error risk -- no confirmation step, easy to accidentally add instead of remove.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Yotpo -->
+      <div class="platform-deep-dive">
+        <div class="dive-header">
+          <div class="dive-title-group">
+            <div class="dive-logo" style="background: #0038e5;">Y</div>
+            <div>
+              <div class="dive-name">Yotpo Loyalty</div>
+              <div class="dive-category">SMB Loyalty Points (formerly Swell)</div>
+            </div>
+          </div>
+          <div class="dive-badges">
+            <span class="badge badge-yes">Adjust Balance</span>
+            <span class="badge badge-partial">VIP Impact Warning</span>
+          </div>
+        </div>
+        <div class="dive-content">
+          <div class="dive-grid">
+            <div class="dive-item">
+              <h4>Adjustment Flow</h4>
+              <p>"Adjust Points Balance" button > popup with amount + reason/history entry + visibility toggle (customer-facing vs internal). Positive to add, negative to deduct.</p>
+            </div>
+            <div class="dive-item">
+              <h4>Critical Caveat</h4>
+              <p style="color: var(--error); font-weight: 600;">Manual adjustments affect <strong>lifetime point balance</strong>, which impacts VIP tier status. Docs explicitly warn about "unintended consequences" and suggest alternative methods for some scenarios.</p>
+            </div>
+            <div class="dive-item">
+              <h4>Expiry Options</h4>
+              <ul>
+                <li>Date-Based: points expire X months after earning</li>
+                <li>Activity-Based: expire after inactivity period</li>
+                <li>Global setting only, Premium+ plans</li>
+                <li>Changing retroactively resets countdown for all</li>
+              </ul>
+            </div>
+            <div class="dive-item">
+              <h4>Reason Visibility Control</h4>
+              <p>Toggle whether the adjustment reason appears in the customer's point history or stays internal. This is a thoughtful feature that balances transparency with operational discretion.</p>
+            </div>
+            <div class="dive-callout">
+              <strong>Batua Takeaway:</strong> Yotpo's warning about tier impact is important. When Batua debits points, the UI should show tier implications (e.g., "This debit will drop the customer from Gold to Silver"). Also adopt the reason visibility toggle.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LoyaltyLion -->
+      <div class="platform-deep-dive">
+        <div class="dive-header">
+          <div class="dive-title-group">
+            <div class="dive-logo" style="background: #1a1a2e;">L</div>
+            <div>
+              <div class="dive-name">LoyaltyLion</div>
+              <div class="dive-category">Mid-Market Loyalty</div>
+            </div>
+          </div>
+          <div class="dive-badges">
+            <span class="badge badge-yes">Give / Remove</span>
+            <span class="badge badge-yes">Per-Entry Undo</span>
+          </div>
+        </div>
+        <div class="dive-content">
+          <div class="dive-grid">
+            <div class="dive-item">
+              <h4>Issue Flow</h4>
+              <p>Actions dropdown > "Give points" > Amount + reason (customer-visible). Points immediately approved and claimable.</p>
+            </div>
+            <div class="dive-item">
+              <h4>Debit Flow</h4>
+              <p>Actions dropdown > "Remove points" > Amount + reason. Additionally, each manual entry has a "Remove" undo button. Bulk removal only via emailing support.</p>
+            </div>
+            <div class="dive-item">
+              <h4>4 Expiry Methods (Most Flexible)</h4>
+              <ul>
+                <li><strong>Last Purchase</strong>: full balance expires if no purchase within period</li>
+                <li><strong>Last Balance Change</strong>: resets on any earn/spend/manual action</li>
+                <li><strong>Date Earned</strong> (2025): individual batches expire separately</li>
+                <li><strong>Calendar Date</strong> (2025): annual purge of old points</li>
+              </ul>
+            </div>
+            <div class="dive-item">
+              <h4>Notable Pattern</h4>
+              <p>Separate "Give" and "Remove" actions (not a single +/- field) reduces accidental errors. The per-entry undo button is a valuable safety net.</p>
+            </div>
+            <div class="dive-callout">
+              <strong>Batua Takeaway:</strong> LoyaltyLion's separate "Give" vs "Remove" verbs (instead of +/- on one field) is safer UX. Their per-entry "Remove" undo button is also worth considering for the transaction history.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Talon.One -->
+      <div class="platform-deep-dive">
+        <div class="dive-header">
+          <div class="dive-title-group">
+            <div class="dive-logo" style="background: #e11d48;">T</div>
+            <div>
+              <div class="dive-name">Talon.One</div>
+              <div class="dive-category">Enterprise Promotion Engine</div>
+            </div>
+          </div>
+          <div class="dive-badges">
+            <span class="badge badge-yes">Full CRUD</span>
+            <span class="badge badge-yes">Subledgers</span>
+            <span class="badge badge-yes">SOC 2 Audit</span>
+          </div>
+        </div>
+        <div class="dive-content">
+          <div class="dive-grid">
+            <div class="dive-item">
+              <h4>Issue Flow</h4>
+              <p>Customer > Loyalty Points tab > Select program & subledger > "Add Points" > Amount + reason + activation timing (default vs immediate).</p>
+            </div>
+            <div class="dive-item">
+              <h4>Debit Flow</h4>
+              <p>"Deduct Points" in same tab. Supports negative balances if program-configured. Active point deduction controls for rollback scenarios.</p>
+            </div>
+            <div class="dive-item">
+              <h4>Unique: Subledgers</h4>
+              <p>Multiple wallets within one loyalty program. Points earned in Store A are tracked separately and can only be redeemed at Store A. Powerful for multi-brand merchants.</p>
+            </div>
+            <div class="dive-item">
+              <h4>Enterprise Features</h4>
+              <ul>
+                <li>Customer Support RBAC role</li>
+                <li>Loyalty card management (import, block, transfer)</li>
+                <li>CSV import with per-entry expiry dates</li>
+                <li>Rule Builder for automated logic</li>
+                <li>Full audit logs (SOC 2, ISO, GDPR)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════ UI PATTERNS ANALYSIS ════════ -->
+    <div class="matrix-section">
+      <h2>UI Pattern Analysis</h2>
+      <p class="section-subtitle">How competitors structure the credit/debit interaction</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Pattern</th>
+            <th>Used By</th>
+            <th>Pros</th>
+            <th>Cons</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Single +/- Field</strong><br><span class="detail-text">One input; sign determines direction</span></td>
+            <td>Smile.io, Yotpo, Growave, BON</td>
+            <td>
+              <div class="detail-text">Minimal UI. Fast for power users. One click to start.</div>
+            </td>
+            <td>
+              <div class="detail-text">High error risk (wrong sign). No visual distinction between constructive/destructive action. Easy to miss the minus sign.</div>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Separate Actions</strong><br><span class="detail-text">"Give points" / "Remove points" as distinct verbs</span></td>
+            <td>LoyaltyLion, Shopify (Credit/Debit toggle)</td>
+            <td>
+              <div class="detail-text">Clear intent. Visual safety (green vs red). Less room for error.</div>
+            </td>
+            <td>
+              <div class="detail-text">Slightly more clicks. Two menu items instead of one.</div>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Dedicated Issuance Flow</strong><br><span class="detail-text">Full form with reason, expiry, notes</span></td>
+            <td>Rise.ai, Shopify, Talon.One</td>
+            <td>
+              <div class="detail-text">Rich audit trail. Supports complex use cases. Best for store credit / cash operations.</div>
+            </td>
+            <td>
+              <div class="detail-text">More friction for simple adjustments. Heavier UI.</div>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Tab/Mode Selector</strong><br><span class="detail-text">Tabs or toggle at top of modal (Add / Remove / Expire)</span></td>
+            <td><strong style="color: var(--primary);">Batua</strong> (first to implement)</td>
+            <td>
+              <div class="detail-text">Unified entry point. Clear action separation with colour-coded tabs (green/red/amber). Adapts fields per mode. All operations discoverable in one modal.</div>
+            </td>
+            <td>
+              <div class="detail-text">Novel pattern -- no established precedent. Mitigated by clear colour coding and graded confirmation steps.</div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ════════ GAP ANALYSIS ════════ -->
+    <div class="gap-section">
+      <h2>Gap Analysis & Opportunities for Batua</h2>
+      <div class="gap-grid">
+        <div class="gap-card opportunity" style="border-left-color: var(--primary);">
+          <div class="gap-label std">✅ Implemented — Industry First</div>
+          <h4>Per-Customer Force Expire</h4>
+          <p><strong>Only 2 of 13 competitors offer this</strong> (Antavo at enterprise tier, Open Loyalty as open-source). <strong>Batua is the first Shopify-ecosystem app</strong> to let admins force-expire a specific customer's balance per bucket — with multi-bucket selection, irreversibility warning, and type-to-confirm ("EXPIRE") safety.</p>
+        </div>
+        <div class="gap-card opportunity" style="border-left-color: var(--primary);">
+          <div class="gap-label std">✅ Implemented — Differentiator</div>
+          <h4>Unified Cash + Points Operations</h4>
+          <p>Most platforms are either cash-only (Rise.ai, Shopify) or points-only (Smile.io, Yotpo, LoyaltyLion). <strong>Batua now ships a unified Wallet Action modal</strong> with tab-based Add/Remove/Expire that handles both cash and points units — the only platform in the Shopify ecosystem to do so.</p>
+        </div>
+        <div class="gap-card standard" style="border-left-color: var(--primary);">
+          <div class="gap-label std">✅ Implemented</div>
+          <h4>Issue Credit with Reason + Notes</h4>
+          <p>Batua's Add tab includes: per-bucket targeting, amount with validation, optional expiry days, reason category pills (Refund, Goodwill, Apology, Compensation, Promotional, Other), free-text reason, internal reference field, and customer notification toggle. Matches Rise.ai's best-in-class pattern.</p>
+        </div>
+        <div class="gap-card standard" style="border-left-color: var(--primary);">
+          <div class="gap-label std">✅ Implemented</div>
+          <h4>Debit with Reason + Confirmation</h4>
+          <p>Batua's Remove tab uses explicit verb separation (not +/- numeric). Per-bucket debit with live balance display, max-amount validation, reason pills + free text, and type-to-confirm (echo the exact amount). Follows LoyaltyLion's separate-verb best practice.</p>
+        </div>
+        <div class="gap-card differentiator">
+          <div class="gap-label diff">Future Differentiator</div>
+          <h4>Tier Impact Preview</h4>
+          <p>Yotpo warns that point adjustments affect VIP tiers but doesn't show the impact. Batua can preview: "Debiting 500 points will move this customer from Gold (2x) to Silver (1.5x)." No competitor does this. <em>Not yet implemented — candidate for next iteration.</em></p>
+        </div>
+        <div class="gap-card differentiator" style="border-left-color: var(--primary);">
+          <div class="gap-label std">✅ Implemented — Differentiator</div>
+          <h4>Per-Bucket Targeting</h4>
+          <p>Batua's wallet action modal targets specific buckets for all three operations. Add: choose Courtesy Points vs Reward Points (points) or Store Credit vs Customer Funded (cash). Remove: select from buckets with balance. Expire: multi-select checkboxes across all buckets. No SMB competitor offers this granularity.</p>
+        </div>
+        <div class="gap-card differentiator">
+          <div class="gap-label diff">Future Enhancement</div>
+          <h4>Reason Visibility Control</h4>
+          <p>Only Yotpo offers a toggle for whether the reason is customer-visible or internal-only. Batua currently has reason category + free-text reason + internal reference (Rise.ai pattern), but no visibility toggle for customer-facing vs internal. <em>Candidate for next iteration.</em></p>
+        </div>
+        <div class="gap-card standard" style="border-left-color: var(--primary);">
+          <div class="gap-label std">✅ Implemented</div>
+          <h4>Transaction-Level Audit Trail</h4>
+          <p>Batua's wallet action success state surfaces the transaction ID, amount affected, and new balance. Full ledger history visible on the customer detail view. Matches enterprise-grade audit expectations.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════ RECOMMENDATIONS ════════ -->
+    <div class="rec-section">
+      <h2>Recommendations for Batua's Wallet Action Modal</h2>
+      <div class="rec-list">
+        <div class="rec-item" style="border-color: #bbf7d0; background: rgba(220, 252, 231, 0.5);">
+          <div class="rec-number">✓</div>
+          <div class="rec-text">
+            <h4>Use Separate Action Verbs, Not +/- Numeric <span style="font-weight: 400; color: #166534; font-size: 12px;">— SHIPPED</span></h4>
+            <p>Implemented as colour-coded Add (green) / Remove (red) / Expire (amber) tabs in the Wallet Action modal. Each tab has distinct field sets, visual treatment, and confirmation flows. Follows LoyaltyLion's separate-verb best practice.</p>
+          </div>
+        </div>
+        <div class="rec-item" style="border-color: #bbf7d0; background: rgba(220, 252, 231, 0.5);">
+          <div class="rec-number">✓</div>
+          <div class="rec-text">
+            <h4>Adopt Rise.ai's Reason Architecture <span style="font-weight: 400; color: #166534; font-size: 12px;">— SHIPPED</span></h4>
+            <p>Implemented with three-part reason: <strong>category pills</strong> (Refund, Goodwill, Apology, Compensation, Promotional, Other — contextual per action) + <strong>free-text reason</strong> + <strong>internal reference</strong> field (e.g., Shopify #1234, support ticket #567). Matches the most complete pattern across all competitors.</p>
+          </div>
+        </div>
+        <div class="rec-item" style="border-color: #bbf7d0; background: rgba(220, 252, 231, 0.5);">
+          <div class="rec-number">✓</div>
+          <div class="rec-text">
+            <h4>Build Per-Customer Force Expire (Industry First) <span style="font-weight: 400; color: #166534; font-size: 12px;">— SHIPPED</span></h4>
+            <p>Implemented as Expire tab with multi-bucket checkbox selection, per-bucket balance preview, irreversibility warning banner, and type "EXPIRE" to confirm. Batua is the first Shopify-ecosystem app to offer per-customer, per-bucket force expiry.</p>
+          </div>
+        </div>
+        <div class="rec-item">
+          <div class="rec-number">4</div>
+          <div class="rec-text">
+            <h4>Show Tier Impact for Point Debits <span style="font-weight: 400; color: var(--warning); font-size: 12px;">— NEXT</span></h4>
+            <p>When debiting points, preview whether the customer's effective tier will change. E.g., "New qualifying value: &#8377;4,500 (was &#8377;5,000). Customer will drop from Gold to Silver at next evaluation." No competitor does this proactively. Candidate for next iteration.</p>
+          </div>
+        </div>
+        <div class="rec-item" style="border-color: #bbf7d0; background: rgba(220, 252, 231, 0.5);">
+          <div class="rec-number">✓</div>
+          <div class="rec-text">
+            <h4>Implement the Tab-Based Unified Modal (Novel but Justified) <span style="font-weight: 400; color: #166534; font-size: 12px;">— SHIPPED</span></h4>
+            <p>Shipped as a unified Wallet Action modal with Add/Remove/Expire tabs. Pre-selects unit (cash/points) from the entry point. Colour-coded tabs with adaptive field sets. Customer banner with current balance. Balance preview with projected new balance. The first platform to ship this pattern.</p>
+          </div>
+        </div>
+        <div class="rec-item" style="border-color: #bbf7d0; background: rgba(220, 252, 231, 0.5);">
+          <div class="rec-number">✓</div>
+          <div class="rec-text">
+            <h4>Escalate Confirmation for Destructive Actions <span style="font-weight: 400; color: #166534; font-size: 12px;">— SHIPPED</span></h4>
+            <p>Implemented with graded confirmation: Add → single confirm. Remove → type the exact amount to confirm. Expire → type "EXPIRE" to confirm + irreversibility warning. All confirmation steps show the resulting new balance and a detailed summary (customer, bucket, amount, reason).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════ PROPOSED FEATURE SPEC ════════ -->
+    <div class="matrix-section">
+      <h2>Feature Implementation Status</h2>
+      <p class="section-subtitle">What was proposed, what shipped, and what's next</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Status</th>
+            <th>Feature</th>
+            <th>Fields Implemented</th>
+            <th>Precedent</th>
+            <th>Differentiator?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="background: #f0fdf4;">
+            <td><span class="badge badge-yes">✓ Shipped</span></td>
+            <td><strong>Add Credit (Cash)</strong></td>
+            <td>Bucket (Store Credit, Customer Funded), Amount (₹), Expiry (days or policy default), Reason pill, Free-text reason, Internal reference, Notification toggle, Balance preview</td>
+            <td>Rise.ai, Shopify</td>
+            <td>Per-bucket targeting + reason pills + balance preview</td>
+          </tr>
+          <tr style="background: #f0fdf4;">
+            <td><span class="badge badge-yes">✓ Shipped</span></td>
+            <td><strong>Add Credit (Points)</strong></td>
+            <td>Bucket (Courtesy Points, Reward Points), Amount (points), Points-to-cash conversion display, Expiry, Reason pill, Free-text, Internal ref, Notification toggle</td>
+            <td>Smile.io, Yotpo, LoyaltyLion</td>
+            <td>Per-bucket targeting + cash value preview</td>
+          </tr>
+          <tr style="background: #f0fdf4;">
+            <td><span class="badge badge-yes">✓ Shipped</span></td>
+            <td><strong>Remove Balance (Cash)</strong></td>
+            <td>Source bucket (shows live balance), Amount with max validation, Reason pill (Incorrect, Fraud, Chargeback, Dispute, Correction, Other), Free-text, Internal ref, Type-to-confirm (echo amount)</td>
+            <td>Shopify, Rise.ai</td>
+            <td>Per-bucket debit + balance guard + graded confirmation</td>
+          </tr>
+          <tr style="background: #f0fdf4;">
+            <td><span class="badge badge-yes">✓ Shipped</span></td>
+            <td><strong>Remove Balance (Points)</strong></td>
+            <td>Same as cash Remove, per-bucket with balance display, type-to-confirm</td>
+            <td>Yotpo, LoyaltyLion</td>
+            <td>Per-bucket debit with balance preview</td>
+          </tr>
+          <tr style="background: #f0fdf4;">
+            <td><span class="badge badge-yes">✓ Shipped</span></td>
+            <td><strong>Force Expire (Cash)</strong></td>
+            <td>Multi-bucket checkbox selection, Per-bucket amount preview, Irreversibility warning, Reason pill (Campaign ended, Policy change, Fraud, Account cleanup, Other), Free-text, Type "EXPIRE" to confirm</td>
+            <td>None (industry first)</td>
+            <td style="color: var(--success); font-weight: 700;">✓ Industry first — shipped</td>
+          </tr>
+          <tr style="background: #f0fdf4;">
+            <td><span class="badge badge-yes">✓ Shipped</span></td>
+            <td><strong>Force Expire (Points)</strong></td>
+            <td>Same as cash Expire, multi-bucket selection with per-bucket balance</td>
+            <td>None (industry first)</td>
+            <td style="color: var(--success); font-weight: 700;">✓ Industry first — shipped</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-partial">Next</span></td>
+            <td><strong>Tier Impact Preview</strong></td>
+            <td>Show tier change warning when debiting points (e.g., "Gold → Silver")</td>
+            <td>Yotpo (warns, no preview)</td>
+            <td style="color: var(--warning); font-weight: 700;">Industry first (planned)</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-partial">Next</span></td>
+            <td><strong>Reason Visibility Toggle</strong></td>
+            <td>Customer-facing vs internal-only toggle for reason text</td>
+            <td>Yotpo, Rise.ai</td>
+            <td>Matches best practice</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-partial">Next</span></td>
+            <td><strong>Bulk UI for Wallet Actions</strong></td>
+            <td>CSV upload or multi-select for batch credit/debit operations</td>
+            <td>Rise.ai, Growave, Marsello</td>
+            <td>Table stakes for scale</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="footer">
+      Batua Competitive Analysis -- Wallet Operations -- March 2026
+    </div>
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Customer Detail Modal — Redesign</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f1f3; color: #1a1a2e; }
+
+  .design-wrapper { max-width: 700px; margin: 0 auto; padding: 40px 24px 80px; }
+  .design-title { text-align: center; font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .design-desc { text-align: center; color: #6b7280; font-size: 13px; margin-bottom: 32px; }
+
+  .state-nav {
+    display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;
+    margin-bottom: 32px; position: sticky; top: 0; background: #f0f1f3; padding: 12px 0; z-index: 10;
+  }
+  .state-tab {
+    padding: 7px 14px; border-radius: 8px; font-size: 12px; font-weight: 500;
+    cursor: pointer; border: 1px solid #d1d5db; background: white; color: #6b7280;
+  }
+  .state-tab.active { background: #6366f1; color: white; border-color: #6366f1; }
+  .state-tab:hover:not(.active) { background: #f3f4f6; }
+
+  .state-view { display: none; }
+  .state-view.active { display: block; }
+
+  .annotation { font-size: 11px; color: #9ca3af; background: #fafbfc; border: 1px dashed #d1d5db; border-radius: 6px; padding: 8px 12px; margin-bottom: 16px; }
+  .annotation strong { color: #6b7280; }
+
+  /* ── Modal chrome ── */
+  .modal-sim {
+    background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+    width: 620px; max-width: 100%; overflow: hidden;
+  }
+  .modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 24px; border-bottom: 1px solid #e5e7eb;
+  }
+  .modal-title { font-size: 16px; font-weight: 600; }
+  .modal-close { background: none; border: none; font-size: 20px; color: #9ca3af; cursor: pointer; padding: 2px 6px; border-radius: 4px; }
+  .modal-body { padding: 24px; overflow-y: auto; max-height: 70vh; }
+
+  /* ── Sections ── */
+  .section { border: 1px solid #e5e7eb; border-radius: 10px; padding: 18px; margin-bottom: 16px; }
+  .section:last-child { margin-bottom: 0; }
+  .section-title { font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .section-icon { font-size: 15px; }
+
+  /* ── Customer header ── */
+  .cust-header { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+  .cust-avatar {
+    width: 44px; height: 44px; border-radius: 50%; background: #6366f1;
+    color: white; display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 600; flex-shrink: 0;
+  }
+  .cust-info { flex: 1; }
+  .cust-name { font-size: 16px; font-weight: 600; }
+  .cust-phone { font-size: 12px; color: #9ca3af; margin-top: 1px; }
+  .cust-badge {
+    padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600;
+  }
+  .badge-verified { background: #d1fae5; color: #065f46; }
+
+  .cust-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .meta-label { font-size: 10px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.04em; }
+  .meta-value { font-size: 13px; font-weight: 500; color: #1a1a2e; margin-top: 1px; }
+
+  /* ── Wallet ── */
+  .wallet-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .wallet-item { text-align: center; }
+  .wallet-label { font-size: 10px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.04em; }
+  .wallet-value { font-size: 18px; font-weight: 700; margin-top: 4px; }
+  .wallet-value.points { color: #6366f1; }
+  .wallet-value.cash { color: #22c55e; }
+  .wallet-value.total { color: #1a1a2e; }
+
+  /* ── Loyalty ── */
+  .loyalty-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .loyalty-left { display: flex; align-items: center; gap: 10px; }
+  .tier-badge {
+    padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;
+    background: #fef9c3; color: #854d0e;
+  }
+  .tier-badge.silver { background: #f3f4f6; color: #374151; }
+  .tier-badge.bronze { background: #fef3c7; color: #92400e; }
+  .tier-badge.gold { background: #fef9c3; color: #854d0e; }
+  .tier-source { font-size: 11px; color: #9ca3af; }
+  .loyalty-mult { font-size: 14px; font-weight: 600; font-family: 'SF Mono', monospace; color: #374151; }
+
+  .loyalty-progress { margin-top: 4px; }
+  .loyalty-progress-top { display: flex; justify-content: space-between; font-size: 11px; color: #9ca3af; margin-bottom: 4px; }
+  .loyalty-progress-bar { height: 5px; border-radius: 3px; background: #e5e7eb; overflow: hidden; }
+  .loyalty-progress-fill { height: 100%; border-radius: 3px; background: #6366f1; }
+
+  .loyalty-meta { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 12px; }
+  .loyalty-meta-item { }
+  .loyalty-meta-label { font-size: 10px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.04em; }
+  .loyalty-meta-value { font-size: 13px; font-weight: 500; color: #1a1a2e; margin-top: 1px; }
+
+  /* ── Membership ── */
+  .membership-status { display: flex; align-items: center; justify-content: space-between; }
+  .membership-left { display: flex; align-items: center; gap: 10px; }
+  .status-pill {
+    padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600;
+  }
+  .s-active { background: #d1fae5; color: #065f46; }
+  .s-none { background: #f3f4f6; color: #9ca3af; }
+  .membership-expires { font-size: 12px; color: #6b7280; }
+  .membership-expires-warn { color: #f59e0b; font-weight: 500; }
+  .membership-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+
+  .membership-progress { margin-top: 12px; }
+  .membership-progress-top { display: flex; justify-content: space-between; font-size: 11px; color: #9ca3af; margin-bottom: 4px; }
+  .membership-progress-bar { height: 5px; border-radius: 3px; background: #e5e7eb; overflow: hidden; }
+  .membership-progress-fill { height: 100%; border-radius: 3px; background: #22c55e; }
+
+  /* ── Transactions ── */
+  .tx-list { display: flex; flex-direction: column; }
+  .tx-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f3f4f6; }
+  .tx-row:last-child { border-bottom: none; }
+  .tx-left { display: flex; flex-direction: column; gap: 1px; }
+  .tx-type { font-size: 12px; font-weight: 500; color: #374151; }
+  .tx-bucket { font-size: 11px; color: #9ca3af; }
+  .tx-right { text-align: right; }
+  .tx-amount { font-size: 13px; font-weight: 600; font-family: 'SF Mono', monospace; }
+  .tx-amount.credit { color: #22c55e; }
+  .tx-amount.debit { color: #ef4444; }
+  .tx-date { font-size: 10px; color: #9ca3af; }
+  .tx-empty { padding: 16px; text-align: center; color: #9ca3af; font-size: 13px; }
+
+  /* ── Referral ── */
+  .ref-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .ref-label { font-size: 10px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.04em; }
+  .ref-value { font-size: 14px; font-weight: 600; color: #1a1a2e; margin-top: 2px; }
+  .ref-value.highlight { color: #6366f1; }
+
+  /* ── Gift Cards ── */
+  .gc-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; }
+  .gc-code { font-size: 13px; font-weight: 500; font-family: 'SF Mono', monospace; color: #374151; }
+  .gc-amount { font-size: 13px; font-weight: 600; color: #22c55e; }
+  .gc-status { font-size: 11px; color: #9ca3af; }
+
+  /* No data state */
+  .no-data { font-size: 12px; color: #9ca3af; font-style: italic; }
+</style>
+</head>
+<body>
+
+<div class="design-wrapper">
+  <h1 class="design-title">Customer Detail Modal — Redesign</h1>
+  <p class="design-desc">Current vs proposed with loyalty, membership, referral, and gift card sections</p>
+
+  <div class="state-nav">
+    <button class="state-tab active" onclick="show('full')">Full View (with data)</button>
+    <button class="state-tab" onclick="show('minimal')">Minimal (new customer)</button>
+    <button class="state-tab" onclick="show('expiring')">Expiring Membership</button>
+  </div>
+
+  <!-- ═══════════════════ FULL VIEW ═══════════════════ -->
+  <div class="state-view active" id="full">
+    <div class="annotation"><strong>Full view</strong> — customer with wallet, loyalty tier, active membership, referrals, recent transactions, and gift cards.</div>
+
+    <div class="modal-sim">
+      <div class="modal-header">
+        <span class="modal-title">Customer Detail</span>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+
+        <!-- Customer Info -->
+        <div class="section">
+          <div class="cust-header">
+            <div class="cust-avatar">KG</div>
+            <div class="cust-info">
+              <div class="cust-name">Krish Gupta</div>
+              <div class="cust-phone">+91 90180 00100</div>
+            </div>
+            <span class="cust-badge badge-verified">Verified</span>
+          </div>
+          <div class="cust-meta">
+            <div><span class="meta-label">Email</span><div class="meta-value">krish.gupta1900@gmail.com</div></div>
+            <div><span class="meta-label">Customer Since</span><div class="meta-value">12 Jan 2026</div></div>
+          </div>
+        </div>
+
+        <!-- Wallet -->
+        <div class="section">
+          <div class="section-title"><span class="section-icon">💰</span> Wallet</div>
+          <div class="wallet-grid">
+            <div class="wallet-item">
+              <div class="wallet-label">Points Balance</div>
+              <div class="wallet-value points">1,212 ★</div>
+            </div>
+            <div class="wallet-item">
+              <div class="wallet-label">Cash Balance</div>
+              <div class="wallet-value cash">₹0.00</div>
+            </div>
+            <div class="wallet-item">
+              <div class="wallet-label">Total ₹ Value</div>
+              <div class="wallet-value total">₹1,212.00</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loyalty Tier -->
+        <div class="section">
+          <div class="section-title"><span class="section-icon">🏆</span> Loyalty Tier</div>
+          <div class="loyalty-row">
+            <div class="loyalty-left">
+              <span class="tier-badge bronze">Bronze</span>
+              <span class="tier-source">Earned via spend</span>
+            </div>
+            <span class="loyalty-mult">1x</span>
+          </div>
+          <div class="loyalty-progress">
+            <div class="loyalty-progress-top">
+              <span>Progress to Silver</span>
+              <span>₹1,212 / ₹6,800</span>
+            </div>
+            <div class="loyalty-progress-bar">
+              <div class="loyalty-progress-fill" style="width: 18%;"></div>
+            </div>
+          </div>
+          <div class="loyalty-meta">
+            <div><span class="loyalty-meta-label">Total Spend</span><div class="loyalty-meta-value">₹1,212</div></div>
+            <div><span class="loyalty-meta-label">Total Orders</span><div class="loyalty-meta-value">3</div></div>
+            <div><span class="loyalty-meta-label">Evaluated</span><div class="loyalty-meta-value">22 Mar 2026</div></div>
+          </div>
+        </div>
+
+        <!-- Membership -->
+        <div class="section">
+          <div class="section-title"><span class="section-icon">💎</span> Membership</div>
+          <div class="membership-status">
+            <div class="membership-left">
+              <span class="tier-badge silver">Silver</span>
+              <span class="status-pill s-active">Active</span>
+            </div>
+            <span class="membership-expires">Expires 24 Mar 2027</span>
+          </div>
+          <div class="membership-grid">
+            <div><span class="meta-label">Effective Multiplier</span><div class="meta-value">1.25x</div></div>
+            <div><span class="meta-label">Renewed</span><div class="meta-value">0 times</div></div>
+          </div>
+          <div class="membership-progress">
+            <div class="membership-progress-top">
+              <span>Time remaining</span>
+              <span>365 days</span>
+            </div>
+            <div class="membership-progress-bar">
+              <div class="membership-progress-fill" style="width: 100%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Referrals -->
+        <div class="section">
+          <div class="section-title"><span class="section-icon">🔗</span> Referrals</div>
+          <div class="ref-grid">
+            <div><span class="ref-label">Referral Code</span><div class="ref-value" style="font-family: 'SF Mono', monospace;">KRISH2026</div></div>
+            <div><span class="ref-label">Referrals Made</span><div class="ref-value highlight">4</div></div>
+            <div><span class="ref-label">Rewards Earned</span><div class="ref-value">₹200</div></div>
+          </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="section">
+          <div class="section-title"><span class="section-icon">📋</span> Recent Transactions</div>
+          <div class="tx-list">
+            <div class="tx-row">
+              <div class="tx-left">
+                <span class="tx-type">In</span>
+                <span class="tx-bucket">Refund Credit</span>
+              </div>
+              <div class="tx-right">
+                <div class="tx-amount credit">+₹35.75</div>
+                <div class="tx-date">17 Mar 2026</div>
+              </div>
+            </div>
+            <div class="tx-row">
+              <div class="tx-left">
+                <span class="tx-type">In</span>
+                <span class="tx-bucket">Earned Credit</span>
+              </div>
+              <div class="tx-right">
+                <div class="tx-amount credit">+142 ★</div>
+                <div class="tx-date">15 Mar 2026</div>
+              </div>
+            </div>
+            <div class="tx-row">
+              <div class="tx-left">
+                <span class="tx-type">Out</span>
+                <span class="tx-bucket">Redemption</span>
+              </div>
+              <div class="tx-right">
+                <div class="tx-amount debit">−₹50.00</div>
+                <div class="tx-date">10 Mar 2026</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gift Cards -->
+        <div class="section">
+          <div class="section-title"><span class="section-icon">🎁</span> Gift Cards</div>
+          <div class="gc-row">
+            <span class="gc-code">GC-8A2F-K9X1</span>
+            <span class="gc-amount">₹500</span>
+            <span class="gc-status">Redeemed</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ MINIMAL VIEW ═══════════════════ -->
+  <div class="state-view" id="minimal">
+    <div class="annotation"><strong>Minimal</strong> — new customer with no loyalty tier, no membership, no referrals.</div>
+
+    <div class="modal-sim">
+      <div class="modal-header">
+        <span class="modal-title">Customer Detail</span>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+
+        <div class="section">
+          <div class="cust-header">
+            <div class="cust-avatar" style="background: #9ca3af;">AD</div>
+            <div class="cust-info">
+              <div class="cust-name">Aditya Rangan</div>
+              <div class="cust-phone">+91 90180 00092</div>
+            </div>
+            <span class="cust-badge badge-verified">Verified</span>
+          </div>
+          <div class="cust-meta">
+            <div><span class="meta-label">Email</span><div class="meta-value">aditya.rangan1892@gmail.com</div></div>
+            <div><span class="meta-label">Customer Since</span><div class="meta-value">4 Jan 2026</div></div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title"><span class="section-icon">💰</span> Wallet</div>
+          <div class="wallet-grid">
+            <div class="wallet-item">
+              <div class="wallet-label">Points Balance</div>
+              <div class="wallet-value points">320 ★</div>
+            </div>
+            <div class="wallet-item">
+              <div class="wallet-label">Cash Balance</div>
+              <div class="wallet-value cash">₹0.00</div>
+            </div>
+            <div class="wallet-item">
+              <div class="wallet-label">Total ₹ Value</div>
+              <div class="wallet-value total">₹320.00</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title"><span class="section-icon">🏆</span> Loyalty Tier</div>
+          <span class="no-data">No tier yet — qualifying value below Bronze threshold</span>
+        </div>
+
+        <div class="section">
+          <div class="section-title"><span class="section-icon">💎</span> Membership</div>
+          <div class="membership-status">
+            <div class="membership-left">
+              <span class="status-pill s-none">No membership</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title"><span class="section-icon">🔗</span> Referrals</div>
+          <span class="no-data">No referral activity</span>
+        </div>
+
+        <div class="section">
+          <div class="section-title"><span class="section-icon">📋</span> Recent Transactions</div>
+          <span class="no-data">No transactions yet</span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ EXPIRING MEMBERSHIP ═══════════════════ -->
+  <div class="state-view" id="expiring">
+    <div class="annotation"><strong>Expiring</strong> — membership expiring soon, earned tier is lower. Shows urgency.</div>
+
+    <div class="modal-sim">
+      <div class="modal-header">
+        <span class="modal-title">Customer Detail</span>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+
+        <div class="section">
+          <div class="cust-header">
+            <div class="cust-avatar" style="background: #f59e0b;">LD</div>
+            <div class="cust-info">
+              <div class="cust-name">Lakshya Deshpande</div>
+              <div class="cust-phone">+91 90180 00099</div>
+            </div>
+            <span class="cust-badge badge-verified">Verified</span>
+          </div>
+          <div class="cust-meta">
+            <div><span class="meta-label">Email</span><div class="meta-value">lakshya.deshpande1899@gmail.com</div></div>
+            <div><span class="meta-label">Customer Since</span><div class="meta-value">11 Jan 2026</div></div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title"><span class="section-icon">💰</span> Wallet</div>
+          <div class="wallet-grid">
+            <div class="wallet-item">
+              <div class="wallet-label">Points Balance</div>
+              <div class="wallet-value points">4,820 ★</div>
+            </div>
+            <div class="wallet-item">
+              <div class="wallet-label">Cash Balance</div>
+              <div class="wallet-value cash">₹150.00</div>
+            </div>
+            <div class="wallet-item">
+              <div class="wallet-label">Total ₹ Value</div>
+              <div class="wallet-value total">₹4,970.00</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title"><span class="section-icon">🏆</span> Loyalty Tier</div>
+          <div class="loyalty-row">
+            <div class="loyalty-left">
+              <span class="tier-badge bronze">Bronze</span>
+              <span class="tier-source">Earned via spend</span>
+            </div>
+            <span class="loyalty-mult">1x</span>
+          </div>
+          <div class="loyalty-progress">
+            <div class="loyalty-progress-top">
+              <span>Progress to Silver</span>
+              <span>₹4,820 / ₹6,800</span>
+            </div>
+            <div class="loyalty-progress-bar">
+              <div class="loyalty-progress-fill" style="width: 71%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Membership — expiring -->
+        <div class="section" style="border-color: #fde68a; background: #fffdf5;">
+          <div class="section-title"><span class="section-icon">💎</span> Membership <span style="font-size: 11px; color: #f59e0b; font-weight: 500; margin-left: auto;">⚠ Expiring in 9 days</span></div>
+          <div class="membership-status">
+            <div class="membership-left">
+              <span class="tier-badge gold">Gold</span>
+              <span class="status-pill" style="background: #fef3c7; color: #92400e;">Expiring Soon</span>
+            </div>
+            <span class="membership-expires membership-expires-warn">02 Apr 2026</span>
+          </div>
+          <div class="membership-grid">
+            <div><span class="meta-label">Effective Multiplier</span><div class="meta-value">1.5x</div></div>
+            <div><span class="meta-label">Falls back to</span><div class="meta-value"><span class="tier-badge bronze" style="font-size: 10px; padding: 2px 8px;">Bronze 1x</span></div></div>
+          </div>
+          <div class="membership-progress">
+            <div class="membership-progress-top">
+              <span>Time remaining</span>
+              <span style="color: #f59e0b; font-weight: 500;">9 days</span>
+            </div>
+            <div class="membership-progress-bar">
+              <div class="membership-progress-fill" style="width: 2.5%; background: #f59e0b;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title"><span class="section-icon">🔗</span> Referrals</div>
+          <div class="ref-grid">
+            <div><span class="ref-label">Referral Code</span><div class="ref-value" style="font-family: 'SF Mono', monospace;">LAKSHYA99</div></div>
+            <div><span class="ref-label">Referrals Made</span><div class="ref-value highlight">12</div></div>
+            <div><span class="ref-label">Rewards Earned</span><div class="ref-value">₹600</div></div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title"><span class="section-icon">📋</span> Recent Transactions</div>
+          <div class="tx-list">
+            <div class="tx-row">
+              <div class="tx-left">
+                <span class="tx-type">In</span>
+                <span class="tx-bucket">Earned Credit</span>
+              </div>
+              <div class="tx-right">
+                <div class="tx-amount credit">+280 ★</div>
+                <div class="tx-date">20 Mar 2026</div>
+              </div>
+            </div>
+            <div class="tx-row">
+              <div class="tx-left">
+                <span class="tx-type">Out</span>
+                <span class="tx-bucket">Redemption</span>
+              </div>
+              <div class="tx-right">
+                <div class="tx-amount debit">−₹150.00</div>
+                <div class="tx-date">18 Mar 2026</div>
+              </div>
+            </div>
+            <div class="tx-row">
+              <div class="tx-left">
+                <span class="tx-type">In</span>
+                <span class="tx-bucket">Referral Bonus</span>
+              </div>
+              <div class="tx-right">
+                <div class="tx-amount credit">+50 ★</div>
+                <div class="tx-date">15 Mar 2026</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function show(id) {
+    document.querySelectorAll('.state-view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.state-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    const map = ['full','minimal','expiring'];
+    const tabs = document.querySelectorAll('.state-tab');
+    const idx = map.indexOf(id);
+    if (idx >= 0 && tabs[idx]) tabs[idx].classList.add('active');
+  }
+</script>
+
+</body>
+</html>

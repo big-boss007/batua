@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Referrals Redesign — 5 States</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f1f3f5; color: #1a1a2e; }
+
+  .page-header-bar { text-align: center; padding: 40px 40px 0; }
+  .page-header-bar h1 { font-size: 26px; font-weight: 700; }
+  .page-header-bar p { font-size: 14px; color: #9ca3af; margin-top: 4px; }
+
+  .state-grid { display: flex; flex-direction: column; gap: 48px; padding: 32px 40px 60px; max-width: 1000px; margin: 0 auto; }
+
+  .state { background: white; border-radius: 16px; border: 1px solid #e5e7eb; overflow: hidden; }
+  .state-label { padding: 14px 24px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; background: #f9fafb; border-bottom: 1px solid #e5e7eb; color: #6b7280; display: flex; align-items: center; gap: 10px; }
+  .state-num { width: 24px; height: 24px; border-radius: 50%; background: #6366f1; color: white; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+  .state-body { padding: 32px; }
+
+  /* Page chrome */
+  .mock-page { max-width: 800px; }
+  .mock-page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
+  .mock-title { font-size: 24px; font-weight: 700; color: #1a1a2e; }
+  .mock-subtitle { font-size: 13px; color: #9ca3af; margin-top: 4px; }
+
+  /* Cards */
+  .card { border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; }
+  .card-header-bar { padding: 16px 20px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
+  .card-title { font-size: 15px; font-weight: 600; color: #374151; }
+  .card-body { padding: 20px; }
+
+  /* Setup wizard (empty state) */
+  .setup-hero { text-align: center; padding: 48px 32px; }
+  .setup-icon { font-size: 48px; margin-bottom: 16px; }
+  .setup-title { font-size: 20px; font-weight: 700; color: #1a1a2e; margin-bottom: 8px; }
+  .setup-desc { font-size: 14px; color: #6b7280; max-width: 400px; margin: 0 auto 24px; line-height: 1.6; }
+
+  .setup-steps { display: flex; gap: 20px; justify-content: center; margin-bottom: 32px; max-width: 560px; margin-left: auto; margin-right: auto; }
+  .setup-step { flex: 1; text-align: center; padding: 16px 12px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; }
+  .setup-step-num { width: 28px; height: 28px; border-radius: 50%; background: #6366f1; color: white; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; margin: 0 auto 8px; }
+  .setup-step-label { font-size: 12px; font-weight: 600; color: #374151; }
+  .setup-step-desc { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; border: none; cursor: pointer; }
+  .btn-primary { background: #6366f1; color: white; }
+  .btn-secondary { background: white; color: #374151; border: 1px solid #d1d5db; }
+  .btn-ghost { background: none; color: #6b7280; border: 1px solid #e5e7eb; }
+  .btn-sm { padding: 6px 14px; font-size: 12px; }
+  .btn-danger { background: white; color: #ef4444; border: 1px solid #fecaca; }
+
+  /* Config form (program active) */
+  .config-grid { display: grid; grid-template-columns: 1fr 280px; gap: 24px; }
+  .config-form { display: flex; flex-direction: column; gap: 20px; }
+  .config-preview { background: linear-gradient(165deg, #eff6ff, #eef2ff); border: 1px solid #c7d2fe; border-radius: 12px; padding: 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; text-align: center; }
+
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field-label { font-size: 12px; font-weight: 600; color: #6b7280; }
+  .field-input { padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px; color: #374151; background: white; }
+  .field-hint { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+
+  .toggle-row { display: flex; align-items: center; gap: 12px; }
+  .toggle { width: 40px; height: 22px; border-radius: 11px; background: #d1d5db; position: relative; cursor: pointer; }
+  .toggle.on { background: #6366f1; }
+  .toggle-dot { width: 18px; height: 18px; border-radius: 50%; background: white; position: absolute; top: 2px; left: 2px; transition: left 0.15s; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  .toggle.on .toggle-dot { left: 20px; }
+  .toggle-label { font-size: 13px; color: #374151; font-weight: 500; }
+
+  /* Preview card */
+  .preview-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #6366f1; }
+  .preview-flow { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+  .preview-box { padding: 8px 14px; background: white; border: 1px solid #e5e7eb; border-radius: 8px; text-align: center; }
+  .preview-box-label { font-size: 9px; color: #9ca3af; text-transform: uppercase; }
+  .preview-box-val { font-size: 16px; font-weight: 700; color: #374151; margin-top: 2px; }
+  .preview-arrow { color: #d1d5db; font-size: 18px; }
+  .preview-note { font-size: 11px; color: #9ca3af; margin-top: 12px; }
+
+  /* Status bar */
+  .status-bar { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; margin-bottom: 20px; }
+  .status-bar.inactive { background: #fef2f2; border-color: #fecaca; }
+  .status-text { font-size: 13px; font-weight: 500; color: #065f46; display: flex; align-items: center; gap: 6px; }
+  .status-bar.inactive .status-text { color: #991b1b; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; }
+  .status-bar.inactive .status-dot { background: #ef4444; }
+
+  /* Metrics row */
+  .metrics-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+  .metric-card { padding: 16px; background: white; border: 1px solid #e5e7eb; border-radius: 10px; }
+  .metric-val { font-size: 22px; font-weight: 700; color: #1a1a2e; }
+  .metric-label { font-size: 11px; color: #9ca3af; font-weight: 500; margin-top: 2px; }
+  .metric-card.warn { border-color: #fbbf24; }
+  .metric-card.warn .metric-val { color: #d97706; }
+
+  /* Codes table */
+  .codes-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .codes-title { font-size: 15px; font-weight: 600; }
+  .codes-count { font-size: 12px; color: #9ca3af; font-weight: 500; }
+
+  .codes-table { width: 100%; border-collapse: collapse; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; }
+  .codes-table th { text-align: left; padding: 10px 14px; font-size: 11px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.04em; background: #f9fafb; border-bottom: 1px solid #e5e7eb; }
+  .codes-table td { padding: 10px 14px; font-size: 13px; border-bottom: 1px solid #f3f4f6; }
+  .codes-table tr:last-child td { border-bottom: none; }
+
+  .code-mono { font-family: 'SF Mono', monospace; font-size: 12px; padding: 3px 8px; background: #f3f4f6; border-radius: 4px; font-weight: 600; }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; }
+  .pill-green { background: #d1fae5; color: #065f46; }
+  .pill-blue { background: #dbeafe; color: #1d4ed8; }
+  .pill-purple { background: #ede9fe; color: #6d28d9; }
+  .pill-gray { background: #f3f4f6; color: #6b7280; }
+
+  /* Conversions table */
+  .conv-table { width: 100%; border-collapse: collapse; }
+  .conv-table th { text-align: left; padding: 10px 14px; font-size: 11px; font-weight: 600; color: #9ca3af; text-transform: uppercase; background: #f9fafb; border-bottom: 1px solid #e5e7eb; }
+  .conv-table td { padding: 10px 14px; font-size: 13px; border-bottom: 1px solid #f3f4f6; }
+
+  .fraud-pill { padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; background: #fef3c7; color: #92400e; }
+  .clean-pill { padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; background: #d1fae5; color: #065f46; }
+
+  /* Create code modal */
+  .modal-overlay { background: rgba(0,0,0,0.08); border-radius: 12px; padding: 24px; display: flex; align-items: center; justify-content: center; }
+  .modal-panel { background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.12); width: 440px; overflow: hidden; }
+  .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid #e5e7eb; }
+  .modal-title { font-size: 16px; font-weight: 600; }
+  .modal-close { background: none; border: none; font-size: 18px; color: #9ca3af; cursor: pointer; }
+  .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+  .modal-footer { padding: 12px 20px; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: 10px; }
+
+  /* Section divider */
+  .section-divider { height: 1px; background: #e5e7eb; margin: 24px 0; }
+
+  .note { margin-top: 24px; padding: 14px 18px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; font-size: 12px; color: #1e40af; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<div class="page-header-bar">
+  <h1>Referrals Redesign</h1>
+  <p>5 states: Empty → Setup → Active (dashboard) → Add Creator Code modal → Edit Program</p>
+</div>
+
+<div class="state-grid">
+
+<!-- ======================================== -->
+<!-- STATE 1: EMPTY / NO PROGRAM -->
+<!-- ======================================== -->
+<div class="state">
+  <div class="state-label"><span class="state-num">1</span> Empty State — No referral program configured</div>
+  <div class="state-body">
+    <div class="mock-page">
+      <div class="mock-page-header">
+        <div><div class="mock-title">Referrals</div><div class="mock-subtitle">Grow your customer base through word-of-mouth</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <div class="setup-hero">
+            <div class="setup-icon">🔗</div>
+            <div class="setup-title">Set up your referral program</div>
+            <div class="setup-desc">Reward customers for bringing in their friends. Configure rewards, generate codes, and track conversions.</div>
+
+            <div class="setup-steps">
+              <div class="setup-step">
+                <div class="setup-step-num">1</div>
+                <div class="setup-step-label">Set Rewards</div>
+                <div class="setup-step-desc">Referrer & referee amounts</div>
+              </div>
+              <div class="setup-step">
+                <div class="setup-step-num">2</div>
+                <div class="setup-step-label">Configure</div>
+                <div class="setup-step-desc">Limits & activation</div>
+              </div>
+              <div class="setup-step">
+                <div class="setup-step-num">3</div>
+                <div class="setup-step-label">Share</div>
+                <div class="setup-step-desc">Generate & distribute codes</div>
+              </div>
+            </div>
+
+            <button class="btn btn-primary">Set Up Referral Program</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================== -->
+<!-- STATE 2: SETUP FORM -->
+<!-- ======================================== -->
+<div class="state">
+  <div class="state-label"><span class="state-num">2</span> Setup / Configure — Creating or editing the program</div>
+  <div class="state-body">
+    <div class="mock-page">
+      <div class="mock-page-header">
+        <div><div class="mock-title">Referrals</div><div class="mock-subtitle">Configure your referral program</div></div>
+      </div>
+
+      <div class="config-grid">
+        <div class="card">
+          <div class="card-header-bar">
+            <span class="card-title">Referral Program Settings</span>
+          </div>
+          <div class="card-body">
+            <div class="config-form">
+              <div class="field-row">
+                <div class="field">
+                  <label class="field-label">Referrer Reward</label>
+                  <div class="field-input">100 pts</div>
+                  <div class="field-hint">Points the referrer earns per successful referral</div>
+                </div>
+                <div class="field">
+                  <label class="field-label">Referee Reward</label>
+                  <div class="field-input">50 pts</div>
+                  <div class="field-hint">Points the new customer earns on signup</div>
+                </div>
+              </div>
+
+              <div class="section-divider" style="margin: 4px 0;"></div>
+
+              <div class="toggle-row">
+                <div class="toggle on"><div class="toggle-dot"></div></div>
+                <span class="toggle-label">Limit referrals per customer</span>
+              </div>
+              <div class="field" style="max-width: 200px;">
+                <label class="field-label">Max Referrals</label>
+                <div class="field-input">10</div>
+                <div class="field-hint">0 = unlimited</div>
+              </div>
+
+              <div class="section-divider" style="margin: 4px 0;"></div>
+
+              <div class="toggle-row">
+                <div class="toggle on"><div class="toggle-dot"></div></div>
+                <span class="toggle-label">Program active</span>
+              </div>
+
+              <div style="display: flex; gap: 10px; padding-top: 8px;">
+                <button class="btn btn-primary">Activate Program</button>
+                <button class="btn btn-ghost">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="config-preview">
+          <span class="preview-label">How it works</span>
+          <div class="preview-flow">
+            <div class="preview-box">
+              <div class="preview-box-label">Referrer</div>
+              <div class="preview-box-val">+100</div>
+            </div>
+            <span class="preview-arrow">→</span>
+            <div class="preview-box">
+              <div class="preview-box-label">Shares code</div>
+              <div class="preview-box-val">🔗</div>
+            </div>
+            <span class="preview-arrow">→</span>
+            <div class="preview-box">
+              <div class="preview-box-label">Referee</div>
+              <div class="preview-box-val">+50</div>
+            </div>
+          </div>
+          <div class="preview-note">Both parties earn points when the referee places their first order</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================== -->
+<!-- STATE 3: ACTIVE DASHBOARD -->
+<!-- ======================================== -->
+<div class="state">
+  <div class="state-label"><span class="state-num">3</span> Active Dashboard — Program running, codes & analytics visible</div>
+  <div class="state-body">
+    <div class="mock-page">
+      <div class="mock-page-header">
+        <div><div class="mock-title">Referrals</div><div class="mock-subtitle">Manage your referral program</div></div>
+        <div style="display: flex; gap: 10px;">
+          <button class="btn btn-secondary btn-sm">Edit Program</button>
+          <button class="btn btn-primary btn-sm">+ Add Creator Code</button>
+        </div>
+      </div>
+
+      <div class="status-bar">
+        <span class="status-text"><span class="status-dot"></span> Program active — Referrer: 100 pts &middot; Referee: 50 pts &middot; Max 10 per customer</span>
+        <button class="btn btn-danger btn-sm">Pause</button>
+      </div>
+
+      <div class="metrics-row">
+        <div class="metric-card">
+          <div class="metric-val">24</div>
+          <div class="metric-label">Total Codes</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-val">156</div>
+          <div class="metric-label">Referrals</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-val">89</div>
+          <div class="metric-label">Conversions</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-val">57%</div>
+          <div class="metric-label">Conversion Rate</div>
+        </div>
+      </div>
+
+      <div class="codes-header">
+        <div style="display: flex; align-items: baseline; gap: 8px;">
+          <span class="codes-title">Referral Codes</span>
+          <span class="codes-count">24 codes</span>
+        </div>
+      </div>
+
+      <table class="codes-table">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Mobile</th>
+            <th>Type</th>
+            <th>Conversions</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="code-mono">PRIYA2024</span></td>
+            <td style="font-size: 12px; color: #6b7280;">+91 98765 43210</td>
+            <td><span class="pill pill-purple">Creator</span></td>
+            <td style="font-weight: 600;">23</td>
+            <td><span class="pill pill-green">Active</span></td>
+          </tr>
+          <tr>
+            <td><span class="code-mono">REF-7K2M</span></td>
+            <td style="font-size: 12px; color: #6b7280;">+91 87654 32109</td>
+            <td><span class="pill pill-gray">Standard</span></td>
+            <td style="font-weight: 600;">8</td>
+            <td><span class="pill pill-green">Active</span></td>
+          </tr>
+          <tr>
+            <td><span class="code-mono">AMIT10</span></td>
+            <td style="font-size: 12px; color: #6b7280;">+91 76543 21098</td>
+            <td><span class="pill pill-purple">Creator</span></td>
+            <td style="font-weight: 600;">5</td>
+            <td><span class="pill pill-green">Active</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="section-divider"></div>
+
+      <div class="codes-header">
+        <span class="codes-title">Recent Conversions</span>
+      </div>
+      <table class="codes-table">
+        <thead><tr><th>Referrer</th><th>Referee</th><th>Order</th><th>Status</th><th>Date</th></tr></thead>
+        <tbody>
+          <tr>
+            <td style="font-size: 12px;">+91 98765 43210</td>
+            <td style="font-size: 12px;">+91 91234 56789</td>
+            <td style="font-size: 12px;">ord_9x2k</td>
+            <td><span class="clean-pill">Clean</span></td>
+            <td style="font-size: 12px; color: #9ca3af;">25 Mar, 11:42 AM</td>
+          </tr>
+          <tr>
+            <td style="font-size: 12px;">+91 87654 32109</td>
+            <td style="font-size: 12px;">+91 81234 56780</td>
+            <td style="font-size: 12px;">ord_3m7n</td>
+            <td><span class="fraud-pill">Same IP</span></td>
+            <td style="font-size: 12px; color: #9ca3af;">24 Mar, 3:15 PM</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================== -->
+<!-- STATE 4: ADD CREATOR CODE MODAL -->
+<!-- ======================================== -->
+<div class="state">
+  <div class="state-label"><span class="state-num">4</span> Add Creator Code — For influencer / creator partnerships</div>
+  <div class="state-body">
+    <div class="modal-overlay">
+      <div class="modal-panel">
+        <div class="modal-header">
+          <span class="modal-title">Add Creator Code</span>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div style="padding: 10px 14px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; font-size: 12px; color: #1e40af; line-height: 1.5;">
+            Creator codes are vanity codes for influencers and brand ambassadors. Regular customers get auto-generated codes from the storefront.
+          </div>
+
+          <div class="field">
+            <label class="field-label">Creator Mobile Number</label>
+            <div class="field-input" style="display: flex; align-items: center; gap: 8px;"><span style="color: #9ca3af;">+91</span> 98765 43210</div>
+            <div class="field-hint">Must be an existing customer</div>
+          </div>
+
+          <div class="field">
+            <label class="field-label">Vanity Code</label>
+            <div class="field-input">PRIYA2024</div>
+            <div class="field-hint">Uppercase letters and numbers. This is the code the creator will share.</div>
+          </div>
+
+          <div class="field" style="max-width: 200px;">
+            <label class="field-label">Commission Rate (%)</label>
+            <div class="field-input">5</div>
+            <div class="field-hint">Percentage of order value paid to creator</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost btn-sm">Cancel</button>
+          <button class="btn btn-primary btn-sm">Add Creator</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================== -->
+<!-- STATE 5: EDIT PROGRAM (RECONFIGURE) -->
+<!-- ======================================== -->
+<div class="state">
+  <div class="state-label"><span class="state-num">5</span> Edit Program — Reconfigure existing program settings</div>
+  <div class="state-body">
+    <div class="mock-page">
+      <div class="mock-page-header">
+        <div><div class="mock-title">Referrals</div><div class="mock-subtitle">Edit your referral program settings</div></div>
+      </div>
+
+      <div style="padding: 12px 16px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; margin-bottom: 20px; font-size: 13px; color: #92400e;">
+        <strong>Reconfigure mode:</strong> Your current settings are pre-filled. Changes take effect immediately on save.
+      </div>
+
+      <div class="config-grid">
+        <div class="card">
+          <div class="card-header-bar">
+            <span class="card-title">Referral Program Settings</span>
+            <span class="pill pill-green">Active</span>
+          </div>
+          <div class="card-body">
+            <div class="config-form">
+              <div class="field-row">
+                <div class="field">
+                  <label class="field-label">Referrer Reward</label>
+                  <div class="field-input" style="border-color: #6366f1;">150 pts</div>
+                  <div class="field-hint">Was: 100 pts</div>
+                </div>
+                <div class="field">
+                  <label class="field-label">Referee Reward</label>
+                  <div class="field-input">50 pts</div>
+                </div>
+              </div>
+
+              <div class="section-divider" style="margin: 4px 0;"></div>
+
+              <div class="toggle-row">
+                <div class="toggle on"><div class="toggle-dot"></div></div>
+                <span class="toggle-label">Limit referrals per customer</span>
+              </div>
+              <div class="field" style="max-width: 200px;">
+                <label class="field-label">Max Referrals</label>
+                <div class="field-input">10</div>
+              </div>
+
+              <div style="display: flex; gap: 10px; padding-top: 8px;">
+                <button class="btn btn-primary">Save Changes</button>
+                <button class="btn btn-ghost">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="config-preview">
+          <span class="preview-label">How it works</span>
+          <div class="preview-flow">
+            <div class="preview-box">
+              <div class="preview-box-label">Referrer</div>
+              <div class="preview-box-val" style="color: #6366f1;">+150</div>
+            </div>
+            <span class="preview-arrow">→</span>
+            <div class="preview-box">
+              <div class="preview-box-label">Shares code</div>
+              <div class="preview-box-val">🔗</div>
+            </div>
+            <span class="preview-arrow">→</span>
+            <div class="preview-box">
+              <div class="preview-box-label">Referee</div>
+              <div class="preview-box-val">+50</div>
+            </div>
+          </div>
+          <div class="preview-note">Both parties earn points when the referee places their first order</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div style="max-width: 1000px; margin: 0 auto; padding: 0 40px 60px;">
+  <div class="note">
+    <strong>Key design changes:</strong><br>
+    1. <strong>No more tabs</strong> — single-page dashboard. Program settings, codes, and conversions are all visible in one flow.<br>
+    2. <strong>Empty state with wizard steps</strong> — guides the merchant instead of showing a bare form.<br>
+    3. <strong>Status bar</strong> — always visible at top showing program state + key config at a glance.<br>
+    4. <strong>Metrics row</strong> — analytics inline on the dashboard, not hidden in a separate tab.<br>
+    5. <strong>Add Creator Code (not "Create Code")</strong> — only for influencer/creator partnerships. Regular customers get auto-generated codes from the storefront.<br>
+    6. <strong>Mobile number as identifier</strong> — all tables show mobile numbers instead of internal customer IDs. More human-readable for merchants.<br>
+    7. <strong>Edit program as dedicated view</strong> — "Edit Program" button opens the config form with pre-filled values + change indicators.<br>
+    8. <strong>Recent conversions inline</strong> — no separate tab, visible below codes table.
+  </div>
+</div>
+
+</body>
+</html>

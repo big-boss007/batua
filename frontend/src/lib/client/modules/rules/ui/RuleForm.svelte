@@ -22,16 +22,23 @@
 
   let isEdit = $derived(rule !== null);
 
+  // svelte-ignore state_referenced_locally
   let name = $state(rule?.name ?? '');
+  // svelte-ignore state_referenced_locally
   let eventType = $state(rule?.config.event_type ?? 'order.completed');
+  // svelte-ignore state_referenced_locally
   let conditions = $state<Array<Condition>>(
     rule?.config.conditions
       ? rule.config.conditions.map((c) => ({ ...c }))
       : []
   );
+  // svelte-ignore state_referenced_locally
   let calculation = $state(rule?.config.action.calculation ?? 'percentage');
+  // svelte-ignore state_referenced_locally
   let actionValue = $state(rule?.config.action.value ?? 0);
+  // svelte-ignore state_referenced_locally
   let maxAmount = $state<number | null>(rule?.config.action.max_amount ?? null);
+  // svelte-ignore state_referenced_locally
   let expiryDays = $state<number | null>(rule?.config.action.expiry_days ?? null);
 
   let nameError = $derived(name.trim().length === 0 ? 'Name is required' : null);
@@ -153,7 +160,7 @@
     </div>
 
     <div class="field-group">
-      <label class="field-label">Trigger Event</label>
+      <span class="field-label">Trigger Event</span>
       <Select
         items={EVENT_TYPES.map((et) => ({ id: et.value, label: et.label }))}
         value={[eventType]}
@@ -210,7 +217,7 @@
 
     <div class="field-row">
       <div class="field-group">
-        <label class="field-label">Type</label>
+        <span class="field-label">Type</span>
         <Select
           items={[{ id: 'percentage', label: 'Percentage of order' }, { id: 'fixed', label: 'Fixed amount' }]}
           value={[calculation]}
@@ -336,26 +343,6 @@
     pointer-events: none;
   }
 
-  .field-input {
-    padding: var(--space-2) var(--space-3);
-    font-size: var(--font-size-base);
-    color: var(--color-text);
-    background: var(--color-bg);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    transition: border-color var(--transition-fast);
-    font-family: inherit;
-  }
-
-  .field-input:focus {
-    outline: none;
-    border-color: var(--color-primary);
-  }
-
-  .field-error {
-    border-color: var(--color-error);
-  }
-
   .field-row {
     display: flex;
     gap: var(--space-4);
@@ -365,10 +352,6 @@
     display: flex;
     align-items: center;
     gap: var(--space-2);
-  }
-
-  .inline-input {
-    width: 100px;
   }
 
   .inline-suffix {

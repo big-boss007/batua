@@ -531,13 +531,6 @@
     gap: var(--space-6);
   }
 
-  .list-panel {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
-    min-width: 0;
-  }
-
   .filters-section {
     display: flex;
     flex-direction: column;

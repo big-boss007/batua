@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multiplier Strip Design — Batua Storefront</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --border: #2a2d3a;
+    --brand: #6366f1;
+    --brand-light: #818cf8;
+    --text-primary: #ffffff;
+    --text-muted: #9ca3af;
+    --green: #4ade80;
+    --yellow: #fde047;
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text-primary);
+    min-height: 100vh;
+    padding: 32px 16px 48px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .design-label {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 24px;
+    font-weight: 500;
+  }
+  .card {
+    max-width: 440px;
+    margin: 0 auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    overflow: hidden;
+  }
+
+  /* Merchant bar */
+  .merchant-bar {
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(90deg, rgba(99,102,241,0.08), transparent);
+  }
+  .merchant-icon {
+    width: 28px; height: 28px; border-radius: 6px;
+    background: var(--brand);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 12px; color: #fff;
+  }
+  .merchant-name { font-size: 14px; font-weight: 600; }
+
+  /* Greeting */
+  .greeting {
+    padding: 24px 24px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+  .greeting-left { display: flex; align-items: center; gap: 14px; }
+  .avatar {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--brand), var(--brand-light));
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 16px; color: #fff;
+  }
+  .greeting-text { font-size: 13px; color: var(--text-muted); }
+  .customer-name { font-size: 20px; font-weight: 700; margin-top: 3px; }
+  .greeting-meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .meta-tier { color: var(--brand-light); font-weight: 600; }
+  .meta-membership { color: var(--yellow); font-weight: 500; }
+  .switch-btn {
+    font-size: 12px; color: var(--brand-light); background: none;
+    border: 1px solid var(--border); padding: 5px 14px; border-radius: 20px;
+  }
+
+  /* === MULTIPLIER STRIP === */
+  .multiplier-strip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: linear-gradient(90deg, rgba(99, 102, 241, 0.12), rgba(129, 140, 248, 0.06));
+    border-bottom: 1px solid var(--border);
+  }
+  .multiplier-icon {
+    font-size: 14px;
+    line-height: 1;
+  }
+  .multiplier-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--brand-light);
+  }
+  .multiplier-value {
+    font-weight: 700;
+    color: var(--green);
+  }
+
+  /* Balance */
+  .balance-hero {
+    padding: 28px 24px 24px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .balance-label {
+    font-size: 12px; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px;
+  }
+  .balance-amount { font-size: 42px; font-weight: 700; letter-spacing: -1px; color: var(--green); }
+  .balance-meta { display: flex; justify-content: center; gap: 24px; margin-top: 14px; font-size: 13px; color: var(--text-muted); }
+  .balance-meta span { font-weight: 600; color: var(--text-primary); }
+  .balance-meta .pending { color: var(--yellow); }
+
+  /* Buckets */
+  .bucket-section { padding: 20px 24px; border-bottom: 1px solid var(--border); }
+  .section-title { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 14px; font-weight: 500; }
+  .bucket-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .bucket-item { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .bucket-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .bucket-value { font-size: 17px; font-weight: 600; }
+  .bucket-value.highlight { color: var(--yellow); }
+
+  /* Lifetime */
+  .lifetime {
+    padding: 16px 24px; display: flex; align-items: center; justify-content: space-between;
+    background: rgba(99,102,241,0.06); border-bottom: 1px solid var(--border);
+  }
+  .lifetime-label { font-size: 13px; color: var(--text-muted); }
+  .lifetime-value { font-size: 16px; font-weight: 700; color: var(--brand-light); }
+
+  /* Tier */
+  .tier-section { padding: 20px 24px; }
+  .tier-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .tier-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+    border-radius: 20px; padding: 5px 14px 5px 10px; font-size: 13px; font-weight: 600;
+  }
+  .tier-hint { font-size: 12px; color: var(--text-muted); }
+  .progress-track { width: 100%; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--brand), var(--brand-light)); border-radius: 4px; }
+  .progress-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); }
+  .progress-labels span:last-child { color: var(--text-primary); font-weight: 500; }
+
+  @media print {
+    body { background: #0f1117 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    .card { box-shadow: none; break-inside: avoid; }
+  }
+  @page { size: A4; margin: 15mm; }
+</style>
+</head>
+<body>
+
+<div class="design-label">Multiplier Strip — Between Greeting and Balance</div>
+
+<div class="card">
+  <div class="merchant-bar">
+    <div class="merchant-icon">H</div>
+    <div class="merchant-name">HomeVibes</div>
+  </div>
+
+  <div class="greeting">
+    <div class="greeting-left">
+      <div class="avatar">AC</div>
+      <div>
+        <div class="greeting-text">Welcome back,</div>
+        <div class="customer-name">Ayaan Chopra</div>
+        <div class="greeting-meta">
+          <span class="meta-tier">Gold</span>
+          <span> · </span>
+          <span class="meta-membership">Member · 364d left</span>
+        </div>
+      </div>
+    </div>
+    <button class="switch-btn">Switch</button>
+  </div>
+
+  <!-- Multiplier Strip -->
+  <div class="multiplier-strip">
+    <span class="multiplier-icon">&#9889;</span>
+    <span class="multiplier-text">
+      You're earning <span class="multiplier-value">2x</span> on every order
+    </span>
+  </div>
+
+  <div class="balance-hero">
+    <div class="balance-label">Spendable Balance</div>
+    <div class="balance-amount">&#8377;491.00</div>
+    <div class="balance-meta">
+      <div>Total <span>&#8377;662.00</span></div>
+      <div>Pending <span class="pending">&#8377;171.00</span></div>
+    </div>
+  </div>
+
+  <div class="bucket-section">
+    <div class="section-title">Bucket Breakdown</div>
+    <div class="bucket-grid">
+      <div class="bucket-item">
+        <div class="bucket-label">Earned</div>
+        <div class="bucket-value">&#8377;0.00</div>
+      </div>
+      <div class="bucket-item">
+        <div class="bucket-label">COD Pending</div>
+        <div class="bucket-value">&#8377;0.00</div>
+      </div>
+      <div class="bucket-item">
+        <div class="bucket-label">On Hold</div>
+        <div class="bucket-value highlight">&#8377;171.00</div>
+      </div>
+      <div class="bucket-item">
+        <div class="bucket-label">Expiring Soon</div>
+        <div class="bucket-value">&#8377;0.00</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lifetime">
+    <div class="lifetime-label">Lifetime Saved</div>
+    <div class="lifetime-value">&#8377;400.20</div>
+  </div>
+
+  <div class="tier-section">
+    <div class="section-title">Loyalty Tier</div>
+    <div class="tier-header">
+      <div class="tier-badge">&#9733; Gold</div>
+      <div class="tier-hint">1,200 pts to Platinum</div>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" style="width: 60%"></div>
+    </div>
+    <div class="progress-labels">
+      <span>1,800 points</span>
+      <span>3,000</span>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

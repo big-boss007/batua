@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memberships Feature UAT Report</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f3f4f6;
+    color: #1f2937;
+    line-height: 1.6;
+    padding: 2rem;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+  h1 { font-size: 1.75rem; font-weight: 700; color: #111827; }
+  h2 { font-size: 1.35rem; font-weight: 600; color: #111827; margin-bottom: 1rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem; }
+
+  .header {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .header-meta { font-size: 0.875rem; color: #6b7280; }
+
+  /* Summary table */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .summary-item {
+    background: #fff;
+    border-radius: 10px;
+    padding: 1.25rem;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .summary-item .value { font-size: 2rem; font-weight: 700; line-height: 1.2; }
+  .summary-item .label { font-size: 0.75rem; color: #6b7280; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.25rem; }
+  .summary-item.pass .value { color: #059669; }
+  .summary-item.fail .value { color: #dc2626; }
+  .summary-item.bug .value { color: #d97706; }
+  .summary-item.total .value { color: #2563eb; }
+
+  .section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  /* Test cards */
+  .test-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .test-card:last-child { margin-bottom: 0; }
+  .test-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+  .test-card-title { font-weight: 600; font-size: 0.95rem; color: #111827; }
+  .test-card-body { font-size: 0.875rem; color: #4b5563; }
+  .test-card-body p { margin-bottom: 0.35rem; }
+  .test-card-body ul { padding-left: 1.25rem; margin-bottom: 0.35rem; }
+  .test-card-body li { margin-bottom: 0.2rem; }
+  .test-card-body code { background: #f3f4f6; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.8rem; }
+
+  .screenshot { margin-top: 0.75rem; }
+  .screenshot img { max-width: 100%; border-radius: 8px; border: 1px solid #e5e7eb; }
+
+  /* Badges */
+  .badge {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 9999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .badge-pass { background: #d1fae5; color: #065f46; }
+  .badge-fail { background: #fee2e2; color: #991b1b; }
+  .badge-bug { background: #fef3c7; color: #92400e; }
+
+  /* Print */
+  @media print {
+    body { background: #fff; padding: 0.5rem; }
+    .section, .header { box-shadow: none; border: 1px solid #e5e7eb; }
+    .screenshot img { max-height: 300px; object-fit: contain; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- Header -->
+<div class="header">
+  <div>
+    <h1>Memberships Feature UAT Report</h1>
+    <div class="header-meta">Merchant: Chai &amp; Co &bull; Environment: localhost:5174</div>
+  </div>
+  <div class="header-meta" style="text-align:right;">
+    <strong>Date:</strong> 23 March 2026<br>
+    <strong>Tester:</strong> Automated (Claude + Chrome DevTools)
+  </div>
+</div>
+
+<!-- Summary -->
+<div class="summary-grid">
+  <div class="summary-item total"><div class="value">7</div><div class="label">Total Tests</div></div>
+  <div class="summary-item pass"><div class="value">7</div><div class="label">Passed</div></div>
+  <div class="summary-item fail"><div class="value">0</div><div class="label">Failed</div></div>
+  <div class="summary-item bug"><div class="value">0</div><div class="label">Bugs Found</div></div>
+</div>
+
+<!-- ============================================================ -->
+<!-- MERCHANT ADMIN - MEMBERSHIPS -->
+<!-- ============================================================ -->
+<div class="section">
+  <h2>Merchant Admin &mdash; Memberships (/admin/memberships)</h2>
+
+  <!-- Test 1: Subscribers List -->
+  <div class="test-card">
+    <div class="test-card-header">
+      <span class="test-card-title">T1 &ndash; Subscribers List</span>
+      <span class="badge badge-pass">PASS</span>
+    </div>
+    <div class="test-card-body">
+      <p><strong>Steps:</strong> Navigate to <code>/admin/memberships</code>. Verify the Subscribers tab is selected by default and the subscriber table renders.</p>
+      <p><strong>Expected:</strong> Table with columns: Customer ID, Tier, Status, Started, Expires, Actions.</p>
+      <p><strong>Actual:</strong> Subscribers tab active. Table displays all expected columns with membership rows listing Customer IDs, Gold tier, active status, start dates, expiry dates, and a Cancel action button per row.</p>
+      <div class="screenshot"><img src="memberships-uat/01-admin-memberships.png" alt="Memberships page showing Subscribers tab with customer list"></div>
+    </div>
+  </div>
+
+  <!-- Test 2: Active Memberships -->
+  <div class="test-card">
+    <div class="test-card-header">
+      <span class="test-card-title">T2 &ndash; Active Memberships</span>
+      <span class="badge badge-pass">PASS</span>
+    </div>
+    <div class="test-card-body">
+      <p><strong>Steps:</strong> Inspect membership rows for status, tier, and date values.</p>
+      <p><strong>Expected:</strong> Memberships display as "active" status with Gold tier and valid date ranges.</p>
+      <p><strong>Actual:</strong> All listed memberships show status "active", tier "Gold", Started date of 22 Jan 2026, and Expires date of 22 Jan 2027. Data is consistent and correctly formatted.</p>
+      <div class="screenshot"><img src="memberships-uat/01-admin-memberships.png" alt="Active memberships with Gold tier and valid dates"></div>
+    </div>
+  </div>
+
+  <!-- Test 3: Cancel Action -->
+  <div class="test-card">
+    <div class="test-card-header">
+      <span class="test-card-title">T3 &ndash; Cancel Action</span>
+      <span class="badge badge-pass">PASS</span>
+    </div>
+    <div class="test-card-body">
+      <p><strong>Steps:</strong> Verify presence of Cancel button for each active membership row.</p>
+      <p><strong>Expected:</strong> Each active membership row has a Cancel action button.</p>
+      <p><strong>Actual:</strong> Cancel button is present and visible in the Actions column for every active membership entry.</p>
+      <div class="screenshot"><img src="memberships-uat/01-admin-memberships.png" alt="Cancel button visible in each membership row"></div>
+    </div>
+  </div>
+
+  <!-- Test 4: 1-Year Expiry -->
+  <div class="test-card">
+    <div class="test-card-header">
+      <span class="test-card-title">T4 &ndash; 1-Year Expiry Validation</span>
+      <span class="badge badge-pass">PASS</span>
+    </div>
+    <div class="test-card-body">
+      <p><strong>Steps:</strong> Check the page subtitle and verify that expiry dates are exactly 1 year from the start date for each membership.</p>
+      <p><strong>Expected:</strong> Subtitle reads "Assign loyalty tiers to customers with a 1-year expiry". Each membership&rsquo;s Expires date is exactly 1 year after its Started date.</p>
+      <p><strong>Actual:</strong> Subtitle text confirmed. All memberships show Started: 22 Jan 2026 and Expires: 22 Jan 2027 &mdash; exactly a 1-year duration.</p>
+    </div>
+  </div>
+
+  <!-- Test 5: Assign Membership Tab -->
+  <div class="test-card">
+    <div class="test-card-header">
+      <span class="test-card-title">T5 &ndash; Assign Membership Tab</span>
+      <span class="badge badge-pass">PASS</span>
+    </div>
+    <div class="test-card-body">
+      <p><strong>Steps:</strong> Click the "Assign Membership" tab. Verify the phone input form renders.</p>
+      <p><strong>Expected:</strong> Form with a Customer Phone input field (10-digit) and a Lookup button.</p>
+      <p><strong>Actual:</strong> Assign Membership tab renders a phone input field accepting 10-digit numbers and a "Lookup" button. Form is clean and ready for input.</p>
+      <div class="screenshot"><img src="memberships-uat/03-admin-memberships-assign.png" alt="Assign Membership tab with phone input and Lookup button"></div>
+    </div>
+  </div>
+
+  <!-- Test 6: Customer Lookup -->
+  <div class="test-card">
+    <div class="test-card-header">
+      <span class="test-card-title">T6 &ndash; Customer Lookup</span>
+      <span class="badge badge-pass">PASS</span>
+    </div>
+    <div class="test-card-body">
+      <p><strong>Steps:</strong> Enter phone number <code>9001000001</code> in the Customer Phone input. Click "Lookup".</p>
+      <p><strong>Expected:</strong> Customer details displayed with name and current tier.</p>
+      <p><strong>Actual:</strong> Shows "Customer: Ananya Iyer (current: Platinum)". Customer was successfully resolved from the phone number and their current loyalty tier is displayed.</p>
+      <div class="screenshot"><img src="memberships-uat/04-admin-memberships-lookup.png" alt="Customer lookup result showing Ananya Iyer with Platinum tier"></div>
+    </div>
+  </div>
+
+  <!-- Test 7: Highest Tier Validation -->
+  <div class="test-card">
+    <div class="test-card-header">
+      <span class="test-card-title">T7 &ndash; Highest Tier Validation</span>
+      <span class="badge badge-pass">PASS</span>
+    </div>
+    <div class="test-card-body">
+      <p><strong>Steps:</strong> After looking up Ananya Iyer (Platinum tier), verify the system handles the edge case where the customer is already at the highest tier.</p>
+      <p><strong>Expected:</strong> Warning message indicating no upgrade is available for the highest-tier customer.</p>
+      <p><strong>Actual:</strong> Displays warning: "Customer is already at the highest tier. No membership upgrade available." No tier assignment form is shown, preventing invalid operations. Proper edge case handling confirmed.</p>
+      <div class="screenshot"><img src="memberships-uat/04-admin-memberships-lookup.png" alt="Highest tier warning for Platinum customer"></div>
+    </div>
+  </div>
+
+</div>
+
+</div>
+</body>
+</html>

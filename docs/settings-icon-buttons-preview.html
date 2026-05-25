@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Customer Links — Icon Buttons</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f3f4f6;
+    color: #1a1a2e;
+    padding: 48px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .design-label {
+    text-align: center;
+    color: #9ca3af;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 32px;
+    font-weight: 500;
+  }
+  .container {
+    max-width: 380px;
+    margin: 0 auto;
+  }
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 12px;
+  }
+  .links-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .link-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    transition: border-color 0.2s;
+    background: #ffffff;
+  }
+  .link-row:hover {
+    border-color: #c7d2fe;
+  }
+  .link-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .link-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    background: #f3f4f6;
+    flex-shrink: 0;
+  }
+  .link-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a1a2e;
+  }
+  .link-path {
+    font-size: 11px;
+    color: #9ca3af;
+    font-family: 'SF Mono', monospace;
+    margin-top: 1px;
+  }
+  .link-actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .icon-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    background: none;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    color: #9ca3af;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .icon-btn:hover {
+    color: #6366f1;
+    border-color: #6366f1;
+  }
+
+  @media print {
+    body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="design-label">Customer Links — Icon Buttons (matching gift card style)</div>
+
+<div class="container">
+  <div class="section-label">Customer Links</div>
+  <div class="links-list">
+    <div class="link-row">
+      <div class="link-left">
+        <div class="link-icon">💰</div>
+        <div>
+          <div class="link-name">Rewards Hub</div>
+          <div class="link-path">/s/desidrapes</div>
+        </div>
+      </div>
+      <div class="link-actions">
+        <!-- Copy icon -->
+        <button class="icon-btn" title="Copy link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+          </svg>
+        </button>
+        <!-- Open icon -->
+        <button class="icon-btn" title="Open in new tab">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+            <polyline points="15 3 21 3 21 9"/>
+            <line x1="10" y1="14" x2="21" y2="3"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="link-row">
+      <div class="link-left">
+        <div class="link-icon">🎁</div>
+        <div>
+          <div class="link-name">Gift Card Check</div>
+          <div class="link-path">/s/desidrapes/gift-cards/check</div>
+        </div>
+      </div>
+      <div class="link-actions">
+        <button class="icon-btn" title="Copy link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+          </svg>
+        </button>
+        <button class="icon-btn" title="Open in new tab">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+            <polyline points="15 3 21 3 21 9"/>
+            <line x1="10" y1="14" x2="21" y2="3"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="link-row">
+      <div class="link-left">
+        <div class="link-icon">🔗</div>
+        <div>
+          <div class="link-name">Referral Program</div>
+          <div class="link-path">/s/desidrapes/refer</div>
+        </div>
+      </div>
+      <div class="link-actions">
+        <button class="icon-btn" title="Copy link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+          </svg>
+        </button>
+        <button class="icon-btn" title="Open in new tab">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+            <polyline points="15 3 21 3 21 9"/>
+            <line x1="10" y1="14" x2="21" y2="3"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

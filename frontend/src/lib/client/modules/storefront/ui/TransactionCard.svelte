@@ -84,10 +84,6 @@
     padding: 14px 0;
   }
 
-  .tx-item + .tx-item {
-    border-top: 1px solid #2a2d3a;
-  }
-
   .tx-indicator {
     width: 4px;
     height: 32px;

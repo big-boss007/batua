@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Views — Dual Unit Designs</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f0f1f3;
+    color: #1a1a2e;
+    padding: 40px 32px;
+    font-size: 14px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1 { text-align: center; font-size: 24px; font-weight: 700; margin-bottom: 6px; color: #1a1a2e; }
+  .page-sub { text-align: center; font-size: 13px; color: #6b7280; margin-bottom: 48px; }
+
+  .section { margin-bottom: 56px; }
+  .section-title {
+    font-size: 14px; font-weight: 700; color: #7c6aff;
+    text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 24px; padding-bottom: 12px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .compare { display: flex; gap: 28px; justify-content: center; flex-wrap: wrap; }
+  .panel {
+    flex: 1; min-width: 460px; max-width: 620px;
+    background: #ffffff; border-radius: 12px; overflow: hidden;
+    border: 1px solid #e5e7eb; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  }
+  .panel-label {
+    padding: 10px 20px; font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 1px; text-align: center;
+  }
+  .pl-before { background: #fef2f2; color: #991b1b; border-bottom: 1px solid #fecaca; }
+  .pl-after { background: #dcfce7; color: #166534; border-bottom: 1px solid #bbf7d0; }
+  .panel-body { padding: 20px; }
+
+  /* Admin card */
+  .card {
+    background: #f8f9fa; border: 1px solid #e5e7eb;
+    border-radius: 12px; padding: 16px 20px; margin-bottom: 12px;
+  }
+  .card-title {
+    font-size: 14px; font-weight: 600; color: #1a1a2e;
+    margin-bottom: 12px;
+  }
+
+  /* Metrics grid */
+  .metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .metric {
+    background: #ffffff; border: 1px solid #e5e7eb;
+    border-radius: 12px; padding: 16px 18px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  }
+  .metric:hover { box-shadow: 0 4px 6px rgba(0,0,0,0.07); }
+  .metric-value { font-size: 20px; font-weight: 700; color: #1a1a2e; margin-bottom: 4px; }
+  .metric-sub { font-size: 11px; color: #6b7280; margin-top: 2px; }
+  .metric-label { font-size: 13px; color: #6b7280; font-weight: 500; }
+
+  /* Table */
+  .tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .tbl th {
+    text-align: left; padding: 10px 12px; color: #6b7280;
+    border-bottom: 1px solid #e5e7eb; font-weight: 600;
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em;
+    background: #f8f9fa;
+  }
+  .tbl td { padding: 10px 12px; border-bottom: 1px solid #f0f1f3; }
+  .tbl tr:last-child td { border-bottom: none; }
+  .mono { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 13px; }
+
+  /* Colors */
+  .c-success { color: #10b981; }
+  .c-error { color: #ef4444; }
+  .c-primary { color: #7c6aff; }
+  .c-muted { color: #6b7280; }
+  .c-warning { color: #f59e0b; }
+  .c-text { color: #1a1a2e; }
+
+  /* Pills — matching app.css exactly */
+  .pill {
+    display: inline-block; padding: 4px 10px; border-radius: 9999px;
+    font-size: 12px; font-weight: 500;
+  }
+  .pill-success { background: #dcfce7; color: #166534; }
+  .pill-error { background: #fef2f2; color: #991b1b; }
+  .pill-warning { background: #fefce8; color: #854d0e; }
+  .pill-info { background: #eff6ff; color: #1e40af; }
+  .pill-neutral { background: #f0f1f3; color: #6b7280; }
+  .pill-points { background: #f0fdf4; color: #166534; font-size: 10px; font-weight: 600; padding: 2px 8px; }
+  .pill-cash { background: #faf5ff; color: #6b21a8; font-size: 10px; font-weight: 600; padding: 2px 8px; }
+
+  /* Form */
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .form-field { display: flex; flex-direction: column; gap: 4px; }
+  .form-label { font-size: 13px; color: #6b7280; font-weight: 500; }
+  .form-input {
+    background: #f8f9fa; border: 1px solid #e5e7eb;
+    border-radius: 8px; padding: 10px 14px; color: #1a1a2e;
+    font-size: 14px; font-family: inherit;
+  }
+  .form-input:focus { border-color: #7c6aff; outline: none; }
+  .form-hint { font-size: 11px; color: #6b7280; }
+  .form-btn {
+    background: #7c6aff; border: none; border-radius: 8px;
+    padding: 10px 20px; color: #fff; font-size: 14px; font-weight: 500;
+    margin-top: 8px; cursor: pointer;
+  }
+  .form-btn:hover { background: #6b5ce7; }
+
+  .toggle-row {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 14px; color: #1a1a2e; margin-bottom: 10px;
+  }
+  .toggle-dot {
+    width: 36px; height: 20px; border-radius: 10px;
+    background: #7c6aff; position: relative;
+  }
+  .toggle-dot::after {
+    content: ''; position: absolute; right: 3px; top: 3px;
+    width: 14px; height: 14px; border-radius: 50%; background: #fff;
+  }
+
+  /* Balance */
+  .bal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .bal-item { display: flex; flex-direction: column; gap: 2px; }
+  .bal-label { font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; }
+  .bal-val { font-size: 20px; font-weight: 700; color: #1a1a2e; }
+
+  /* Bucket rows */
+  .bucket-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 0; border-bottom: 1px solid #f0f1f3;
+  }
+  .bucket-row:last-child { border-bottom: none; }
+  .bucket-name { font-size: 13px; font-weight: 500; color: #1a1a2e; }
+  .bucket-vals { text-align: right; font-size: 13px; color: #1a1a2e; }
+
+  /* Annotations */
+  .annotation {
+    margin-top: 12px; padding: 12px 16px;
+    background: #f5f3ff; border: 1px solid #e0d9ff;
+    border-radius: 8px; font-size: 12px; color: #5b21b6; line-height: 1.5;
+  }
+  .change-tag {
+    display: inline-block; padding: 2px 6px; border-radius: 4px;
+    font-size: 10px; font-weight: 600; text-transform: uppercase;
+    background: #dcfce7; color: #166534; margin-right: 4px;
+  }
+  .no-change-tag {
+    display: inline-block; padding: 2px 6px; border-radius: 4px;
+    font-size: 10px; font-weight: 600; text-transform: uppercase;
+    background: #f0f1f3; color: #6b7280; margin-right: 4px;
+  }
+
+  /* Config preview */
+  .config-preview {
+    background: #f5f3ff; border: 1px solid #e0d9ff;
+    border-radius: 12px; padding: 20px; margin-bottom: 12px;
+  }
+  .config-title { font-size: 14px; font-weight: 600; color: #7c6aff; margin-bottom: 14px; }
+</style>
+</head>
+<body>
+
+<h1>Admin Views — Dual Unit Changes</h1>
+<p class="page-sub">Before → After for every admin area. Merchant: Chai & Co · Points: "Stars" · 4★ = ₹1</p>
+
+<!-- ==================== 1. DASHBOARD ==================== -->
+<div class="section">
+  <div class="section-title">1. Dashboard Metrics</div>
+  <div class="compare">
+    <div class="panel">
+      <div class="panel-label pl-before">Current</div>
+      <div class="panel-body">
+        <div class="metrics-grid">
+          <div class="metric"><div class="metric-value">245</div><div class="metric-label">Active Customers</div></div>
+          <div class="metric"><div class="metric-value">₹48,500</div><div class="metric-label">Active Credits</div></div>
+          <div class="metric"><div class="metric-value">₹1,25,000</div><div class="metric-label">Total Earned</div></div>
+          <div class="metric"><div class="metric-value">₹32,000</div><div class="metric-label">Total Redeemed</div></div>
+          <div class="metric"><div class="metric-value">₹8,200</div><div class="metric-label">COD Pending</div></div>
+          <div class="metric"><div class="metric-value">187</div><div class="metric-label">Redemptions</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-label pl-after">New</div>
+      <div class="panel-body">
+        <div class="metrics-grid">
+          <div class="metric"><div class="metric-value">245</div><div class="metric-label">Active Customers</div></div>
+          <div class="metric">
+            <div class="metric-value c-success">1,94,000 ★</div>
+            <div class="metric-sub c-primary">≈ ₹48,500</div>
+            <div class="metric-label">Active Stars</div>
+          </div>
+          <div class="metric">
+            <div class="metric-value">5,00,000 ★</div>
+            <div class="metric-sub c-muted">≈ ₹1,25,000</div>
+            <div class="metric-label">Total Earned</div>
+          </div>
+          <div class="metric">
+            <div class="metric-value">1,28,000 ★</div>
+            <div class="metric-sub c-muted">≈ ₹32,000</div>
+            <div class="metric-label">Total Redeemed</div>
+          </div>
+          <div class="metric">
+            <div class="metric-value c-warning">32,800 ★</div>
+            <div class="metric-sub">≈ ₹8,200 pending</div>
+            <div class="metric-label">COD Pending</div>
+          </div>
+          <div class="metric"><div class="metric-value">187</div><div class="metric-label">Redemptions</div></div>
+        </div>
+        <div class="annotation"><span class="change-tag">change</span> Points metrics show ★ primary with ₹ equivalent below. Counts unchanged.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 2. TRANSACTIONS TABLE ==================== -->
+<div class="section">
+  <div class="section-title">2. Transactions Table</div>
+  <div class="compare">
+    <div class="panel">
+      <div class="panel-label pl-before">Current</div>
+      <div class="panel-body">
+        <table class="tbl">
+          <thead><tr><th>Date</th><th>Bucket</th><th>Movement</th><th>Amount</th><th>Currency Equiv.</th><th>State</th></tr></thead>
+          <tbody>
+            <tr><td class="c-muted">22 Mar</td><td>Earned Credit</td><td><span class="pill pill-success">In</span></td><td class="mono">80</td><td class="mono">₹80.00</td><td><span class="pill pill-success">Active</span></td></tr>
+            <tr><td class="c-muted">17 Mar</td><td>Earned Credit</td><td><span class="pill pill-error">Out</span></td><td class="mono">75</td><td class="mono">₹75.00</td><td><span class="pill pill-success">Active</span></td></tr>
+            <tr><td class="c-muted">12 Mar</td><td>Gift Card</td><td><span class="pill pill-success">In</span></td><td class="mono">500</td><td class="mono">₹500.00</td><td><span class="pill pill-success">Active</span></td></tr>
+            <tr><td class="c-muted">10 Mar</td><td>Referral Reward</td><td><span class="pill pill-success">In</span></td><td class="mono">100</td><td class="mono">₹100.00</td><td><span class="pill pill-success">Active</span></td></tr>
+          </tbody>
+        </table>
+        <div class="annotation">Both "Amount" and "Currency Equiv." show same number (rate=1). No distinction between points and cash buckets.</div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-label pl-after">New</div>
+      <div class="panel-body">
+        <table class="tbl">
+          <thead><tr><th>Date</th><th>Bucket</th><th>Movement</th><th>Points / Cash</th><th>₹ Value</th><th>State</th></tr></thead>
+          <tbody>
+            <tr><td class="c-muted">22 Mar</td><td>Earned Credit</td><td><span class="pill pill-success">In</span></td><td class="mono c-success">+320 ★</td><td class="mono c-muted">₹80</td><td><span class="pill pill-success">Active</span></td></tr>
+            <tr><td class="c-muted">17 Mar</td><td>Earned Credit</td><td><span class="pill pill-error">Out</span></td><td class="mono c-error">-300 ★</td><td class="mono c-muted">₹75</td><td><span class="pill pill-success">Active</span></td></tr>
+            <tr><td class="c-muted">12 Mar</td><td>Gift Card</td><td><span class="pill pill-success">In</span></td><td class="mono c-primary">+₹500</td><td class="mono c-muted">₹500</td><td><span class="pill pill-success">Active</span></td></tr>
+            <tr><td class="c-muted">10 Mar</td><td>Referral Reward</td><td><span class="pill pill-success">In</span></td><td class="mono c-success">+400 ★</td><td class="mono c-muted">₹100</td><td><span class="pill pill-success">Active</span></td></tr>
+          </tbody>
+        </table>
+        <div class="annotation"><span class="change-tag">change</span> "Amount" → "Points / Cash" shows native unit. Points buckets show ★, cash buckets show ₹. "₹ Value" always rupees.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 3. CUSTOMER WALLET CARD ==================== -->
+<div class="section">
+  <div class="section-title">3. Customer Detail — Wallet Card</div>
+  <div class="compare">
+    <div class="panel">
+      <div class="panel-label pl-before">Current</div>
+      <div class="panel-body">
+        <div class="card">
+          <div class="card-title">Wallet</div>
+          <div class="bal-grid">
+            <div class="bal-item"><div class="bal-label">Displayed Balance</div><div class="bal-val">₹1,150.00</div></div>
+            <div class="bal-item"><div class="bal-label">Spendable Balance</div><div class="bal-val c-primary">₹950.00</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Bucket Breakdown</div>
+          <div class="bucket-row"><span class="bucket-name">Earned Credit</span><span class="bucket-vals">₹350 displayed / ₹350 spendable</span></div>
+          <div class="bucket-row"><span class="bucket-name">Gift Card</span><span class="bucket-vals">₹500 displayed / ₹500 spendable</span></div>
+          <div class="bucket-row"><span class="bucket-name">Referral Reward</span><span class="bucket-vals">₹100 displayed / ₹100 spendable</span></div>
+          <div class="bucket-row"><span class="bucket-name">COD Pending</span><span class="bucket-vals c-warning">₹200 displayed / ₹0 spendable</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-label pl-after">New</div>
+      <div class="panel-body">
+        <div class="card">
+          <div class="card-title">Wallet</div>
+          <div class="bal-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+            <div class="bal-item"><div class="bal-label">Stars Balance</div><div class="bal-val c-success">2,600 ★</div><div style="font-size:11px; color:#6b7280;">≈ ₹650</div></div>
+            <div class="bal-item"><div class="bal-label">Cash Balance</div><div class="bal-val c-primary">₹500</div><div style="font-size:11px; color:#6b7280;">gift cards</div></div>
+            <div class="bal-item"><div class="bal-label">Total ₹ Value</div><div class="bal-val">₹1,150</div><div style="font-size:11px; color:#6b7280;">redeemable</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Bucket Breakdown</div>
+          <div class="bucket-row">
+            <span class="bucket-name">Earned Credit <span class="pill-points" style="margin-left:6px;">POINTS</span></span>
+            <span class="bucket-vals">1,400 ★ <span class="c-muted">/ ₹350</span></span>
+          </div>
+          <div class="bucket-row">
+            <span class="bucket-name">Gift Card <span class="pill-cash" style="margin-left:6px;">CASH</span></span>
+            <span class="bucket-vals c-primary">₹500</span>
+          </div>
+          <div class="bucket-row">
+            <span class="bucket-name">Referral Reward <span class="pill-points" style="margin-left:6px;">POINTS</span></span>
+            <span class="bucket-vals">400 ★ <span class="c-muted">/ ₹100</span></span>
+          </div>
+          <div class="bucket-row">
+            <span class="bucket-name">COD Pending <span class="pill pill-warning" style="font-size:10px; padding:2px 8px; margin-left:6px;">PENDING</span></span>
+            <span class="bucket-vals c-warning">800 ★ <span class="c-muted">(held)</span></span>
+          </div>
+        </div>
+        <div class="annotation"><span class="change-tag">change</span> 3-column summary: Stars / Cash / Total. Buckets tagged POINTS or CASH. Points show ★ with ₹ hint.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 4. ANALYTICS ==================== -->
+<div class="section">
+  <div class="section-title">4. Analytics Overview</div>
+  <div class="compare">
+    <div class="panel">
+      <div class="panel-label pl-before">Current</div>
+      <div class="panel-body">
+        <div class="metrics-grid" style="grid-template-columns: repeat(4, 1fr);">
+          <div class="metric"><div class="metric-value">523</div><div class="metric-label">Total Wallets</div></div>
+          <div class="metric"><div class="metric-value">₹48,500</div><div class="metric-label">Active Credits</div></div>
+          <div class="metric"><div class="metric-value">₹32,000</div><div class="metric-label">Total Redeemed</div></div>
+          <div class="metric"><div class="metric-value">₹5,200</div><div class="metric-label">Total Expired</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-label pl-after">New</div>
+      <div class="panel-body">
+        <div class="metrics-grid" style="grid-template-columns: repeat(4, 1fr);">
+          <div class="metric"><div class="metric-value">523</div><div class="metric-label">Total Wallets</div></div>
+          <div class="metric"><div class="metric-value c-success">1,94,000 ★</div><div class="metric-sub c-primary">≈ ₹48,500</div><div class="metric-label">Active Stars</div></div>
+          <div class="metric"><div class="metric-value">1,28,000 ★</div><div class="metric-sub c-muted">≈ ₹32,000</div><div class="metric-label">Total Redeemed</div></div>
+          <div class="metric"><div class="metric-value c-muted">20,800 ★</div><div class="metric-sub">≈ ₹5,200</div><div class="metric-label">Total Expired</div></div>
+        </div>
+        <div class="annotation"><span class="change-tag">change</span> Same card layout, ★ primary with ₹ below. "Active Credits" → "Active Stars".</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 5. SETTINGS — POINTS CONFIG ==================== -->
+<div class="section">
+  <div class="section-title">5. Settings — Points Configuration (NEW)</div>
+  <div class="compare">
+    <div class="panel" style="max-width: 600px;">
+      <div class="panel-label pl-after">New Section on Settings Page</div>
+      <div class="panel-body">
+        <div class="config-preview">
+          <div class="config-title">Points Configuration</div>
+          <div class="form-row">
+            <div class="form-field">
+              <div class="form-label">Points Name</div>
+              <div class="form-input">Stars</div>
+              <div class="form-hint">Customers see: "1,400 Stars"</div>
+            </div>
+            <div class="form-field">
+              <div class="form-label">Points Icon</div>
+              <div class="form-input">★</div>
+              <div class="form-hint">Inline display: "320 ★"</div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <div class="form-label">Points to ₹ Conversion Rate</div>
+              <div class="form-input">0.25</div>
+              <div class="form-hint">1 Star = ₹0.25 → 4 Stars = ₹1</div>
+            </div>
+            <div class="form-field">
+              <div class="form-label">Preview</div>
+              <div style="padding: 10px 14px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; font-size: 13px; color: #1a1a2e;">
+                Customer earns <strong style="color:#10b981;">400 ★</strong> on ₹1,000 order<br>
+                <span style="font-size: 11px; color: #6b7280;">worth ₹100 at checkout</span>
+              </div>
+            </div>
+          </div>
+          <button class="form-btn">Save Configuration</button>
+        </div>
+        <div class="annotation"><span class="change-tag">new</span> New section on Settings page. Merchant names their points, picks an icon, sets conversion rate. Live preview shows customer impact.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 6. WALLET POLICY FORM ==================== -->
+<div class="section">
+  <div class="section-title">6. Wallet Policy Form</div>
+  <div class="compare">
+    <div class="panel">
+      <div class="panel-label pl-before">Current</div>
+      <div class="panel-body">
+        <div class="card">
+          <div class="card-title" style="text-transform: capitalize;">earned_credit</div>
+          <div class="form-row">
+            <div class="form-field"><div class="form-label">Min Redemption (₹)</div><div class="form-input">10</div></div>
+            <div class="form-field"><div class="form-label">Step Size (₹)</div><div class="form-input">1</div></div>
+          </div>
+          <div class="form-row">
+            <div class="form-field"><div class="form-label">Max Per Order (%)</div><div class="form-input">50</div></div>
+            <div class="form-field"><div class="form-label">Max Per Order Fixed (₹)</div><div class="form-input">500</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-label pl-after">New</div>
+      <div class="panel-body">
+        <div class="card">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px;">
+            <div class="card-title" style="margin-bottom: 0;">Earned Credit</div>
+            <span class="pill-points">POINTS BUCKET</span>
+          </div>
+          <div class="form-row">
+            <div class="form-field"><div class="form-label">Min Redemption (★)</div><div class="form-input">40</div><div class="form-hint">= ₹10 at current rate</div></div>
+            <div class="form-field"><div class="form-label">Step Size (★)</div><div class="form-input">4</div><div class="form-hint">= ₹1 at current rate</div></div>
+          </div>
+          <div class="form-row">
+            <div class="form-field"><div class="form-label">Max Per Order (%)</div><div class="form-input">50</div></div>
+            <div class="form-field"><div class="form-label">Max Per Order Fixed (₹)</div><div class="form-input">500</div><div class="form-hint">always in ₹ (checkout currency)</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px;">
+            <div class="card-title" style="margin-bottom: 0;">Gift Card</div>
+            <span class="pill-cash">CASH BUCKET</span>
+          </div>
+          <div class="form-row">
+            <div class="form-field"><div class="form-label">Min Redemption (₹)</div><div class="form-input" style="color: #6b7280;">—</div></div>
+            <div class="form-field"><div class="form-label">Max Per Order (%)</div><div class="form-input">100</div></div>
+          </div>
+        </div>
+        <div class="annotation"><span class="change-tag">change</span> Points buckets use ★ in labels with ₹ conversion hint. Cash buckets stay ₹. Tagged POINTS or CASH.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 7. REFERRAL FORM ==================== -->
+<div class="section">
+  <div class="section-title">7. Referral Program Form</div>
+  <div class="compare">
+    <div class="panel">
+      <div class="panel-label pl-before">Current</div>
+      <div class="panel-body">
+        <div class="form-row">
+          <div class="form-field"><div class="form-label">Referrer Reward (₹)</div><div class="form-input">100</div></div>
+          <div class="form-field"><div class="form-label">Referee Reward (₹)</div><div class="form-input">50</div></div>
+        </div>
+        <div class="toggle-row"><div class="toggle-dot"></div> Program active</div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-label pl-after">New</div>
+      <div class="panel-body">
+        <div class="form-row">
+          <div class="form-field"><div class="form-label">Referrer Reward (★)</div><div class="form-input">400</div><div class="form-hint">= ₹100 · credited as Referral Reward</div></div>
+          <div class="form-field"><div class="form-label">Referee Reward (★)</div><div class="form-input">200</div><div class="form-hint">= ₹50 · credited as Referral Reward</div></div>
+        </div>
+        <div class="toggle-row"><div class="toggle-dot"></div> Program active</div>
+        <div class="annotation"><span class="change-tag">change</span> Labels: (₹) → (★). Hint shows ₹ equivalent. Rewards go to points bucket.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 8. CUSTOMER TRANSACTIONS ==================== -->
+<div class="section">
+  <div class="section-title">8. Customer Detail — Recent Transactions</div>
+  <div class="compare">
+    <div class="panel">
+      <div class="panel-label pl-before">Current</div>
+      <div class="panel-body">
+        <div class="card">
+          <div class="card-title">Recent Transactions</div>
+          <div class="bucket-row"><div><div style="font-size:13px; font-weight:500;">Earned</div><div style="font-size:11px; color:#6b7280;">Earned Credit</div></div><div class="mono c-success">+₹80.00</div></div>
+          <div class="bucket-row"><div><div style="font-size:13px; font-weight:500;">Redeemed</div><div style="font-size:11px; color:#6b7280;">Earned Credit</div></div><div class="mono c-error">-₹75.00</div></div>
+          <div class="bucket-row"><div><div style="font-size:13px; font-weight:500;">Gift Card Claimed</div><div style="font-size:11px; color:#6b7280;">Gift Card</div></div><div class="mono c-success">+₹500.00</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-label pl-after">New</div>
+      <div class="panel-body">
+        <div class="card">
+          <div class="card-title">Recent Transactions</div>
+          <div class="bucket-row"><div><div style="font-size:13px; font-weight:500;">Earned</div><div style="font-size:11px; color:#6b7280;">Earned Credit</div></div><div style="text-align:right;"><div class="mono c-success">+320 ★</div><div style="font-size:11px; color:#6b7280;">≈ ₹80</div></div></div>
+          <div class="bucket-row"><div><div style="font-size:13px; font-weight:500;">Redeemed</div><div style="font-size:11px; color:#6b7280;">Earned Credit</div></div><div style="text-align:right;"><div class="mono c-error">-300 ★</div><div style="font-size:11px; color:#6b7280;">≈ ₹75</div></div></div>
+          <div class="bucket-row"><div><div style="font-size:13px; font-weight:500;">Gift Card Claimed</div><div style="font-size:11px; color:#6b7280;">Gift Card</div></div><div style="text-align:right;"><div class="mono c-primary">+₹500</div><div style="font-size:11px; color:#6b7280;">cash</div></div></div>
+        </div>
+        <div class="annotation"><span class="change-tag">change</span> Points → ★ with ₹ hint. Cash → ₹ with "cash" label. Same pattern as storefront.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 9. NO CHANGE AREAS ==================== -->
+<div class="section">
+  <div class="section-title">9. No Change Areas</div>
+  <div class="compare">
+    <div class="panel" style="max-width: 600px;">
+      <div class="panel-label" style="background: #f8f9fa; color: #6b7280; border-bottom: 1px solid #e5e7eb;">Unchanged</div>
+      <div class="panel-body">
+        <div class="card">
+          <div class="card-title">Gift Card Pages</div>
+          <table class="tbl">
+            <thead><tr><th>Code</th><th>Initial</th><th>Current</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">BRZE-ABCD-EFGH</td><td class="mono c-primary">₹500</td><td class="mono c-primary">₹500</td><td><span class="pill pill-success">Active</span></td></tr>
+              <tr><td class="mono">BRZE-2345-6789</td><td class="mono c-primary">₹250</td><td class="mono c-primary">₹100</td><td><span class="pill pill-info">Claimed</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card">
+          <div class="card-title">Redemption History</div>
+          <table class="tbl">
+            <thead><tr><th>Order</th><th>Requested</th><th>Applied</th><th>State</th></tr></thead>
+            <tbody>
+              <tr><td class="c-muted">RED-001</td><td class="mono">₹150</td><td class="mono c-success">₹150</td><td><span class="pill pill-success">Completed</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="annotation">
+          <span class="no-change-tag">no change</span> <strong>Gift cards</strong> — money bucket, always ₹<br>
+          <span class="no-change-tag">no change</span> <strong>Gift card issue/bulk forms</strong> — "Amount (₹)" stays<br>
+          <span class="no-change-tag">no change</span> <strong>Redemption history</strong> — checkout operation, always ₹<br>
+          <span class="no-change-tag">no change</span> <strong>Platform admin</strong> — metadata only
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SUMMARY ==================== -->
+<div class="section">
+  <div class="section-title">Summary</div>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 900px; margin: 0 auto;">
+    <div class="card">
+      <div class="card-title" style="color: #10b981;">Changes (8 areas)</div>
+      <div style="font-size: 13px; line-height: 2.2; color: #6b7280;">
+        <span class="change-tag">1</span> Dashboard metrics → ★ primary + ₹ sub<br>
+        <span class="change-tag">2</span> Transactions table → "Points / Cash" column<br>
+        <span class="change-tag">3</span> Customer wallet card → Stars / Cash / Total<br>
+        <span class="change-tag">4</span> Analytics overview → ★ primary + ₹ sub<br>
+        <span class="change-tag">5</span> Settings → NEW points config section<br>
+        <span class="change-tag">6</span> Wallet policy form → ★ for points buckets<br>
+        <span class="change-tag">7</span> Referral form → (₹) → (★)<br>
+        <span class="change-tag">8</span> Customer transactions → native unit display<br>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="color: #6b7280;">No Change (4 areas)</div>
+      <div style="font-size: 13px; line-height: 2.2; color: #6b7280;">
+        <span class="no-change-tag">—</span> Gift card pages (always ₹)<br>
+        <span class="no-change-tag">—</span> Gift card issue/bulk forms (always ₹)<br>
+        <span class="no-change-tag">—</span> Redemption history (always ₹)<br>
+        <span class="no-change-tag">—</span> Platform/super-admin (metadata)<br>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

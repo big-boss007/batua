@@ -1,0 +1,1978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Batua — Report Export Designs (All Sections)</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #f8f9fa;
+    --surface-2: #f0f1f3;
+    --text: #1a1a2e;
+    --text-muted: #6b7280;
+    --text-dim: #9ca3af;
+    --primary: #7c6aff;
+    --primary-hover: #6b5ce7;
+    --primary-bg: rgba(124, 106, 255, 0.08);
+    --success: #10b981;
+    --success-bg: #dcfce7;
+    --success-text: #166534;
+    --warning: #f59e0b;
+    --warning-bg: #fefce8;
+    --warning-text: #854d0e;
+    --danger: #ef4444;
+    --danger-bg: #fef2f2;
+    --danger-text: #991b1b;
+    --info: #3b82f6;
+    --info-bg: #eff6ff;
+    --info-text: #1e40af;
+    --neutral-bg: #f0f1f3;
+    --neutral-text: #6b7280;
+    --border: #e5e7eb;
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-full: 9999px;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.07);
+    --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: var(--font-sans);
+    background: var(--surface);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 32px;
+  }
+
+  .page-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: var(--text);
+  }
+  .page-subtitle {
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-bottom: 32px;
+  }
+
+  /* Section nav */
+  .nav {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
+    padding: 4px;
+    background: var(--bg);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+  }
+  .nav-btn {
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 150ms ease;
+    font-family: var(--font-sans);
+  }
+  .nav-btn:hover { background: var(--surface); color: var(--text); }
+  .nav-btn.active { background: var(--primary); color: #ffffff; }
+
+  /* Section */
+  .section { display: none; margin-bottom: 48px; }
+  .section.active { display: block; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .section-title { font-size: 18px; font-weight: 600; color: var(--text); }
+  .section-desc { color: var(--text-muted); font-size: 13px; margin-top: 4px; }
+
+  /* State toggle pills */
+  .states-nav { display: flex; gap: 4px; margin-bottom: 20px; }
+  .state-btn {
+    padding: 6px 14px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 150ms ease;
+    font-family: var(--font-sans);
+  }
+  .state-btn:hover { border-color: var(--text-dim); color: var(--text); }
+  .state-btn.active { background: var(--primary-bg); border-color: var(--primary); color: var(--primary); }
+
+  .state-panel { display: none; }
+  .state-panel.active { display: block; }
+
+  /* Card */
+  .card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+  }
+  .card-title { font-size: 14px; font-weight: 600; margin-bottom: 16px; color: var(--text); }
+
+  /* Report trigger bar (inline on page) */
+  .report-bar {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow-sm);
+  }
+  .report-bar-left { display: flex; align-items: center; gap: 12px; }
+  .report-icon {
+    width: 40px; height: 40px;
+    border-radius: var(--radius-md);
+    background: var(--primary-bg);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .report-bar-title { font-size: 14px; font-weight: 600; color: var(--text); }
+  .report-bar-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 16px; border-radius: var(--radius-md);
+    border: none; font-size: 14px; font-weight: 500;
+    cursor: pointer; transition: all 150ms ease;
+    white-space: nowrap; font-family: var(--font-sans);
+  }
+  .btn-primary { background: var(--primary); color: #ffffff; }
+  .btn-primary:hover { background: var(--primary-hover); }
+  .btn-secondary { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: var(--surface); border-color: var(--text-dim); }
+  .btn-ghost { background: transparent; color: var(--text-muted); padding: 8px 12px; }
+  .btn-ghost:hover { color: var(--text); background: var(--surface-2); }
+  .btn-sm { padding: 6px 12px; font-size: 13px; }
+  .btn-disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+
+  /* Filters */
+  .filter-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; align-items: flex-end; }
+  .filter-group { display: flex; flex-direction: column; gap: 6px; }
+  .filter-group label {
+    font-size: 12px; font-weight: 600; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .filter-input, .filter-select {
+    padding: 8px 12px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-md); color: var(--text); font-size: 14px;
+    min-width: 160px; font-family: var(--font-sans);
+  }
+  .filter-input:focus, .filter-select:focus {
+    outline: none; border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(124, 106, 255, 0.15);
+  }
+  .filter-select option { background: var(--bg); }
+
+  /* Modal */
+  .modal-overlay {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    max-width: 560px;
+    margin: 0 auto;
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+  }
+  .modal-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface);
+  }
+  .modal-header h3 { font-size: 16px; font-weight: 600; color: var(--text); }
+  .modal-close {
+    width: 28px; height: 28px; border-radius: var(--radius-sm);
+    border: none; background: transparent; color: var(--text-muted);
+    cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .modal-close:hover { background: var(--surface-2); color: var(--text); }
+  .modal-body { padding: 24px; }
+  .modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    display: flex; justify-content: flex-end; gap: 8px;
+    background: var(--surface);
+  }
+
+  /* Progress bar */
+  .progress-bar {
+    height: 6px; background: var(--surface-2);
+    border-radius: var(--radius-full); overflow: hidden; margin: 12px 0;
+  }
+  .progress-fill {
+    height: 100%; background: var(--primary);
+    border-radius: var(--radius-full); transition: width 0.3s;
+  }
+  .progress-fill.complete { background: var(--success); }
+
+  /* Pills / Badges */
+  .pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 10px; border-radius: var(--radius-full);
+    font-size: 12px; font-weight: 500;
+  }
+  .pill-success { background: var(--success-bg); color: var(--success-text); }
+  .pill-warning { background: var(--warning-bg); color: var(--warning-text); }
+  .pill-error { background: var(--danger-bg); color: var(--danger-text); }
+  .pill-info { background: var(--info-bg); color: var(--info-text); }
+  .pill-neutral { background: var(--neutral-bg); color: var(--neutral-text); }
+
+  /* Report type selector */
+  .report-types { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+  .report-type-card {
+    padding: 16px; border-radius: var(--radius-md);
+    border: 1px solid var(--border); background: var(--bg);
+    cursor: pointer; transition: all 150ms ease;
+  }
+  .report-type-card:hover { border-color: var(--text-dim); box-shadow: var(--shadow-sm); }
+  .report-type-card.selected { border-color: var(--primary); background: var(--primary-bg); }
+  .report-type-card h4 { font-size: 13px; font-weight: 600; margin-bottom: 4px; color: var(--text); }
+  .report-type-card p { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+
+  /* Column chips */
+  .columns-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+  .col-chip {
+    padding: 6px 10px; border-radius: var(--radius-md);
+    border: 1px solid var(--border); background: var(--bg);
+    font-size: 12px; display: flex; align-items: center;
+    gap: 6px; cursor: pointer; transition: all 150ms ease; color: var(--text);
+  }
+  .col-chip:hover { border-color: var(--text-dim); }
+  .col-chip.selected { border-color: var(--primary); background: var(--primary-bg); color: var(--primary); }
+  .col-chip .check { font-size: 10px; }
+
+  /* Preview table */
+  .preview-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .preview-table th {
+    text-align: left; padding: 10px 16px;
+    background: var(--surface); color: var(--text-muted);
+    font-size: 12px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.04em;
+    border-bottom: 1px solid var(--border);
+  }
+  .preview-table td {
+    padding: 10px 16px; border-bottom: 1px solid var(--border); color: var(--text);
+  }
+  .preview-table tr:last-child td { border-bottom: none; }
+  .preview-table tr:hover td { background: var(--surface); }
+
+  /* Estimate row */
+  .estimate-row {
+    display: flex; align-items: center; gap: 16px;
+    padding: 12px 16px; background: var(--surface);
+    border-radius: var(--radius-md); margin: 16px 0; font-size: 13px;
+    border: 1px solid var(--border);
+  }
+  .estimate-row .label { color: var(--text-muted); }
+  .estimate-row .value { font-weight: 600; color: var(--text); }
+  .estimate-row .sep { color: var(--border); }
+
+  /* Generating spinner */
+  .generating-state { text-align: center; padding: 40px 24px; }
+  .spinner {
+    width: 36px; height: 36px;
+    border: 3px solid var(--surface-2); border-top-color: var(--primary);
+    border-radius: 50%; animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Complete state */
+  .complete-state { text-align: center; padding: 40px 24px; }
+  .check-circle {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: var(--success-bg); color: var(--success);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 16px; font-size: 24px;
+  }
+
+  /* Error state */
+  .error-state { text-align: center; padding: 40px 24px; }
+  .error-circle {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: var(--danger-bg); color: var(--danger);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 16px; font-size: 24px;
+  }
+
+  /* File card */
+  .file-card {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 16px; background: var(--surface);
+    border-radius: var(--radius-md); margin: 16px 0;
+    border: 1px solid var(--border);
+  }
+  .file-icon {
+    width: 36px; height: 36px; border-radius: var(--radius-md);
+    background: var(--success-bg); color: var(--success);
+    display: flex; align-items: center; justify-content: center; font-size: 16px;
+  }
+  .file-info .name { font-size: 13px; font-weight: 500; color: var(--text); }
+  .file-info .meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  /* Banner */
+  .banner {
+    padding: 12px 16px; border-radius: var(--radius-md);
+    font-size: 13px; display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+  }
+  .banner-info { background: var(--info-bg); color: var(--info-text); border: 1px solid #bfdbfe; }
+  .banner-warning { background: var(--warning-bg); color: var(--warning-text); border: 1px solid #fde68a; }
+  .banner-danger { background: var(--danger-bg); color: var(--danger-text); border: 1px solid #fecaca; }
+
+  /* Format selector */
+  .format-options { display: flex; gap: 8px; margin-bottom: 16px; }
+  .format-chip {
+    padding: 8px 16px; border-radius: var(--radius-md);
+    border: 1px solid var(--border); background: var(--bg);
+    font-size: 13px; font-weight: 500; cursor: pointer;
+    display: flex; align-items: center; gap: 6px; color: var(--text);
+  }
+  .format-chip.selected { border-color: var(--primary); background: var(--primary-bg); color: var(--primary); }
+  .format-chip .soon { font-size: 10px; color: var(--text-dim); font-weight: 400; }
+
+  /* Date quick picks */
+  .quick-picks { display: flex; gap: 4px; align-self: flex-end; }
+  .quick-pick {
+    padding: 6px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border);
+    background: var(--bg); color: var(--text-muted); font-size: 12px; font-weight: 500;
+    cursor: pointer; font-family: var(--font-sans);
+  }
+  .quick-pick:hover { border-color: var(--text-dim); color: var(--text); }
+  .quick-pick.active { background: var(--primary-bg); border-color: var(--primary); color: var(--primary); }
+
+  /* Cooldown */
+  .cooldown-bar {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 16px; background: var(--warning-bg);
+    border: 1px solid #fde68a; border-radius: var(--radius-md);
+    font-size: 12px; color: var(--warning-text);
+  }
+  .cooldown-timer { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  /* Empty state */
+  .empty-state { text-align: center; padding: 48px 24px; }
+  .empty-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.4; }
+  .empty-state h4 { font-size: 15px; font-weight: 600; margin-bottom: 6px; color: var(--text); }
+  .empty-state p { font-size: 13px; color: var(--text-muted); max-width: 320px; margin: 0 auto; }
+
+  /* History list */
+  .history-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 13px;
+  }
+  .history-item:last-child { border-bottom: none; }
+  .history-item .left { display: flex; align-items: center; gap: 10px; }
+  .history-item .icon-sm {
+    width: 32px; height: 32px; border-radius: var(--radius-md);
+    background: var(--surface-2); display: flex; align-items: center;
+    justify-content: center; font-size: 14px; color: var(--text-muted);
+  }
+  .history-item .title { font-weight: 500; color: var(--text); }
+  .history-item .subtitle { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  /* Toast (inline preview) */
+  .toast-preview {
+    padding: 12px 16px; border-radius: var(--radius-md);
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; font-weight: 500;
+  }
+  .toast-success { background: var(--success-bg); color: var(--success-text); border: 1px solid #bbf7d0; }
+  .toast-error { background: var(--danger-bg); color: var(--danger-text); border: 1px solid #fecaca; }
+  .toast-progress { background: var(--info-bg); color: var(--info-text); border: 1px solid #bfdbfe; }
+
+  /* Divider */
+  hr.divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+  /* Step numbers */
+  .step-num {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--primary-bg); color: var(--primary);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; margin-right: 8px; flex-shrink: 0;
+  }
+  .step-heading {
+    font-size: 13px; font-weight: 600; margin-bottom: 12px;
+    display: flex; align-items: center; color: var(--text);
+  }
+  .step-section { margin-bottom: 20px; }
+
+  /* Required tag */
+  .tag-required {
+    display: inline-block; padding: 2px 8px;
+    background: var(--danger-bg); color: var(--danger-text);
+    font-size: 10px; font-weight: 600; border-radius: var(--radius-sm);
+    letter-spacing: 0.5px; text-transform: uppercase; margin-left: 8px;
+  }
+
+  /* Summary metrics grid */
+  .metrics-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  }
+  .metric-item {
+    padding: 16px; background: var(--surface);
+    border-radius: var(--radius-md); border: 1px solid var(--border);
+  }
+  .metric-label {
+    font-size: 11px; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600;
+  }
+  .metric-value { font-size: 20px; font-weight: 700; margin-top: 4px; color: var(--text); }
+
+  /* Status row for breakdown */
+  .status-row {
+    display: flex; justify-content: space-around; text-align: center;
+    padding: 16px 0; border-top: 1px solid var(--border); margin-top: 16px;
+  }
+  .status-item .count { font-size: 18px; font-weight: 700; }
+  .status-item .label { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+  /* Download icon SVG */
+  .dl-icon { vertical-align: middle; }
+
+  /* Scope selector (radio cards) */
+  .scope-selector { display: flex; flex-direction: column; gap: 8px; }
+  .scope-option {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px; border-radius: var(--radius-md);
+    border: 1px solid var(--border); background: var(--bg);
+    cursor: pointer; transition: all 150ms ease; font-size: 13px;
+  }
+  .scope-option:hover { border-color: var(--text-dim); }
+  .scope-option.selected { border-color: var(--primary); background: var(--primary-bg); }
+  .scope-option .radio {
+    width: 16px; height: 16px; border-radius: 50%;
+    border: 2px solid var(--border); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .scope-option.selected .radio { border-color: var(--primary); }
+  .scope-option.selected .radio::after {
+    content: ''; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--primary);
+  }
+  .scope-option .scope-label { font-weight: 500; color: var(--text); }
+  .scope-option .scope-desc { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+  .scope-option.disabled {
+    opacity: 0.4; cursor: default; pointer-events: none;
+  }
+  .scope-count {
+    margin-left: auto; font-size: 12px; font-weight: 600;
+    color: var(--text-muted); font-variant-numeric: tabular-nums;
+  }
+</style>
+</head>
+<body>
+
+<div class="page-title">Report Export — All Sections</div>
+<div class="page-subtitle">Mockups for every admin section. Toggle states via pills below each section header.</div>
+
+<nav class="nav" id="mainNav">
+  <button class="nav-btn active" onclick="showSection('transactions')">Transactions</button>
+  <button class="nav-btn" onclick="showSection('customers')">Customers</button>
+  <button class="nav-btn" onclick="showSection('giftcards')">Gift Cards</button>
+  <button class="nav-btn" onclick="showSection('referrals')">Referrals</button>
+  <button class="nav-btn" onclick="showSection('campaigns')">Campaigns</button>
+  <button class="nav-btn" onclick="showSection('memberships')">Memberships</button>
+  <button class="nav-btn" onclick="showSection('loyalty')">Loyalty / Tiers</button>
+  <button class="nav-btn" onclick="showSection('rules')">Rules</button>
+  <button class="nav-btn" onclick="showSection('notifications')">Notifications</button>
+  <button class="nav-btn" onclick="showSection('cod')">COD Orders</button>
+  <button class="nav-btn" onclick="showSection('shared')">Shared States</button>
+</nav>
+
+<!-- ======================================================== -->
+<!-- TRANSACTIONS                                             -->
+<!-- ======================================================== -->
+<div class="section active" id="sec-transactions">
+  <div class="section-header">
+    <div>
+      <div class="section-title">Transactions Report</div>
+      <div class="section-desc">Export ledger entries. Date range is mandatory (max 90 days).</div>
+    </div>
+  </div>
+
+  <div class="states-nav" data-section="transactions">
+    <button class="state-btn active" onclick="showState('transactions','default')">Page Bar</button>
+    <button class="state-btn" onclick="showState('transactions','modal')">Export Modal</button>
+    <button class="state-btn" onclick="showState('transactions','preview')">Preview</button>
+    <button class="state-btn" onclick="showState('transactions','generating')">Generating</button>
+    <button class="state-btn" onclick="showState('transactions','complete')">Complete</button>
+  </div>
+
+  <!-- Default -->
+  <div class="state-panel active" data-section="transactions" data-state="default">
+    <div class="report-bar">
+      <div class="report-bar-left">
+        <div class="report-icon">&#x1F4CA;</div>
+        <div>
+          <div class="report-bar-title">Export Transactions</div>
+          <div class="report-bar-desc">Download ledger entries as CSV with filters</div>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-sm">
+        <svg class="dl-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 1v9m0 0L4 7m3 3l3-3M2 12h10"/></svg>
+        Export Report
+      </button>
+    </div>
+    <div class="card" style="margin-top: -4px;">
+      <div style="color: var(--text-muted); font-size: 13px; text-align: center; padding: 20px 0;">
+        This bar sits above the existing transactions table on the page
+      </div>
+    </div>
+  </div>
+
+  <!-- Export modal -->
+  <div class="state-panel" data-section="transactions" data-state="modal">
+    <div class="modal-overlay">
+      <div class="modal-header">
+        <h3>Export Transactions</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="step-section">
+          <div class="step-heading"><span class="step-num">1</span> Scope</div>
+          <div class="scope-selector">
+            <div class="scope-option"><div class="radio"></div><div><div class="scope-label">Current page</div><div class="scope-desc">Export the 20 entries visible on this page</div></div><span class="scope-count">20 rows</span></div>
+            <div class="scope-option selected"><div class="radio"></div><div><div class="scope-label">All transactions</div><div class="scope-desc">Export all ledger entries matching the filters below</div></div><span class="scope-count">~12,480</span></div>
+            <div class="scope-option"><div class="radio"></div><div><div class="scope-label">Matching current filters</div><div class="scope-desc">Earned Credit &middot; In &middot; Active (as set on the page)</div></div><span class="scope-count">~3,210</span></div>
+          </div>
+        </div>
+
+        <div class="step-section">
+          <div class="step-heading"><span class="step-num">2</span> Date Range <span class="tag-required">Required</span></div>
+          <div class="filter-row">
+            <div class="filter-group">
+              <label>From</label>
+              <input type="date" class="filter-input" value="2026-02-25">
+            </div>
+            <div class="filter-group">
+              <label>To</label>
+              <input type="date" class="filter-input" value="2026-03-27">
+            </div>
+            <div class="quick-picks">
+              <button class="quick-pick">7D</button>
+              <button class="quick-pick active">30D</button>
+              <button class="quick-pick">90D</button>
+            </div>
+          </div>
+          <div class="banner banner-warning">Max 90 days per export to keep file sizes manageable</div>
+        </div>
+
+        <div class="step-section">
+          <div class="step-heading"><span class="step-num">3</span> Filters</div>
+          <div class="filter-row">
+            <div class="filter-group">
+              <label>Bucket Type</label>
+              <select class="filter-select">
+                <option>All Buckets</option>
+                <option selected>Earned Credit</option>
+                <option>COD Pending</option>
+                <option>Gift Card</option>
+                <option>Customer Funded</option>
+                <option>Referral Reward</option>
+                <option>Goodwill Credit</option>
+                <option>Membership Benefit</option>
+                <option>Refund Credit</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Movement</label>
+              <select class="filter-select">
+                <option selected>All</option>
+                <option>In</option>
+                <option>Out</option>
+                <option>Held</option>
+                <option>Across</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>State</label>
+              <select class="filter-select">
+                <option selected>All</option>
+                <option>Active</option>
+                <option>Expired</option>
+                <option>Redeemed</option>
+                <option>Reversed</option>
+                <option>Cancelled</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-section">
+          <div class="step-heading"><span class="step-num">4</span> Columns</div>
+          <div class="columns-grid">
+            <div class="col-chip selected"><span class="check">&#10003;</span> Entry ID</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Customer</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Phone</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Bucket Type</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Movement</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Points</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Cash Equiv.</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> State</div>
+            <div class="col-chip"><span class="check">&#9675;</span> Rule Name</div>
+            <div class="col-chip"><span class="check">&#9675;</span> Campaign</div>
+            <div class="col-chip"><span class="check">&#9675;</span> Event ID</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Date</div>
+          </div>
+        </div>
+
+        <div class="step-section" style="margin-bottom:0">
+          <div class="step-heading"><span class="step-num">5</span> Format</div>
+          <div class="format-options">
+            <div class="format-chip selected">CSV</div>
+            <div class="format-chip" style="opacity:0.4;cursor:default;">Excel <span class="soon">SOON</span></div>
+            <div class="format-chip" style="opacity:0.4;cursor:default;">PDF <span class="soon">SOON</span></div>
+          </div>
+        </div>
+
+        <div class="estimate-row">
+          <span class="label">Est. rows:</span> <span class="value">~12,480</span>
+          <span class="sep">|</span>
+          <span class="label">File size:</span> <span class="value">~1.8 MB</span>
+          <span class="sep">|</span>
+          <span class="label">Time:</span> <span class="value">~5 sec</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary">Cancel</button>
+        <button class="btn btn-primary">
+          <svg class="dl-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 1v9m0 0L4 7m3 3l3-3M2 12h10"/></svg>
+          Generate &amp; Download
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Preview -->
+  <div class="state-panel" data-section="transactions" data-state="preview">
+    <div class="modal-overlay" style="max-width:720px;">
+      <div class="modal-header">
+        <h3>Preview &mdash; Transactions Report</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body" style="padding:0;">
+        <div style="padding:12px 24px;background:var(--surface);font-size:12px;color:var(--text-muted);">
+          Showing first 5 of ~12,480 rows
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="preview-table">
+            <thead><tr><th>Entry ID</th><th>Customer</th><th>Bucket</th><th>Movement</th><th>Points</th><th>&#8377; Equiv.</th><th>State</th><th>Date</th></tr></thead>
+            <tbody>
+              <tr><td>ENT-8842</td><td>Priya Sharma</td><td>Earned Credit</td><td>In</td><td>250</td><td>&#8377;25.00</td><td><span class="pill pill-success">Active</span></td><td>27 Mar 2026</td></tr>
+              <tr><td>ENT-8841</td><td>Rahul Verma</td><td>COD Pending</td><td>Held</td><td>180</td><td>&#8377;18.00</td><td><span class="pill pill-warning">Held</span></td><td>27 Mar 2026</td></tr>
+              <tr><td>ENT-8840</td><td>Anita Desai</td><td>Gift Card</td><td>In</td><td>500</td><td>&#8377;50.00</td><td><span class="pill pill-success">Active</span></td><td>26 Mar 2026</td></tr>
+              <tr><td>ENT-8839</td><td>Vikram Patel</td><td>Earned Credit</td><td>Out</td><td>120</td><td>&#8377;12.00</td><td><span class="pill pill-info">Redeemed</span></td><td>26 Mar 2026</td></tr>
+              <tr><td>ENT-8838</td><td>Meera Iyer</td><td>Referral Reward</td><td>In</td><td>300</td><td>&#8377;30.00</td><td><span class="pill pill-success">Active</span></td><td>25 Mar 2026</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary">&larr; Back to Filters</button>
+        <button class="btn btn-primary">
+          <svg class="dl-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 1v9m0 0L4 7m3 3l3-3M2 12h10"/></svg>
+          Download CSV
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Generating -->
+  <div class="state-panel" data-section="transactions" data-state="generating">
+    <div class="modal-overlay">
+      <div class="modal-header"><h3>Generating Report</h3><span></span></div>
+      <div class="modal-body">
+        <div class="generating-state">
+          <div class="spinner"></div>
+          <div style="font-size:15px;font-weight:600;margin-bottom:4px;color:var(--text);">Generating transactions report&hellip;</div>
+          <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">This may take a few seconds for large datasets</div>
+          <div class="progress-bar" style="max-width:300px;margin:0 auto;">
+            <div class="progress-fill" style="width:65%;"></div>
+          </div>
+          <div style="font-size:12px;color:var(--text-dim);margin-top:8px;">Processing 8,112 of ~12,480 entries&hellip;</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" style="color:var(--danger);">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Complete -->
+  <div class="state-panel" data-section="transactions" data-state="complete">
+    <div class="modal-overlay">
+      <div class="modal-header"><h3>Report Ready</h3><button class="modal-close">&times;</button></div>
+      <div class="modal-body">
+        <div class="complete-state">
+          <div class="check-circle">&#10003;</div>
+          <div style="font-size:15px;font-weight:600;margin-bottom:4px;color:var(--text);">Report generated successfully</div>
+          <div style="font-size:13px;color:var(--text-muted);">12,480 rows exported</div>
+        </div>
+        <div class="file-card">
+          <div class="file-icon">&#128196;</div>
+          <div class="file-info" style="flex:1;">
+            <div class="name">transactions_2026-02-25_to_2026-03-27.csv</div>
+            <div class="meta">1.8 MB &middot; Generated just now</div>
+          </div>
+          <button class="btn btn-primary btn-sm">
+            <svg class="dl-icon" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 1v7m0 0L3.5 5.5M6 8l2.5-2.5M1 10h10"/></svg>
+            Download
+          </button>
+        </div>
+        <div class="progress-bar"><div class="progress-fill complete" style="width:100%;"></div></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary">Close</button>
+        <button class="btn btn-ghost">Generate Another</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- CUSTOMERS                                                -->
+<!-- ======================================================== -->
+<div class="section" id="sec-customers">
+  <div class="section-header">
+    <div>
+      <div class="section-title">Customers Report</div>
+      <div class="section-desc">Export customer list with wallet balances, tier, membership, and referral data.</div>
+    </div>
+  </div>
+
+  <div class="states-nav" data-section="customers">
+    <button class="state-btn active" onclick="showState('customers','default')">Page Bar</button>
+    <button class="state-btn" onclick="showState('customers','modal')">Export Modal</button>
+    <button class="state-btn" onclick="showState('customers','preview')">Preview</button>
+    <button class="state-btn" onclick="showState('customers','generating')">Generating</button>
+    <button class="state-btn" onclick="showState('customers','complete')">Complete</button>
+  </div>
+
+  <div class="state-panel active" data-section="customers" data-state="default">
+    <div class="report-bar">
+      <div class="report-bar-left">
+        <div class="report-icon">&#x1F465;</div>
+        <div>
+          <div class="report-bar-title">Export Customers</div>
+          <div class="report-bar-desc">Customer list with balances, tiers, and membership info</div>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-sm">
+        <svg class="dl-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 1v9m0 0L4 7m3 3l3-3M2 12h10"/></svg>
+        Export Report
+      </button>
+    </div>
+  </div>
+
+  <div class="state-panel" data-section="customers" data-state="modal">
+    <div class="modal-overlay">
+      <div class="modal-header"><h3>Export Customers</h3><button class="modal-close">&times;</button></div>
+      <div class="modal-body">
+        <div class="step-section">
+          <div class="step-heading"><span class="step-num">1</span> Scope</div>
+          <div class="scope-selector">
+            <div class="scope-option"><div class="radio"></div><div><div class="scope-label">Current page</div><div class="scope-desc">Export the 20 customers visible on this page</div></div><span class="scope-count">20 rows</span></div>
+            <div class="scope-option selected"><div class="radio"></div><div><div class="scope-label">All customers</div><div class="scope-desc">Export every customer with wallet, tier, and membership data</div></div><span class="scope-count">~2,340</span></div>
+            <div class="scope-option"><div class="radio"></div><div><div class="scope-label">Matching current filters</div><div class="scope-desc">Gold tier &middot; Active membership (as set on the page)</div></div><span class="scope-count">~320</span></div>
+          </div>
+        </div>
+
+        <div class="step-section">
+          <div class="step-heading"><span class="step-num">2</span> Filters</div>
+          <div class="filter-row">
+            <div class="filter-group">
+              <label>Tier</label>
+              <select class="filter-select"><option selected>All Tiers</option><option>Bronze</option><option>Silver</option><option>Gold</option><option>Platinum</option></select>
+            </div>
+            <div class="filter-group">
+              <label>Membership</label>
+              <select class="filter-select"><option selected>All</option><option>Active</option><option>Expiring Soon</option><option>Expired</option><option>No Membership</option></select>
+            </div>
+            <div class="filter-group">
+              <label>Joined After</label>
+              <input type="date" class="filter-input" value="">
+            </div>
+          </div>
+          <div class="filter-row">
+            <div class="filter-group">
+              <label>Min Balance (&#8377;)</label>
+              <input type="number" class="filter-input" placeholder="0" style="min-width:120px;">
+            </div>
+            <div class="filter-group">
+              <label>Max Balance (&#8377;)</label>
+              <input type="number" class="filter-input" placeholder="No limit" style="min-width:120px;">
+            </div>
+            <div class="filter-group">
+              <label>Has Referral Code</label>
+              <select class="filter-select" style="min-width:100px;"><option selected>Any</option><option>Yes</option><option>No</option></select>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-section">
+          <div class="step-heading"><span class="step-num">3</span> Columns</div>
+          <div class="columns-grid">
+            <div class="col-chip selected"><span class="check">&#10003;</span> Name</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Phone</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Email</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Points Balance</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Cash Balance</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Tier</div>
+            <div class="col-chip"><span class="check">&#9675;</span> Membership</div>
+            <div class="col-chip"><span class="check">&#9675;</span> Referral Code</div>
+            <div class="col-chip"><span class="check">&#9675;</span> Referrals Made</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Joined Date</div>
+            <div class="col-chip"><span class="check">&#9675;</span> Verified</div>
+            <div class="col-chip"><span class="check">&#9675;</span> Wallet ID</div>
+          </div>
+        </div>
+
+        <div class="step-section" style="margin-bottom:0;">
+          <div class="step-heading"><span class="step-num">4</span> Format</div>
+          <div class="format-options">
+            <div class="format-chip selected">CSV</div>
+            <div class="format-chip" style="opacity:0.4;cursor:default;">Excel <span class="soon">SOON</span></div>
+          </div>
+        </div>
+
+        <div class="estimate-row">
+          <span class="label">Est. rows:</span> <span class="value">~2,340</span>
+          <span class="sep">|</span>
+          <span class="label">File size:</span> <span class="value">~320 KB</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary">Cancel</button>
+        <button class="btn btn-primary">Generate &amp; Download</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="state-panel" data-section="customers" data-state="preview">
+    <div class="modal-overlay" style="max-width:720px;">
+      <div class="modal-header"><h3>Preview &mdash; Customers Report</h3><button class="modal-close">&times;</button></div>
+      <div class="modal-body" style="padding:0;">
+        <div style="padding:12px 24px;background:var(--surface);font-size:12px;color:var(--text-muted);">Showing first 5 of ~2,340 rows</div>
+        <div style="overflow-x:auto;">
+          <table class="preview-table">
+            <thead><tr><th>Name</th><th>Phone</th><th>Points</th><th>Cash (&#8377;)</th><th>Tier</th><th>Joined</th></tr></thead>
+            <tbody>
+              <tr><td>Priya Sharma</td><td>+91 98765 43210</td><td>2,450</td><td>&#8377;245</td><td><span class="pill pill-warning">Gold</span></td><td>15 Jan 2026</td></tr>
+              <tr><td>Rahul Verma</td><td>+91 87654 32109</td><td>1,120</td><td>&#8377;112</td><td><span class="pill pill-neutral">Silver</span></td><td>22 Jan 2026</td></tr>
+              <tr><td>Anita Desai</td><td>+91 76543 21098</td><td>4,800</td><td>&#8377;480</td><td><span class="pill pill-info">Platinum</span></td><td>03 Feb 2026</td></tr>
+              <tr><td>Vikram Patel</td><td>+91 65432 10987</td><td>380</td><td>&#8377;38</td><td><span class="pill pill-neutral">Bronze</span></td><td>18 Feb 2026</td></tr>
+              <tr><td>Meera Iyer</td><td>+91 54321 09876</td><td>1,900</td><td>&#8377;190</td><td><span class="pill pill-warning">Gold</span></td><td>01 Mar 2026</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary">&larr; Back to Filters</button>
+        <button class="btn btn-primary">Download CSV</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="state-panel" data-section="customers" data-state="generating">
+    <div class="modal-overlay">
+      <div class="modal-header"><h3>Generating Report</h3><span></span></div>
+      <div class="modal-body">
+        <div class="generating-state">
+          <div class="spinner"></div>
+          <div style="font-size:15px;font-weight:600;color:var(--text);">Generating customers report&hellip;</div>
+          <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">Enriching with wallet balances and tier data</div>
+          <div class="progress-bar" style="max-width:300px;margin:0 auto;"><div class="progress-fill" style="width:40%;"></div></div>
+          <div style="font-size:12px;color:var(--text-dim);margin-top:8px;">Processing 936 of ~2,340 customers&hellip;</div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-ghost" style="color:var(--danger);">Cancel</button></div>
+    </div>
+  </div>
+
+  <div class="state-panel" data-section="customers" data-state="complete">
+    <div class="modal-overlay">
+      <div class="modal-header"><h3>Report Ready</h3><button class="modal-close">&times;</button></div>
+      <div class="modal-body">
+        <div class="complete-state">
+          <div class="check-circle">&#10003;</div>
+          <div style="font-size:15px;font-weight:600;color:var(--text);">Report generated successfully</div>
+          <div style="font-size:13px;color:var(--text-muted);">2,340 rows exported</div>
+        </div>
+        <div class="file-card">
+          <div class="file-icon">&#128196;</div>
+          <div class="file-info" style="flex:1;"><div class="name">customers_all_2026-03-27.csv</div><div class="meta">320 KB &middot; Generated just now</div></div>
+          <button class="btn btn-primary btn-sm">Download</button>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-secondary">Close</button><button class="btn btn-ghost">Generate Another</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- GIFT CARDS                                               -->
+<!-- ======================================================== -->
+<div class="section" id="sec-giftcards">
+  <div class="section-header">
+    <div>
+      <div class="section-title">Gift Cards Report</div>
+      <div class="section-desc">Two report types: card inventory or summary statistics.</div>
+    </div>
+  </div>
+
+  <div class="states-nav" data-section="giftcards">
+    <button class="state-btn active" onclick="showState('giftcards','default')">Page Bar</button>
+    <button class="state-btn" onclick="showState('giftcards','type')">Report Type</button>
+    <button class="state-btn" onclick="showState('giftcards','inventory')">Inventory Modal</button>
+    <button class="state-btn" onclick="showState('giftcards','summary')">Summary Modal</button>
+    <button class="state-btn" onclick="showState('giftcards','generating')">Generating</button>
+    <button class="state-btn" onclick="showState('giftcards','complete')">Complete</button>
+  </div>
+
+  <div class="state-panel active" data-section="giftcards" data-state="default">
+    <div class="report-bar">
+      <div class="report-bar-left">
+        <div class="report-icon">&#x1F381;</div>
+        <div>
+          <div class="report-bar-title">Export Gift Cards</div>
+          <div class="report-bar-desc">Inventory list or summary statistics</div>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-sm">
+        <svg class="dl-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 1v9m0 0L4 7m3 3l3-3M2 12h10"/></svg>
+        Export Report
+      </button>
+    </div>
+  </div>
+
+  <div class="state-panel" data-section="giftcards" data-state="type">
+    <div class="modal-overlay">
+      <div class="modal-header"><h3>Export Gift Cards</h3><button class="modal-close">&times;</button></div>
+      <div class="modal-body">
+        <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Choose a report type:</div>
+        <div class="report-types">
+          <div class="report-type-card selected">
+            <h4>Inventory Report</h4>
+            <p>Every gift card with code, amount, balance, status, claim details, and expiry</p>
+          </div>
+          <div class="report-type-card">
+            <h4>Summary Report</h4>
+            <p>Aggregated stats: issued count, outstanding liability, redemption rates</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-secondary">Cancel</button><button class="btn btn-primary">Next &rarr;</button></div>
+    </div>
+  </div>
+
+  <div class="state-panel" data-section="giftcards" data-state="inventory">
+    <div class="modal-overlay">
+      <div class="modal-header"><h3>Export &mdash; Gift Card Inventory</h3><button class="modal-close">&times;</button></div>
+      <div class="modal-body">
+        <div class="step-section">
+          <div class="step-heading"><span class="step-num">1</span> Scope</div>
+          <div class="scope-selector">
+            <div class="scope-option"><div class="radio"></div><div><div class="scope-label">Current page</div><div class="scope-desc">Export the 20 cards visible on this page</div></div><span class="scope-count">20 rows</span></div>
+            <div class="scope-option selected"><div class="radio"></div><div><div class="scope-label">All gift cards</div><div class="scope-desc">Export every gift card with balance and status</div></div><span class="scope-count">~860</span></div>
+            <div class="scope-option"><div class="radio"></div><div><div class="scope-label">Matching current filters</div><div class="scope-desc">Active cards only (as set on the page)</div></div><span class="scope-count">~520</span></div>
+          </div>
+        </div>
+        <div class="step-section">
+          <div class="step-heading"><span class="step-num">2</span> Filters</div>
+          <div class="filter-row">
+            <div class="filter-group"><label>Status</label><select class="filter-select"><option selected>All</option><option>Active</option><option>Claimed</option><option>Expired</option><option>Inactive</option></select></div>
+            <div class="filter-group"><label>Created After</label><input type="date" class="filter-input"></div>
+            <div class="filter-group"><label>Created Before</label><input type="date" class="filter-input"></div>
+          </div>
+          <div class="filter-row">
+            <div class="filter-group"><label>Min Amount (&#8377;)</label><input type="number" class="filter-input" placeholder="0" style="min-width:120px;"></div>
+            <div class="filter-group"><label>Max Amount (&#8377;)</label><input type="number" class="filter-input" placeholder="No limit" style="min-width:120px;"></div>
+          </div>
+        </div>
+        <div class="step-section">
+          <div class="step-heading"><span class="step-num">3</span> Columns</div>
+          <div class="columns-grid">
+            <div class="col-chip selected"><span class="check">&#10003;</span> Code</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Initial Amt</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Balance</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Status</div>
+            <div class="col-chip"><span class="check">&#9675;</span> Claimed By</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Created</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Expires</div>
+            <div class="col-chip"><span class="check">&#9675;</span> Card ID</div>
+            <div class="col-chip"><span class="check">&#9675;</span> Batch ID</div>
+          </div>
+        </div>
+        <div class="step-section" style="margin-bottom:0;"><div class="step-heading"><span class="step-num">4</span> Format</div><div class="format-options"><div class="format-chip selected">CSV</div><div class="format-chip" style="opacity:0.4;cursor:default;">Excel <span class="soon">SOON</span></div></div></div>
+        <div class="estimate-row"><span class="label">Est. rows:</span> <span class="value">~860</span><span class="sep">|</span><span class="label">File size:</span> <span class="value">~95 KB</span></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-secondary">&larr; Report Type</button><button class="btn btn-primary">Generate &amp; Download</button></div>
+    </div>
+  </div>
+
+  <div class="state-panel" data-section="giftcards" data-state="summary">
+    <div class="modal-overlay">
+      <div class="modal-header"><h3>Export &mdash; Gift Card Summary</h3><button class="modal-close">&times;</button></div>
+      <div class="modal-body">
+        <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">This report generates a one-page summary of your gift card program:</div>
+        <div class="metrics-grid">
+          <div class="metric-item"><div class="metric-label">Total Issued</div><div class="metric-value">860</div></div>
+          <div class="metric-item"><div class="metric-label">Outstanding Value</div><div class="metric-value" style="color:var(--warning);">&#8377;42,500</div></div>
+          <div class="metric-item"><div class="metric-label">Redeemed Value</div><div class="metric-value" style="color:var(--success);">&#8377;1,28,000</div></div>
+          <div class="metric-item"><div class="metric-label">Redemption Rate</div><div class="metric-value">75%</div></div>
+        </div>
+        <div class="status-row">
+          <div class="status-item"><div class="count" style="color:var(--success);">520</div><div class="label">Active</div></div>
+          <div class="status-item"><div class="count" style="color:var(--info);">280</div><div class="label">Claimed</div></div>
+          <div class="status-item"><div class="count" style="color:var(--danger);">42</div><div class="label">Expired</div></div>
+          <div class="status-item"><div class="count" style="color:var(--text-dim);">18</div><div class="label">Inactive</div></div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-secondary">&larr; Report Type</button><button class="btn btn-primary">Download CSV</button></div>
+    </div>
+  </div>
+
+  <div class="state-panel" data-section="giftcards" data-state="generating">
+    <div class="modal-overlay">
+      <div class="modal-header"><h3>Generating Report</h3><span></span></div>
+      <div class="modal-body">
+        <div class="generating-state">
+          <div class="spinner"></div>
+          <div style="font-size:15px;font-weight:600;color:var(--text);">Generating gift cards report&hellip;</div>
+          <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">Fetching card inventory data</div>
+          <div class="progress-bar" style="max-width:300px;margin:0 auto;"><div class="progress-fill" style="width:55%;"></div></div>
+          <div style="font-size:12px;color:var(--text-dim);margin-top:8px;">Processing 473 of ~860 cards&hellip;</div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-ghost" style="color:var(--danger);">Cancel</button></div>
+    </div>
+  </div>
+
+  <div class="state-panel" data-section="giftcards" data-state="complete">
+    <div class="modal-overlay">
+      <div class="modal-header"><h3>Report Ready</h3><button class="modal-close">&times;</button></div>
+      <div class="modal-body">
+        <div class="complete-state">
+          <div class="check-circle">&#10003;</div>
+          <div style="font-size:15px;font-weight:600;color:var(--text);">Report generated successfully</div>
+          <div style="font-size:13px;color:var(--text-muted);">860 rows exported</div>
+        </div>
+        <div class="file-card">
+          <div class="file-icon">&#128196;</div>
+          <div class="file-info" style="flex:1;"><div class="name">gift_cards_inventory_2026-03-27.csv</div><div class="meta">95 KB &middot; Generated just now</div></div>
+          <button class="btn btn-primary btn-sm">Download</button>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-secondary">Close</button><button class="btn btn-ghost">Generate Another</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- REFERRALS                                                -->
+<!-- ======================================================== -->
+<div class="section" id="sec-referrals">
+  <div class="section-header">
+    <div>
+      <div class="section-title">Referrals Report</div>
+      <div class="section-desc">Export referral codes or conversion history with fraud signals.</div>
+    </div>
+  </div>
+
+  <div class="states-nav" data-section="referrals">
+    <button class="state-btn active" onclick="showState('referrals','default')">Page Bar</button>
+    <button class="state-btn" onclick="showState('referrals','type')">Report Type</button>
+    <button class="state-btn" onclick="showState('referrals','codes')">Codes Modal</button>
+    <button class="state-btn" onclick="showState('referrals','conversions')">Conversions Modal</button>
+    <button class="state-btn" onclick="showState('referrals','generating')">Generating</button>
+    <button class="state-btn" onclick="showState('referrals','complete')">Complete</button>
+  </div>
+
+  <div class="state-panel active" data-section="referrals" data-state="default">
+    <div class="report-bar">
+      <div class="report-bar-left">
+        <div class="report-icon">&#x1F517;</div>
+        <div><div class="report-bar-title">Export Referrals</div><div class="report-bar-desc">Referral codes performance or conversion history</div></div>
+      </div>
+      <button class="btn btn-primary btn-sm">
+        <svg class="dl-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 1v9m0 0L4 7m3 3l3-3M2 12h10"/></svg>
+        Export Report
+      </button>
+    </div>
+  </div>
+
+  <div class="state-panel" data-section="referrals" data-state="type">
+    <div class="modal-overlay">
+      <div class="modal-header"><h3>Export Referrals</h3><button class="modal-close">&times;</button></div>
+      <div class="modal-body">
+        <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Choose a report type:</div>
+        <div class="report-types">
+          <div class="report-type-card selected"><h4>Codes Report</h4><p>All referral codes with customer, total referrals, conversions, conversion rate, status</p></div>
+          <div class="report-type-card"><h4>Conversions Report</h4><p>Every conversion with referrer, referee, order, suspicious flag, and fraud signals</p></div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-secondary">Cancel</button><button class="btn btn-primary">Next &rarr;</button></div>
+    </div>
+  </div>
+
+  <div class="state-panel" data-section="referrals" data-state="codes">
+    <div class="modal-overlay">
+      <div class="modal-header"><h3>Export &mdash; Referral Codes</h3><button class="modal-close">&times;</button></div>
+      <div class="modal-body">
+        <div class="step-section">
+          <div class="step-heading"><span class="step-num">1</span> Scope</div>
+          <div class="scope-selector">
+            <div class="scope-option"><div class="radio"></div><div><div class="scope-label">Current page</div><div class="scope-desc">Export the 20 codes visible on this page</div></div><span class="scope-count">20 rows</span></div>
+            <div class="scope-option selected"><div class="radio"></div><div><div class="scope-label">All referral codes</div><div class="scope-desc">Export every code with referral and conversion counts</div></div><span class="scope-count">~340</span></div>
+            <div class="scope-option"><div class="radio"></div><div><div class="scope-label">Matching current filters</div><div class="scope-desc">Active codes only (as set on the page)</div></div><span class="scope-count">~280</span></div>
+          </div>
+        </div>
+        <div class="step-section">
+          <div class="step-heading"><span class="step-num">2</span> Filters</div>
+          <div class="filter-row">
+            <div class="filter-group"><label>Status</label><select class="filter-select"><option selected>All</option><option>Active</option><option>Inactive</option></select></div>
+            <div class="filter-group"><label>Type</label><select class="filter-select"><option selected>All</option><option>Vanity</option><option>Auto-generated</option></select></div>
+            <div class="filter-group"><label>Min Conversions</label><input type="number" class="filter-input" placeholder="0" style="min-width:120px;"></div>
+          </div>
+        </div>
+        <div class="step-section">
+          <div class="step-heading"><span class="step-num">3</span> Columns</div>
+          <div class="columns-grid">
+            <div class="col-chip selected"><span class="check">&#10003;</span> Code</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Customer ID</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Referrals</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Conversions</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Conv. Rate</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Status</div>
+            <div class="col-chip"><span class="check">&#9675;</span> Is Vanity</div>
+            <div class="col-chip"><span class="check">&#9675;</span> Commission Rate</div>
+            <div class="col-chip"><span class="check">&#9675;</span> Created</div>
+          </div>
+        </div>
+        <div class="step-section" style="margin-bottom:0;"><div class="step-heading"><span class="step-num">4</span> Format</div><div class="format-options"><div class="format-chip selected">CSV</div><div class="format-chip" style="opacity:0.4;cursor:default;">Excel <span class="soon">SOON</span></div></div></div>
+        <div class="estimate-row"><span class="label">Est. rows:</span> <span class="value">~340</span><span class="sep">|</span><span class="label">File size:</span> <span class="value">~28 KB</span></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-secondary">&larr; Report Type</button><button class="btn btn-primary">Generate &amp; Download</button></div>
+    </div>
+  </div>
+
+  <div class="state-panel" data-section="referrals" data-state="conversions">
+    <div class="modal-overlay">
+      <div class="modal-header"><h3>Export &mdash; Referral Conversions</h3><button class="modal-close">&times;</button></div>
+      <div class="modal-body">
+        <div class="step-section">
+          <div class="step-heading"><span class="step-num">1</span> Scope</div>
+          <div class="scope-selector">
+            <div class="scope-option"><div class="radio"></div><div><div class="scope-label">Current page</div><div class="scope-desc">Export the 20 conversions visible on this page</div></div><span class="scope-count">20 rows</span></div>
+            <div class="scope-option selected"><div class="radio"></div><div><div class="scope-label">All conversions</div><div class="scope-desc">Export every conversion with fraud signals</div></div><span class="scope-count">~185</span></div>
+          </div>
+        </div>
+        <div class="step-section">
+          <div class="step-heading"><span class="step-num">2</span> Date Range</div>
+          <div class="filter-row">
+            <div class="filter-group"><label>From</label><input type="date" class="filter-input" value="2026-01-01"></div>
+            <div class="filter-group"><label>To</label><input type="date" class="filter-input" value="2026-03-27"></div>
+            <div class="filter-group"><label>Suspicious Only</label><select class="filter-select" style="min-width:120px;"><option selected>All</option><option>Suspicious</option><option>Clean</option></select></div>
+          </div>
+          <div class="banner banner-info">Use "Suspicious Only" filter to quickly audit flagged conversions for fraud review</div>
+        </div>
+        <div class="step-section">
+          <div class="step-heading"><span class="step-num">3</span> Columns</div>
+          <div class="columns-grid">
+            <div class="col-chip selected"><span class="check">&#10003;</span> Referrer ID</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Referee ID</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Order ID</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Suspicious</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Fraud Signals</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Date</div>
+          </div>
+        </div>
+        <div class="step-section" style="margin-bottom:0;"><div class="step-heading"><span class="step-num">4</span> Format</div><div class="format-options"><div class="format-chip selected">CSV</div><div class="format-chip" style="opacity:0.4;cursor:default;">Excel <span class="soon">SOON</span></div></div></div>
+        <div class="estimate-row"><span class="label">Est. rows:</span> <span class="value">~185</span><span class="sep">|</span><span class="label">File size:</span> <span class="value">~22 KB</span></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-secondary">&larr; Report Type</button><button class="btn btn-primary">Generate &amp; Download</button></div>
+    </div>
+  </div>
+
+  <div class="state-panel" data-section="referrals" data-state="generating">
+    <div class="modal-overlay">
+      <div class="modal-header"><h3>Generating Report</h3><span></span></div>
+      <div class="modal-body">
+        <div class="generating-state">
+          <div class="spinner"></div>
+          <div style="font-size:15px;font-weight:600;color:var(--text);">Generating referrals report&hellip;</div>
+          <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">Fetching conversion data</div>
+          <div class="progress-bar" style="max-width:300px;margin:0 auto;"><div class="progress-fill" style="width:70%;"></div></div>
+          <div style="font-size:12px;color:var(--text-dim);margin-top:8px;">Processing 130 of ~185 conversions&hellip;</div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-ghost" style="color:var(--danger);">Cancel</button></div>
+    </div>
+  </div>
+
+  <div class="state-panel" data-section="referrals" data-state="complete">
+    <div class="modal-overlay">
+      <div class="modal-header"><h3>Report Ready</h3><button class="modal-close">&times;</button></div>
+      <div class="modal-body">
+        <div class="complete-state">
+          <div class="check-circle">&#10003;</div>
+          <div style="font-size:15px;font-weight:600;color:var(--text);">Report generated successfully</div>
+          <div style="font-size:13px;color:var(--text-muted);">185 rows exported</div>
+        </div>
+        <div class="file-card">
+          <div class="file-icon">&#128196;</div>
+          <div class="file-info" style="flex:1;"><div class="name">referral_conversions_2026-01-01_to_2026-03-27.csv</div><div class="meta">22 KB &middot; Generated just now</div></div>
+          <button class="btn btn-primary btn-sm">Download</button>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-secondary">Close</button><button class="btn btn-ghost">Generate Another</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- CAMPAIGNS                                                -->
+<!-- ======================================================== -->
+<div class="section" id="sec-campaigns">
+  <div class="section-header">
+    <div>
+      <div class="section-title">Campaigns Report</div>
+      <div class="section-desc">Campaign performance metrics &mdash; ROI analysis and engagement tracking.</div>
+    </div>
+  </div>
+
+  <div class="states-nav" data-section="campaigns">
+    <button class="state-btn active" onclick="showState('campaigns','default')">Page Bar</button>
+    <button class="state-btn" onclick="showState('campaigns','modal')">Export Modal</button>
+    <button class="state-btn" onclick="showState('campaigns','preview')">Preview</button>
+    <button class="state-btn" onclick="showState('campaigns','generating')">Generating</button>
+    <button class="state-btn" onclick="showState('campaigns','complete')">Complete</button>
+  </div>
+
+  <div class="state-panel active" data-section="campaigns" data-state="default">
+    <div class="report-bar">
+      <div class="report-bar-left">
+        <div class="report-icon">&#x1F4E3;</div>
+        <div><div class="report-bar-title">Export Campaigns</div><div class="report-bar-desc">Campaign performance with entries, value, and unique customers</div></div>
+      </div>
+      <button class="btn btn-primary btn-sm"><svg class="dl-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 1v9m0 0L4 7m3 3l3-3M2 12h10"/></svg> Export Report</button>
+    </div>
+  </div>
+
+  <div class="state-panel" data-section="campaigns" data-state="modal">
+    <div class="modal-overlay">
+      <div class="modal-header"><h3>Export Campaigns</h3><button class="modal-close">&times;</button></div>
+      <div class="modal-body">
+        <div class="step-section">
+          <div class="step-heading"><span class="step-num">1</span> Scope</div>
+          <div class="scope-selector">
+            <div class="scope-option selected"><div class="radio"></div><div><div class="scope-label">All campaigns</div><div class="scope-desc">Export every campaign with performance data</div></div><span class="scope-count">~24</span></div>
+            <div class="scope-option"><div class="radio"></div><div><div class="scope-label">Matching current filters</div><div class="scope-desc">Active campaigns only (as set on the page)</div></div><span class="scope-count">~8</span></div>
+          </div>
+        </div>
+        <div class="step-section">
+          <div class="step-heading"><span class="step-num">2</span> Filters</div>
+          <div class="filter-row">
+            <div class="filter-group"><label>Status</label><select class="filter-select"><option selected>All</option><option>Active</option><option>Ended</option><option>Upcoming</option></select></div>
+            <div class="filter-group"><label>Type</label><select class="filter-select"><option selected>All Types</option><option>Festive</option><option>Multiplier</option><option>Custom</option></select></div>
+            <div class="filter-group"><label>From</label><input type="date" class="filter-input" value="2026-01-01"></div>
+            <div class="filter-group"><label>To</label><input type="date" class="filter-input" value="2026-03-27"></div>
+          </div>
+        </div>
+        <div class="step-section">
+          <div class="step-heading"><span class="step-num">3</span> Columns</div>
+          <div class="columns-grid">
+            <div class="col-chip selected"><span class="check">&#10003;</span> Name</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Type</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Multiplier</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Start Date</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> End Date</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Status</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Total Entries</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Total Value</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Unique Users</div>
+          </div>
+        </div>
+        <div class="step-section" style="margin-bottom:0;"><div class="step-heading"><span class="step-num">4</span> Format</div><div class="format-options"><div class="format-chip selected">CSV</div><div class="format-chip" style="opacity:0.4;cursor:default;">Excel <span class="soon">SOON</span></div></div></div>
+        <div class="estimate-row"><span class="label">Est. rows:</span> <span class="value">~24</span><span class="sep">|</span><span class="label">File size:</span> <span class="value">~4 KB</span></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-secondary">Cancel</button><button class="btn btn-primary">Generate &amp; Download</button></div>
+    </div>
+  </div>
+
+  <div class="state-panel" data-section="campaigns" data-state="preview">
+    <div class="modal-overlay" style="max-width:760px;">
+      <div class="modal-header"><h3>Preview &mdash; Campaigns Report</h3><button class="modal-close">&times;</button></div>
+      <div class="modal-body" style="padding:0;">
+        <div style="padding:12px 24px;background:var(--surface);font-size:12px;color:var(--text-muted);">Showing all 24 campaigns</div>
+        <div style="overflow-x:auto;">
+          <table class="preview-table">
+            <thead><tr><th>Name</th><th>Type</th><th>Multiplier</th><th>Period</th><th>Entries</th><th>Value (&#8377;)</th><th>Users</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>Holi Bonus 2x</td><td>Festive</td><td>2.0x</td><td>14&ndash;17 Mar</td><td>3,240</td><td>&#8377;32,400</td><td>1,820</td><td><span class="pill pill-neutral">Ended</span></td></tr>
+              <tr><td>Spring Sale</td><td>Multiplier</td><td>1.5x</td><td>20&ndash;31 Mar</td><td>1,860</td><td>&#8377;18,600</td><td>940</td><td><span class="pill pill-success">Active</span></td></tr>
+              <tr><td>Ugadi Special</td><td>Festive</td><td>3.0x</td><td>30 Mar&ndash;2 Apr</td><td>0</td><td>&#8377;0</td><td>0</td><td><span class="pill pill-info">Upcoming</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-secondary">&larr; Back to Filters</button><button class="btn btn-primary">Download CSV</button></div>
+    </div>
+  </div>
+
+  <div class="state-panel" data-section="campaigns" data-state="generating">
+    <div class="modal-overlay">
+      <div class="modal-header"><h3>Generating Report</h3><span></span></div>
+      <div class="modal-body">
+        <div class="generating-state">
+          <div class="spinner"></div>
+          <div style="font-size:15px;font-weight:600;color:var(--text);">Generating campaigns report&hellip;</div>
+          <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">Fetching campaign performance data</div>
+          <div class="progress-bar" style="max-width:300px;margin:0 auto;"><div class="progress-fill" style="width:80%;"></div></div>
+          <div style="font-size:12px;color:var(--text-dim);margin-top:8px;">Processing 19 of 24 campaigns&hellip;</div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-ghost" style="color:var(--danger);">Cancel</button></div>
+    </div>
+  </div>
+
+  <div class="state-panel" data-section="campaigns" data-state="complete">
+    <div class="modal-overlay">
+      <div class="modal-header"><h3>Report Ready</h3><button class="modal-close">&times;</button></div>
+      <div class="modal-body">
+        <div class="complete-state"><div class="check-circle">&#10003;</div><div style="font-size:15px;font-weight:600;color:var(--text);">Report generated successfully</div><div style="font-size:13px;color:var(--text-muted);">24 rows exported</div></div>
+        <div class="file-card"><div class="file-icon">&#128196;</div><div class="file-info" style="flex:1;"><div class="name">campaigns_2026-01-01_to_2026-03-27.csv</div><div class="meta">4 KB &middot; Generated just now</div></div><button class="btn btn-primary btn-sm">Download</button></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-secondary">Close</button><button class="btn btn-ghost">Generate Another</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- MEMBERSHIPS                                              -->
+<!-- ======================================================== -->
+<div class="section" id="sec-memberships">
+  <div class="section-header">
+    <div>
+      <div class="section-title">Memberships Report</div>
+      <div class="section-desc">Subscriber list with tier, status, expiry, and renewal tracking.</div>
+    </div>
+  </div>
+
+  <div class="states-nav" data-section="memberships">
+    <button class="state-btn active" onclick="showState('memberships','default')">Page Bar</button>
+    <button class="state-btn" onclick="showState('memberships','modal')">Export Modal</button>
+    <button class="state-btn" onclick="showState('memberships','preview')">Preview</button>
+    <button class="state-btn" onclick="showState('memberships','generating')">Generating</button>
+    <button class="state-btn" onclick="showState('memberships','complete')">Complete</button>
+  </div>
+
+  <div class="state-panel active" data-section="memberships" data-state="default">
+    <div class="report-bar">
+      <div class="report-bar-left">
+        <div class="report-icon">&#x1F4B3;</div>
+        <div><div class="report-bar-title">Export Memberships</div><div class="report-bar-desc">Active subscribers, expiry dates, and renewal tracking</div></div>
+      </div>
+      <button class="btn btn-primary btn-sm"><svg class="dl-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 1v9m0 0L4 7m3 3l3-3M2 12h10"/></svg> Export Report</button>
+    </div>
+  </div>
+
+  <div class="state-panel" data-section="memberships" data-state="modal">
+    <div class="modal-overlay">
+      <div class="modal-header"><h3>Export Memberships</h3><button class="modal-close">&times;</button></div>
+      <div class="modal-body">
+        <div class="step-section">
+          <div class="step-heading"><span class="step-num">1</span> Scope</div>
+          <div class="scope-selector">
+            <div class="scope-option"><div class="radio"></div><div><div class="scope-label">Current page</div><div class="scope-desc">Export the 20 subscribers visible on this page</div></div><span class="scope-count">20 rows</span></div>
+            <div class="scope-option selected"><div class="radio"></div><div><div class="scope-label">All subscribers</div><div class="scope-desc">Export every membership with tier and renewal data</div></div><span class="scope-count">~180</span></div>
+            <div class="scope-option"><div class="radio"></div><div><div class="scope-label">Matching current filters</div><div class="scope-desc">Active &middot; Gold tier (as set on the page)</div></div><span class="scope-count">~45</span></div>
+          </div>
+        </div>
+        <div class="step-section">
+          <div class="step-heading"><span class="step-num">2</span> Filters</div>
+          <div class="filter-row">
+            <div class="filter-group"><label>Tier</label><select class="filter-select"><option selected>All Tiers</option><option>Bronze</option><option>Silver</option><option>Gold</option><option>Platinum</option></select></div>
+            <div class="filter-group"><label>Status</label><select class="filter-select"><option selected>All</option><option>Active</option><option>Expiring Soon (&le;30d)</option><option>Expired</option><option>Cancelled</option></select></div>
+            <div class="filter-group"><label>Min Renewals</label><input type="number" class="filter-input" placeholder="0" style="min-width:100px;"></div>
+          </div>
+        </div>
+        <div class="step-section">
+          <div class="step-heading"><span class="step-num">3</span> Columns</div>
+          <div class="columns-grid">
+            <div class="col-chip selected"><span class="check">&#10003;</span> Name</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Phone</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Tier</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Status</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Start Date</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Expiry Date</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Days Left</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Renewals</div>
+            <div class="col-chip"><span class="check">&#9675;</span> Earn Multiplier</div>
+          </div>
+        </div>
+        <div class="step-section" style="margin-bottom:0;"><div class="step-heading"><span class="step-num">4</span> Format</div><div class="format-options"><div class="format-chip selected">CSV</div><div class="format-chip" style="opacity:0.4;cursor:default;">Excel <span class="soon">SOON</span></div></div></div>
+        <div class="estimate-row"><span class="label">Est. rows:</span> <span class="value">~180</span><span class="sep">|</span><span class="label">File size:</span> <span class="value">~18 KB</span></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-secondary">Cancel</button><button class="btn btn-primary">Generate &amp; Download</button></div>
+    </div>
+  </div>
+
+  <div class="state-panel" data-section="memberships" data-state="preview">
+    <div class="modal-overlay" style="max-width:760px;">
+      <div class="modal-header"><h3>Preview &mdash; Memberships Report</h3><button class="modal-close">&times;</button></div>
+      <div class="modal-body" style="padding:0;">
+        <div style="padding:12px 24px;background:var(--surface);font-size:12px;color:var(--text-muted);">Showing first 5 of ~180 rows</div>
+        <div style="overflow-x:auto;">
+          <table class="preview-table">
+            <thead><tr><th>Name</th><th>Phone</th><th>Tier</th><th>Status</th><th>Expiry</th><th>Days Left</th><th>Renewals</th></tr></thead>
+            <tbody>
+              <tr><td>Priya Sharma</td><td>+91 98765 43210</td><td><span class="pill pill-warning">Gold</span></td><td><span class="pill pill-success">Active</span></td><td>15 Jun 2026</td><td>80</td><td>2</td></tr>
+              <tr><td>Rahul Verma</td><td>+91 87654 32109</td><td><span class="pill pill-neutral">Silver</span></td><td><span class="pill pill-warning">Expiring</span></td><td>12 Apr 2026</td><td>16</td><td>0</td></tr>
+              <tr><td>Anita Desai</td><td>+91 76543 21098</td><td><span class="pill pill-info">Platinum</span></td><td><span class="pill pill-success">Active</span></td><td>01 Sep 2026</td><td>158</td><td>3</td></tr>
+              <tr><td>Vikram Patel</td><td>+91 65432 10987</td><td><span class="pill pill-neutral">Bronze</span></td><td><span class="pill pill-error">Expired</span></td><td>10 Mar 2026</td><td>0</td><td>1</td></tr>
+              <tr><td>Meera Iyer</td><td>+91 54321 09876</td><td><span class="pill pill-warning">Gold</span></td><td><span class="pill pill-success">Active</span></td><td>22 Jul 2026</td><td>117</td><td>1</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-secondary">&larr; Back to Filters</button><button class="btn btn-primary">Download CSV</button></div>
+    </div>
+  </div>
+
+  <div class="state-panel" data-section="memberships" data-state="generating">
+    <div class="modal-overlay">
+      <div class="modal-header"><h3>Generating Report</h3><span></span></div>
+      <div class="modal-body"><div class="generating-state"><div class="spinner"></div><div style="font-size:15px;font-weight:600;color:var(--text);">Generating memberships report&hellip;</div><div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">Enriching with tier and customer data</div><div class="progress-bar" style="max-width:300px;margin:0 auto;"><div class="progress-fill" style="width:50%;"></div></div><div style="font-size:12px;color:var(--text-dim);margin-top:8px;">Processing 90 of ~180 subscribers&hellip;</div></div></div>
+      <div class="modal-footer"><button class="btn btn-ghost" style="color:var(--danger);">Cancel</button></div>
+    </div>
+  </div>
+
+  <div class="state-panel" data-section="memberships" data-state="complete">
+    <div class="modal-overlay">
+      <div class="modal-header"><h3>Report Ready</h3><button class="modal-close">&times;</button></div>
+      <div class="modal-body">
+        <div class="complete-state"><div class="check-circle">&#10003;</div><div style="font-size:15px;font-weight:600;color:var(--text);">Report generated successfully</div><div style="font-size:13px;color:var(--text-muted);">180 rows exported</div></div>
+        <div class="file-card"><div class="file-icon">&#128196;</div><div class="file-info" style="flex:1;"><div class="name">memberships_all_2026-03-27.csv</div><div class="meta">18 KB &middot; Generated just now</div></div><button class="btn btn-primary btn-sm">Download</button></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-secondary">Close</button><button class="btn btn-ghost">Generate Another</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- LOYALTY / TIERS                                          -->
+<!-- ======================================================== -->
+<div class="section" id="sec-loyalty">
+  <div class="section-header">
+    <div>
+      <div class="section-title">Loyalty / Tiers Report</div>
+      <div class="section-desc">Tier distribution snapshot &mdash; simple one-click export, no filters needed.</div>
+    </div>
+  </div>
+
+  <div class="states-nav" data-section="loyalty">
+    <button class="state-btn active" onclick="showState('loyalty','default')">Page Bar + Preview</button>
+    <button class="state-btn" onclick="showState('loyalty','generating')">Generating</button>
+    <button class="state-btn" onclick="showState('loyalty','complete')">Complete</button>
+  </div>
+
+  <div class="state-panel active" data-section="loyalty" data-state="default">
+    <div class="report-bar">
+      <div class="report-bar-left">
+        <div class="report-icon">&#x1F3C6;</div>
+        <div><div class="report-bar-title">Export Tier Distribution</div><div class="report-bar-desc">Current tier breakdown with customer counts and thresholds</div></div>
+      </div>
+      <button class="btn btn-primary btn-sm">Download CSV</button>
+    </div>
+    <div class="banner banner-info">This is a snapshot report &mdash; no filters needed. Shows current tier distribution across all customers.</div>
+    <div class="card">
+      <div class="card-title">Preview</div>
+      <table class="preview-table">
+        <thead><tr><th>Tier</th><th>Rank</th><th>Threshold</th><th>Earn Multiplier</th><th>Customers</th><th>% of Total</th></tr></thead>
+        <tbody>
+          <tr><td>Bronze</td><td>1</td><td>0</td><td>1.0x</td><td>1,240</td><td>53%</td></tr>
+          <tr><td>Silver</td><td>2</td><td>500</td><td>1.25x</td><td>680</td><td>29%</td></tr>
+          <tr><td>Gold</td><td>3</td><td>2,000</td><td>1.5x</td><td>320</td><td>14%</td></tr>
+          <tr><td>Platinum</td><td>4</td><td>5,000</td><td>2.0x</td><td>100</td><td>4%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="state-panel" data-section="loyalty" data-state="generating">
+    <div class="modal-overlay">
+      <div class="modal-header"><h3>Generating Report</h3><span></span></div>
+      <div class="modal-body"><div class="generating-state"><div class="spinner"></div><div style="font-size:15px;font-weight:600;color:var(--text);">Generating tier distribution&hellip;</div><div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">This should be quick</div><div class="progress-bar" style="max-width:300px;margin:0 auto;"><div class="progress-fill" style="width:90%;"></div></div></div></div>
+      <div class="modal-footer"><button class="btn btn-ghost" style="color:var(--danger);">Cancel</button></div>
+    </div>
+  </div>
+
+  <div class="state-panel" data-section="loyalty" data-state="complete">
+    <div class="modal-overlay">
+      <div class="modal-header"><h3>Report Ready</h3><button class="modal-close">&times;</button></div>
+      <div class="modal-body">
+        <div class="complete-state"><div class="check-circle">&#10003;</div><div style="font-size:15px;font-weight:600;color:var(--text);">Report generated successfully</div><div style="font-size:13px;color:var(--text-muted);">4 rows exported</div></div>
+        <div class="file-card"><div class="file-icon">&#128196;</div><div class="file-info" style="flex:1;"><div class="name">tier_distribution_2026-03-27.csv</div><div class="meta">&lt; 1 KB &middot; Generated just now</div></div><button class="btn btn-primary btn-sm">Download</button></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-secondary">Close</button><button class="btn btn-ghost">Generate Another</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- RULES                                                    -->
+<!-- ======================================================== -->
+<div class="section" id="sec-rules">
+  <div class="section-header">
+    <div>
+      <div class="section-title">Rules Report</div>
+      <div class="section-desc">Export earn rules with their performance metrics.</div>
+    </div>
+  </div>
+
+  <div class="states-nav" data-section="rules">
+    <button class="state-btn active" onclick="showState('rules','default')">Page Bar</button>
+    <button class="state-btn" onclick="showState('rules','modal')">Export Modal</button>
+    <button class="state-btn" onclick="showState('rules','generating')">Generating</button>
+    <button class="state-btn" onclick="showState('rules','complete')">Complete</button>
+  </div>
+
+  <div class="state-panel active" data-section="rules" data-state="default">
+    <div class="report-bar">
+      <div class="report-bar-left">
+        <div class="report-icon">&#x2699;</div>
+        <div><div class="report-bar-title">Export Rules</div><div class="report-bar-desc">Rule configuration and performance data</div></div>
+      </div>
+      <button class="btn btn-primary btn-sm"><svg class="dl-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 1v9m0 0L4 7m3 3l3-3M2 12h10"/></svg> Export Report</button>
+    </div>
+  </div>
+
+  <div class="state-panel" data-section="rules" data-state="modal">
+    <div class="modal-overlay">
+      <div class="modal-header"><h3>Export Rules</h3><button class="modal-close">&times;</button></div>
+      <div class="modal-body">
+        <div class="step-section">
+          <div class="step-heading"><span class="step-num">1</span> Scope</div>
+          <div class="scope-selector">
+            <div class="scope-option selected"><div class="radio"></div><div><div class="scope-label">All rules</div><div class="scope-desc">Export every rule with performance metrics</div></div><span class="scope-count">~12</span></div>
+            <div class="scope-option"><div class="radio"></div><div><div class="scope-label">Active rules only</div><div class="scope-desc">Only currently enabled rules</div></div><span class="scope-count">~9</span></div>
+          </div>
+        </div>
+        <div class="step-section">
+          <div class="step-heading"><span class="step-num">2</span> Filters</div>
+          <div class="filter-row">
+            <div class="filter-group"><label>Status</label><select class="filter-select"><option selected>All</option><option>Active</option><option>Inactive</option></select></div>
+            <div class="filter-group"><label>Performance Period</label><select class="filter-select"><option>Last 7 days</option><option selected>Last 30 days</option><option>Last 90 days</option><option>All time</option></select></div>
+          </div>
+        </div>
+        <div class="step-section">
+          <div class="step-heading"><span class="step-num">3</span> Columns</div>
+          <div class="columns-grid">
+            <div class="col-chip selected"><span class="check">&#10003;</span> Rule Name</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Event Type</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Bucket Type</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Active</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Total Entries</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Total Value</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Unique Users</div>
+            <div class="col-chip"><span class="check">&#9675;</span> Max Amount</div>
+            <div class="col-chip"><span class="check">&#9675;</span> Expiry Days</div>
+          </div>
+        </div>
+        <div class="step-section" style="margin-bottom:0;"><div class="step-heading"><span class="step-num">4</span> Format</div><div class="format-options"><div class="format-chip selected">CSV</div><div class="format-chip" style="opacity:0.4;cursor:default;">Excel <span class="soon">SOON</span></div></div></div>
+        <div class="estimate-row"><span class="label">Est. rows:</span> <span class="value">~12</span><span class="sep">|</span><span class="label">File size:</span> <span class="value">~2 KB</span></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-secondary">Cancel</button><button class="btn btn-primary">Generate &amp; Download</button></div>
+    </div>
+  </div>
+
+  <div class="state-panel" data-section="rules" data-state="generating">
+    <div class="modal-overlay">
+      <div class="modal-header"><h3>Generating Report</h3><span></span></div>
+      <div class="modal-body"><div class="generating-state"><div class="spinner"></div><div style="font-size:15px;font-weight:600;color:var(--text);">Generating rules report&hellip;</div><div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">Fetching rule performance data</div><div class="progress-bar" style="max-width:300px;margin:0 auto;"><div class="progress-fill" style="width:75%;"></div></div><div style="font-size:12px;color:var(--text-dim);margin-top:8px;">Processing 9 of 12 rules&hellip;</div></div></div>
+      <div class="modal-footer"><button class="btn btn-ghost" style="color:var(--danger);">Cancel</button></div>
+    </div>
+  </div>
+
+  <div class="state-panel" data-section="rules" data-state="complete">
+    <div class="modal-overlay">
+      <div class="modal-header"><h3>Report Ready</h3><button class="modal-close">&times;</button></div>
+      <div class="modal-body">
+        <div class="complete-state"><div class="check-circle">&#10003;</div><div style="font-size:15px;font-weight:600;color:var(--text);">Report generated successfully</div><div style="font-size:13px;color:var(--text-muted);">12 rows exported</div></div>
+        <div class="file-card"><div class="file-icon">&#128196;</div><div class="file-info" style="flex:1;"><div class="name">rules_performance_30d_2026-03-27.csv</div><div class="meta">2 KB &middot; Generated just now</div></div><button class="btn btn-primary btn-sm">Download</button></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-secondary">Close</button><button class="btn btn-ghost">Generate Another</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- NOTIFICATIONS                                            -->
+<!-- ======================================================== -->
+<div class="section" id="sec-notifications">
+  <div class="section-header">
+    <div>
+      <div class="section-title">Notifications Report</div>
+      <div class="section-desc">Delivery logs with channel, status, and timestamp details.</div>
+    </div>
+  </div>
+
+  <div class="states-nav" data-section="notifications">
+    <button class="state-btn active" onclick="showState('notifications','default')">Page Bar</button>
+    <button class="state-btn" onclick="showState('notifications','modal')">Export Modal</button>
+    <button class="state-btn" onclick="showState('notifications','generating')">Generating</button>
+    <button class="state-btn" onclick="showState('notifications','complete')">Complete</button>
+  </div>
+
+  <div class="state-panel active" data-section="notifications" data-state="default">
+    <div class="report-bar">
+      <div class="report-bar-left">
+        <div class="report-icon">&#x1F514;</div>
+        <div><div class="report-bar-title">Export Notification Logs</div><div class="report-bar-desc">Delivery history with channel and status breakdown</div></div>
+      </div>
+      <button class="btn btn-primary btn-sm"><svg class="dl-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 1v9m0 0L4 7m3 3l3-3M2 12h10"/></svg> Export Report</button>
+    </div>
+  </div>
+
+  <div class="state-panel" data-section="notifications" data-state="modal">
+    <div class="modal-overlay">
+      <div class="modal-header"><h3>Export Notification Logs</h3><button class="modal-close">&times;</button></div>
+      <div class="modal-body">
+        <div class="step-section">
+          <div class="step-heading"><span class="step-num">1</span> Scope</div>
+          <div class="scope-selector">
+            <div class="scope-option"><div class="radio"></div><div><div class="scope-label">Current page</div><div class="scope-desc">Export the 20 logs visible on this page</div></div><span class="scope-count">20 rows</span></div>
+            <div class="scope-option selected"><div class="radio"></div><div><div class="scope-label">All notification logs</div><div class="scope-desc">Export every delivery log with status and channel</div></div><span class="scope-count">~4,200</span></div>
+            <div class="scope-option"><div class="radio"></div><div><div class="scope-label">Matching current filters</div><div class="scope-desc">Failed &middot; SMS only (as set on the page)</div></div><span class="scope-count">~120</span></div>
+          </div>
+        </div>
+        <div class="step-section">
+          <div class="step-heading"><span class="step-num">2</span> Filters</div>
+          <div class="filter-row">
+            <div class="filter-group"><label>From</label><input type="date" class="filter-input" value="2026-03-01"></div>
+            <div class="filter-group"><label>To</label><input type="date" class="filter-input" value="2026-03-27"></div>
+            <div class="filter-group"><label>Channel</label><select class="filter-select"><option selected>All</option><option>SMS</option><option>Email</option><option>WhatsApp</option><option>Push</option></select></div>
+            <div class="filter-group"><label>Status</label><select class="filter-select"><option selected>All</option><option>Delivered</option><option>Failed</option><option>Pending</option></select></div>
+          </div>
+        </div>
+        <div class="step-section">
+          <div class="step-heading"><span class="step-num">3</span> Columns</div>
+          <div class="columns-grid">
+            <div class="col-chip selected"><span class="check">&#10003;</span> Customer ID</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Channel</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Template</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Status</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Timestamp</div>
+            <div class="col-chip"><span class="check">&#9675;</span> Error Message</div>
+          </div>
+        </div>
+        <div class="step-section" style="margin-bottom:0;"><div class="step-heading"><span class="step-num">4</span> Format</div><div class="format-options"><div class="format-chip selected">CSV</div><div class="format-chip" style="opacity:0.4;cursor:default;">Excel <span class="soon">SOON</span></div></div></div>
+        <div class="estimate-row"><span class="label">Est. rows:</span> <span class="value">~4,200</span><span class="sep">|</span><span class="label">File size:</span> <span class="value">~380 KB</span></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-secondary">Cancel</button><button class="btn btn-primary">Generate &amp; Download</button></div>
+    </div>
+  </div>
+
+  <div class="state-panel" data-section="notifications" data-state="generating">
+    <div class="modal-overlay">
+      <div class="modal-header"><h3>Generating Report</h3><span></span></div>
+      <div class="modal-body"><div class="generating-state"><div class="spinner"></div><div style="font-size:15px;font-weight:600;color:var(--text);">Generating notification logs&hellip;</div><div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">Fetching delivery history</div><div class="progress-bar" style="max-width:300px;margin:0 auto;"><div class="progress-fill" style="width:60%;"></div></div><div style="font-size:12px;color:var(--text-dim);margin-top:8px;">Processing 2,520 of ~4,200 logs&hellip;</div></div></div>
+      <div class="modal-footer"><button class="btn btn-ghost" style="color:var(--danger);">Cancel</button></div>
+    </div>
+  </div>
+
+  <div class="state-panel" data-section="notifications" data-state="complete">
+    <div class="modal-overlay">
+      <div class="modal-header"><h3>Report Ready</h3><button class="modal-close">&times;</button></div>
+      <div class="modal-body">
+        <div class="complete-state"><div class="check-circle">&#10003;</div><div style="font-size:15px;font-weight:600;color:var(--text);">Report generated successfully</div><div style="font-size:13px;color:var(--text-muted);">4,200 rows exported</div></div>
+        <div class="file-card"><div class="file-icon">&#128196;</div><div class="file-info" style="flex:1;"><div class="name">notification_logs_2026-03-01_to_2026-03-27.csv</div><div class="meta">380 KB &middot; Generated just now</div></div><button class="btn btn-primary btn-sm">Download</button></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-secondary">Close</button><button class="btn btn-ghost">Generate Another</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- COD ORDERS                                               -->
+<!-- ======================================================== -->
+<div class="section" id="sec-cod">
+  <div class="section-header">
+    <div>
+      <div class="section-title">COD Orders Report</div>
+      <div class="section-desc">Cash-on-delivery orders with state tracking and points conversion data.</div>
+    </div>
+  </div>
+
+  <div class="states-nav" data-section="cod">
+    <button class="state-btn active" onclick="showState('cod','default')">Page Bar</button>
+    <button class="state-btn" onclick="showState('cod','modal')">Export Modal</button>
+    <button class="state-btn" onclick="showState('cod','generating')">Generating</button>
+    <button class="state-btn" onclick="showState('cod','complete')">Complete</button>
+  </div>
+
+  <div class="state-panel active" data-section="cod" data-state="default">
+    <div class="report-bar">
+      <div class="report-bar-left">
+        <div class="report-icon">&#x1F4E6;</div>
+        <div><div class="report-bar-title">Export COD Orders</div><div class="report-bar-desc">Order list with delivery state and points conversion</div></div>
+      </div>
+      <button class="btn btn-primary btn-sm"><svg class="dl-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 1v9m0 0L4 7m3 3l3-3M2 12h10"/></svg> Export Report</button>
+    </div>
+  </div>
+
+  <div class="state-panel" data-section="cod" data-state="modal">
+    <div class="modal-overlay">
+      <div class="modal-header"><h3>Export COD Orders</h3><button class="modal-close">&times;</button></div>
+      <div class="modal-body">
+        <div class="step-section">
+          <div class="step-heading"><span class="step-num">1</span> Scope</div>
+          <div class="scope-selector">
+            <div class="scope-option"><div class="radio"></div><div><div class="scope-label">Current page</div><div class="scope-desc">Export the 20 orders visible on this page</div></div><span class="scope-count">20 rows</span></div>
+            <div class="scope-option selected"><div class="radio"></div><div><div class="scope-label">All COD orders</div><div class="scope-desc">Export every order with state and points data</div></div><span class="scope-count">~1,420</span></div>
+            <div class="scope-option"><div class="radio"></div><div><div class="scope-label">Matching current filters</div><div class="scope-desc">Pending orders only (as set on the page)</div></div><span class="scope-count">~340</span></div>
+          </div>
+        </div>
+        <div class="step-section">
+          <div class="step-heading"><span class="step-num">2</span> Filters</div>
+          <div class="filter-row">
+            <div class="filter-group"><label>From</label><input type="date" class="filter-input" value="2026-01-01"></div>
+            <div class="filter-group"><label>To</label><input type="date" class="filter-input" value="2026-03-27"></div>
+            <div class="filter-group"><label>State</label><select class="filter-select"><option selected>All</option><option>Pending</option><option>Delivered</option><option>RTO</option><option>Cancelled</option></select></div>
+          </div>
+        </div>
+        <div class="step-section">
+          <div class="step-heading"><span class="step-num">3</span> Columns</div>
+          <div class="columns-grid">
+            <div class="col-chip selected"><span class="check">&#10003;</span> Order ID</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Customer</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Amount (&#8377;)</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Points Held</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> State</div>
+            <div class="col-chip selected"><span class="check">&#10003;</span> Created</div>
+            <div class="col-chip"><span class="check">&#9675;</span> Delivered At</div>
+            <div class="col-chip"><span class="check">&#9675;</span> RTO At</div>
+            <div class="col-chip"><span class="check">&#9675;</span> Wallet ID</div>
+          </div>
+        </div>
+        <div class="step-section" style="margin-bottom:0;"><div class="step-heading"><span class="step-num">4</span> Format</div><div class="format-options"><div class="format-chip selected">CSV</div><div class="format-chip" style="opacity:0.4;cursor:default;">Excel <span class="soon">SOON</span></div></div></div>
+        <div class="estimate-row"><span class="label">Est. rows:</span> <span class="value">~1,420</span><span class="sep">|</span><span class="label">File size:</span> <span class="value">~160 KB</span></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-secondary">Cancel</button><button class="btn btn-primary">Generate &amp; Download</button></div>
+    </div>
+  </div>
+
+  <div class="state-panel" data-section="cod" data-state="generating">
+    <div class="modal-overlay">
+      <div class="modal-header"><h3>Generating Report</h3><span></span></div>
+      <div class="modal-body"><div class="generating-state"><div class="spinner"></div><div style="font-size:15px;font-weight:600;color:var(--text);">Generating COD orders report&hellip;</div><div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">Fetching order data</div><div class="progress-bar" style="max-width:300px;margin:0 auto;"><div class="progress-fill" style="width:45%;"></div></div><div style="font-size:12px;color:var(--text-dim);margin-top:8px;">Processing 639 of ~1,420 orders&hellip;</div></div></div>
+      <div class="modal-footer"><button class="btn btn-ghost" style="color:var(--danger);">Cancel</button></div>
+    </div>
+  </div>
+
+  <div class="state-panel" data-section="cod" data-state="complete">
+    <div class="modal-overlay">
+      <div class="modal-header"><h3>Report Ready</h3><button class="modal-close">&times;</button></div>
+      <div class="modal-body">
+        <div class="complete-state"><div class="check-circle">&#10003;</div><div style="font-size:15px;font-weight:600;color:var(--text);">Report generated successfully</div><div style="font-size:13px;color:var(--text-muted);">1,420 rows exported</div></div>
+        <div class="file-card"><div class="file-icon">&#128196;</div><div class="file-info" style="flex:1;"><div class="name">cod_orders_2026-01-01_to_2026-03-27.csv</div><div class="meta">160 KB &middot; Generated just now</div></div><button class="btn btn-primary btn-sm">Download</button></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-secondary">Close</button><button class="btn btn-ghost">Generate Another</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- SHARED STATES                                            -->
+<!-- ======================================================== -->
+<div class="section" id="sec-shared">
+  <div class="section-header">
+    <div>
+      <div class="section-title">Shared States</div>
+      <div class="section-desc">Common states that apply across all sections: error, cooldown, empty data, large dataset, export history, and toasts.</div>
+    </div>
+  </div>
+
+  <div class="states-nav" data-section="shared">
+    <button class="state-btn active" onclick="showState('shared','error')">Error</button>
+    <button class="state-btn" onclick="showState('shared','cooldown')">Cooldown</button>
+    <button class="state-btn" onclick="showState('shared','empty')">No Data</button>
+    <button class="state-btn" onclick="showState('shared','large')">Large Dataset</button>
+    <button class="state-btn" onclick="showState('shared','history')">Export History</button>
+    <button class="state-btn" onclick="showState('shared','toasts')">Toasts</button>
+  </div>
+
+  <!-- Error -->
+  <div class="state-panel active" data-section="shared" data-state="error">
+    <div class="modal-overlay">
+      <div class="modal-header"><h3>Export Failed</h3><button class="modal-close">&times;</button></div>
+      <div class="modal-body">
+        <div class="error-state">
+          <div class="error-circle">&times;</div>
+          <div style="font-size:15px;font-weight:600;margin-bottom:4px;color:var(--text);">Report generation failed</div>
+          <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">The server encountered an error. Please try again.</div>
+        </div>
+        <div class="banner banner-danger" style="text-align:left;">Error: Connection timed out after 30s. Try a smaller date range or fewer columns.</div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-secondary">Close</button><button class="btn btn-primary">Retry</button></div>
+    </div>
+  </div>
+
+  <!-- Cooldown -->
+  <div class="state-panel" data-section="shared" data-state="cooldown">
+    <div class="report-bar">
+      <div class="report-bar-left">
+        <div class="report-icon" style="background:var(--warning-bg);">&#9203;</div>
+        <div><div class="report-bar-title">Export Transactions</div><div class="report-bar-desc">Please wait before generating another report</div></div>
+      </div>
+      <button class="btn btn-primary btn-sm btn-disabled">Export Report</button>
+    </div>
+    <div class="cooldown-bar">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      You can generate another report in <span class="cooldown-timer">0:24</span>
+    </div>
+  </div>
+
+  <!-- Empty -->
+  <div class="state-panel" data-section="shared" data-state="empty">
+    <div class="modal-overlay">
+      <div class="modal-header"><h3>Export Transactions</h3><button class="modal-close">&times;</button></div>
+      <div class="modal-body">
+        <div class="empty-state">
+          <div class="empty-icon">&#x1F4ED;</div>
+          <h4>No data to export</h4>
+          <p>No records match your current filters. Try adjusting the date range or removing filters.</p>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:center;margin-top:16px;">
+          <button class="btn btn-secondary btn-sm">Clear Filters</button>
+          <button class="btn btn-ghost btn-sm">Change Date Range</button>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-secondary">Close</button></div>
+    </div>
+  </div>
+
+  <!-- Large dataset warning -->
+  <div class="state-panel" data-section="shared" data-state="large">
+    <div class="modal-overlay">
+      <div class="modal-header"><h3>Large Dataset Warning</h3><button class="modal-close">&times;</button></div>
+      <div class="modal-body">
+        <div class="banner banner-warning">This export contains <strong>~48,000 rows</strong> and may take up to 30 seconds to generate.</div>
+        <div style="font-size:13px;color:var(--text-muted);margin:16px 0;">To reduce the dataset size, you can:</div>
+        <ul style="font-size:13px;color:var(--text-muted);padding-left:20px;margin-bottom:16px;line-height:2;">
+          <li>Narrow the date range (currently 90 days)</li>
+          <li>Apply bucket type or movement filters</li>
+          <li>Remove optional columns</li>
+        </ul>
+        <div class="estimate-row">
+          <span class="label">Rows:</span> <span class="value" style="color:var(--warning);">~48,000</span>
+          <span class="sep">|</span>
+          <span class="label">Est. size:</span> <span class="value" style="color:var(--warning);">~6.2 MB</span>
+          <span class="sep">|</span>
+          <span class="label">Est. time:</span> <span class="value" style="color:var(--warning);">~25 sec</span>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-secondary">&larr; Adjust Filters</button><button class="btn btn-primary">Proceed Anyway</button></div>
+    </div>
+  </div>
+
+  <!-- History -->
+  <div class="state-panel" data-section="shared" data-state="history">
+    <div class="card">
+      <div class="card-title">Recent Exports</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">Last 5 reports generated from this section</div>
+      <div>
+        <div class="history-item">
+          <div class="left">
+            <div class="icon-sm">&#128196;</div>
+            <div><div class="title">transactions_2026-03-01_to_2026-03-27.csv</div><div class="subtitle">12,480 rows &middot; 1.8 MB &middot; Earned Credit filter</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:11px;color:var(--text-dim);">2 hours ago</span>
+            <button class="btn btn-ghost btn-sm">&darr;</button>
+          </div>
+        </div>
+        <div class="history-item">
+          <div class="left">
+            <div class="icon-sm">&#128196;</div>
+            <div><div class="title">transactions_2026-02-01_to_2026-02-28.csv</div><div class="subtitle">8,920 rows &middot; 1.2 MB &middot; All buckets</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:11px;color:var(--text-dim);">3 days ago</span>
+            <button class="btn btn-ghost btn-sm">&darr;</button>
+          </div>
+        </div>
+        <div class="history-item">
+          <div class="left">
+            <div class="icon-sm">&#128196;</div>
+            <div><div class="title">transactions_2026-01-01_to_2026-01-31.csv</div><div class="subtitle">6,340 rows &middot; 840 KB &middot; Out movements only</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:11px;color:var(--text-dim);">2 weeks ago</span>
+            <button class="btn btn-ghost btn-sm">&darr;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toasts -->
+  <div class="state-panel" data-section="shared" data-state="toasts">
+    <div class="card">
+      <div class="card-title">Toast Notifications</div>
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">These appear in the top-right corner after export actions:</div>
+      <div style="display:flex;flex-direction:column;gap:12px;max-width:420px;">
+        <div class="toast-preview toast-success">&#10003; Report downloaded &mdash; transactions_2026-03-27.csv</div>
+        <div class="toast-preview toast-error">&times; Export failed &mdash; please try again</div>
+        <div class="toast-preview toast-progress">&#8595; Generating report&hellip; 65%</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec-' + id).classList.add('active');
+  document.querySelectorAll('#mainNav .nav-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+function showState(section, state) {
+  document.querySelectorAll('.state-panel[data-section="' + section + '"]').forEach(p => p.classList.remove('active'));
+  const t = document.querySelector('.state-panel[data-section="' + section + '"][data-state="' + state + '"]');
+  if (t) t.classList.add('active');
+  document.querySelectorAll('.states-nav[data-section="' + section + '"] .state-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>

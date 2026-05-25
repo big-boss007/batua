@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bulk Issue Form — Redesign</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f3f4f6;
+    color: #1f2937;
+    padding: 40px;
+  }
+  h1 { text-align: center; font-size: 24px; margin-bottom: 8px; }
+  .subtitle { text-align: center; color: #6b7280; font-size: 13px; margin-bottom: 40px; }
+  .container { max-width: 700px; margin: 0 auto; }
+  .label-tag {
+    display: inline-block;
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; padding: 3px 10px; border-radius: 4px; margin-bottom: 16px;
+  }
+  .label-tag.before { background: #fef2f2; color: #dc2626; }
+  .label-tag.after { background: #f0fdf4; color: #16a34a; }
+
+  /* ─── Before ─── */
+  .before-card {
+    background: #fff;
+    border: 2px dashed #d1d5db;
+    border-radius: 12px;
+    padding: 40px;
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  .before-title { font-weight: 600; color: #1f2937; margin-bottom: 4px; }
+  .before-hint { font-size: 12px; color: #9ca3af; margin-bottom: 16px; }
+  .before-file { font-size: 13px; color: #9ca3af; }
+
+  /* ─── After ─── */
+  .after-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .after-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .after-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 4px;
+  }
+  .after-desc {
+    font-size: 12px;
+    color: #9ca3af;
+    line-height: 1.5;
+  }
+
+  .after-body {
+    padding: 20px 24px;
+  }
+
+  .upload-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    border: 2px dashed #e5e7eb;
+    border-radius: 10px;
+    background: #fafafa;
+  }
+  .upload-icon {
+    width: 40px;
+    height: 40px;
+    background: #ede9fe;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .upload-text {
+    flex: 1;
+  }
+  .upload-text-main {
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+  }
+  .upload-text-sub {
+    font-size: 11px;
+    color: #9ca3af;
+    margin-top: 1px;
+  }
+  .btn-choose {
+    height: 34px;
+    padding: 0 16px;
+    background: #6366f1;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .sample-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .sample-link {
+    font-size: 12px;
+    color: #6366f1;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .sample-link:hover { text-decoration: underline; }
+  .sample-icon { font-size: 14px; }
+  .sample-divider {
+    width: 1px;
+    height: 14px;
+    background: #e5e7eb;
+  }
+  .format-hint {
+    font-size: 11px;
+    color: #9ca3af;
+  }
+
+  /* ─── Preview table (after file parsed) ─── */
+  .preview-section {
+    margin-top: 20px;
+  }
+  .preview-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .preview-count {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2937;
+  }
+  .preview-total {
+    font-size: 12px;
+    color: #6b7280;
+  }
+  .table-wrap {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  th {
+    text-align: left;
+    padding: 8px 12px;
+    font-weight: 600;
+    color: #6b7280;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    position: sticky;
+    top: 0;
+  }
+  td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #f3f4f6;
+    color: #374151;
+  }
+  tr:last-child td { border-bottom: none; }
+
+  .after-footer {
+    padding: 16px 24px;
+    border-top: 1px solid #f3f4f6;
+    display: flex;
+    justify-content: flex-end;
+  }
+  .btn-issue {
+    height: 36px;
+    padding: 0 20px;
+    background: #6366f1;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .spacer { height: 48px; }
+</style>
+</head>
+<body>
+
+<h1>Bulk Issue Gift Cards — Redesign</h1>
+<p class="subtitle">Before & after comparison</p>
+
+<div class="container">
+
+  <!-- BEFORE -->
+  <span class="label-tag before">Before</span>
+  <div class="before-card">
+    <div class="before-title">Upload CSV</div>
+    <div class="before-hint">Format: amount, recipient_phone (optional)</div>
+    <div class="before-file">Choose file &nbsp; No file chosen</div>
+  </div>
+
+  <div class="spacer"></div>
+
+  <!-- AFTER — empty state -->
+  <span class="label-tag after">After — Empty State</span>
+  <div class="after-card" style="margin-bottom: 32px;">
+    <div class="after-header">
+      <div class="after-title">Bulk Issue Gift Cards</div>
+      <div class="after-desc">Upload a CSV to issue multiple gift cards at once. Each row creates one gift card.</div>
+    </div>
+    <div class="after-body">
+      <div class="upload-row">
+        <div class="upload-icon">📄</div>
+        <div class="upload-text">
+          <div class="upload-text-main">Drop a CSV file or click to browse</div>
+          <div class="upload-text-sub">Columns: amount (required), recipient_phone (optional)</div>
+        </div>
+        <button class="btn-choose">Choose File</button>
+      </div>
+      <div class="sample-row">
+        <a class="sample-link"><span class="sample-icon">↓</span> Download sample CSV</a>
+        <span class="sample-divider"></span>
+        <span class="format-hint">amount, recipient_phone</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- AFTER — with data parsed -->
+  <span class="label-tag after">After — File Parsed</span>
+  <div class="after-card">
+    <div class="after-header">
+      <div class="after-title">Bulk Issue Gift Cards</div>
+      <div class="after-desc">Upload a CSV to issue multiple gift cards at once. Each row creates one gift card.</div>
+    </div>
+    <div class="after-body">
+      <div class="upload-row">
+        <div class="upload-icon">✅</div>
+        <div class="upload-text">
+          <div class="upload-text-main">gift-cards-batch.csv</div>
+          <div class="upload-text-sub">5 cards parsed successfully</div>
+        </div>
+        <button class="btn-choose" style="background: #fff; color: #6b7280; border: 1px solid #d1d5db;">Change File</button>
+      </div>
+
+      <div class="preview-section">
+        <div class="preview-bar">
+          <span class="preview-count">5 cards to issue</span>
+          <span class="preview-total">Total: ₹4,500</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Amount (₹)</th>
+                <th>Recipient Phone</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>1</td><td>500</td><td>+91 98765 43210</td></tr>
+              <tr><td>2</td><td>1,000</td><td>+91 87654 32109</td></tr>
+              <tr><td>3</td><td>1,500</td><td>--</td></tr>
+              <tr><td>4</td><td>750</td><td>+91 76543 21098</td></tr>
+              <tr><td>5</td><td>750</td><td>--</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="after-footer">
+      <button class="btn-issue">Issue 5 Gift Cards</button>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

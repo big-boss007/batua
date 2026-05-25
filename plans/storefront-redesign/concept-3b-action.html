@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Concept 3B: Action-Oriented</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #0a0a0f;
+    color: #e4e4ed;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+  }
+  .page-title { font-size: 28px; font-weight: 800; color: #7c6aff; margin-bottom: 8px; text-align: center; }
+  .page-subtitle { font-size: 14px; color: #8888a0; margin-bottom: 40px; text-align: center; max-width: 520px; line-height: 1.6; }
+
+  .phone {
+    width: 375px; min-height: 812px; background: #0a0a0f;
+    border-radius: 40px; border: 3px solid #2a2a3a; overflow: hidden;
+    box-shadow: 0 25px 80px rgba(124,106,255,0.08);
+  }
+  .notch { width: 150px; height: 28px; background: #000; border-radius: 0 0 20px 20px; margin: 0 auto; }
+  .screen { padding: 12px 20px 40px; }
+
+  /* Header with name */
+  .header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 0 20px;
+  }
+  .header-left { display: flex; align-items: center; gap: 10px; }
+  .logo {
+    width: 32px; height: 32px; background: linear-gradient(135deg,#7c6aff,#6b5ce7);
+    border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px; color: white;
+  }
+  .header-text {}
+  .brand-name { font-size: 15px; font-weight: 600; line-height: 1.2; }
+  .customer-name { font-size: 11px; color: #8888a0; }
+  .switch-btn { font-size: 12px; color: #7c6aff; font-weight: 500; }
+
+  /* Balance with CTA framing */
+  .balance-section { text-align: center; padding: 24px 0 20px; }
+  .balance-ready {
+    font-size: 12px; color: #10b981; text-transform: uppercase;
+    letter-spacing: 1.5px; font-weight: 600; margin-bottom: 8px;
+  }
+  .balance-number {
+    font-size: 56px; font-weight: 800; color: white;
+    line-height: 1; letter-spacing: -2px; margin-bottom: 6px;
+  }
+  .balance-number .currency { font-size: 30px; font-weight: 600; opacity: 0.4; vertical-align: top; letter-spacing: 0; margin-right: 2px; }
+  .balance-sub { font-size: 13px; color: #6b7280; margin-bottom: 16px; }
+  .balance-sub .pending { color: #f59e0b; }
+  .balance-cta {
+    display: inline-block; padding: 10px 32px;
+    background: #7c6aff; color: white; border-radius: 10px;
+    font-size: 13px; font-weight: 600; letter-spacing: 0.3px;
+  }
+
+  .divider { height: 1px; background: #1a1a26; margin: 0 -20px; }
+
+  /* Expiry Warning — NEW */
+  .expiry-banner {
+    margin: 16px 0; padding: 12px 14px;
+    background: #f59e0b08; border: 1px solid #f59e0b20;
+    border-radius: 10px; display: flex; align-items: center; gap: 10px;
+  }
+  .expiry-icon { font-size: 16px; flex-shrink: 0; }
+  .expiry-text { font-size: 12px; color: #c4b078; line-height: 1.4; }
+  .expiry-text strong { color: #f59e0b; }
+
+  /* Ways to Earn — NEW */
+  .earn-section { padding: 16px 0; }
+  .section-label {
+    font-size: 13px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.5px; color: #8888a0; margin-bottom: 12px;
+  }
+  .earn-grid { display: flex; flex-direction: column; gap: 6px; }
+  .earn-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px; background: #12121a; border-radius: 12px;
+    border: 1px solid #1a1a26;
+  }
+  .earn-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .earn-icon.shop { background: #7c6aff12; }
+  .earn-icon.refer { background: #10b98112; }
+  .earn-icon.review { background: #f59e0b12; }
+  .earn-details { flex: 1; }
+  .earn-title { font-size: 13px; font-weight: 600; margin-bottom: 1px; }
+  .earn-desc { font-size: 11px; color: #6b7280; }
+  .earn-reward {
+    font-size: 12px; font-weight: 700; color: #7c6aff;
+    white-space: nowrap;
+  }
+
+  /* Tier — compact inline */
+  .tier-inline-section {
+    padding: 20px 0;
+  }
+  .tier-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .tier-left { display: flex; align-items: center; gap: 8px; }
+  .tier-dot { width: 10px; height: 10px; border-radius: 50%; background: #7c6aff; }
+  .tier-label-text { font-size: 13px; font-weight: 500; }
+  .tier-right { font-size: 12px; color: #8888a0; }
+  .tier-progress { display: flex; gap: 3px; height: 4px; margin-bottom: 8px; }
+  .tier-segment { flex: 1; background: #1a1a26; border-radius: 2px; }
+  .tier-segment.filled { background: #7c6aff; }
+  .tier-benefit {
+    font-size: 11px; color: #6b7280;
+  }
+  .tier-benefit strong { color: #a78bfa; }
+
+  /* Transactions */
+  .tx-section { padding-top: 8px; }
+  .tx-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 0 12px; }
+  .tx-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #8888a0; }
+  .tx-date { font-size: 11px; color: #4b5563; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; padding: 8px 0 6px; }
+  .tx-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 0; border-bottom: 1px solid #12121a;
+  }
+  .tx-item:last-child { border-bottom: none; }
+  .tx-indicator { width: 4px; height: 32px; border-radius: 2px; flex-shrink: 0; }
+  .tx-indicator.credit { background: #10b981; }
+  .tx-indicator.debit { background: #ef4444; }
+  .tx-indicator.transfer { background: #7c6aff; }
+  .tx-details { flex: 1; }
+  .tx-label { font-size: 14px; font-weight: 500; color: #e4e4ed; }
+  .tx-meta { font-size: 12px; color: #4b5563; margin-top: 2px; }
+  .tx-right { text-align: right; }
+  .tx-amount { font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .tx-amount.credit { color: #10b981; }
+  .tx-amount.debit { color: #e4e4ed; }
+  .tx-amount.transfer { color: #8888a0; }
+
+  /* Annotations */
+  .annotation-group { margin-top: 60px; width: 100%; max-width: 700px; }
+  .annotation-title { font-size: 20px; font-weight: 700; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #2a2a3a; }
+  .annotation { display: flex; gap: 16px; margin-bottom: 20px; align-items: flex-start; }
+  .annotation-num {
+    width: 28px; height: 28px; background: #7c6aff; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: white; flex-shrink: 0;
+  }
+  .annotation-text { font-size: 14px; line-height: 1.6; color: #c4c4d4; }
+  .annotation-text strong { color: #e4e4ed; }
+</style>
+</head>
+<body>
+
+<div class="page-title">3B: Action-Oriented</div>
+<div class="page-subtitle">
+  Leads with "what you can do" — a spendable balance framed as a CTA,
+  expiry warnings, and ways to earn more. Hierarchy: spend → earn → progress → history.
+</div>
+
+<div class="phone">
+  <div class="notch"></div>
+  <div class="screen">
+
+    <!-- Header with customer name -->
+    <div class="header">
+      <div class="header-left">
+        <div class="logo">H</div>
+        <div class="header-text">
+          <div class="brand-name">HomeVibes</div>
+          <div class="customer-name">Priya Sharma</div>
+        </div>
+      </div>
+      <div class="switch-btn">Switch</div>
+    </div>
+
+    <!-- Balance with CTA -->
+    <div class="balance-section">
+      <div class="balance-ready">Ready to spend</div>
+      <div class="balance-number"><span class="currency">₹</span>491</div>
+      <div class="balance-sub">₹662 total · <span class="pending">₹171 pending</span></div>
+      <div class="balance-cta">Use on your next order</div>
+    </div>
+
+    <!-- Expiry Warning — NEW -->
+    <div class="expiry-banner">
+      <div class="expiry-icon">⏳</div>
+      <div class="expiry-text">
+        <strong>₹45.00</strong> expires in 12 days. Place an order to use it before Apr 1.
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Ways to Earn — NEW -->
+    <div class="earn-section">
+      <div class="section-label">Ways to Earn</div>
+      <div class="earn-grid">
+        <div class="earn-item">
+          <div class="earn-icon shop">🛍️</div>
+          <div class="earn-details">
+            <div class="earn-title">Shop & Earn</div>
+            <div class="earn-desc">Cashback on every order</div>
+          </div>
+          <div class="earn-reward">1x</div>
+        </div>
+        <div class="earn-item">
+          <div class="earn-icon refer">🤝</div>
+          <div class="earn-details">
+            <div class="earn-title">Refer a Friend</div>
+            <div class="earn-desc">They get ₹100, you get ₹100</div>
+          </div>
+          <div class="earn-reward">₹100</div>
+        </div>
+        <div class="earn-item">
+          <div class="earn-icon review">⭐</div>
+          <div class="earn-details">
+            <div class="earn-title">Write a Review</div>
+            <div class="earn-desc">Earn points for feedback</div>
+          </div>
+          <div class="earn-reward">+50 pts</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Tier -->
+    <div class="tier-inline-section">
+      <div class="tier-row">
+        <div class="tier-left">
+          <div class="tier-dot"></div>
+          <div class="tier-label-text">Silver</div>
+        </div>
+        <div class="tier-right">491 / 3,000</div>
+      </div>
+      <div class="tier-progress">
+        <div class="tier-segment filled"></div>
+        <div class="tier-segment"></div>
+        <div class="tier-segment"></div>
+        <div class="tier-segment"></div>
+        <div class="tier-segment"></div>
+        <div class="tier-segment"></div>
+      </div>
+      <div class="tier-benefit">Silver unlocks <strong>1.5x cashback</strong></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Transactions -->
+    <div class="tx-section">
+      <div class="tx-header">
+        <div class="tx-title">Activity</div>
+      </div>
+      <div class="tx-date">Yesterday</div>
+      <div class="tx-item">
+        <div class="tx-indicator transfer"></div>
+        <div class="tx-details">
+          <div class="tx-label">Transferred</div>
+          <div class="tx-meta">Earned Credit</div>
+        </div>
+        <div class="tx-right"><div class="tx-amount transfer">₹86.10</div></div>
+      </div>
+      <div class="tx-date">March 17</div>
+      <div class="tx-item">
+        <div class="tx-indicator credit"></div>
+        <div class="tx-details">
+          <div class="tx-label">Cashback Earned</div>
+          <div class="tx-meta">Order #1042</div>
+        </div>
+        <div class="tx-right"><div class="tx-amount credit">+₹125.00</div></div>
+      </div>
+      <div class="tx-date">March 15</div>
+      <div class="tx-item">
+        <div class="tx-indicator debit"></div>
+        <div class="tx-details">
+          <div class="tx-label">Redeemed</div>
+          <div class="tx-meta">Order #1038</div>
+        </div>
+        <div class="tx-right"><div class="tx-amount debit">-₹200.00</div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Annotations -->
+<div class="annotation-group">
+  <div class="annotation-title">What's New in 3B</div>
+  <div class="annotation">
+    <div class="annotation-num">1</div>
+    <div class="annotation-text"><strong>Customer Name in Header:</strong> "Priya Sharma" sits below the brand name in the header — always visible, no extra vertical space. Compact and contextual.</div>
+  </div>
+  <div class="annotation">
+    <div class="annotation-num">2</div>
+    <div class="annotation-text"><strong>CTA-Framed Balance:</strong> "Ready to spend" eyebrow + "Use on your next order" button reframes the balance as an action, not just a number. Drives conversion back to the store.</div>
+  </div>
+  <div class="annotation">
+    <div class="annotation-num">3</div>
+    <div class="annotation-text"><strong>Expiry Warning:</strong> Amber banner surfaces time-sensitive info — "₹45 expires in 12 days." Creates urgency without being pushy. Only shown when points are near expiration.</div>
+  </div>
+  <div class="annotation">
+    <div class="annotation-num">4</div>
+    <div class="annotation-text"><strong>Ways to Earn Section:</strong> Three earn pathways (Shop, Refer, Review) with clear reward amounts. Educates customers on the full program and drives engagement beyond just checking balance.</div>
+  </div>
+  <div class="annotation">
+    <div class="annotation-num">5</div>
+    <div class="annotation-text"><strong>Information Hierarchy:</strong> What you can spend → what's urgent → how to earn more → your progress → what happened. Forward-looking, not backward-looking.</div>
+  </div>
+</div>
+
+</body>
+</html>

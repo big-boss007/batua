@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Membership Modal — Button Actions & Confirmation</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f1f3; color: #1a1a2e; }
+
+  .wrapper { max-width: 900px; margin: 0 auto; padding: 40px 24px 80px; }
+  h1 { text-align: center; font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .desc { text-align: center; color: #6b7280; font-size: 13px; margin-bottom: 32px; }
+
+  .state-nav {
+    display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;
+    margin-bottom: 32px; position: sticky; top: 0; background: #f0f1f3; padding: 12px 0; z-index: 10;
+  }
+  .state-tab {
+    padding: 7px 14px; border-radius: 8px; font-size: 12px; font-weight: 500;
+    cursor: pointer; border: 1px solid #d1d5db; background: white; color: #6b7280;
+  }
+  .state-tab.active { background: #6366f1; color: white; border-color: #6366f1; }
+  .state-tab:hover:not(.active) { background: #f3f4f6; }
+
+  .state-view { display: none; }
+  .state-view.active { display: block; }
+
+  .annotation {
+    font-size: 11px; color: #6b7280; background: #fafbfc; border: 1px dashed #d1d5db;
+    border-radius: 6px; padding: 10px 14px; margin-bottom: 16px; line-height: 1.5;
+  }
+  .annotation strong { color: #374151; }
+
+  /* Modal chrome */
+  .modal-wrap { position: relative; min-height: 480px; }
+  .modal-overlay {
+    position: absolute; inset: 0; background: rgba(0,0,0,0.35);
+    display: flex; align-items: center; justify-content: center; border-radius: 12px;
+  }
+  .modal {
+    background: white; border-radius: 12px; width: 520px; max-width: 95%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15); display: flex; flex-direction: column;
+  }
+  .modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 20px; border-bottom: 1px solid #e5e7eb;
+  }
+  .modal-title { font-size: 15px; font-weight: 600; }
+  .modal-close {
+    background: none; border: none; font-size: 18px; color: #9ca3af;
+    cursor: pointer; padding: 2px 6px; border-radius: 4px; line-height: 1;
+  }
+  .modal-close:hover { color: #374151; background: #f3f4f6; }
+  .modal-body { padding: 20px; }
+
+  /* Detail content */
+  .detail-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .detail-name { font-size: 16px; font-weight: 600; }
+  .detail-phone { font-size: 12px; color: #9ca3af; }
+  .status-pill { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+  .s-active { background: #d1fae5; color: #065f46; }
+  .s-expiring { background: #fef3c7; color: #92400e; }
+
+  .detail-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    padding: 14px; background: #f9fafb; border-radius: 8px; margin-bottom: 16px;
+  }
+  .detail-label { font-size: 10px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.04em; }
+  .detail-value { font-size: 13px; font-weight: 500; color: #1a1a2e; margin-top: 2px; }
+
+  .tier-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+  .t-gold { background: #fef9c3; color: #854d0e; }
+  .t-silver { background: #f3f4f6; color: #374151; }
+  .t-plat { background: #ede9fe; color: #5b21b6; }
+
+  .progress-section { margin-bottom: 16px; }
+  .progress-label { font-size: 12px; color: #6b7280; margin-bottom: 5px; display: flex; justify-content: space-between; }
+  .progress-bar { height: 6px; border-radius: 3px; background: #e5e7eb; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 3px; }
+  .fill-green { background: #22c55e; }
+  .fill-amber { background: #f59e0b; }
+
+  .banner { padding: 10px 14px; border-radius: 8px; margin-bottom: 16px; font-size: 12px; line-height: 1.5; }
+  .banner-amber { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+
+  /* Actions */
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .action-btn {
+    padding: 8px 16px; border-radius: 7px; font-size: 13px; font-weight: 500;
+    cursor: pointer; border: 1px solid; display: inline-flex; align-items: center; gap: 6px;
+    background: white; transition: all 0.15s;
+  }
+  .a-upgrade { color: #6366f1; border-color: #c7d2fe; }
+  .a-upgrade:hover { background: #f5f3ff; }
+  .a-extend { color: #22c55e; border-color: #bbf7d0; }
+  .a-extend:hover { background: #f0fdf4; }
+  .a-cancel { color: #ef4444; border-color: #fecaca; }
+  .a-cancel:hover { background: #fef2f2; }
+  .a-renew { background: #22c55e; color: white; border-color: #22c55e; font-weight: 600; }
+  .a-renew:hover { background: #16a34a; }
+  .a-reassign { color: #6366f1; border-color: #6366f1; }
+  .a-reassign:hover { background: #f5f3ff; }
+
+  /* Confirmation inline */
+  .confirm-box {
+    margin-top: 16px; padding: 14px; border-radius: 8px;
+    border: 1px solid; display: flex; flex-direction: column; gap: 10px;
+  }
+  .confirm-danger { border-color: #fecaca; background: #fff5f5; }
+  .confirm-success { border-color: #bbf7d0; background: #f0fdf4; }
+  .confirm-info { border-color: #c7d2fe; background: #f5f3ff; }
+  .confirm-text { font-size: 13px; line-height: 1.5; }
+  .confirm-text.danger { color: #991b1b; }
+  .confirm-text.success { color: #065f46; }
+  .confirm-text.info { color: #3730a3; }
+  .confirm-actions { display: flex; gap: 8px; }
+  .confirm-btn {
+    padding: 7px 16px; border-radius: 7px; font-size: 12px; font-weight: 600;
+    cursor: pointer; border: none;
+  }
+  .confirm-btn-danger { background: #ef4444; color: white; }
+  .confirm-btn-danger:hover { background: #dc2626; }
+  .confirm-btn-success { background: #22c55e; color: white; }
+  .confirm-btn-success:hover { background: #16a34a; }
+  .confirm-btn-primary { background: #6366f1; color: white; }
+  .confirm-btn-primary:hover { background: #4f46e5; }
+  .confirm-btn-ghost { background: white; color: #6b7280; border: 1px solid #d1d5db; }
+  .confirm-btn-ghost:hover { background: #f3f4f6; }
+
+  /* Tier select in upgrade */
+  .tier-select-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .tier-option {
+    padding: 8px 14px; border: 2px solid #e5e7eb; border-radius: 8px;
+    cursor: pointer; text-align: center; font-size: 12px; background: white;
+    transition: all 0.15s;
+  }
+  .tier-option:hover { border-color: #c7d2fe; }
+  .tier-option.selected { border-color: #6366f1; background: #f5f3ff; }
+  .tier-option-name { font-weight: 600; color: #1a1a2e; }
+  .tier-option-mult { font-size: 11px; color: #6b7280; }
+
+  /* Extend input */
+  .extend-input-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .extend-input {
+    width: 80px; padding: 7px 10px; border: 1px solid #d1d5db; border-radius: 7px;
+    font-size: 13px; text-align: center; outline: none;
+  }
+  .extend-input:focus { border-color: #6366f1; }
+  .extend-label { font-size: 13px; color: #374151; }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+  <h1>Membership Modal — Actions & Confirmations</h1>
+  <p class="desc">Interactive mockup showing what each button does + double confirmation for destructive actions</p>
+
+  <div class="state-nav">
+    <button class="state-tab active" onclick="show('active')">Active Modal</button>
+    <button class="state-tab" onclick="show('cancel-confirm')">Cancel → Confirm</button>
+    <button class="state-tab" onclick="show('upgrade')">Upgrade Tier</button>
+    <button class="state-tab" onclick="show('extend')">Extend</button>
+    <button class="state-tab" onclick="show('expiring')">Expiring → Renew</button>
+    <button class="state-tab" onclick="show('reassign')">Re-assign</button>
+  </div>
+
+  <!-- ═══ ACTIVE MODAL — default state ═══ -->
+  <div class="state-view active" id="active">
+    <div class="annotation"><strong>Active membership — default state.</strong> Three action buttons. Cancel requires double confirmation. Upgrade shows tier picker. Extend shows duration input.</div>
+    <div class="modal-wrap">
+      <div class="modal-overlay">
+        <div class="modal">
+          <div class="modal-header">
+            <span class="modal-title">Membership Details</span>
+            <button class="modal-close">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="detail-header">
+              <div><div class="detail-name">Krish Gupta</div><div class="detail-phone">+91 90180 00100</div></div>
+              <span class="status-pill s-active">Active</span>
+            </div>
+            <div class="detail-grid">
+              <div><span class="detail-label">Tier</span><div class="detail-value"><span class="tier-badge t-gold">Gold</span></div></div>
+              <div><span class="detail-label">Multiplier</span><div class="detail-value" style="font-family: monospace;">1.5x</div></div>
+              <div><span class="detail-label">Started</span><div class="detail-value">24 Mar 2026</div></div>
+              <div><span class="detail-label">Expires</span><div class="detail-value">24 Mar 2027</div></div>
+              <div><span class="detail-label">Renewed</span><div class="detail-value">0 times</div></div>
+            </div>
+            <div class="progress-section">
+              <div class="progress-label"><span>Time remaining</span><span style="font-weight: 500;">365 days left</span></div>
+              <div class="progress-bar"><div class="progress-fill fill-green" style="width: 100%;"></div></div>
+            </div>
+            <div class="actions">
+              <button class="action-btn a-upgrade" onclick="show('upgrade')">⬆ Upgrade Tier</button>
+              <button class="action-btn a-extend" onclick="show('extend')">+ Extend</button>
+              <button class="action-btn a-cancel" onclick="show('cancel-confirm')">Cancel Membership</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CANCEL — double confirmation ═══ -->
+  <div class="state-view" id="cancel-confirm">
+    <div class="annotation"><strong>Cancel Membership → Double Confirmation.</strong> Red confirmation box appears below the actions. Must click "Yes, Cancel" to proceed. Shows what happens after cancellation.</div>
+    <div class="modal-wrap">
+      <div class="modal-overlay">
+        <div class="modal">
+          <div class="modal-header">
+            <span class="modal-title">Membership Details</span>
+            <button class="modal-close">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="detail-header">
+              <div><div class="detail-name">Krish Gupta</div><div class="detail-phone">+91 90180 00100</div></div>
+              <span class="status-pill s-active">Active</span>
+            </div>
+            <div class="detail-grid">
+              <div><span class="detail-label">Tier</span><div class="detail-value"><span class="tier-badge t-gold">Gold</span></div></div>
+              <div><span class="detail-label">Multiplier</span><div class="detail-value" style="font-family: monospace;">1.5x</div></div>
+              <div><span class="detail-label">Started</span><div class="detail-value">24 Mar 2026</div></div>
+              <div><span class="detail-label">Expires</span><div class="detail-value">24 Mar 2027</div></div>
+            </div>
+            <div class="actions">
+              <button class="action-btn a-upgrade" style="opacity: 0.4; pointer-events: none;">⬆ Upgrade Tier</button>
+              <button class="action-btn a-extend" style="opacity: 0.4; pointer-events: none;">+ Extend</button>
+              <button class="action-btn a-cancel" style="background: #fef2f2; font-weight: 600;">Cancel Membership</button>
+            </div>
+            <div class="confirm-box confirm-danger">
+              <div class="confirm-text danger">
+                <strong>Are you sure you want to cancel this membership?</strong><br>
+                Krish Gupta will lose their Gold tier (1.5x earn rate) and fall back to their earned tier. This cannot be undone.
+              </div>
+              <div class="confirm-actions">
+                <button class="confirm-btn confirm-btn-danger">Yes, Cancel Membership</button>
+                <button class="confirm-btn confirm-btn-ghost" onclick="show('active')">Keep Membership</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ UPGRADE TIER ═══ -->
+  <div class="state-view" id="upgrade">
+    <div class="annotation"><strong>Upgrade Tier.</strong> Shows available tiers above the current one. Select a tier and confirm. Current tier is marked and disabled.</div>
+    <div class="modal-wrap">
+      <div class="modal-overlay">
+        <div class="modal">
+          <div class="modal-header">
+            <span class="modal-title">Membership Details</span>
+            <button class="modal-close">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="detail-header">
+              <div><div class="detail-name">Krish Gupta</div><div class="detail-phone">+91 90180 00100</div></div>
+              <span class="status-pill s-active">Active</span>
+            </div>
+            <div class="detail-grid">
+              <div><span class="detail-label">Tier</span><div class="detail-value"><span class="tier-badge t-gold">Gold</span></div></div>
+              <div><span class="detail-label">Multiplier</span><div class="detail-value" style="font-family: monospace;">1.5x</div></div>
+            </div>
+
+            <div class="confirm-box confirm-info">
+              <div class="confirm-text info"><strong>Upgrade tier for Krish Gupta</strong><br>Select a new tier. The membership expiry stays the same.</div>
+              <div class="tier-select-row">
+                <div class="tier-option" style="opacity: 0.4; pointer-events: none;">
+                  <div class="tier-option-name">Bronze</div><div class="tier-option-mult">1x</div>
+                </div>
+                <div class="tier-option" style="opacity: 0.4; pointer-events: none;">
+                  <div class="tier-option-name">Silver</div><div class="tier-option-mult">1.25x</div>
+                </div>
+                <div class="tier-option" style="border-color: #fef9c3; background: #fefce8;">
+                  <div class="tier-option-name">Gold ✓</div><div class="tier-option-mult">1.5x (current)</div>
+                </div>
+                <div class="tier-option selected">
+                  <div class="tier-option-name">Platinum</div><div class="tier-option-mult">2x</div>
+                </div>
+              </div>
+              <div class="confirm-actions">
+                <button class="confirm-btn confirm-btn-primary">Upgrade to Platinum</button>
+                <button class="confirm-btn confirm-btn-ghost" onclick="show('active')">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ EXTEND ═══ -->
+  <div class="state-view" id="extend">
+    <div class="annotation"><strong>Extend Membership.</strong> Input field for number of days to extend. Shows new expiry date preview.</div>
+    <div class="modal-wrap">
+      <div class="modal-overlay">
+        <div class="modal">
+          <div class="modal-header">
+            <span class="modal-title">Membership Details</span>
+            <button class="modal-close">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="detail-header">
+              <div><div class="detail-name">Krish Gupta</div><div class="detail-phone">+91 90180 00100</div></div>
+              <span class="status-pill s-active">Active</span>
+            </div>
+            <div class="detail-grid">
+              <div><span class="detail-label">Tier</span><div class="detail-value"><span class="tier-badge t-gold">Gold</span></div></div>
+              <div><span class="detail-label">Current Expiry</span><div class="detail-value">24 Mar 2027</div></div>
+            </div>
+
+            <div class="confirm-box confirm-success">
+              <div class="confirm-text success"><strong>Extend membership for Krish Gupta</strong></div>
+              <div class="extend-input-row">
+                <span class="extend-label">Extend by</span>
+                <input class="extend-input" type="number" value="365" />
+                <span class="extend-label">days</span>
+              </div>
+              <div style="font-size: 12px; color: #065f46; background: #ecfdf5; padding: 8px 12px; border-radius: 6px;">
+                New expiry: <strong>24 Mar 2028</strong> (730 days from today)
+              </div>
+              <div class="confirm-actions">
+                <button class="confirm-btn confirm-btn-success">Extend Membership</button>
+                <button class="confirm-btn confirm-btn-ghost" onclick="show('active')">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ EXPIRING — Renew confirmation ═══ -->
+  <div class="state-view" id="expiring">
+    <div class="annotation"><strong>Expiring Soon — Renew.</strong> Clicking "Renew for 1 Year" shows confirmation with what the renewal means.</div>
+    <div class="modal-wrap">
+      <div class="modal-overlay">
+        <div class="modal">
+          <div class="modal-header">
+            <span class="modal-title">Membership Details</span>
+            <button class="modal-close">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="detail-header">
+              <div><div class="detail-name">Lakshya Deshpande</div><div class="detail-phone">+91 90180 00099</div></div>
+              <span class="status-pill s-expiring">Expiring Soon</span>
+            </div>
+            <div class="banner banner-amber">
+              <strong>Expires in 9 days.</strong> Renew to keep this customer at Silver with 1.25x earn rate.
+            </div>
+            <div class="detail-grid">
+              <div><span class="detail-label">Tier</span><div class="detail-value"><span class="tier-badge t-silver">Silver</span></div></div>
+              <div><span class="detail-label">Multiplier</span><div class="detail-value" style="font-family: monospace;">1.25x</div></div>
+              <div><span class="detail-label">Expires</span><div class="detail-value" style="color: #f59e0b; font-weight: 600;">02 Apr 2026</div></div>
+              <div><span class="detail-label">Falls back to</span><div class="detail-value"><span class="tier-badge" style="background: #fef3c7; color: #92400e; font-size: 10px;">Bronze</span></div></div>
+            </div>
+            <div class="progress-section">
+              <div class="progress-label"><span>Time remaining</span><span style="font-weight: 500; color: #f59e0b;">9 days left</span></div>
+              <div class="progress-bar"><div class="progress-fill fill-amber" style="width: 2.5%;"></div></div>
+            </div>
+
+            <div class="confirm-box confirm-success">
+              <div class="confirm-text success">
+                <strong>Renew Silver membership for Lakshya Deshpande?</strong><br>
+                This will extend the membership by 1 year from today. New expiry: <strong>24 Mar 2027</strong>.
+              </div>
+              <div class="confirm-actions">
+                <button class="confirm-btn confirm-btn-success">↻ Confirm Renewal</button>
+                <button class="confirm-btn confirm-btn-ghost" onclick="show('active')">Not Now</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ RE-ASSIGN (from cancelled) ═══ -->
+  <div class="state-view" id="reassign">
+    <div class="annotation"><strong>Re-assign from Cancelled.</strong> Shows tier picker to assign a new membership to a cancelled customer.</div>
+    <div class="modal-wrap">
+      <div class="modal-overlay">
+        <div class="modal">
+          <div class="modal-header">
+            <span class="modal-title">Membership Details</span>
+            <button class="modal-close">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="detail-header">
+              <div><div class="detail-name">Riya Dubey</div><div class="detail-phone">+91 90180 00097</div></div>
+              <span class="status-pill" style="background: #fee2e2; color: #991b1b;">Cancelled</span>
+            </div>
+            <div style="padding: 10px 14px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; margin-bottom: 16px; font-size: 12px; color: #991b1b;">
+              Membership was cancelled on <strong>18 Mar 2026</strong>. Currently on earned tier Bronze (1x).
+            </div>
+
+            <div class="confirm-box confirm-info">
+              <div class="confirm-text info"><strong>Re-assign membership for Riya Dubey</strong><br>Select a tier to create a new 1-year membership.</div>
+              <div class="tier-select-row">
+                <div class="tier-option">
+                  <div class="tier-option-name">Bronze</div><div class="tier-option-mult">1x</div>
+                </div>
+                <div class="tier-option selected">
+                  <div class="tier-option-name">Silver</div><div class="tier-option-mult">1.25x</div>
+                </div>
+                <div class="tier-option">
+                  <div class="tier-option-name">Gold</div><div class="tier-option-mult">1.5x</div>
+                </div>
+                <div class="tier-option">
+                  <div class="tier-option-name">Platinum</div><div class="tier-option-mult">2x</div>
+                </div>
+              </div>
+              <div style="font-size: 12px; color: #3730a3; background: #eef2ff; padding: 8px 12px; border-radius: 6px;">
+                New membership: <strong>Silver (1.25x)</strong> — expires <strong>24 Mar 2027</strong>
+              </div>
+              <div class="confirm-actions">
+                <button class="confirm-btn confirm-btn-primary">Assign Silver Membership</button>
+                <button class="confirm-btn confirm-btn-ghost" onclick="show('active')">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function show(id) {
+    document.querySelectorAll('.state-view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.state-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    const map = ['active','cancel-confirm','upgrade','extend','expiring','reassign'];
+    const tabs = document.querySelectorAll('.state-tab');
+    const idx = map.indexOf(id);
+    if (idx >= 0 && tabs[idx]) tabs[idx].classList.add('active');
+  }
+</script>
+
+</body>
+</html>

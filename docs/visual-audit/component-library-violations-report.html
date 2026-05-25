@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Component Library Violations Report — Batua Admin</title>
+<style>
+  :root {
+    --bg: #fafbfc;
+    --surface: #ffffff;
+    --border: #e1e4e8;
+    --text: #24292e;
+    --text-muted: #586069;
+    --accent: #5a67d8;
+    --red: #e53e3e;
+    --orange: #dd6b20;
+    --yellow: #d69e2e;
+    --green: #38a169;
+    --red-bg: #fff5f5;
+    --orange-bg: #fffaf0;
+    --yellow-bg: #fffff0;
+    --green-bg: #f0fff4;
+    --code-bg: #f6f8fa;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 40px 24px; }
+
+  header { text-align: center; margin-bottom: 48px; }
+  header h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+  header .subtitle { color: var(--text-muted); font-size: 16px; }
+  header .date { color: var(--text-muted); font-size: 13px; margin-top: 4px; }
+
+  /* Summary Cards */
+  .summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 40px; }
+  .summary-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; text-align: center; }
+  .summary-card .number { font-size: 36px; font-weight: 800; }
+  .summary-card .label { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+  .summary-card.critical .number { color: var(--red); }
+  .summary-card.high .number { color: var(--orange); }
+  .summary-card.medium .number { color: var(--yellow); }
+  .summary-card.ok .number { color: var(--green); }
+
+  /* Category sections */
+  .category { margin-bottom: 48px; }
+  .category-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid var(--border); }
+  .category-header h2 { font-size: 22px; font-weight: 700; }
+  .category-badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; color: #fff; }
+  .badge-critical { background: var(--red); }
+  .badge-high { background: var(--orange); }
+  .badge-medium { background: var(--yellow); color: #333; }
+
+  /* Violation card */
+  .violation { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 20px; overflow: hidden; }
+  .violation.severity-critical { border-left: 4px solid var(--red); }
+  .violation.severity-high { border-left: 4px solid var(--orange); }
+  .violation.severity-medium { border-left: 4px solid var(--yellow); }
+
+  .violation-header { padding: 16px 20px; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .violation-title { font-size: 15px; font-weight: 600; }
+  .violation-file { font-size: 12px; color: var(--text-muted); font-family: 'SFMono-Regular', Consolas, monospace; margin-top: 2px; }
+  .severity-tag { padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .severity-tag.critical { background: var(--red-bg); color: var(--red); }
+  .severity-tag.high { background: var(--orange-bg); color: var(--orange); }
+  .severity-tag.medium { background: var(--yellow-bg); color: var(--yellow); }
+
+  .violation-body { padding: 0 20px 16px; }
+  .violation-body p { font-size: 13px; color: var(--text-muted); margin-bottom: 10px; }
+
+  .code-block { background: var(--code-bg); border-radius: 6px; padding: 12px 16px; font-family: 'SFMono-Regular', Consolas, monospace; font-size: 12px; line-height: 1.7; overflow-x: auto; margin-bottom: 10px; }
+  .code-block .line-num { color: #959da5; user-select: none; display: inline-block; min-width: 36px; }
+  .code-block .highlight { background: #ffeef0; display: block; margin: 0 -16px; padding: 0 16px; }
+  .code-block .highlight-warn { background: #fff8e1; display: block; margin: 0 -16px; padding: 0 16px; }
+
+  .fix-suggestion { background: var(--green-bg); border-radius: 6px; padding: 10px 14px; font-size: 12px; border: 1px solid #c6f6d5; }
+  .fix-suggestion strong { color: var(--green); }
+
+  /* Screenshot section */
+  .screenshot-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 16px; }
+  .screenshot-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .screenshot-card img { width: 100%; display: block; }
+  .screenshot-card .caption { padding: 10px 14px; font-size: 12px; color: var(--text-muted); font-weight: 500; border-top: 1px solid var(--border); }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  th { background: var(--code-bg); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
+  tr:last-child td { border-bottom: none; }
+
+  .toc { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; margin-bottom: 40px; }
+  .toc h3 { font-size: 14px; font-weight: 700; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
+  .toc ol { padding-left: 20px; }
+  .toc li { margin-bottom: 6px; font-size: 14px; }
+  .toc a { color: var(--accent); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+
+  @media (max-width: 768px) {
+    .summary { grid-template-columns: repeat(2, 1fr); }
+    .screenshot-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>Component Library Violations Report</h1>
+  <p class="subtitle">Audit of <code>@juspay/svelte-ui-components</code> usage across Batua Admin</p>
+  <p class="date">Generated: 31 March 2026 &mdash; Scope: <code>frontend/src/</code> (excluding storefront <code>/s/{slug}</code>)</p>
+</header>
+
+<!-- Summary -->
+<div class="summary">
+  <div class="summary-card critical">
+    <div class="number">19</div>
+    <div class="label">Raw &lt;button&gt; Elements</div>
+  </div>
+  <div class="summary-card high">
+    <div class="number">10</div>
+    <div class="label">Custom Button Classes</div>
+  </div>
+  <div class="summary-card medium">
+    <div class="number">2</div>
+    <div class="label">Custom Pill Classes</div>
+  </div>
+  <div class="summary-card ok">
+    <div class="number">15</div>
+    <div class="label">Files Affected</div>
+  </div>
+</div>
+
+<!-- TOC -->
+<div class="toc">
+  <h3>Table of Contents</h3>
+  <ol>
+    <li><a href="#cat1">Category 1: Raw &lt;button&gt; Elements (19 violations in 10 files)</a></li>
+    <li><a href="#cat2">Category 2: Custom Button CSS Classes (10 violations in 7 files)</a></li>
+    <li><a href="#cat3">Category 3: Custom Pill CSS Classes (2 violations in 2 files)</a></li>
+    <li><a href="#cat4">Category 4: Raw &lt;input&gt; Instead of Input Component (1 violation)</a></li>
+    <li><a href="#screenshots">Page Screenshots</a></li>
+    <li><a href="#full-index">Full Violation Index</a></li>
+  </ol>
+</div>
+
+<!-- ===================== CATEGORY 1: RAW BUTTONS ===================== -->
+<div class="category" id="cat1">
+  <div class="category-header">
+    <h2>Category 1: Raw <code>&lt;button&gt;</code> Elements</h2>
+    <span class="category-badge badge-critical">19 violations</span>
+  </div>
+
+  <!-- Memberships -->
+  <div class="violation severity-critical">
+    <div class="violation-header">
+      <div>
+        <div class="violation-title">Memberships Page &mdash; 15 raw buttons</div>
+        <div class="violation-file">routes/admin/memberships/+page.svelte</div>
+      </div>
+      <span class="severity-tag critical">Critical</span>
+    </div>
+    <div class="violation-body">
+      <p>The memberships page has the highest concentration of raw buttons. Action buttons, confirm/cancel buttons, and tier selection buttons all bypass the Button component.</p>
+      <div class="code-block">
+<span class="highlight"><span class="line-num">398</span>  &lt;button class="link-btn" onclick={() =&gt; { activeTabIndex = 1; }}&gt;Assign a membership &rarr;&lt;/button&gt;</span>
+<span class="highlight"><span class="line-num">630</span>  &lt;button class="action-btn action-renew" ...&gt;&#8635; Renew for 1 Year&lt;/button&gt;</span>
+<span class="highlight"><span class="line-num">631</span>  &lt;button class="action-btn action-upgrade" ...&gt;&#11014; Upgrade Tier&lt;/button&gt;</span>
+<span class="highlight"><span class="line-num">632</span>  &lt;button class="action-btn action-cancel" ...&gt;Cancel&lt;/button&gt;</span>
+<span class="highlight"><span class="line-num">634</span>  &lt;button class="action-btn action-upgrade" ...&gt;&#11014; Upgrade Tier&lt;/button&gt;</span>
+<span class="highlight"><span class="line-num">635</span>  &lt;button class="action-btn action-extend" ...&gt;+ Extend&lt;/button&gt;</span>
+<span class="highlight"><span class="line-num">636</span>  &lt;button class="action-btn action-cancel" ...&gt;Cancel Membership&lt;/button&gt;</span>
+<span class="highlight"><span class="line-num">638</span>  &lt;button class="action-btn action-upgrade" ...&gt;&#8635; Re-assign Membership&lt;/button&gt;</span>
+<span class="highlight"><span class="line-num">646</span>  &lt;button class="confirm-btn confirm-btn-danger" ...&gt;Yes, Cancel Membership&lt;/button&gt;</span>
+<span class="highlight"><span class="line-num">647</span>  &lt;button class="confirm-btn confirm-btn-ghost" ...&gt;Keep Membership&lt;/button&gt;</span>
+<span class="highlight"><span class="line-num">660</span>  &lt;button class="tier-option" ...&gt;...&lt;/button&gt;</span>
+<span class="highlight"><span class="line-num">674</span>  &lt;button class="confirm-btn confirm-btn-primary" ...&gt;...&lt;/button&gt;</span>
+<span class="highlight"><span class="line-num">678</span>  &lt;button class="confirm-btn confirm-btn-primary" ...&gt;...&lt;/button&gt;</span>
+<span class="highlight"><span class="line-num">705</span>  &lt;button class="confirm-btn confirm-btn-success" ...&gt;Extend Membership&lt;/button&gt;</span>
+<span class="highlight"><span class="line-num">715</span>  &lt;button class="confirm-btn confirm-btn-success" ...&gt;Confirm Renewal&lt;/button&gt;</span>
+      </div>
+      <div class="fix-suggestion">
+        <strong>Fix:</strong> Replace all raw buttons with <code>&lt;Button&gt;</code> component. Map custom classes: <code>action-renew/upgrade/extend</code> &rarr; <code>btn-primary</code>, <code>action-cancel</code> &rarr; <code>btn-danger</code>, <code>confirm-btn-ghost</code> &rarr; <code>btn-ghost</code>, <code>confirm-btn-primary</code> &rarr; <code>btn-primary</code>, <code>confirm-btn-danger</code> &rarr; <code>btn-danger</code>, <code>confirm-btn-success</code> &rarr; <code>btn-primary</code>, <code>link-btn</code> &rarr; <code>btn-ghost</code>.
+      </div>
+    </div>
+  </div>
+
+  <!-- Transactions -->
+  <div class="violation severity-high">
+    <div class="violation-header">
+      <div>
+        <div class="violation-title">Transactions Page &mdash; raw "Clear Filters" button</div>
+        <div class="violation-file">routes/admin/transactions/+page.svelte:269</div>
+      </div>
+      <span class="severity-tag high">High</span>
+    </div>
+    <div class="violation-body">
+      <div class="code-block">
+<span class="highlight"><span class="line-num">269</span>  &lt;button class="clear-btn" onclick={handleClearFilters}&gt;Clear Filters&lt;/button&gt;</span>
+      </div>
+      <div class="fix-suggestion">
+        <strong>Fix:</strong> Replace with <code>&lt;Button text="Clear Filters" classes="btn-ghost" onclick={handleClearFilters} /&gt;</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- TransactionFilters component -->
+  <div class="violation severity-high">
+    <div class="violation-header">
+      <div>
+        <div class="violation-title">TransactionFilters Component &mdash; raw "Clear Filters" button</div>
+        <div class="violation-file">lib/client/modules/transactions/ui/TransactionFilters.svelte:64</div>
+      </div>
+      <span class="severity-tag high">High</span>
+    </div>
+    <div class="violation-body">
+      <div class="code-block">
+<span class="highlight"><span class="line-num">64</span>  &lt;button class="clear-btn" onclick={handleClear}&gt;Clear Filters&lt;/button&gt;</span>
+      </div>
+      <div class="fix-suggestion">
+        <strong>Fix:</strong> Replace with <code>&lt;Button text="Clear Filters" classes="btn-ghost" onclick={handleClear} /&gt;</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- WalletPoliciesList -->
+  <div class="violation severity-high">
+    <div class="violation-header">
+      <div>
+        <div class="violation-title">WalletPoliciesList &mdash; raw "Edit Policy" buttons</div>
+        <div class="violation-file">lib/client/modules/settings/ui/WalletPoliciesList.svelte:91, 145</div>
+      </div>
+      <span class="severity-tag high">High</span>
+    </div>
+    <div class="violation-body">
+      <div class="code-block">
+<span class="highlight"><span class="line-num">91</span>   &lt;button class="edit-button" onclick={() =&gt; onEdit(policy)}&gt;Edit Policy&lt;/button&gt;</span>
+<span class="highlight"><span class="line-num">145</span>  &lt;button class="edit-button" onclick={() =&gt; onEdit(policy)}&gt;Edit Policy&lt;/button&gt;</span>
+      </div>
+      <div class="fix-suggestion">
+        <strong>Fix:</strong> Replace with <code>&lt;Button text="Edit Policy" classes="btn-secondary" onclick={() =&gt; onEdit(policy)} /&gt;</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rules -->
+  <div class="violation severity-high">
+    <div class="violation-header">
+      <div>
+        <div class="violation-title">Rules Page &mdash; raw clickable row button</div>
+        <div class="violation-file">routes/admin/rules/+page.svelte:156</div>
+      </div>
+      <span class="severity-tag high">High</span>
+    </div>
+    <div class="violation-body">
+      <div class="code-block">
+<span class="highlight"><span class="line-num">156</span>  &lt;button class="rule-row-main" onclick={() =&gt; handleEdit(rule)}&gt;</span>
+      </div>
+      <div class="fix-suggestion">
+        <strong>Fix:</strong> Semantic row button &mdash; consider keeping as raw but ensure accessible, or use <code>&lt;Button&gt;</code> with ghost variant.
+      </div>
+    </div>
+  </div>
+
+  <!-- RuleForm -->
+  <div class="violation severity-medium">
+    <div class="violation-header">
+      <div>
+        <div class="violation-title">RuleForm &mdash; raw "Add Condition" and "Remove" buttons</div>
+        <div class="violation-file">lib/client/modules/rules/ui/RuleForm.svelte:170, 203</div>
+      </div>
+      <span class="severity-tag medium">Medium</span>
+    </div>
+    <div class="violation-body">
+      <div class="code-block">
+<span class="highlight"><span class="line-num">170</span>  &lt;button type="button" class="add-btn" onclick={addCondition}&gt;+ Add Condition&lt;/button&gt;</span>
+<span class="highlight"><span class="line-num">203</span>  &lt;button type="button" class="remove-btn" onclick={() =&gt; removeCondition(index)}&gt;&times;&lt;/button&gt;</span>
+      </div>
+      <div class="fix-suggestion">
+        <strong>Fix:</strong> Replace <code>add-btn</code> with <code>&lt;Button text="+ Add Condition" classes="btn-ghost" /&gt;</code>. The small &times; remove button is acceptable as a trivial icon action.
+      </div>
+    </div>
+  </div>
+
+  <!-- FestiveTemplateGrid -->
+  <div class="violation severity-medium">
+    <div class="violation-header">
+      <div>
+        <div class="violation-title">FestiveTemplateGrid &mdash; raw template card buttons</div>
+        <div class="violation-file">lib/client/modules/rules/ui/FestiveTemplateGrid.svelte:32</div>
+      </div>
+      <span class="severity-tag medium">Medium</span>
+    </div>
+    <div class="violation-body">
+      <div class="code-block">
+<span class="highlight"><span class="line-num">32</span>  &lt;button class="template-card" onclick={() =&gt; onSelect(template)}&gt;</span>
+      </div>
+      <div class="fix-suggestion">
+        <strong>Fix:</strong> Interactive card pattern &mdash; acceptable as semantic button with rich content. Ensure proper focus styles.
+      </div>
+    </div>
+  </div>
+
+  <!-- TierWizard -->
+  <div class="violation severity-medium">
+    <div class="violation-header">
+      <div>
+        <div class="violation-title">TierWizard &mdash; raw icon buttons for edit/delete</div>
+        <div class="violation-file">lib/client/modules/customers/ui/TierWizard.svelte:554, 557</div>
+      </div>
+      <span class="severity-tag medium">Medium</span>
+    </div>
+    <div class="violation-body">
+      <div class="code-block">
+<span class="highlight"><span class="line-num">554</span>  &lt;button class="icon-btn" title="Edit" onclick={() =&gt; startEditTier(t)}&gt;</span>
+<span class="highlight"><span class="line-num">557</span>  &lt;button class="icon-btn icon-btn-danger" title="Remove" onclick={() =&gt; removeTier(t)}&gt;</span>
+      </div>
+      <div class="fix-suggestion">
+        <strong>Fix:</strong> Small icon-only buttons &mdash; low severity. If Button supports icon-only mode, migrate; otherwise acceptable.
+      </div>
+    </div>
+  </div>
+
+  <!-- GiftCardDetail -->
+  <div class="violation severity-medium">
+    <div class="violation-header">
+      <div>
+        <div class="violation-title">GiftCardDetail &mdash; raw icon buttons for reveal/copy</div>
+        <div class="violation-file">lib/client/modules/gift-cards/ui/GiftCardDetail.svelte:71, 78, 85</div>
+      </div>
+      <span class="severity-tag medium">Medium</span>
+    </div>
+    <div class="violation-body">
+      <div class="code-block">
+<span class="highlight"><span class="line-num">71</span>  &lt;button class="icon-btn" onclick={handleReveal} aria-label="Reveal code"&gt;</span>
+<span class="highlight"><span class="line-num">78</span>  &lt;button class="icon-btn" onclick={handleCopy} aria-label="Copy code"&gt;</span>
+<span class="highlight"><span class="line-num">85</span>  &lt;button class="icon-btn copied" aria-label="Copied"&gt;</span>
+      </div>
+      <div class="fix-suggestion">
+        <strong>Fix:</strong> Icon-only action buttons &mdash; low severity. Good aria-labels present. Migrate to Button if icon-only mode available.
+      </div>
+    </div>
+  </div>
+
+  <!-- BulkIssueForm -->
+  <div class="violation severity-medium">
+    <div class="violation-header">
+      <div>
+        <div class="violation-title">BulkIssueForm &mdash; raw upload and download buttons</div>
+        <div class="violation-file">lib/client/modules/gift-cards/ui/BulkIssueForm.svelte:116, 131</div>
+      </div>
+      <span class="severity-tag medium">Medium</span>
+    </div>
+    <div class="violation-body">
+      <div class="code-block">
+<span class="highlight"><span class="line-num">116</span>  &lt;button type="button" class="upload-row" onclick={handleChooseFile}&gt;</span>
+<span class="highlight"><span class="line-num">131</span>  &lt;button type="button" class="sample-link" onclick={downloadSample}&gt;</span>
+      </div>
+      <div class="fix-suggestion">
+        <strong>Fix:</strong> Replace <code>upload-row</code> with <code>&lt;Button text="Choose CSV File" classes="btn-secondary" /&gt;</code>. The sample-link can use <code>btn-ghost</code>.
+      </div>
+    </div>
+  </div>
+
+  <!-- CustomerSearch -->
+  <div class="violation severity-medium">
+    <div class="violation-header">
+      <div>
+        <div class="violation-title">CustomerSearch &mdash; raw result-item button</div>
+        <div class="violation-file">lib/client/modules/customers/ui/CustomerSearch.svelte:72</div>
+      </div>
+      <span class="severity-tag medium">Medium</span>
+    </div>
+    <div class="violation-body">
+      <div class="code-block">
+<span class="highlight"><span class="line-num">72</span>  &lt;button class="result-item" onclick={() =&gt; handleSelect(customer)}&gt;</span>
+      </div>
+      <div class="fix-suggestion">
+        <strong>Fix:</strong> Dropdown result item &mdash; acceptable as semantic button for list interaction. Ensure keyboard navigation works.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== CATEGORY 2: CUSTOM BUTTON CLASSES ===================== -->
+<div class="category" id="cat2">
+  <div class="category-header">
+    <h2>Category 2: Custom Button CSS Classes</h2>
+    <span class="category-badge badge-high">10 violations</span>
+  </div>
+
+  <!-- Referrals -->
+  <div class="violation severity-critical">
+    <div class="violation-header">
+      <div>
+        <div class="violation-title">Referrals Page &mdash; 4 custom <code>-sm</code> button variants</div>
+        <div class="violation-file">routes/admin/referrals/+page.svelte</div>
+      </div>
+      <span class="severity-tag critical">Critical</span>
+    </div>
+    <div class="violation-body">
+      <p>Defines <code>btn-secondary-sm</code>, <code>btn-danger-sm</code>, <code>btn-success-sm</code>, and overrides <code>btn-ghost</code> locally.</p>
+      <div class="code-block">
+<span class="highlight"><span class="line-num">316</span>  &lt;Button text="Edit Program" classes="btn-secondary-sm" onclick={startSetup} /&gt;</span>
+<span class="highlight"><span class="line-num">328</span>  &lt;Button text={...} classes={program?.is_active ? 'btn-danger-sm' : 'btn-success-sm'} ... /&gt;</span>
+<span class="line-num">...</span>
+<span class="highlight"><span class="line-num">488</span>  :global(.btn-secondary-sm) { ... }</span>
+<span class="highlight"><span class="line-num">499</span>  :global(.btn-danger-sm) { ... }</span>
+<span class="highlight"><span class="line-num">510</span>  :global(.btn-success-sm) { ... }</span>
+<span class="highlight"><span class="line-num">521</span>  :global(.btn-ghost) { ... }</span>
+      </div>
+      <div class="fix-suggestion">
+        <strong>Fix:</strong> Use standard classes: <code>btn-secondary-sm</code> &rarr; <code>btn-secondary</code>, <code>btn-danger-sm</code> &rarr; <code>btn-danger</code>, <code>btn-success-sm</code> &rarr; <code>btn-primary</code>. Remove all custom <code>:global()</code> overrides.
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings -->
+  <div class="violation severity-high">
+    <div class="violation-header">
+      <div>
+        <div class="violation-title">Settings Page &mdash; <code>btn-cancel</code> and <code>btn-copy</code> custom classes</div>
+        <div class="violation-file">routes/admin/settings/+page.svelte</div>
+      </div>
+      <span class="severity-tag high">High</span>
+    </div>
+    <div class="violation-body">
+      <div class="code-block">
+<span class="highlight"><span class="line-num">291</span>  classes="btn-cancel"</span>
+<span class="line-num">...</span>
+<span class="highlight"><span class="line-num">535</span>  :global(.btn-primary) { ... }</span>
+<span class="highlight"><span class="line-num">545</span>  :global(.btn-cancel) { ... }</span>
+<span class="highlight"><span class="line-num">558</span>  :global(.btn-copy) { ... }</span>
+      </div>
+      <div class="fix-suggestion">
+        <strong>Fix:</strong> <code>btn-cancel</code> &rarr; <code>btn-ghost</code>, <code>btn-copy</code> &rarr; <code>btn-secondary</code>. Remove local <code>:global(.btn-primary)</code> override.
+      </div>
+    </div>
+  </div>
+
+  <!-- GiftCardConfirmation -->
+  <div class="violation severity-high">
+    <div class="violation-header">
+      <div>
+        <div class="violation-title">GiftCardConfirmation &mdash; <code>btn-cancel</code> and <code>btn-confirm</code> custom classes</div>
+        <div class="violation-file">lib/client/modules/gift-cards/ui/GiftCardConfirmation.svelte</div>
+      </div>
+      <span class="severity-tag high">High</span>
+    </div>
+    <div class="violation-body">
+      <div class="code-block">
+<span class="highlight"><span class="line-num">138</span>  &lt;Button text="Cancel" classes="btn-cancel" onclick={onCancel} /&gt;</span>
+<span class="highlight"><span class="line-num">141</span>  classes="btn-confirm"</span>
+<span class="highlight"><span class="line-num">146</span>  &lt;Button text="Done" classes="btn-confirm" onclick={onCancel} /&gt;</span>
+<span class="line-num">...</span>
+<span class="highlight"><span class="line-num">329</span>  :global(.btn-cancel) { ... }</span>
+<span class="highlight"><span class="line-num">341</span>  :global(.btn-confirm) { ... }</span>
+      </div>
+      <div class="fix-suggestion">
+        <strong>Fix:</strong> <code>btn-cancel</code> &rarr; <code>btn-ghost</code>, <code>btn-confirm</code> &rarr; <code>btn-primary</code>. Remove custom overrides.
+      </div>
+    </div>
+  </div>
+
+  <!-- AssignForm -->
+  <div class="violation severity-high">
+    <div class="violation-header">
+      <div>
+        <div class="violation-title">AssignForm (Memberships) &mdash; <code>btn-danger-outline</code> custom class</div>
+        <div class="violation-file">lib/client/modules/memberships/ui/AssignForm.svelte</div>
+      </div>
+      <span class="severity-tag high">High</span>
+    </div>
+    <div class="violation-body">
+      <div class="code-block">
+<span class="highlight"><span class="line-num">319</span>  classes={isDowngrade ? 'btn-danger-outline' : 'btn-primary'}</span>
+<span class="highlight"><span class="line-num">365</span>  classes={isDowngrade ? 'btn-danger-outline' : 'btn-primary'}</span>
+<span class="line-num">...</span>
+<span class="highlight"><span class="line-num">573</span>  :global(.btn-danger-outline) { ... }</span>
+<span class="highlight"><span class="line-num">579</span>  :global(.btn-danger-outline:hover) { ... }</span>
+      </div>
+      <div class="fix-suggestion">
+        <strong>Fix:</strong> <code>btn-danger-outline</code> &rarr; <code>btn-danger</code>. Remove custom overrides.
+      </div>
+    </div>
+  </div>
+
+  <!-- Campaigns -->
+  <div class="violation severity-high">
+    <div class="violation-header">
+      <div>
+        <div class="violation-title">Campaigns Page &mdash; local <code>:global()</code> overrides for standard classes</div>
+        <div class="violation-file">routes/admin/campaigns/+page.svelte</div>
+      </div>
+      <span class="severity-tag high">High</span>
+    </div>
+    <div class="violation-body">
+      <p>Overrides the global <code>btn-primary</code>, <code>btn-secondary</code> styles locally and introduces <code>btn-sm</code>.</p>
+      <div class="code-block">
+<span class="highlight"><span class="line-num">286</span>  :global(.btn-primary) { --button-color: ...; --button-text-color: ...; ... }</span>
+<span class="highlight"><span class="line-num">295</span>  :global(.btn-secondary) { --button-color: ...; --button-text-color: ...; ... }</span>
+<span class="highlight"><span class="line-num">305</span>  :global(.btn-sm) { --button-padding: ...; --button-font-size: ...; }</span>
+      </div>
+      <div class="fix-suggestion">
+        <strong>Fix:</strong> Remove all <code>:global()</code> overrides. Standard <code>btn-primary</code> and <code>btn-secondary</code> classes from <code>app.css</code> should be used as-is.
+      </div>
+    </div>
+  </div>
+
+  <!-- Wallet Policies -->
+  <div class="violation severity-medium">
+    <div class="violation-header">
+      <div>
+        <div class="violation-title">Wallet Policies Page &mdash; local <code>:global(.btn-primary)</code> override</div>
+        <div class="violation-file">routes/admin/wallet-policies/+page.svelte:424</div>
+      </div>
+      <span class="severity-tag medium">Medium</span>
+    </div>
+    <div class="violation-body">
+      <div class="code-block">
+<span class="highlight"><span class="line-num">424</span>  :global(.btn-primary) { --button-color: ...; ... }</span>
+      </div>
+      <div class="fix-suggestion">
+        <strong>Fix:</strong> Remove the local override. Use the global <code>btn-primary</code> definition from <code>app.css</code>.
+      </div>
+    </div>
+  </div>
+
+  <!-- ShareButtons -->
+  <div class="violation severity-medium">
+    <div class="violation-header">
+      <div>
+        <div class="violation-title">ShareButtons (Storefront Module) &mdash; <code>btn-whatsapp</code> custom class</div>
+        <div class="violation-file">lib/client/modules/storefront/ui/ShareButtons.svelte:24</div>
+      </div>
+      <span class="severity-tag medium">Medium</span>
+    </div>
+    <div class="violation-body">
+      <div class="code-block">
+<span class="highlight"><span class="line-num">24</span>  &lt;Button text="Share on WhatsApp" onclick={handleWhatsApp} classes="btn-whatsapp" /&gt;</span>
+      </div>
+      <div class="fix-suggestion">
+        <strong>Fix:</strong> Use <code>btn-primary</code> with WhatsApp-green theming via CSS variables if needed, or <code>btn-secondary</code>. <em>Note: this is a storefront-adjacent module, may be intentional.</em>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== CATEGORY 3: CUSTOM PILL CLASSES ===================== -->
+<div class="category" id="cat3">
+  <div class="category-header">
+    <h2>Category 3: Custom Pill CSS Classes</h2>
+    <span class="category-badge badge-medium">2 violations</span>
+  </div>
+
+  <div class="violation severity-medium">
+    <div class="violation-header">
+      <div>
+        <div class="violation-title">Settings Page &mdash; <code>pill-plan</code> custom class</div>
+        <div class="violation-file">routes/admin/settings/+page.svelte:223</div>
+      </div>
+      <span class="severity-tag medium">Medium</span>
+    </div>
+    <div class="violation-body">
+      <div class="code-block">
+<span class="highlight"><span class="line-num">223</span>  &lt;Pill text={merchant.plan_tier ?? 'free'} classes="pill-plan" /&gt;</span>
+<span class="line-num">...</span>
+<span class="highlight"><span class="line-num">527</span>  :global(.pill-plan) { --pill-bg: #eff6ff; --pill-text: #3b82f6; ... }</span>
+      </div>
+      <div class="fix-suggestion">
+        <strong>Fix:</strong> Use <code>pill-info</code> (blue tint) which matches the intended styling.
+      </div>
+    </div>
+  </div>
+
+  <div class="violation severity-medium">
+    <div class="violation-header">
+      <div>
+        <div class="violation-title">NotificationTemplateEditor &mdash; <code>pill-variable</code> custom class</div>
+        <div class="violation-file">lib/client/modules/settings/ui/NotificationTemplateEditor.svelte:92</div>
+      </div>
+      <span class="severity-tag medium">Medium</span>
+    </div>
+    <div class="violation-body">
+      <div class="code-block">
+<span class="highlight"><span class="line-num">92</span>   &lt;Pill text={`{{${variable}}}`} classes="pill-variable" /&gt;</span>
+<span class="line-num">...</span>
+<span class="highlight"><span class="line-num">213</span>  :global(.pill-variable) { --pill-bg: #f0fdf4; --pill-text: #16a34a; ... }</span>
+      </div>
+      <div class="fix-suggestion">
+        <strong>Fix:</strong> Use <code>pill-success</code> (green tint) or <code>pill-neutral</code>.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== CATEGORY 4: RAW INPUT ===================== -->
+<div class="category" id="cat4">
+  <div class="category-header">
+    <h2>Category 4: Raw <code>&lt;input&gt;</code> Instead of Input Component</h2>
+    <span class="category-badge badge-medium">1 violation</span>
+  </div>
+
+  <div class="violation severity-medium">
+    <div class="violation-header">
+      <div>
+        <div class="violation-title">IssueGiftCardForm &mdash; raw <code>&lt;input type="date"&gt;</code></div>
+        <div class="violation-file">lib/client/modules/gift-cards/ui/IssueGiftCardForm.svelte:34</div>
+      </div>
+      <span class="severity-tag medium">Medium</span>
+    </div>
+    <div class="violation-body">
+      <div class="code-block">
+<span class="highlight"><span class="line-num">34</span>  &lt;input id="gc-expires" class="date-input" type="date" bind:value={expiresAt} required /&gt;</span>
+      </div>
+      <div class="fix-suggestion">
+        <strong>Fix:</strong> Replace with <code>&lt;Input value={expiresAt} dataType="date" /&gt;</code> if the Input component supports date type. Otherwise, acceptable as browser-native date picker.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SCREENSHOTS ===================== -->
+<div class="category" id="screenshots">
+  <div class="category-header">
+    <h2>Page Screenshots</h2>
+  </div>
+
+  <div class="screenshot-grid">
+    <div class="screenshot-card">
+      <img src="memberships.png" alt="Memberships page" loading="lazy">
+      <div class="caption">Memberships &mdash; 15 raw buttons (action, confirm, tier selection)</div>
+    </div>
+    <div class="screenshot-card">
+      <img src="referrals.png" alt="Referrals page" loading="lazy">
+      <div class="caption">Referrals &mdash; btn-secondary-sm, btn-danger-sm, btn-success-sm</div>
+    </div>
+    <div class="screenshot-card">
+      <img src="campaigns.png" alt="Campaigns page" loading="lazy">
+      <div class="caption">Campaigns &mdash; local :global() overrides for btn-primary, btn-secondary, btn-sm</div>
+    </div>
+    <div class="screenshot-card">
+      <img src="settings.png" alt="Settings page" loading="lazy">
+      <div class="caption">Settings &mdash; btn-cancel, btn-copy, pill-plan custom classes</div>
+    </div>
+    <div class="screenshot-card">
+      <img src="transactions.png" alt="Transactions page" loading="lazy">
+      <div class="caption">Transactions &mdash; raw &lt;button class="clear-btn"&gt;</div>
+    </div>
+    <div class="screenshot-card">
+      <img src="rules.png" alt="Rules page" loading="lazy">
+      <div class="caption">Rules &mdash; raw &lt;button class="rule-row-main"&gt;, add-btn in RuleForm</div>
+    </div>
+    <div class="screenshot-card">
+      <img src="gift-cards.png" alt="Gift Cards page" loading="lazy">
+      <div class="caption">Gift Cards &mdash; btn-cancel/btn-confirm, raw icon-btns, raw date input</div>
+    </div>
+    <div class="screenshot-card">
+      <img src="wallet-policies.png" alt="Wallet Policies page" loading="lazy">
+      <div class="caption">Wallet Policies &mdash; raw edit-button, local btn-primary override</div>
+    </div>
+    <div class="screenshot-card">
+      <img src="loyalty.png" alt="Loyalty page" loading="lazy">
+      <div class="caption">Loyalty / TierWizard &mdash; raw icon-btn for edit/delete tiers</div>
+    </div>
+    <div class="screenshot-card">
+      <img src="notifications.png" alt="Notifications page" loading="lazy">
+      <div class="caption">Notifications &mdash; pill-variable custom class in template editor</div>
+    </div>
+    <div class="screenshot-card">
+      <img src="influencers.png" alt="Influencers page" loading="lazy">
+      <div class="caption">Influencers &mdash; btn-primary-sm (FIXED in this session)</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== FULL INDEX ===================== -->
+<div class="category" id="full-index">
+  <div class="category-header">
+    <h2>Full Violation Index</h2>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>File</th>
+        <th>Line(s)</th>
+        <th>Type</th>
+        <th>Violation</th>
+        <th>Recommended Fix</th>
+        <th>Severity</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>routes/admin/memberships/+page.svelte</td><td>398</td><td>Raw button</td><td><code>&lt;button class="link-btn"&gt;</code></td><td><code>btn-ghost</code></td><td style="color:var(--red)">Critical</td></tr>
+      <tr><td>2</td><td>routes/admin/memberships/+page.svelte</td><td>630-638</td><td>Raw button</td><td><code>&lt;button class="action-btn action-*"&gt;</code> (6 buttons)</td><td><code>btn-primary</code> / <code>btn-danger</code></td><td style="color:var(--red)">Critical</td></tr>
+      <tr><td>3</td><td>routes/admin/memberships/+page.svelte</td><td>646-716</td><td>Raw button</td><td><code>&lt;button class="confirm-btn confirm-btn-*"&gt;</code> (8 buttons)</td><td><code>btn-primary</code> / <code>btn-danger</code> / <code>btn-ghost</code></td><td style="color:var(--red)">Critical</td></tr>
+      <tr><td>4</td><td>routes/admin/memberships/+page.svelte</td><td>660</td><td>Raw button</td><td><code>&lt;button class="tier-option"&gt;</code></td><td>Button or radio-style selection</td><td style="color:var(--red)">Critical</td></tr>
+      <tr><td>5</td><td>routes/admin/referrals/+page.svelte</td><td>316, 328</td><td>Custom class</td><td><code>btn-secondary-sm</code>, <code>btn-danger-sm</code>, <code>btn-success-sm</code></td><td><code>btn-secondary</code> / <code>btn-danger</code> / <code>btn-primary</code></td><td style="color:var(--red)">Critical</td></tr>
+      <tr><td>6</td><td>routes/admin/referrals/+page.svelte</td><td>488-529</td><td>CSS override</td><td>4 custom <code>:global()</code> button overrides</td><td>Remove overrides</td><td style="color:var(--red)">Critical</td></tr>
+      <tr><td>7</td><td>routes/admin/settings/+page.svelte</td><td>291</td><td>Custom class</td><td><code>btn-cancel</code></td><td><code>btn-ghost</code></td><td style="color:var(--orange)">High</td></tr>
+      <tr><td>8</td><td>routes/admin/settings/+page.svelte</td><td>535-565</td><td>CSS override</td><td><code>:global(.btn-primary)</code>, <code>:global(.btn-cancel)</code>, <code>:global(.btn-copy)</code></td><td>Remove overrides</td><td style="color:var(--orange)">High</td></tr>
+      <tr><td>9</td><td>routes/admin/settings/+page.svelte</td><td>223, 527</td><td>Custom pill</td><td><code>pill-plan</code></td><td><code>pill-info</code></td><td style="color:var(--yellow)">Medium</td></tr>
+      <tr><td>10</td><td>routes/admin/campaigns/+page.svelte</td><td>286-308</td><td>CSS override</td><td><code>:global(.btn-primary)</code>, <code>:global(.btn-secondary)</code>, <code>:global(.btn-sm)</code></td><td>Remove overrides</td><td style="color:var(--orange)">High</td></tr>
+      <tr><td>11</td><td>routes/admin/wallet-policies/+page.svelte</td><td>424</td><td>CSS override</td><td><code>:global(.btn-primary)</code></td><td>Remove override</td><td style="color:var(--yellow)">Medium</td></tr>
+      <tr><td>12</td><td>routes/admin/transactions/+page.svelte</td><td>269</td><td>Raw button</td><td><code>&lt;button class="clear-btn"&gt;</code></td><td><code>&lt;Button classes="btn-ghost"&gt;</code></td><td style="color:var(--orange)">High</td></tr>
+      <tr><td>13</td><td>routes/admin/rules/+page.svelte</td><td>156</td><td>Raw button</td><td><code>&lt;button class="rule-row-main"&gt;</code></td><td>Button or keep as semantic</td><td style="color:var(--orange)">High</td></tr>
+      <tr><td>14</td><td>modules/gift-cards/ui/GiftCardConfirmation.svelte</td><td>138, 141, 146</td><td>Custom class</td><td><code>btn-cancel</code>, <code>btn-confirm</code></td><td><code>btn-ghost</code> / <code>btn-primary</code></td><td style="color:var(--orange)">High</td></tr>
+      <tr><td>15</td><td>modules/gift-cards/ui/GiftCardConfirmation.svelte</td><td>329-345</td><td>CSS override</td><td><code>:global(.btn-cancel)</code>, <code>:global(.btn-confirm)</code></td><td>Remove overrides</td><td style="color:var(--orange)">High</td></tr>
+      <tr><td>16</td><td>modules/gift-cards/ui/GiftCardDetail.svelte</td><td>71, 78, 85</td><td>Raw button</td><td><code>&lt;button class="icon-btn"&gt;</code> (3 buttons)</td><td>Button if icon-only supported</td><td style="color:var(--yellow)">Medium</td></tr>
+      <tr><td>17</td><td>modules/gift-cards/ui/BulkIssueForm.svelte</td><td>116, 131</td><td>Raw button</td><td><code>&lt;button class="upload-row"&gt;</code>, <code>&lt;button class="sample-link"&gt;</code></td><td><code>btn-secondary</code> / <code>btn-ghost</code></td><td style="color:var(--yellow)">Medium</td></tr>
+      <tr><td>18</td><td>modules/gift-cards/ui/IssueGiftCardForm.svelte</td><td>34</td><td>Raw input</td><td><code>&lt;input type="date" class="date-input"&gt;</code></td><td>Input component if date supported</td><td style="color:var(--yellow)">Medium</td></tr>
+      <tr><td>19</td><td>modules/memberships/ui/AssignForm.svelte</td><td>319, 365</td><td>Custom class</td><td><code>btn-danger-outline</code></td><td><code>btn-danger</code></td><td style="color:var(--orange)">High</td></tr>
+      <tr><td>20</td><td>modules/memberships/ui/AssignForm.svelte</td><td>573-581</td><td>CSS override</td><td><code>:global(.btn-danger-outline)</code></td><td>Remove override</td><td style="color:var(--orange)">High</td></tr>
+      <tr><td>21</td><td>modules/settings/ui/NotificationTemplateEditor.svelte</td><td>92, 213</td><td>Custom pill</td><td><code>pill-variable</code></td><td><code>pill-success</code></td><td style="color:var(--yellow)">Medium</td></tr>
+      <tr><td>22</td><td>modules/settings/ui/WalletPoliciesList.svelte</td><td>91, 145</td><td>Raw button</td><td><code>&lt;button class="edit-button"&gt;</code> (2 buttons)</td><td><code>&lt;Button classes="btn-secondary"&gt;</code></td><td style="color:var(--orange)">High</td></tr>
+      <tr><td>23</td><td>modules/transactions/ui/TransactionFilters.svelte</td><td>64</td><td>Raw button</td><td><code>&lt;button class="clear-btn"&gt;</code></td><td><code>&lt;Button classes="btn-ghost"&gt;</code></td><td style="color:var(--orange)">High</td></tr>
+      <tr><td>24</td><td>modules/rules/ui/RuleForm.svelte</td><td>170</td><td>Raw button</td><td><code>&lt;button class="add-btn"&gt;</code></td><td><code>&lt;Button classes="btn-ghost"&gt;</code></td><td style="color:var(--yellow)">Medium</td></tr>
+      <tr><td>25</td><td>modules/rules/ui/FestiveTemplateGrid.svelte</td><td>32</td><td>Raw button</td><td><code>&lt;button class="template-card"&gt;</code></td><td>Acceptable (rich card content)</td><td style="color:var(--yellow)">Medium</td></tr>
+      <tr><td>26</td><td>modules/customers/ui/TierWizard.svelte</td><td>554, 557</td><td>Raw button</td><td><code>&lt;button class="icon-btn"&gt;</code></td><td>Button if icon-only supported</td><td style="color:var(--yellow)">Medium</td></tr>
+      <tr><td>27</td><td>modules/customers/ui/CustomerSearch.svelte</td><td>72</td><td>Raw button</td><td><code>&lt;button class="result-item"&gt;</code></td><td>Acceptable (list interaction)</td><td style="color:var(--yellow)">Medium</td></tr>
+      <tr><td>28</td><td>modules/storefront/ui/ShareButtons.svelte</td><td>24</td><td>Custom class</td><td><code>btn-whatsapp</code></td><td><code>btn-primary</code> or <code>btn-secondary</code></td><td style="color:var(--yellow)">Medium</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<footer style="text-align:center; padding: 40px 0 20px; color: var(--text-muted); font-size: 12px;">
+  Batua Component Library Audit &mdash; 31 March 2026 &mdash; 28 violations across 15 files
+</footer>
+
+</div>
+</body>
+</html>

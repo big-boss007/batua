@@ -1,0 +1,1816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COD Verification Flow — End to End Mockups</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f3f4f6;
+    color: #1a1a2e;
+    padding: 48px 24px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Page layout */
+  .page-title {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .page-desc {
+    text-align: center;
+    color: #6b7280;
+    font-size: 15px;
+    margin-bottom: 48px;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+  }
+
+  /* Screen container */
+  .screen {
+    max-width: 960px;
+    margin: 0 auto 64px;
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .screen-label {
+    text-align: center;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #9ca3af;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  .screen-name {
+    text-align: center;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: #1a1a2e;
+  }
+  .screen-desc {
+    text-align: center;
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 24px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* Admin chrome */
+  .admin-chrome {
+    display: flex;
+    min-height: 600px;
+  }
+  .sidebar {
+    width: 220px;
+    background: #fafbfc;
+    border-right: 1px solid #e5e7eb;
+    padding: 20px 0;
+    flex-shrink: 0;
+  }
+  .sidebar-brand {
+    font-size: 18px;
+    font-weight: 700;
+    color: #6366f1;
+    padding: 0 20px 20px;
+  }
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    font-size: 14px;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .sidebar-item:hover { background: #f3f4f6; }
+  .sidebar-item.active {
+    color: #6366f1;
+    background: #eef2ff;
+    font-weight: 600;
+    border-left: 3px solid #6366f1;
+  }
+  .sidebar-icon { width: 18px; text-align: center; }
+
+  .main-content {
+    flex: 1;
+    padding: 32px 40px;
+    overflow-y: auto;
+  }
+
+  /* Header bar */
+  .header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 32px;
+  }
+  .header-left h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1a1a2e;
+  }
+  .header-left p {
+    font-size: 14px;
+    color: #6b7280;
+    margin-top: 4px;
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-primary {
+    background: #6366f1;
+    color: #fff;
+  }
+  .btn-primary:hover { background: #4f46e5; }
+  .btn-secondary {
+    background: #f3f4f6;
+    color: #374151;
+    border: 1px solid #e5e7eb;
+  }
+  .btn-ghost {
+    background: transparent;
+    color: #6b7280;
+  }
+  .btn-ghost:hover { background: #f3f4f6; }
+  .btn-success {
+    background: #10b981;
+    color: #fff;
+  }
+  .btn-danger {
+    background: #fff;
+    color: #ef4444;
+    border: 1px solid #fecaca;
+  }
+  .btn-danger:hover { background: #fef2f2; }
+  .btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+  .btn-lg {
+    padding: 12px 24px;
+    font-size: 15px;
+  }
+
+  /* Cards */
+  .card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 24px;
+  }
+  .card-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 4px;
+  }
+  .card-desc {
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+
+  /* Choice cards */
+  .choice-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+  .choice-card {
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 24px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .choice-card:hover {
+    border-color: #c7d2fe;
+    box-shadow: 0 2px 8px rgba(99,102,241,0.08);
+  }
+  .choice-card.selected {
+    border-color: #6366f1;
+    background: #fafaff;
+  }
+  .choice-card.selected::after {
+    content: '✓';
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 24px;
+    height: 24px;
+    background: #6366f1;
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .choice-icon {
+    font-size: 32px;
+    margin-bottom: 16px;
+  }
+  .choice-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 8px;
+  }
+  .choice-desc {
+    font-size: 13px;
+    color: #6b7280;
+    line-height: 1.5;
+  }
+  .choice-tag {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 12px;
+  }
+  .tag-auto {
+    background: #ecfdf5;
+    color: #059669;
+  }
+  .tag-manual {
+    background: #fef3c7;
+    color: #d97706;
+  }
+
+  /* Form elements */
+  .form-group {
+    margin-bottom: 20px;
+  }
+  .form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 6px;
+  }
+  .form-hint {
+    font-size: 12px;
+    color: #9ca3af;
+    margin-top: 4px;
+  }
+  .form-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #1a1a2e;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .form-input:focus { border-color: #6366f1; }
+  .form-select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #1a1a2e;
+    background: #fff;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%239CA3AF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+  }
+
+  /* Toggle */
+  .toggle-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .toggle-row:last-child { border-bottom: none; }
+  .toggle-info {
+    flex: 1;
+  }
+  .toggle-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1a2e;
+  }
+  .toggle-desc {
+    font-size: 13px;
+    color: #6b7280;
+    margin-top: 2px;
+  }
+  .toggle {
+    width: 44px;
+    height: 24px;
+    background: #d1d5db;
+    border-radius: 12px;
+    position: relative;
+    flex-shrink: 0;
+    margin-left: 16px;
+  }
+  .toggle::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: #fff;
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.2s;
+  }
+  .toggle.on {
+    background: #6366f1;
+  }
+  .toggle.on::after {
+    transform: translateX(20px);
+  }
+
+  /* Table */
+  .table-container {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  thead {
+    background: #f9fafb;
+  }
+  th {
+    text-align: left;
+    padding: 12px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  td {
+    padding: 14px 16px;
+    font-size: 14px;
+    color: #1a1a2e;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fafaff; }
+
+  /* Pills */
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .pill-pending { background: #fef3c7; color: #d97706; }
+  .pill-approved { background: #ecfdf5; color: #059669; }
+  .pill-rejected { background: #fef2f2; color: #ef4444; }
+  .pill-auto { background: #eef2ff; color: #6366f1; }
+  .pill-connected { background: #ecfdf5; color: #059669; }
+  .pill-disconnected { background: #f3f4f6; color: #6b7280; }
+
+  /* Info box */
+  .info-box {
+    display: flex;
+    gap: 12px;
+    padding: 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.5;
+    margin-bottom: 20px;
+  }
+  .info-box-blue {
+    background: #eef2ff;
+    color: #4338ca;
+    border: 1px solid #c7d2fe;
+  }
+  .info-box-amber {
+    background: #fffbeb;
+    color: #92400e;
+    border: 1px solid #fde68a;
+  }
+  .info-box-green {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+  }
+  .info-icon {
+    font-size: 16px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* Steps */
+  .steps {
+    display: flex;
+    gap: 0;
+    margin-bottom: 32px;
+  }
+  .step {
+    flex: 1;
+    text-align: center;
+    position: relative;
+    padding: 0 8px;
+  }
+  .step-dot {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #e5e7eb;
+    color: #9ca3af;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .step.active .step-dot {
+    background: #6366f1;
+    color: #fff;
+  }
+  .step.done .step-dot {
+    background: #10b981;
+    color: #fff;
+  }
+  .step-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #9ca3af;
+  }
+  .step.active .step-name { color: #6366f1; }
+  .step.done .step-name { color: #10b981; }
+  .step-line {
+    position: absolute;
+    top: 16px;
+    left: calc(50% + 20px);
+    right: calc(-50% + 20px);
+    height: 2px;
+    background: #e5e7eb;
+  }
+  .step.done .step-line { background: #10b981; }
+  .step:last-child .step-line { display: none; }
+
+  /* Partner cards */
+  .partner-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .partner-card {
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .partner-card:hover {
+    border-color: #c7d2fe;
+  }
+  .partner-card.selected {
+    border-color: #6366f1;
+    background: #fafaff;
+  }
+  .partner-logo {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: #f3f4f6;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    margin-bottom: 12px;
+    font-weight: 700;
+  }
+  .partner-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1a1a2e;
+  }
+  .partner-desc {
+    font-size: 12px;
+    color: #9ca3af;
+    margin-top: 4px;
+  }
+
+  /* Storefront (customer-facing) */
+  .storefront-chrome {
+    background: #1a1d27;
+    border-radius: 16px;
+    overflow: hidden;
+    min-height: 500px;
+  }
+  .storefront-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #2a2d3a;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .storefront-logo {
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .storefront-user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #9ca3af;
+    font-size: 13px;
+  }
+  .storefront-body {
+    padding: 32px 24px;
+  }
+  .sf-section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 6px;
+  }
+  .sf-section-desc {
+    font-size: 14px;
+    color: #9ca3af;
+    margin-bottom: 24px;
+  }
+
+  /* COD order cards (storefront) */
+  .cod-order-card {
+    background: #2a2d3a;
+    border: 1px solid #3a3d4a;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .cod-order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+  }
+  .cod-order-id {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .cod-order-date {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 2px;
+  }
+  .cod-order-amount {
+    font-size: 16px;
+    font-weight: 700;
+    color: #4ade80;
+  }
+  .cod-order-items {
+    font-size: 13px;
+    color: #9ca3af;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #3a3d4a;
+  }
+  .cod-points-preview {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .cod-points-label {
+    font-size: 13px;
+    color: #9ca3af;
+  }
+  .cod-points-value {
+    font-size: 15px;
+    font-weight: 700;
+    color: #facc15;
+  }
+  .sf-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    justify-content: center;
+    margin-top: 16px;
+  }
+  .sf-btn-confirm {
+    background: #4ade80;
+    color: #1a1d27;
+  }
+  .sf-btn-pending {
+    background: #3a3d4a;
+    color: #facc15;
+    cursor: default;
+  }
+  .sf-btn-earned {
+    background: #2a4a35;
+    color: #4ade80;
+    cursor: default;
+  }
+
+  /* Status timeline */
+  .status-timeline {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin: 16px 0;
+  }
+  .timeline-step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #6b7280;
+  }
+  .timeline-step.done { color: #4ade80; }
+  .timeline-step.current { color: #facc15; }
+  .timeline-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #4a4d5a;
+  }
+  .timeline-step.done .timeline-dot { background: #4ade80; }
+  .timeline-step.current .timeline-dot { background: #facc15; }
+  .timeline-line {
+    flex: 1;
+    height: 2px;
+    background: #3a3d4a;
+    min-width: 20px;
+    margin: 0 4px;
+  }
+  .timeline-line.done { background: #4ade80; }
+
+  /* Divider */
+  .divider {
+    height: 1px;
+    background: #e5e7eb;
+    margin: 24px 0;
+  }
+
+  /* Stat grid */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .stat-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 20px;
+    background: #fff;
+  }
+  .stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1a1a2e;
+  }
+  .stat-value.amber { color: #d97706; }
+  .stat-value.green { color: #059669; }
+  .stat-label {
+    font-size: 13px;
+    color: #6b7280;
+    margin-top: 4px;
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid #e5e7eb;
+    margin-bottom: 24px;
+  }
+  .tab {
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #6b7280;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.15s;
+  }
+  .tab:hover { color: #374151; }
+  .tab.active {
+    color: #6366f1;
+    border-bottom-color: #6366f1;
+  }
+  .tab-count {
+    background: #f3f4f6;
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    margin-left: 6px;
+    font-weight: 700;
+  }
+  .tab.active .tab-count {
+    background: #eef2ff;
+    color: #6366f1;
+  }
+
+  /* Modal overlay */
+  .modal-backdrop {
+    position: relative;
+    background: rgba(0,0,0,0.08);
+    border-radius: 12px;
+    padding: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+  }
+  .modal {
+    background: #fff;
+    border-radius: 16px;
+    width: 480px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    overflow: hidden;
+  }
+  .modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #1a1a2e;
+  }
+  .modal-close {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 18px;
+    color: #9ca3af;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-body {
+    padding: 24px;
+  }
+  .modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  /* Webhook config */
+  .webhook-box {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 16px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 13px;
+    color: #374151;
+    margin-bottom: 16px;
+    word-break: break-all;
+  }
+  .webhook-label {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 11px;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .section-gap { margin-bottom: 32px; }
+
+  /* Flow arrow between screens */
+  .flow-arrow {
+    text-align: center;
+    padding: 24px 0;
+    color: #d1d5db;
+    font-size: 28px;
+  }
+
+  /* Customer row */
+  .customer-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .customer-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #eef2ff;
+    color: #6366f1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .customer-name {
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .customer-email {
+    font-size: 12px;
+    color: #9ca3af;
+  }
+
+  .actions-cell {
+    display: flex;
+    gap: 6px;
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 48px;
+    color: #9ca3af;
+  }
+  .empty-icon {
+    font-size: 40px;
+    margin-bottom: 16px;
+  }
+  .empty-text {
+    font-size: 15px;
+    font-weight: 600;
+    color: #6b7280;
+    margin-bottom: 4px;
+  }
+  .empty-desc {
+    font-size: 13px;
+  }
+</style>
+</head>
+<body>
+
+<h1 class="page-title">COD Verification Flow</h1>
+<p class="page-desc">
+  End-to-end mockups for COD order delivery verification. Merchants choose how to verify COD deliveries before issuing reward points: automated via delivery partner integration, or manual via customer self-confirmation + merchant approval.
+</p>
+
+<!-- ============================================================ -->
+<!-- SCREEN 1: Settings — COD Verification Setup -->
+<!-- ============================================================ -->
+<div class="screen-label">Screen 1 of 7</div>
+<div class="screen-name">COD Verification Settings</div>
+<div class="screen-desc">Under Settings, the merchant enables COD rewards and chooses a verification method</div>
+
+<div class="screen">
+  <div class="admin-chrome">
+    <div class="sidebar">
+      <div class="sidebar-brand">Batua</div>
+      <div class="sidebar-item"><span class="sidebar-icon">◧</span> Wallet</div>
+      <div class="sidebar-item"><span class="sidebar-icon">♥</span> Loyalty</div>
+      <div class="sidebar-item"><span class="sidebar-icon">⇄</span> Transactions</div>
+      <div class="sidebar-item"><span class="sidebar-icon">⚙</span> Notifications</div>
+      <div class="sidebar-item active"><span class="sidebar-icon">⚙</span> Settings</div>
+    </div>
+
+    <div class="main-content">
+      <div class="header-bar">
+        <div class="header-left">
+          <h1>COD Verification</h1>
+          <p>Configure how COD order deliveries are verified before issuing reward points</p>
+        </div>
+      </div>
+
+      <div class="info-box info-box-blue">
+        <span class="info-icon">ℹ️</span>
+        <div>
+          <strong>Why verify COD orders?</strong><br>
+          Unlike prepaid orders, COD orders can be returned/rejected at the door. Verifying delivery before issuing points prevents rewards leakage on undelivered orders.
+        </div>
+      </div>
+
+      <div class="card section-gap">
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Issue rewards for COD orders</div>
+            <div class="toggle-desc">When enabled, COD orders will earn reward points after delivery is verified</div>
+          </div>
+          <div class="toggle on"></div>
+        </div>
+
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Hold points until verification</div>
+            <div class="toggle-desc">Points appear as "pending" in the customer's wallet until delivery is confirmed</div>
+          </div>
+          <div class="toggle on"></div>
+        </div>
+      </div>
+
+      <div class="card-title" style="margin-bottom:4px;">Choose Verification Method</div>
+      <div class="card-desc">How should we confirm that a COD order has been delivered?</div>
+
+      <div class="choice-grid">
+        <div class="choice-card selected">
+          <div class="choice-icon">🚚</div>
+          <div class="choice-title">Delivery Partner Integration</div>
+          <div class="choice-desc">
+            Connect your delivery partner (Shiprocket, Delhivery, etc.) to automatically receive delivery confirmation signals. Points are issued as soon as the order is marked "Delivered".
+          </div>
+          <div class="choice-tag tag-auto">Automated</div>
+        </div>
+
+        <div class="choice-card">
+          <div class="choice-icon">✋</div>
+          <div class="choice-title">Customer Self-Confirmation</div>
+          <div class="choice-desc">
+            Customers confirm delivery on your storefront. You review and approve each confirmation from your admin dashboard before points are issued.
+          </div>
+          <div class="choice-tag tag-manual">Manual Review</div>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:12px;">
+        <button class="btn btn-primary btn-lg">Save & Continue</button>
+        <button class="btn btn-ghost btn-lg">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="flow-arrow">↓</div>
+
+<!-- ============================================================ -->
+<!-- SCREEN 2A: Delivery Partner Setup (if automated chosen) -->
+<!-- ============================================================ -->
+<div class="screen-label">Screen 2A</div>
+<div class="screen-name">Delivery Partner Integration</div>
+<div class="screen-desc">When "Delivery Partner Integration" is selected, merchant connects their logistics provider</div>
+
+<div class="screen">
+  <div class="admin-chrome">
+    <div class="sidebar">
+      <div class="sidebar-brand">Batua</div>
+      <div class="sidebar-item"><span class="sidebar-icon">◧</span> Wallet</div>
+      <div class="sidebar-item"><span class="sidebar-icon">♥</span> Loyalty</div>
+      <div class="sidebar-item"><span class="sidebar-icon">⇄</span> Transactions</div>
+      <div class="sidebar-item active"><span class="sidebar-icon">⚙</span> Settings</div>
+    </div>
+
+    <div class="main-content">
+      <div class="steps">
+        <div class="step done">
+          <div class="step-dot">✓</div>
+          <div class="step-line"></div>
+          <div class="step-name">Enable COD</div>
+        </div>
+        <div class="step active">
+          <div class="step-dot">2</div>
+          <div class="step-line"></div>
+          <div class="step-name">Connect Partner</div>
+        </div>
+        <div class="step">
+          <div class="step-dot">3</div>
+          <div class="step-line"></div>
+          <div class="step-name">Test & Go Live</div>
+        </div>
+      </div>
+
+      <div class="header-bar">
+        <div class="header-left">
+          <h1>Connect Delivery Partner</h1>
+          <p>Select your logistics provider and enter API credentials</p>
+        </div>
+      </div>
+
+      <div class="card-title" style="margin-bottom:16px;">Select Provider</div>
+
+      <div class="partner-grid">
+        <div class="partner-card selected">
+          <div class="partner-logo" style="background:#fef3c7; color:#d97706;">SR</div>
+          <div class="partner-name">Shiprocket</div>
+          <div class="partner-desc">Webhook or API</div>
+        </div>
+        <div class="partner-card">
+          <div class="partner-logo" style="background:#dbeafe; color:#2563eb;">DL</div>
+          <div class="partner-name">Delhivery</div>
+          <div class="partner-desc">Webhook</div>
+        </div>
+        <div class="partner-card">
+          <div class="partner-logo" style="background:#ecfdf5; color:#059669;">DT</div>
+          <div class="partner-name">Dtdc</div>
+          <div class="partner-desc">Webhook</div>
+        </div>
+        <div class="partner-card">
+          <div class="partner-logo" style="background:#f3e8ff; color:#7c3aed;">EK</div>
+          <div class="partner-name">Ecom Express</div>
+          <div class="partner-desc">Webhook</div>
+        </div>
+        <div class="partner-card">
+          <div class="partner-logo" style="background:#fce7f3; color:#db2777;">SH</div>
+          <div class="partner-name">Shadowfax</div>
+          <div class="partner-desc">Webhook</div>
+        </div>
+        <div class="partner-card">
+          <div class="partner-logo" style="background:#f3f4f6; color:#6b7280;">+</div>
+          <div class="partner-name">Custom Webhook</div>
+          <div class="partner-desc">Any provider</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="card-title" style="margin-bottom:16px;">Shiprocket Configuration</div>
+
+      <div class="info-box info-box-green">
+        <span class="info-icon">💡</span>
+        <div>
+          <strong>Two ways to connect:</strong> Enter your Shiprocket API credentials below for us to poll delivery status, <em>or</em> set up a webhook in your Shiprocket dashboard to push delivery events to us automatically.
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px;">
+        <div class="form-group">
+          <label class="form-label">API Email</label>
+          <input class="form-input" type="email" value="ops@kulfi-corner.com" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">API Password</label>
+          <input class="form-input" type="password" value="••••••••••" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="webhook-label">Or: Add this webhook URL to Shiprocket</div>
+        <div class="webhook-box">
+          https://api.batua.app/webhooks/delivery/shiprocket/mk_abc123def456
+          <button class="btn btn-ghost btn-sm" style="float:right; margin-top:-4px;">Copy</button>
+        </div>
+        <div class="form-hint">In Shiprocket: Settings → Webhooks → Add URL → Select "Delivered" event</div>
+      </div>
+
+      <div style="display:flex; gap:12px; margin-top:24px;">
+        <button class="btn btn-primary">Test Connection</button>
+        <button class="btn btn-secondary">Save & Continue</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="flow-arrow">↓</div>
+
+<!-- ============================================================ -->
+<!-- SCREEN 2B: Self-Confirmation Setup (if manual chosen) -->
+<!-- ============================================================ -->
+<div class="screen-label">Screen 2B (Alternative Path)</div>
+<div class="screen-name">Customer Self-Confirmation Setup</div>
+<div class="screen-desc">When "Customer Self-Confirmation" is selected, merchant configures the self-confirm experience</div>
+
+<div class="screen">
+  <div class="admin-chrome">
+    <div class="sidebar">
+      <div class="sidebar-brand">Batua</div>
+      <div class="sidebar-item"><span class="sidebar-icon">◧</span> Wallet</div>
+      <div class="sidebar-item"><span class="sidebar-icon">♥</span> Loyalty</div>
+      <div class="sidebar-item active"><span class="sidebar-icon">⚙</span> Settings</div>
+    </div>
+
+    <div class="main-content">
+      <div class="steps">
+        <div class="step done">
+          <div class="step-dot">✓</div>
+          <div class="step-line"></div>
+          <div class="step-name">Enable COD</div>
+        </div>
+        <div class="step active">
+          <div class="step-dot">2</div>
+          <div class="step-line"></div>
+          <div class="step-name">Configure</div>
+        </div>
+        <div class="step">
+          <div class="step-dot">3</div>
+          <div class="step-name">Go Live</div>
+        </div>
+      </div>
+
+      <div class="header-bar">
+        <div class="header-left">
+          <h1>Self-Confirmation Settings</h1>
+          <p>Configure how customers confirm COD delivery on your storefront</p>
+        </div>
+      </div>
+
+      <div class="info-box info-box-amber">
+        <span class="info-icon">⚠️</span>
+        <div>
+          <strong>Manual review required:</strong> Each customer confirmation will appear in your COD Approvals queue. Points are issued only after you approve. This ensures no one claims points for undelivered orders.
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:24px;">
+        <div class="card-title">Confirmation Window</div>
+        <div class="card-desc">How long after the order date can a customer confirm delivery?</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">Minimum days after order</label>
+            <input class="form-input" type="number" value="3" />
+            <div class="form-hint">Prevents premature claims before delivery is possible</div>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">Maximum days after order</label>
+            <input class="form-input" type="number" value="15" />
+            <div class="form-hint">Claims after this window are auto-rejected</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:24px;">
+        <div class="card-title">Auto-Approve Rules</div>
+        <div class="card-desc">Optionally auto-approve confirmations for trusted customers</div>
+
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Auto-approve for repeat customers</div>
+            <div class="toggle-desc">Customers with 3+ successfully delivered COD orders are auto-approved</div>
+          </div>
+          <div class="toggle on"></div>
+        </div>
+
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Auto-approve orders under a threshold</div>
+            <div class="toggle-desc">Small orders below a certain amount are auto-approved</div>
+          </div>
+          <div class="toggle"></div>
+        </div>
+
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Require photo proof</div>
+            <div class="toggle-desc">Customer must upload a photo of the delivered package</div>
+          </div>
+          <div class="toggle"></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:24px;">
+        <div class="card-title">Storefront Message</div>
+        <div class="card-desc">Customize the message shown to customers on the COD confirmation page</div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Confirmation prompt</label>
+          <input class="form-input" value="Received your order? Confirm delivery to earn your reward points!" />
+        </div>
+      </div>
+
+      <div style="display:flex; gap:12px;">
+        <button class="btn btn-primary btn-lg">Save & Go Live</button>
+        <button class="btn btn-ghost btn-lg">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="flow-arrow">↓</div>
+
+<!-- ============================================================ -->
+<!-- SCREEN 3: Customer Storefront — COD Confirmation Page -->
+<!-- ============================================================ -->
+<div class="screen-label">Screen 3</div>
+<div class="screen-name">Customer Storefront — Confirm COD Delivery</div>
+<div class="screen-desc">The customer-facing page where they confirm that their COD order has been delivered</div>
+
+<div class="screen">
+  <div class="storefront-chrome">
+    <div class="storefront-header">
+      <div class="storefront-logo">☕ Kulfi Corner</div>
+      <div class="storefront-user">
+        <span>Priya S.</span>
+        <span style="width:28px;height:28px;background:#4ade80;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:#1a1d27;font-weight:700;font-size:12px;">PS</span>
+      </div>
+    </div>
+
+    <div class="storefront-body">
+      <div class="sf-section-title">Confirm Your Deliveries</div>
+      <div class="sf-section-desc">Received your COD order? Confirm delivery below to earn your reward points!</div>
+
+      <!-- Order 1: Ready to confirm -->
+      <div class="cod-order-card">
+        <div class="cod-order-header">
+          <div>
+            <div class="cod-order-id">Order #KUL-1042</div>
+            <div class="cod-order-date">Placed on 20 Mar 2026 · COD ₹1,299</div>
+          </div>
+          <div class="cod-order-amount">₹1,299</div>
+        </div>
+        <div class="cod-order-items">Mango Kulfi Pack × 2, Pista Kulfi × 1</div>
+        <div class="cod-points-preview">
+          <span class="cod-points-label">Points you'll earn</span>
+          <span class="cod-points-value">✨ 130 Kulfi</span>
+        </div>
+        <button class="sf-btn sf-btn-confirm">✓ I've Received This Order</button>
+      </div>
+
+      <!-- Order 2: Pending approval -->
+      <div class="cod-order-card">
+        <div class="cod-order-header">
+          <div>
+            <div class="cod-order-id">Order #KUL-1038</div>
+            <div class="cod-order-date">Placed on 17 Mar 2026 · COD ₹849</div>
+          </div>
+          <div class="cod-order-amount">₹849</div>
+        </div>
+        <div class="cod-order-items">Rose Kulfi × 3</div>
+
+        <div class="status-timeline">
+          <div class="timeline-step done">
+            <div class="timeline-dot"></div>
+            <span>Confirmed</span>
+          </div>
+          <div class="timeline-line done"></div>
+          <div class="timeline-step current">
+            <div class="timeline-dot"></div>
+            <span>Awaiting Approval</span>
+          </div>
+          <div class="timeline-line"></div>
+          <div class="timeline-step">
+            <div class="timeline-dot"></div>
+            <span>Points Issued</span>
+          </div>
+        </div>
+
+        <div class="cod-points-preview">
+          <span class="cod-points-label">Points pending</span>
+          <span class="cod-points-value" style="color:#facc15;">⏳ 85 Kulfi</span>
+        </div>
+        <button class="sf-btn sf-btn-pending">⏳ Awaiting Merchant Approval</button>
+      </div>
+
+      <!-- Order 3: Points earned -->
+      <div class="cod-order-card" style="border-color:#2a4a35;">
+        <div class="cod-order-header">
+          <div>
+            <div class="cod-order-id">Order #KUL-1031</div>
+            <div class="cod-order-date">Placed on 12 Mar 2026 · COD ₹2,150</div>
+          </div>
+          <div class="cod-order-amount">₹2,150</div>
+        </div>
+        <div class="cod-order-items">Kulfi Party Pack × 1</div>
+
+        <div class="status-timeline">
+          <div class="timeline-step done">
+            <div class="timeline-dot"></div>
+            <span>Confirmed</span>
+          </div>
+          <div class="timeline-line done"></div>
+          <div class="timeline-step done">
+            <div class="timeline-dot"></div>
+            <span>Approved</span>
+          </div>
+          <div class="timeline-line done"></div>
+          <div class="timeline-step done">
+            <div class="timeline-dot"></div>
+            <span>Points Issued</span>
+          </div>
+        </div>
+
+        <div class="cod-points-preview">
+          <span class="cod-points-label">Points earned</span>
+          <span class="cod-points-value" style="color:#4ade80;">✅ 215 Kulfi</span>
+        </div>
+        <button class="sf-btn sf-btn-earned">✅ 215 Kulfi Earned</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="flow-arrow">↓</div>
+
+<!-- ============================================================ -->
+<!-- SCREEN 4: Confirmation Modal (Storefront) -->
+<!-- ============================================================ -->
+<div class="screen-label">Screen 4</div>
+<div class="screen-name">Customer Confirmation Modal</div>
+<div class="screen-desc">When the customer clicks "I've Received This Order", a confirmation modal appears</div>
+
+<div class="screen">
+  <div class="storefront-chrome">
+    <div class="storefront-header">
+      <div class="storefront-logo">☕ Kulfi Corner</div>
+      <div class="storefront-user">
+        <span>Priya S.</span>
+        <span style="width:28px;height:28px;background:#4ade80;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:#1a1d27;font-weight:700;font-size:12px;">PS</span>
+      </div>
+    </div>
+
+    <div class="modal-backdrop" style="background:rgba(0,0,0,0.5); min-height:500px;">
+      <div class="modal" style="background:#2a2d3a; border:1px solid #3a3d4a;">
+        <div class="modal-header" style="border-color:#3a3d4a;">
+          <div class="modal-title" style="color:#fff;">Confirm Delivery</div>
+          <button class="modal-close" style="color:#6b7280;">×</button>
+        </div>
+        <div class="modal-body">
+          <div style="text-align:center; margin-bottom:20px;">
+            <div style="font-size:48px; margin-bottom:12px;">📦</div>
+            <div style="font-size:16px; font-weight:700; color:#fff; margin-bottom:4px;">Order #KUL-1042</div>
+            <div style="font-size:14px; color:#9ca3af;">₹1,299 · Placed 20 Mar 2026</div>
+          </div>
+
+          <div style="background:#1a1d27; border-radius:10px; padding:16px; margin-bottom:20px;">
+            <div style="font-size:13px; color:#9ca3af; margin-bottom:8px;">You'll earn</div>
+            <div style="font-size:28px; font-weight:700; color:#facc15; text-align:center;">✨ 130 Kulfi</div>
+            <div style="font-size:12px; color:#6b7280; text-align:center; margin-top:4px;">≈ ₹32.50</div>
+          </div>
+
+          <div style="background:#1a1d27; border-radius:10px; padding:14px; margin-bottom:20px; font-size:13px; color:#9ca3af; line-height:1.5;">
+            By confirming, you declare that you have received this order. False confirmations may result in your reward account being suspended.
+          </div>
+
+          <button class="sf-btn sf-btn-confirm" style="margin-top:0;">✓ Yes, I've Received My Order</button>
+          <button class="sf-btn" style="background:transparent; color:#6b7280; border:1px solid #3a3d4a; margin-top:8px;">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="flow-arrow">↓</div>
+
+<!-- ============================================================ -->
+<!-- SCREEN 5: Admin — COD Approvals Queue -->
+<!-- ============================================================ -->
+<div class="screen-label">Screen 5</div>
+<div class="screen-name">Admin — COD Approvals Queue</div>
+<div class="screen-desc">Merchant reviews and approves/rejects customer delivery confirmations (for manual flow)</div>
+
+<div class="screen">
+  <div class="admin-chrome">
+    <div class="sidebar">
+      <div class="sidebar-brand">Batua</div>
+      <div class="sidebar-item"><span class="sidebar-icon">◧</span> Wallet</div>
+      <div class="sidebar-item"><span class="sidebar-icon">♥</span> Loyalty</div>
+      <div class="sidebar-item"><span class="sidebar-icon">⇄</span> Transactions</div>
+      <div class="sidebar-item active"><span class="sidebar-icon">📋</span> COD Approvals</div>
+      <div class="sidebar-item"><span class="sidebar-icon">⚙</span> Settings</div>
+    </div>
+
+    <div class="main-content">
+      <div class="header-bar">
+        <div class="header-left">
+          <h1>COD Approvals</h1>
+          <p>Review customer delivery confirmations and approve to issue points</p>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-secondary btn-sm">Export</button>
+          <button class="btn btn-primary btn-sm">Approve All Visible</button>
+        </div>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-value amber">12</div>
+          <div class="stat-label">Pending Approval</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value green">238</div>
+          <div class="stat-label">Approved This Month</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">4</div>
+          <div class="stat-label">Rejected This Month</div>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <div class="tab active">Pending<span class="tab-count">12</span></div>
+        <div class="tab">Approved<span class="tab-count">238</span></div>
+        <div class="tab">Rejected<span class="tab-count">4</span></div>
+        <div class="tab">Auto-Approved<span class="tab-count">89</span></div>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th><input type="checkbox" /></th>
+              <th>Customer</th>
+              <th>Order</th>
+              <th>Amount</th>
+              <th>Points</th>
+              <th>Confirmed On</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><input type="checkbox" /></td>
+              <td>
+                <div class="customer-cell">
+                  <div class="customer-avatar">PS</div>
+                  <div>
+                    <div class="customer-name">Priya Sharma</div>
+                    <div class="customer-email">priya@email.com</div>
+                  </div>
+                </div>
+              </td>
+              <td><strong>#KUL-1038</strong><br><span style="font-size:12px;color:#9ca3af;">17 Mar 2026</span></td>
+              <td>₹849</td>
+              <td><span style="color:#d97706;font-weight:600;">85 ✨</span></td>
+              <td>24 Mar<br><span style="font-size:12px;color:#9ca3af;">7 days after order</span></td>
+              <td><span class="pill pill-pending">Pending</span></td>
+              <td>
+                <div class="actions-cell">
+                  <button class="btn btn-success btn-sm">Approve</button>
+                  <button class="btn btn-danger btn-sm">Reject</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><input type="checkbox" /></td>
+              <td>
+                <div class="customer-cell">
+                  <div class="customer-avatar" style="background:#fef3c7;color:#d97706;">AK</div>
+                  <div>
+                    <div class="customer-name">Amit Kumar</div>
+                    <div class="customer-email">amit.k@email.com</div>
+                  </div>
+                </div>
+              </td>
+              <td><strong>#KUL-1044</strong><br><span style="font-size:12px;color:#9ca3af;">22 Mar 2026</span></td>
+              <td>₹2,499</td>
+              <td><span style="color:#d97706;font-weight:600;">250 ✨</span></td>
+              <td>26 Mar<br><span style="font-size:12px;color:#9ca3af;">4 days after order</span></td>
+              <td><span class="pill pill-pending">Pending</span></td>
+              <td>
+                <div class="actions-cell">
+                  <button class="btn btn-success btn-sm">Approve</button>
+                  <button class="btn btn-danger btn-sm">Reject</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><input type="checkbox" /></td>
+              <td>
+                <div class="customer-cell">
+                  <div class="customer-avatar" style="background:#ecfdf5;color:#059669;">RG</div>
+                  <div>
+                    <div class="customer-name">Riya Gupta</div>
+                    <div class="customer-email">riya.g@email.com</div>
+                  </div>
+                </div>
+              </td>
+              <td><strong>#KUL-1041</strong><br><span style="font-size:12px;color:#9ca3af;">19 Mar 2026</span></td>
+              <td>₹1,650</td>
+              <td><span style="color:#d97706;font-weight:600;">165 ✨</span></td>
+              <td>25 Mar<br><span style="font-size:12px;color:#9ca3af;">6 days after order</span></td>
+              <td><span class="pill pill-pending">Pending</span></td>
+              <td>
+                <div class="actions-cell">
+                  <button class="btn btn-success btn-sm">Approve</button>
+                  <button class="btn btn-danger btn-sm">Reject</button>
+                </div>
+              </td>
+            </tr>
+            <tr style="background:#f0fdf4;">
+              <td><input type="checkbox" disabled /></td>
+              <td>
+                <div class="customer-cell">
+                  <div class="customer-avatar" style="background:#dbeafe;color:#2563eb;">NK</div>
+                  <div>
+                    <div class="customer-name">Neha Khanna</div>
+                    <div class="customer-email">neha@email.com</div>
+                  </div>
+                </div>
+              </td>
+              <td><strong>#KUL-1035</strong><br><span style="font-size:12px;color:#9ca3af;">15 Mar 2026</span></td>
+              <td>₹450</td>
+              <td><span style="color:#059669;font-weight:600;">45 ✨</span></td>
+              <td>22 Mar<br><span style="font-size:12px;color:#9ca3af;">7 days after order</span></td>
+              <td><span class="pill pill-auto">Auto-Approved</span></td>
+              <td><span style="font-size:12px;color:#9ca3af;">Repeat customer</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="flow-arrow">↓</div>
+
+<!-- ============================================================ -->
+<!-- SCREEN 6: Admin — Approval Detail / Reject Modal -->
+<!-- ============================================================ -->
+<div class="screen-label">Screen 6</div>
+<div class="screen-name">Approval Detail & Reject Modal</div>
+<div class="screen-desc">When the merchant clicks Reject, they provide a reason. The detail view shows order + customer context.</div>
+
+<div class="screen">
+  <div class="admin-chrome" style="min-height:500px;">
+    <div class="sidebar">
+      <div class="sidebar-brand">Batua</div>
+      <div class="sidebar-item"><span class="sidebar-icon">◧</span> Wallet</div>
+      <div class="sidebar-item active"><span class="sidebar-icon">📋</span> COD Approvals</div>
+      <div class="sidebar-item"><span class="sidebar-icon">⚙</span> Settings</div>
+    </div>
+
+    <div class="main-content">
+      <div style="display:flex; gap:24px;">
+        <!-- Left: Order detail -->
+        <div style="flex:1;">
+          <div style="margin-bottom:20px;">
+            <button class="btn btn-ghost btn-sm">← Back to Queue</button>
+          </div>
+
+          <div class="card" style="margin-bottom:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px;">
+              <div>
+                <div style="font-size:18px; font-weight:700;">Order #KUL-1038</div>
+                <div style="font-size:13px; color:#6b7280; margin-top:2px;">Placed 17 Mar 2026 · COD</div>
+              </div>
+              <span class="pill pill-pending">Pending Approval</span>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-bottom:20px;">
+              <div>
+                <div style="font-size:11px; color:#6b7280; text-transform:uppercase; letter-spacing:0.5px;">Amount</div>
+                <div style="font-size:16px; font-weight:700; margin-top:4px;">₹849</div>
+              </div>
+              <div>
+                <div style="font-size:11px; color:#6b7280; text-transform:uppercase; letter-spacing:0.5px;">Points</div>
+                <div style="font-size:16px; font-weight:700; margin-top:4px; color:#d97706;">85 ✨</div>
+              </div>
+              <div>
+                <div style="font-size:11px; color:#6b7280; text-transform:uppercase; letter-spacing:0.5px;">Confirmed</div>
+                <div style="font-size:16px; font-weight:700; margin-top:4px;">24 Mar</div>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div style="font-size:13px; font-weight:600; margin-bottom:12px;">Items</div>
+            <div style="font-size:14px; color:#374151; line-height:1.8;">
+              Rose Kulfi × 3 — ₹283 each
+            </div>
+          </div>
+
+          <div class="card">
+            <div style="font-size:13px; font-weight:600; margin-bottom:12px;">Customer: Priya Sharma</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; font-size:13px;">
+              <div>
+                <span style="color:#6b7280;">Total Orders:</span> <strong>8</strong>
+              </div>
+              <div>
+                <span style="color:#6b7280;">COD Orders:</span> <strong>5</strong>
+              </div>
+              <div>
+                <span style="color:#6b7280;">COD Approved:</span> <strong style="color:#059669;">4</strong>
+              </div>
+              <div>
+                <span style="color:#6b7280;">COD Rejected:</span> <strong>0</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Reject modal -->
+        <div style="width:360px;">
+          <div class="modal" style="box-shadow:0 4px 20px rgba(0,0,0,0.1);">
+            <div class="modal-header">
+              <div class="modal-title">Reject Confirmation</div>
+              <button class="modal-close">×</button>
+            </div>
+            <div class="modal-body">
+              <div style="font-size:14px; color:#374151; margin-bottom:16px;">
+                Why are you rejecting this delivery confirmation?
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Reason</label>
+                <select class="form-select">
+                  <option>Select a reason...</option>
+                  <option selected>Order not yet delivered per tracking</option>
+                  <option>Order returned / RTO</option>
+                  <option>Suspected fraud</option>
+                  <option>Duplicate claim</option>
+                  <option>Other</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Note (optional)</label>
+                <textarea class="form-input" rows="3" placeholder="Add a note for your records..." style="resize:vertical;"></textarea>
+              </div>
+
+              <div class="info-box info-box-amber" style="margin-bottom:0;">
+                <span class="info-icon">⚠️</span>
+                <div>The customer will be notified that their confirmation was not approved. Points will not be issued.</div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-ghost">Cancel</button>
+              <button class="btn btn-danger">Reject & Notify</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="flow-arrow">↓</div>
+
+<!-- ============================================================ -->
+<!-- SCREEN 7: Admin — Automated Flow Dashboard -->
+<!-- ============================================================ -->
+<div class="screen-label">Screen 7</div>
+<div class="screen-name">COD Verification Dashboard (Automated Flow)</div>
+<div class="screen-desc">When using delivery partner integration, the dashboard shows real-time delivery signals and auto-issued points</div>
+
+<div class="screen">
+  <div class="admin-chrome">
+    <div class="sidebar">
+      <div class="sidebar-brand">Batua</div>
+      <div class="sidebar-item"><span class="sidebar-icon">◧</span> Wallet</div>
+      <div class="sidebar-item"><span class="sidebar-icon">♥</span> Loyalty</div>
+      <div class="sidebar-item"><span class="sidebar-icon">⇄</span> Transactions</div>
+      <div class="sidebar-item active"><span class="sidebar-icon">🚚</span> COD Tracking</div>
+      <div class="sidebar-item"><span class="sidebar-icon">⚙</span> Settings</div>
+    </div>
+
+    <div class="main-content">
+      <div class="header-bar">
+        <div class="header-left">
+          <h1>COD Delivery Tracking</h1>
+          <p>Automatic delivery verification via Shiprocket</p>
+        </div>
+        <div>
+          <span class="pill pill-connected" style="font-size:13px; padding:6px 14px;">● Shiprocket Connected</span>
+        </div>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-value amber">23,070 ✨</div>
+          <div class="stat-label">Points Pending (COD in transit)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value green">47</div>
+          <div class="stat-label">Delivered & Points Issued Today</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">3</div>
+          <div class="stat-label">RTO / Points Cancelled Today</div>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <div class="tab active">In Transit<span class="tab-count">34</span></div>
+        <div class="tab">Delivered<span class="tab-count">47</span></div>
+        <div class="tab">RTO / Failed<span class="tab-count">3</span></div>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Customer</th>
+              <th>Order</th>
+              <th>Amount</th>
+              <th>Pending Points</th>
+              <th>Tracking</th>
+              <th>Last Update</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <div class="customer-cell">
+                  <div class="customer-avatar">PS</div>
+                  <div>
+                    <div class="customer-name">Priya Sharma</div>
+                  </div>
+                </div>
+              </td>
+              <td><strong>#KUL-1042</strong></td>
+              <td>₹1,299</td>
+              <td><span style="color:#d97706;font-weight:600;">130 ✨</span></td>
+              <td><span style="font-family:monospace; font-size:12px;">SR78234921</span></td>
+              <td><span style="font-size:13px;">Out for Delivery</span><br><span style="font-size:12px;color:#9ca3af;">27 Mar, 10:30 AM</span></td>
+              <td><span class="pill pill-pending">In Transit</span></td>
+            </tr>
+            <tr>
+              <td>
+                <div class="customer-cell">
+                  <div class="customer-avatar" style="background:#fef3c7;color:#d97706;">AK</div>
+                  <div>
+                    <div class="customer-name">Amit Kumar</div>
+                  </div>
+                </div>
+              </td>
+              <td><strong>#KUL-1044</strong></td>
+              <td>₹2,499</td>
+              <td><span style="color:#d97706;font-weight:600;">250 ✨</span></td>
+              <td><span style="font-family:monospace; font-size:12px;">SR78234955</span></td>
+              <td><span style="font-size:13px;">Reached Hub — Mumbai</span><br><span style="font-size:12px;color:#9ca3af;">27 Mar, 8:15 AM</span></td>
+              <td><span class="pill pill-pending">In Transit</span></td>
+            </tr>
+            <tr style="background:#f0fdf4;">
+              <td>
+                <div class="customer-cell">
+                  <div class="customer-avatar" style="background:#ecfdf5;color:#059669;">RG</div>
+                  <div>
+                    <div class="customer-name">Riya Gupta</div>
+                  </div>
+                </div>
+              </td>
+              <td><strong>#KUL-1039</strong></td>
+              <td>₹1,650</td>
+              <td><span style="color:#059669;font-weight:600;">165 ✨ ✓</span></td>
+              <td><span style="font-family:monospace; font-size:12px;">SR78234890</span></td>
+              <td><span style="font-size:13px;">Delivered</span><br><span style="font-size:12px;color:#9ca3af;">26 Mar, 4:12 PM</span></td>
+              <td><span class="pill pill-approved">Delivered</span></td>
+            </tr>
+            <tr style="background:#fef2f2;">
+              <td>
+                <div class="customer-cell">
+                  <div class="customer-avatar" style="background:#fce7f3;color:#db2777;">VP</div>
+                  <div>
+                    <div class="customer-name">Vikram Patel</div>
+                  </div>
+                </div>
+              </td>
+              <td><strong>#KUL-1037</strong></td>
+              <td>₹975</td>
+              <td><span style="color:#ef4444;font-weight:600;text-decoration:line-through;">98 ✨</span></td>
+              <td><span style="font-family:monospace; font-size:12px;">SR78234872</span></td>
+              <td><span style="font-size:13px;">RTO — Returned</span><br><span style="font-size:12px;color:#9ca3af;">25 Mar, 6:00 PM</span></td>
+              <td><span class="pill pill-rejected">RTO</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="info-box info-box-blue" style="margin-top:24px;">
+        <span class="info-icon">ℹ️</span>
+        <div>
+          <strong>How it works:</strong> When Shiprocket marks an order as "Delivered", we automatically issue the pending points to the customer's wallet. If the order is returned (RTO), the pending points are cancelled. No manual action needed.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center; padding:48px; color:#9ca3af; font-size:13px;">
+  End of COD Verification Flow Mockups · 7 Screens · Batua / Breeze Retention Suite
+</div>
+
+</body>
+</html>

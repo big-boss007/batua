@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wallet Breakdown — Design Options</title>
+<style>
+  :root {
+    --primary: #6366f1;
+    --success: #22c55e;
+    --text: #1a1a2e;
+    --text-muted: #6b7280;
+    --border: #e5e7eb;
+    --surface: #ffffff;
+    --surface-2: #f9fafb;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    --mono: 'SF Mono', 'Fira Code', monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: var(--font); background: #f1f5f9; color: var(--text); line-height: 1.5; padding: 40px 20px; }
+
+  .page { max-width: 520px; margin: 0 auto; }
+  h1 { font-size: 22px; text-align: center; margin-bottom: 8px; }
+  .subtitle { text-align: center; color: var(--text-muted); font-size: 13px; margin-bottom: 32px; }
+
+  .option-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--primary); margin-bottom: 8px; padding: 0 4px;
+  }
+  .option-desc {
+    font-size: 12px; color: var(--text-muted); margin-bottom: 12px; padding: 0 4px;
+  }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 20px; margin-bottom: 32px;
+  }
+  .card-title { font-size: 15px; font-weight: 700; margin-bottom: 12px; }
+
+  .total-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+  .total-value { font-size: 24px; font-weight: 800; }
+  .total-label { font-size: 13px; color: var(--text-muted); }
+
+  /* Shared row structure */
+  .wd-row {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 12px; border-radius: var(--radius-sm);
+    background: var(--surface-2); margin-bottom: 6px;
+  }
+  .wd-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
+  .wd-label { font-size: 14px; font-weight: 600; min-width: 48px; }
+  .wd-right { flex: 1; text-align: right; min-width: 0; }
+  .wd-value { font-size: 15px; font-weight: 700; }
+  .wd-more { background: none; border: 1px solid var(--border); width: 28px; height: 28px; border-radius: 6px; cursor: pointer; font-size: 14px; color: var(--text-muted); flex-shrink: 0; }
+
+  /* ═══════════ OPTION A: Stacked sub-buckets ═══════════ */
+  .a-breakdown { margin-top: 6px; display: flex; flex-direction: column; gap: 2px; }
+  .a-sub { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); }
+  .a-sub-name { }
+  .a-sub-val { font-weight: 600; font-family: var(--mono); font-size: 10px; }
+  .a-worth { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+  /* ═══════════ OPTION B: Inline pills ═══════════ */
+  .b-breakdown { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px; justify-content: flex-end; }
+  .b-pill { display: inline-flex; align-items: center; gap: 3px; font-size: 10px; padding: 2px 7px; border-radius: 10px; background: #f3f4f6; color: var(--text-muted); font-weight: 500; white-space: nowrap; }
+  .b-pill-val { font-weight: 700; color: var(--text); }
+  .b-worth { font-size: 11px; color: var(--text-muted); margin-top: 4px; text-align: right; }
+
+  /* ═══════════ OPTION C: Mini progress segments ═══════════ */
+  .c-bar-row { display: flex; height: 6px; border-radius: 3px; overflow: hidden; margin-top: 8px; gap: 1px; }
+  .c-seg { height: 100%; border-radius: 3px; }
+  .c-legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; justify-content: flex-end; }
+  .c-legend-item { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--text-muted); white-space: nowrap; }
+  .c-legend-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .c-legend-val { font-weight: 600; }
+  .c-worth { font-size: 11px; color: var(--text-muted); margin-top: 2px; text-align: right; }
+
+  .divider { border: none; border-top: 1px dashed #e2e8f0; margin: 24px 0; }
+  .case-label { font-size: 10px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="page">
+
+<h1>Wallet Breakdown — Design Options</h1>
+<p class="subtitle">3 layout options for bucket narration, each shown with 2 cases: minimal &amp; full content</p>
+
+<!-- ═════════════════════════════════════════════ -->
+<!-- OPTION A: Stacked Sub-Buckets (mini table)   -->
+<!-- ═════════════════════════════════════════════ -->
+<div class="option-label">Option A — Stacked Breakdown</div>
+<p class="option-desc">Each sub-bucket gets its own row. Clean, scannable. Scales well from 1 to 6 buckets.</p>
+
+<!-- A: Minimal case -->
+<p class="case-label">Minimal — 1 cash bucket</p>
+<div class="card">
+  <div class="card-title">💰 Wallet</div>
+  <div class="total-row">
+    <span class="total-value">₹339.00</span>
+    <span class="total-label">total redeemable</span>
+  </div>
+  <div class="wd-row">
+    <span class="wd-dot" style="background: var(--primary);"></span>
+    <span class="wd-label">Points</span>
+    <div class="wd-right">
+      <div class="wd-value" style="color: var(--primary);">0 🔹</div>
+    </div>
+    <button class="wd-more">⋯</button>
+  </div>
+  <div class="wd-row">
+    <span class="wd-dot" style="background: var(--success);"></span>
+    <span class="wd-label">Cash</span>
+    <div class="wd-right">
+      <div class="wd-value" style="color: var(--success);">₹339.00</div>
+      <div class="a-breakdown">
+        <div class="a-sub"><span class="a-sub-name">Gift Card</span><span class="a-sub-val">₹339.00</span></div>
+      </div>
+    </div>
+    <button class="wd-more">⋯</button>
+  </div>
+</div>
+
+<!-- A: Full case -->
+<p class="case-label">Full — 4 point buckets + 3 cash buckets</p>
+<div class="card">
+  <div class="card-title">💰 Wallet</div>
+  <div class="total-row">
+    <span class="total-value">₹1,409.80</span>
+    <span class="total-label">total redeemable</span>
+  </div>
+  <div class="wd-row">
+    <span class="wd-dot" style="background: var(--primary);"></span>
+    <span class="wd-label">Points</span>
+    <div class="wd-right">
+      <div class="wd-value" style="color: var(--primary);">1,208 🔹</div>
+      <div class="a-worth">worth ₹120.80</div>
+      <div class="a-breakdown">
+        <div class="a-sub"><span class="a-sub-name">Earned</span><span class="a-sub-val">634</span></div>
+        <div class="a-sub"><span class="a-sub-name">Goodwill</span><span class="a-sub-val">274</span></div>
+        <div class="a-sub"><span class="a-sub-name">Referral</span><span class="a-sub-val">200</span></div>
+        <div class="a-sub"><span class="a-sub-name">Membership</span><span class="a-sub-val">100</span></div>
+      </div>
+    </div>
+    <button class="wd-more">⋯</button>
+  </div>
+  <div class="wd-row">
+    <span class="wd-dot" style="background: var(--success);"></span>
+    <span class="wd-label">Cash</span>
+    <div class="wd-right">
+      <div class="wd-value" style="color: var(--success);">₹1,289.00</div>
+      <div class="a-breakdown">
+        <div class="a-sub"><span class="a-sub-name">Gift Card</span><span class="a-sub-val">₹750.00</span></div>
+        <div class="a-sub"><span class="a-sub-name">Refund</span><span class="a-sub-val">₹339.00</span></div>
+        <div class="a-sub"><span class="a-sub-name">Store Credit</span><span class="a-sub-val">₹200.00</span></div>
+      </div>
+    </div>
+    <button class="wd-more">⋯</button>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ═════════════════════════════════════════════ -->
+<!-- OPTION B: Inline Pill Tags                    -->
+<!-- ═════════════════════════════════════════════ -->
+<div class="option-label">Option B — Inline Pills</div>
+<p class="option-desc">Sub-buckets as tiny pill tags. Compact and visual. Wraps gracefully.</p>
+
+<!-- B: Minimal case -->
+<p class="case-label">Minimal — 1 cash bucket</p>
+<div class="card">
+  <div class="card-title">💰 Wallet</div>
+  <div class="total-row">
+    <span class="total-value">₹339.00</span>
+    <span class="total-label">total redeemable</span>
+  </div>
+  <div class="wd-row">
+    <span class="wd-dot" style="background: var(--primary);"></span>
+    <span class="wd-label">Points</span>
+    <div class="wd-right">
+      <div class="wd-value" style="color: var(--primary);">0 🔹</div>
+    </div>
+    <button class="wd-more">⋯</button>
+  </div>
+  <div class="wd-row">
+    <span class="wd-dot" style="background: var(--success);"></span>
+    <span class="wd-label">Cash</span>
+    <div class="wd-right">
+      <div class="wd-value" style="color: var(--success);">₹339.00</div>
+      <div class="b-breakdown">
+        <span class="b-pill">Gift Card <span class="b-pill-val">₹339</span></span>
+      </div>
+    </div>
+    <button class="wd-more">⋯</button>
+  </div>
+</div>
+
+<!-- B: Full case -->
+<p class="case-label">Full — 4 point buckets + 3 cash buckets</p>
+<div class="card">
+  <div class="card-title">💰 Wallet</div>
+  <div class="total-row">
+    <span class="total-value">₹1,409.80</span>
+    <span class="total-label">total redeemable</span>
+  </div>
+  <div class="wd-row">
+    <span class="wd-dot" style="background: var(--primary);"></span>
+    <span class="wd-label">Points</span>
+    <div class="wd-right">
+      <div class="wd-value" style="color: var(--primary);">1,208 🔹</div>
+      <div class="b-worth">worth ₹120.80</div>
+      <div class="b-breakdown">
+        <span class="b-pill">Earned <span class="b-pill-val">634</span></span>
+        <span class="b-pill">Goodwill <span class="b-pill-val">274</span></span>
+        <span class="b-pill">Referral <span class="b-pill-val">200</span></span>
+        <span class="b-pill">Membership <span class="b-pill-val">100</span></span>
+      </div>
+    </div>
+    <button class="wd-more">⋯</button>
+  </div>
+  <div class="wd-row">
+    <span class="wd-dot" style="background: var(--success);"></span>
+    <span class="wd-label">Cash</span>
+    <div class="wd-right">
+      <div class="wd-value" style="color: var(--success);">₹1,289.00</div>
+      <div class="b-breakdown">
+        <span class="b-pill">Gift Card <span class="b-pill-val">₹750</span></span>
+        <span class="b-pill">Refund <span class="b-pill-val">₹339</span></span>
+        <span class="b-pill">Store Credit <span class="b-pill-val">₹200</span></span>
+      </div>
+    </div>
+    <button class="wd-more">⋯</button>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ═════════════════════════════════════════════ -->
+<!-- OPTION C: Proportional Bar + Legend           -->
+<!-- ═════════════════════════════════════════════ -->
+<div class="option-label">Option C — Proportional Bar + Legend</div>
+<p class="option-desc">Visual proportion indicator with color-coded legend. Best for seeing relative sizes at a glance.</p>
+
+<!-- C: Minimal case -->
+<p class="case-label">Minimal — 1 cash bucket</p>
+<div class="card">
+  <div class="card-title">💰 Wallet</div>
+  <div class="total-row">
+    <span class="total-value">₹339.00</span>
+    <span class="total-label">total redeemable</span>
+  </div>
+  <div class="wd-row">
+    <span class="wd-dot" style="background: var(--primary);"></span>
+    <span class="wd-label">Points</span>
+    <div class="wd-right">
+      <div class="wd-value" style="color: var(--primary);">0 🔹</div>
+    </div>
+    <button class="wd-more">⋯</button>
+  </div>
+  <div class="wd-row">
+    <span class="wd-dot" style="background: var(--success);"></span>
+    <span class="wd-label">Cash</span>
+    <div class="wd-right">
+      <div class="wd-value" style="color: var(--success);">₹339.00</div>
+      <div class="c-bar-row">
+        <div class="c-seg" style="flex: 1; background: #34d399;"></div>
+      </div>
+      <div class="c-legend">
+        <span class="c-legend-item"><span class="c-legend-dot" style="background: #34d399;"></span>Gift Card <span class="c-legend-val">₹339</span></span>
+      </div>
+    </div>
+    <button class="wd-more">⋯</button>
+  </div>
+</div>
+
+<!-- C: Full case -->
+<p class="case-label">Full — 4 point buckets + 3 cash buckets</p>
+<div class="card">
+  <div class="card-title">💰 Wallet</div>
+  <div class="total-row">
+    <span class="total-value">₹1,409.80</span>
+    <span class="total-label">total redeemable</span>
+  </div>
+  <div class="wd-row">
+    <span class="wd-dot" style="background: var(--primary);"></span>
+    <span class="wd-label">Points</span>
+    <div class="wd-right">
+      <div class="wd-value" style="color: var(--primary);">1,208 🔹</div>
+      <div class="c-worth">worth ₹120.80</div>
+      <div class="c-bar-row">
+        <div class="c-seg" style="flex: 634; background: #818cf8;"></div>
+        <div class="c-seg" style="flex: 274; background: #a78bfa;"></div>
+        <div class="c-seg" style="flex: 200; background: #c4b5fd;"></div>
+        <div class="c-seg" style="flex: 100; background: #ddd6fe;"></div>
+      </div>
+      <div class="c-legend">
+        <span class="c-legend-item"><span class="c-legend-dot" style="background: #818cf8;"></span>Earned <span class="c-legend-val">634</span></span>
+        <span class="c-legend-item"><span class="c-legend-dot" style="background: #a78bfa;"></span>Goodwill <span class="c-legend-val">274</span></span>
+        <span class="c-legend-item"><span class="c-legend-dot" style="background: #c4b5fd;"></span>Referral <span class="c-legend-val">200</span></span>
+        <span class="c-legend-item"><span class="c-legend-dot" style="background: #ddd6fe;"></span>Membership <span class="c-legend-val">100</span></span>
+      </div>
+    </div>
+    <button class="wd-more">⋯</button>
+  </div>
+  <div class="wd-row">
+    <span class="wd-dot" style="background: var(--success);"></span>
+    <span class="wd-label">Cash</span>
+    <div class="wd-right">
+      <div class="wd-value" style="color: var(--success);">₹1,289.00</div>
+      <div class="c-bar-row">
+        <div class="c-seg" style="flex: 750; background: #34d399;"></div>
+        <div class="c-seg" style="flex: 339; background: #6ee7b7;"></div>
+        <div class="c-seg" style="flex: 200; background: #a7f3d0;"></div>
+      </div>
+      <div class="c-legend">
+        <span class="c-legend-item"><span class="c-legend-dot" style="background: #34d399;"></span>Gift Card <span class="c-legend-val">₹750</span></span>
+        <span class="c-legend-item"><span class="c-legend-dot" style="background: #6ee7b7;"></span>Refund <span class="c-legend-val">₹339</span></span>
+        <span class="c-legend-item"><span class="c-legend-dot" style="background: #a7f3d0;"></span>Store Credit <span class="c-legend-val">₹200</span></span>
+      </div>
+    </div>
+    <button class="wd-more">⋯</button>
+  </div>
+</div>
+
+</div>
+</body>
+</html>

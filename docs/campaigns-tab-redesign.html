@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Campaigns Tab — Redesign</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f1f3; color: #1a1a2e; }
+
+  .design-wrapper { max-width: 960px; margin: 0 auto; padding: 40px 24px 80px; }
+  .design-title { text-align: center; font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .design-desc { text-align: center; color: #6b7280; font-size: 13px; margin-bottom: 32px; }
+
+  .state-nav {
+    display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;
+    margin-bottom: 32px; position: sticky; top: 0; background: #f0f1f3; padding: 12px 0; z-index: 10;
+  }
+  .state-tab {
+    padding: 7px 14px; border-radius: 8px; font-size: 12px; font-weight: 500;
+    cursor: pointer; border: 1px solid #d1d5db; background: white; color: #6b7280;
+  }
+  .state-tab.active { background: #6366f1; color: white; border-color: #6366f1; }
+  .state-tab:hover:not(.active) { background: #f3f4f6; }
+
+  .state-view { display: none; }
+  .state-view.active { display: block; }
+
+  .annotation { font-size: 11px; color: #9ca3af; background: #fafbfc; border: 1px dashed #d1d5db; border-radius: 6px; padding: 8px 12px; margin-bottom: 16px; }
+  .annotation strong { color: #6b7280; }
+
+  /* ── Page chrome ── */
+  .page-sim { background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px; }
+  .page-desc { font-size: 13px; color: #6b7280; margin-bottom: 20px; }
+  .section-title { font-size: 16px; font-weight: 600; margin-bottom: 14px; color: #1a1a2e; }
+
+  /* ── Earn breakdown callout (active campaign) ── */
+  .earn-breakdown {
+    background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 100%);
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+  }
+  .earn-breakdown-title { font-size: 12px; font-weight: 600; color: #065f46; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .earn-formula {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    font-size: 13px; color: #374151;
+  }
+  .formula-block {
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    padding: 8px 14px; background: white; border: 1px solid #e5e7eb;
+    border-radius: 8px; min-width: 80px;
+  }
+  .formula-label { font-size: 9px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.04em; }
+  .formula-value { font-size: 16px; font-weight: 700; }
+  .formula-value.purple { color: #6366f1; }
+  .formula-value.green { color: #22c55e; }
+  .formula-value.blue { color: #3b82f6; }
+  .formula-value.orange { color: #f59e0b; }
+  .formula-source { font-size: 9px; color: #9ca3af; }
+  .formula-op { font-size: 18px; font-weight: 300; color: #9ca3af; }
+  .formula-result {
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    padding: 8px 14px; background: #065f46; border-radius: 8px; min-width: 80px;
+  }
+  .formula-result .formula-label { color: rgba(255,255,255,0.7); }
+  .formula-result .formula-value { color: white; }
+
+  .earn-example { font-size: 11px; color: #6b7280; margin-top: 10px; line-height: 1.5; }
+  .earn-example strong { color: #374151; }
+
+  /* ── Campaign cards (improved) ── */
+  .campaigns-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 28px; }
+  .campaign-card {
+    border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px;
+    background: white; transition: all 0.15s; cursor: pointer;
+  }
+  .campaign-card:hover { border-color: #c7d2fe; }
+  .campaign-card.active-card { border-color: #86efac; background: #f0fdf4; }
+  .campaign-card.upcoming-card { border-color: #c7d2fe; }
+  .campaign-card.ended-card { opacity: 0.6; }
+
+  .campaign-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .campaign-name { font-size: 14px; font-weight: 600; color: #1a1a2e; }
+  .campaign-status { padding: 3px 10px; border-radius: 12px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+  .status-active { background: #d1fae5; color: #065f46; }
+  .status-upcoming { background: #dbeafe; color: #1d4ed8; }
+  .status-ended { background: #f3f4f6; color: #6b7280; }
+
+  .campaign-meta { display: flex; flex-direction: column; gap: 8px; }
+  .campaign-row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
+  .campaign-label { color: #9ca3af; }
+  .campaign-val { color: #374151; font-weight: 500; }
+  .campaign-val.mult { color: #6366f1; font-weight: 700; font-family: 'SF Mono', monospace; }
+
+  .campaign-rule { display: flex; align-items: center; gap: 6px; margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb; }
+  .campaign-rule-label { font-size: 10px; color: #9ca3af; }
+  .campaign-rule-name { font-size: 11px; font-weight: 500; color: #374151; padding: 2px 8px; background: #f3f4f6; border-radius: 6px; }
+
+  .campaign-progress { margin-top: 10px; }
+  .campaign-progress-header { display: flex; justify-content: space-between; font-size: 10px; color: #9ca3af; margin-bottom: 4px; }
+  .campaign-progress-track { height: 4px; border-radius: 2px; background: #e5e7eb; overflow: hidden; }
+  .campaign-progress-fill { height: 100%; border-radius: 2px; background: #22c55e; }
+
+  /* ── Impact stats ── */
+  .campaign-impact { margin-top: 10px; padding-top: 10px; border-top: 1px solid #e5e7eb; }
+  .impact-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .impact-item { text-align: center; }
+  .impact-label { font-size: 9px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.04em; }
+  .impact-value { font-size: 14px; font-weight: 700; color: #1a1a2e; margin-top: 2px; }
+  .impact-value.highlight { color: #22c55e; }
+
+  /* ── No campaign state ── */
+  .no-campaigns { padding: 32px; text-align: center; color: #9ca3af; font-size: 13px; border: 1px dashed #e5e7eb; border-radius: 10px; margin-bottom: 28px; }
+
+  /* ── Templates (keep same) ── */
+  .templates-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  .template-card { border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px; background: white; cursor: pointer; transition: all 0.15s; }
+  .template-card:hover { border-color: #6366f1; }
+  .template-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .template-name { font-size: 14px; font-weight: 600; }
+  .template-tag { font-size: 10px; padding: 2px 8px; border-radius: 6px; background: #f3f4f6; color: #6b7280; font-weight: 500; }
+  .template-desc { font-size: 12px; color: #6b7280; margin-bottom: 10px; }
+  .template-meta { display: flex; gap: 16px; font-size: 11px; color: #9ca3af; }
+  .template-meta span { display: flex; flex-direction: column; gap: 1px; }
+  .template-meta-val { font-weight: 500; color: #374151; }
+</style>
+</head>
+<body>
+
+<div class="design-wrapper">
+  <h1 class="design-title">Campaigns Tab — Redesign</h1>
+  <p class="design-desc">Shows how multipliers stack + campaign impact + earn breakdown</p>
+
+  <div class="state-nav">
+    <button class="state-tab active" onclick="show('active-campaign')">Active Campaign</button>
+    <button class="state-tab" onclick="show('no-active')">No Active Campaign</button>
+    <button class="state-tab" onclick="show('campaign-detail')">Campaign Detail (click)</button>
+  </div>
+
+  <!-- ═══ ACTIVE CAMPAIGN ═══ -->
+  <div class="state-view active" id="active-campaign">
+    <div class="annotation"><strong>Active campaign:</strong> Shows the earn formula breakdown so merchant understands how multipliers stack. Campaign cards show linked rule + impact stats.</div>
+
+    <div class="page-sim">
+      <p class="page-desc">Boost engagement with festive and seasonal reward campaigns</p>
+
+      <!-- Earn breakdown -->
+      <div class="earn-breakdown">
+        <div class="earn-breakdown-title">🔥 Active Campaign Earning Formula</div>
+        <div class="earn-formula">
+          <div class="formula-block">
+            <span class="formula-label">Base Earn</span>
+            <span class="formula-value">100</span>
+            <span class="formula-source">from rule</span>
+          </div>
+          <span class="formula-op">×</span>
+          <div class="formula-block">
+            <span class="formula-label">Campaign</span>
+            <span class="formula-value blue">2x</span>
+            <span class="formula-source">Weekend Bonanza</span>
+          </div>
+          <span class="formula-op">×</span>
+          <div class="formula-block">
+            <span class="formula-label">Tier / Membership</span>
+            <span class="formula-value purple">1.25x</span>
+            <span class="formula-source">Silver member</span>
+          </div>
+          <span class="formula-op">=</span>
+          <div class="formula-result">
+            <span class="formula-label">Effective</span>
+            <span class="formula-value">250</span>
+          </div>
+        </div>
+        <div class="earn-example">
+          Example: A Silver member earning 100 base points from an order will receive <strong>250 points</strong> during this campaign (100 × 2x campaign × 1.25x tier)
+        </div>
+      </div>
+
+      <!-- Campaign cards -->
+      <h2 class="section-title">Active & Upcoming Campaigns</h2>
+      <div class="campaigns-grid">
+        <!-- Active campaign -->
+        <div class="campaign-card active-card">
+          <div class="campaign-header">
+            <span class="campaign-name">2x Weekend Bonanza</span>
+            <span class="campaign-status status-active">Active</span>
+          </div>
+          <div class="campaign-meta">
+            <div class="campaign-row">
+              <span class="campaign-label">Type</span>
+              <span class="campaign-val">Multiplier</span>
+            </div>
+            <div class="campaign-row">
+              <span class="campaign-label">Dates</span>
+              <span class="campaign-val">21 Feb – 22 May 2026</span>
+            </div>
+            <div class="campaign-row">
+              <span class="campaign-label">Multiplier</span>
+              <span class="campaign-val mult">2x</span>
+            </div>
+          </div>
+          <div class="campaign-rule">
+            <span class="campaign-rule-label">Linked rule:</span>
+            <span class="campaign-rule-name">Order Earn (reward)</span>
+          </div>
+          <div class="campaign-progress">
+            <div class="campaign-progress-header">
+              <span>Duration progress</span>
+              <span>36% elapsed</span>
+            </div>
+            <div class="campaign-progress-track">
+              <div class="campaign-progress-fill" style="width: 36%;"></div>
+            </div>
+          </div>
+          <div class="campaign-impact">
+            <div class="impact-grid">
+              <div class="impact-item">
+                <span class="impact-label">Orders</span>
+                <span class="impact-value">342</span>
+              </div>
+              <div class="impact-item">
+                <span class="impact-label">Extra Points</span>
+                <span class="impact-value highlight">+48,200</span>
+              </div>
+              <div class="impact-item">
+                <span class="impact-label">Extra ₹ Value</span>
+                <span class="impact-value highlight">₹12,050</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upcoming campaign -->
+        <div class="campaign-card upcoming-card">
+          <div class="campaign-header">
+            <span class="campaign-name">Holi Special 3x</span>
+            <span class="campaign-status status-upcoming">Upcoming</span>
+          </div>
+          <div class="campaign-meta">
+            <div class="campaign-row">
+              <span class="campaign-label">Type</span>
+              <span class="campaign-val">Bonus</span>
+            </div>
+            <div class="campaign-row">
+              <span class="campaign-label">Dates</span>
+              <span class="campaign-val">2 Apr – 9 Apr 2026</span>
+            </div>
+            <div class="campaign-row">
+              <span class="campaign-label">Multiplier</span>
+              <span class="campaign-val mult">3x</span>
+            </div>
+          </div>
+          <div class="campaign-rule">
+            <span class="campaign-rule-label">Linked rule:</span>
+            <span class="campaign-rule-name">Order Earn (reward)</span>
+          </div>
+          <div style="margin-top: 10px; font-size: 11px; color: #1d4ed8;">
+            Starts in 9 days
+          </div>
+        </div>
+      </div>
+
+      <!-- Templates -->
+      <h2 class="section-title">Festive Templates</h2>
+      <p style="font-size: 13px; color: #6b7280; margin-bottom: 14px;">Select a template to create a new campaign with pre-configured settings</p>
+      <div class="templates-grid">
+        <div class="template-card">
+          <div class="template-header">
+            <span class="template-name">Diwali</span>
+            <span class="template-tag">religious</span>
+          </div>
+          <div class="template-desc">Festival of lights — peak shopping season across India</div>
+          <div class="template-meta">
+            <span><span class="template-meta-val">2x</span> Multiplier</span>
+            <span><span class="template-meta-val">5 days</span> Duration</span>
+          </div>
+        </div>
+        <div class="template-card">
+          <div class="template-header">
+            <span class="template-name">Navratri</span>
+            <span class="template-tag">religious</span>
+          </div>
+          <div class="template-desc">Nine nights of celebration with high consumer spending</div>
+          <div class="template-meta">
+            <span><span class="template-meta-val">2x</span> Multiplier</span>
+            <span><span class="template-meta-val">9 days</span> Duration</span>
+          </div>
+        </div>
+        <div class="template-card">
+          <div class="template-header">
+            <span class="template-name">Holi</span>
+            <span class="template-tag">religious</span>
+          </div>
+          <div class="template-desc">Festival of colors — spring shopping boost</div>
+          <div class="template-meta">
+            <span><span class="template-meta-val">2x</span> Multiplier</span>
+            <span><span class="template-meta-val">3 days</span> Duration</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ NO ACTIVE CAMPAIGN ═══ -->
+  <div class="state-view" id="no-active">
+    <div class="annotation"><strong>No active campaign:</strong> No earn breakdown shown. Just upcoming/ended campaigns and templates.</div>
+
+    <div class="page-sim">
+      <p class="page-desc">Boost engagement with festive and seasonal reward campaigns</p>
+
+      <h2 class="section-title">Active & Upcoming Campaigns</h2>
+      <div class="campaigns-grid">
+        <div class="campaign-card upcoming-card">
+          <div class="campaign-header">
+            <span class="campaign-name">Holi Special 3x</span>
+            <span class="campaign-status status-upcoming">Upcoming</span>
+          </div>
+          <div class="campaign-meta">
+            <div class="campaign-row">
+              <span class="campaign-label">Type</span>
+              <span class="campaign-val">Bonus</span>
+            </div>
+            <div class="campaign-row">
+              <span class="campaign-label">Dates</span>
+              <span class="campaign-val">2 Apr – 9 Apr 2026</span>
+            </div>
+            <div class="campaign-row">
+              <span class="campaign-label">Multiplier</span>
+              <span class="campaign-val mult">3x</span>
+            </div>
+          </div>
+          <div class="campaign-rule">
+            <span class="campaign-rule-label">Linked rule:</span>
+            <span class="campaign-rule-name">Order Earn (reward)</span>
+          </div>
+          <div style="margin-top: 10px; font-size: 11px; color: #1d4ed8;">
+            Starts in 9 days
+          </div>
+        </div>
+
+        <div class="campaign-card ended-card">
+          <div class="campaign-header">
+            <span class="campaign-name">Republic Day 2x</span>
+            <span class="campaign-status status-ended">Ended</span>
+          </div>
+          <div class="campaign-meta">
+            <div class="campaign-row">
+              <span class="campaign-label">Dates</span>
+              <span class="campaign-val">24 Jan – 28 Jan 2026</span>
+            </div>
+            <div class="campaign-row">
+              <span class="campaign-label">Multiplier</span>
+              <span class="campaign-val mult">2x</span>
+            </div>
+          </div>
+          <div class="campaign-impact">
+            <div class="impact-grid">
+              <div class="impact-item">
+                <span class="impact-label">Orders</span>
+                <span class="impact-value">89</span>
+              </div>
+              <div class="impact-item">
+                <span class="impact-label">Extra Points</span>
+                <span class="impact-value">+12,400</span>
+              </div>
+              <div class="impact-item">
+                <span class="impact-label">Extra ₹ Value</span>
+                <span class="impact-value">₹3,100</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h2 class="section-title">Festive Templates</h2>
+      <p style="font-size: 13px; color: #6b7280; margin-bottom: 14px;">Select a template to create a new campaign with pre-configured settings</p>
+      <div class="templates-grid">
+        <div class="template-card">
+          <div class="template-header">
+            <span class="template-name">Diwali</span>
+            <span class="template-tag">religious</span>
+          </div>
+          <div class="template-desc">Festival of lights — peak shopping season across India</div>
+          <div class="template-meta">
+            <span><span class="template-meta-val">2x</span> Multiplier</span>
+            <span><span class="template-meta-val">5 days</span> Duration</span>
+          </div>
+        </div>
+        <div class="template-card">
+          <div class="template-header">
+            <span class="template-name">Navratri</span>
+            <span class="template-tag">religious</span>
+          </div>
+          <div class="template-desc">Nine nights of celebration with high consumer spending</div>
+          <div class="template-meta">
+            <span><span class="template-meta-val">2x</span> Multiplier</span>
+            <span><span class="template-meta-val">9 days</span> Duration</span>
+          </div>
+        </div>
+        <div class="template-card">
+          <div class="template-header">
+            <span class="template-name">Holi</span>
+            <span class="template-tag">religious</span>
+          </div>
+          <div class="template-desc">Festival of colors — spring shopping boost</div>
+          <div class="template-meta">
+            <span><span class="template-meta-val">2x</span> Multiplier</span>
+            <span><span class="template-meta-val">3 days</span> Duration</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CAMPAIGN DETAIL (click on card) ═══ -->
+  <div class="state-view" id="campaign-detail">
+    <div class="annotation"><strong>Campaign detail modal:</strong> Opens when merchant clicks a campaign card. Shows full info, rule link, and performance stats.</div>
+
+    <div style="background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.12); width: 520px; max-width: 100%; margin: 0 auto; overflow: hidden;">
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid #e5e7eb;">
+        <span style="font-size: 16px; font-weight: 600;">Campaign Details</span>
+        <button style="background: none; border: none; font-size: 20px; color: #9ca3af; cursor: pointer;">&times;</button>
+      </div>
+      <div style="padding: 20px;">
+        <!-- Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <span style="font-size: 18px; font-weight: 600;">2x Weekend Bonanza</span>
+          <span class="campaign-status status-active">Active</span>
+        </div>
+
+        <!-- Details grid -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 14px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 16px;">
+          <div><span class="impact-label">Type</span><div style="font-size: 13px; font-weight: 500; margin-top: 2px;">Multiplier</div></div>
+          <div><span class="impact-label">Multiplier</span><div style="font-size: 13px; font-weight: 700; margin-top: 2px; color: #6366f1; font-family: 'SF Mono', monospace;">2x</div></div>
+          <div><span class="impact-label">Start Date</span><div style="font-size: 13px; font-weight: 500; margin-top: 2px;">21 Feb 2026</div></div>
+          <div><span class="impact-label">End Date</span><div style="font-size: 13px; font-weight: 500; margin-top: 2px;">22 May 2026</div></div>
+        </div>
+
+        <!-- Linked rule -->
+        <div style="padding: 12px 14px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 16px;">
+          <div style="font-size: 10px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px;">Linked Reward Rule</div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 13px; font-weight: 500;">Order Earn</span>
+            <span style="font-size: 10px; padding: 2px 8px; background: #dbeafe; color: #1d4ed8; border-radius: 6px; font-weight: 500;">reward</span>
+            <span style="font-size: 10px; padding: 2px 8px; background: #d1fae5; color: #065f46; border-radius: 6px; font-weight: 500;">Active</span>
+          </div>
+          <div style="font-size: 11px; color: #6b7280; margin-top: 4px;">Event: order.paid · 1 point per ₹1 spent</div>
+        </div>
+
+        <!-- Duration progress -->
+        <div style="margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; font-size: 11px; color: #9ca3af; margin-bottom: 4px;">
+            <span>Campaign progress</span>
+            <span>36% elapsed · 58 days remaining</span>
+          </div>
+          <div style="height: 6px; border-radius: 3px; background: #e5e7eb; overflow: hidden;">
+            <div style="height: 100%; width: 36%; border-radius: 3px; background: #22c55e;"></div>
+          </div>
+        </div>
+
+        <!-- Earn formula -->
+        <div class="earn-breakdown" style="margin-bottom: 16px;">
+          <div class="earn-breakdown-title" style="font-size: 11px;">How earnings are calculated during this campaign</div>
+          <div class="earn-formula" style="font-size: 12px;">
+            <div class="formula-block" style="padding: 6px 10px; min-width: 60px;">
+              <span class="formula-label" style="font-size: 8px;">Base</span>
+              <span class="formula-value" style="font-size: 14px;">100</span>
+            </div>
+            <span class="formula-op" style="font-size: 14px;">×</span>
+            <div class="formula-block" style="padding: 6px 10px; min-width: 60px;">
+              <span class="formula-label" style="font-size: 8px;">Campaign</span>
+              <span class="formula-value blue" style="font-size: 14px;">2x</span>
+            </div>
+            <span class="formula-op" style="font-size: 14px;">×</span>
+            <div class="formula-block" style="padding: 6px 10px; min-width: 60px;">
+              <span class="formula-label" style="font-size: 8px;">Tier</span>
+              <span class="formula-value purple" style="font-size: 14px;">1x–2x</span>
+            </div>
+            <span class="formula-op" style="font-size: 14px;">=</span>
+            <div class="formula-result" style="padding: 6px 10px; min-width: 60px;">
+              <span class="formula-label" style="font-size: 8px;">Effective</span>
+              <span class="formula-value" style="font-size: 14px;">2x–4x</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Impact stats -->
+        <div style="font-size: 10px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px;">Campaign Performance</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; padding: 14px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px;">
+          <div class="impact-item">
+            <span class="impact-label">Orders</span>
+            <span class="impact-value">342</span>
+          </div>
+          <div class="impact-item">
+            <span class="impact-label">Customers</span>
+            <span class="impact-value">156</span>
+          </div>
+          <div class="impact-item">
+            <span class="impact-label">Extra Points</span>
+            <span class="impact-value highlight">+48,200</span>
+          </div>
+          <div class="impact-item">
+            <span class="impact-label">Extra ₹ Value</span>
+            <span class="impact-value highlight">₹12,050</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function show(id) {
+    document.querySelectorAll('.state-view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.state-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    const map = ['active-campaign','no-active','campaign-detail'];
+    const tabs = document.querySelectorAll('.state-tab');
+    const idx = map.indexOf(id);
+    if (idx >= 0 && tabs[idx]) tabs[idx].classList.add('active');
+  }
+</script>
+
+</body>
+</html>

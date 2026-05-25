@@ -11,9 +11,13 @@
     onSave: (data: CreateConnectorRequest) => void;
   } = $props();
 
+  // svelte-ignore state_referenced_locally
   let capability = $state(connector?.capability ?? '');
+  // svelte-ignore state_referenced_locally
   let vendor = $state(connector?.vendor ?? '');
+  // svelte-ignore state_referenced_locally
   let configJson = $state(connector ? JSON.stringify(connector.config, null, 2) : '{}');
+  // svelte-ignore state_referenced_locally
   let priority = $state(String(connector?.priority ?? 1));
   let configError = $state<string | null>(null);
 

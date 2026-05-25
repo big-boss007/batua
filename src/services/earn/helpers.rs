@@ -16,6 +16,7 @@ use crate::services::referrals::types::CodeCreationTrigger;
 use crate::services::rules;
 use crate::services::rules::types::EvaluationContext;
 use crate::services::cod;
+use crate::services::redemption;
 use crate::services::wallets;
 
 use super::storage;
@@ -115,6 +116,10 @@ async fn do_process_earn(
         }
     }
 
+    let wallet_policies = redemption::storage::get_wallet_policies(pool, event.merchant_id)
+        .await
+        .unwrap_or_default();
+
     let mut entries_created = Vec::new();
 
     for eval in &eval_results {
@@ -135,7 +140,14 @@ async fn do_process_earn(
             rule_snapshot_id,
         );
 
-        let expires_at = eval.expiry_days.and_then(|days| {
+        let expiry_days = eval.expiry_days.or_else(|| {
+            let bt = parse_bucket_type(&eval.bucket_type).ok()?;
+            wallet_policies.iter()
+                .find(|p| p.bucket_type == bt)
+                .and_then(|p| p.default_expiry_days)
+        });
+
+        let expires_at = expiry_days.and_then(|days| {
             let d = days as u64;
             Utc::now().checked_add_days(Days::new(d))
         });

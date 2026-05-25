@@ -11,10 +11,15 @@
     onSave: (data: Omit<ReferralProgram, 'id'>) => void;
   } = $props();
 
+  // svelte-ignore state_referenced_locally
   let referrerReward = $state(String(program?.referrer_reward_amount ?? 0));
+  // svelte-ignore state_referenced_locally
   let refereeReward = $state(String(program?.referee_reward_amount ?? 0));
+  // svelte-ignore state_referenced_locally
   let maxReferrals = $state(String(program?.max_referrals_per_customer ?? 0));
+  // svelte-ignore state_referenced_locally
   let hasMaxLimit = $state(program?.max_referrals_per_customer !== null);
+  // svelte-ignore state_referenced_locally
   let isActive = $state(program?.is_active ?? true);
   let isSubmitting = $state(false);
 

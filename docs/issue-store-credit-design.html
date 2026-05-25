@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Issue Store Credit — Design Mockup</title>
+  <style>
+    :root {
+      --color-primary: #6366f1;
+      --color-primary-hover: #4f46e5;
+      --color-success: #22c55e;
+      --color-error: #ef4444;
+      --color-warning: #f59e0b;
+      --color-info: #3b82f6;
+      --color-text: #1e1e2e;
+      --color-text-muted: #6b7280;
+      --color-surface: #ffffff;
+      --color-surface-2: #f8f9fb;
+      --color-border: #e5e7eb;
+      --color-backdrop: rgba(0, 0, 0, 0.4);
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 20px;
+      --space-6: 24px;
+      --font-size-xs: 11px;
+      --font-size-sm: 13px;
+      --font-size-base: 14px;
+      --font-size-lg: 18px;
+      --font-size-2xl: 28px;
+      --font-mono: 'SF Mono', 'Fira Code', monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f2f5;
+      color: var(--color-text);
+      padding: 40px;
+    }
+
+    h1 { font-size: 22px; margin-bottom: 8px; }
+    .subtitle { color: var(--color-text-muted); font-size: 14px; margin-bottom: 32px; }
+
+    .states-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      max-width: 1200px;
+    }
+
+    .state-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px;
+      border: 1px solid var(--color-border);
+    }
+    .state-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-primary);
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    /* ──────── Shared modal chrome ──────── */
+    .modal-backdrop {
+      background: var(--color-surface);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--color-border);
+      overflow: hidden;
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .modal-header h3 { font-size: 15px; font-weight: 600; }
+    .close-btn {
+      width: 28px; height: 28px; border-radius: 6px; border: none;
+      background: var(--color-surface-2); cursor: pointer; font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--color-text-muted);
+    }
+    .modal-body { padding: 20px; }
+    .modal-footer {
+      display: flex; align-items: center; justify-content: flex-end;
+      gap: 8px; padding: 16px 20px;
+      border-top: 1px solid var(--color-border);
+      background: var(--color-surface-2);
+    }
+
+    /* ──────── Customer banner inside modal ──────── */
+    .credit-customer {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px; background: var(--color-surface-2);
+      border-radius: var(--radius-md); margin-bottom: 20px;
+    }
+    .credit-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--color-primary); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; flex-shrink: 0;
+    }
+    .credit-customer-info { flex: 1; min-width: 0; }
+    .credit-customer-name { font-size: 14px; font-weight: 600; }
+    .credit-customer-phone { font-size: 12px; color: var(--color-text-muted); font-family: var(--font-mono); }
+    .credit-customer-balance {
+      text-align: right;
+    }
+    .credit-customer-balance-val { font-size: 14px; font-weight: 700; color: var(--color-success); }
+    .credit-customer-balance-label { font-size: 10px; color: var(--color-text-muted); }
+
+    /* ──────── Form fields ──────── */
+    .form-group { margin-bottom: 16px; }
+    .form-label {
+      display: block; font-size: 12px; font-weight: 600;
+      color: var(--color-text); margin-bottom: 6px;
+    }
+    .form-label .required { color: var(--color-error); }
+    .form-hint { font-size: 11px; color: var(--color-text-muted); margin-top: 4px; }
+
+    .form-input, .form-select, .form-textarea {
+      width: 100%; padding: 8px 12px; font-size: 14px;
+      border: 1px solid var(--color-border); border-radius: var(--radius-md);
+      background: var(--color-surface); color: var(--color-text);
+      outline: none; transition: border-color 0.15s;
+      font-family: inherit;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+    .form-input.error, .form-select.error, .form-textarea.error {
+      border-color: var(--color-error);
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    }
+    .form-error { font-size: 11px; color: var(--color-error); margin-top: 4px; display: flex; align-items: center; gap: 4px; }
+    .form-textarea { resize: vertical; min-height: 64px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .amount-input-wrap {
+      position: relative;
+    }
+    .amount-prefix {
+      position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+      font-size: 14px; font-weight: 600; color: var(--color-text-muted);
+    }
+    .amount-input-wrap .form-input {
+      padding-left: 28px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+    }
+
+    /* ──────── Reason pills ──────── */
+    .reason-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+    .reason-pill {
+      padding: 4px 12px; border-radius: 20px; border: 1px solid var(--color-border);
+      background: var(--color-surface); font-size: 12px; cursor: pointer;
+      color: var(--color-text-muted); transition: all 0.15s;
+    }
+    .reason-pill:hover { border-color: var(--color-primary); color: var(--color-primary); }
+    .reason-pill.active {
+      background: var(--color-primary); color: #fff;
+      border-color: var(--color-primary);
+    }
+
+    /* ──────── Expiry toggle ──────── */
+    .expiry-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 0;
+    }
+    .expiry-label { font-size: 13px; color: var(--color-text); }
+    .expiry-sublabel { font-size: 11px; color: var(--color-text-muted); }
+    .toggle {
+      width: 36px; height: 20px; border-radius: 10px;
+      background: var(--color-border); position: relative; cursor: pointer;
+      transition: background 0.2s;
+    }
+    .toggle.on { background: var(--color-primary); }
+    .toggle::after {
+      content: ''; position: absolute; width: 16px; height: 16px;
+      border-radius: 50%; background: #fff; top: 2px; left: 2px;
+      transition: transform 0.2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    }
+    .toggle.on::after { transform: translateX(16px); }
+
+    /* ──────── Preview summary ──────── */
+    .credit-preview {
+      background: #f0fdf4; border: 1px solid #bbf7d0;
+      border-radius: var(--radius-md); padding: 12px 16px;
+      margin-top: 4px;
+    }
+    .credit-preview-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: #166534; margin-bottom: 8px; }
+    .credit-preview-row {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 13px; padding: 3px 0;
+    }
+    .credit-preview-row .label { color: #166534; }
+    .credit-preview-row .value { font-weight: 600; color: #166534; }
+    .credit-preview-divider { border-top: 1px dashed #86efac; margin: 6px 0; }
+    .credit-preview-row.total .value { font-size: 15px; font-weight: 700; }
+
+    /* ──────── Buttons ──────── */
+    .btn {
+      padding: 8px 16px; border-radius: var(--radius-md); border: none;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px;
+      transition: all 0.15s;
+    }
+    .btn-primary { background: var(--color-primary); color: #fff; }
+    .btn-primary:hover { background: var(--color-primary-hover); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-ghost { background: transparent; color: var(--color-text-muted); border: 1px solid var(--color-border); }
+    .btn-ghost:hover { background: var(--color-surface-2); }
+    .btn-danger { background: var(--color-error); color: #fff; }
+    .btn-success { background: var(--color-success); color: #fff; }
+
+    /* ──────── Confirmation overlay ──────── */
+    .confirm-overlay {
+      padding: 24px;
+      text-align: center;
+    }
+    .confirm-icon { font-size: 40px; margin-bottom: 12px; }
+    .confirm-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+    .confirm-subtitle { font-size: 13px; color: var(--color-text-muted); margin-bottom: 20px; }
+    .confirm-summary {
+      background: var(--color-surface-2); border-radius: var(--radius-md);
+      padding: 16px; text-align: left; margin-bottom: 20px;
+    }
+    .confirm-row {
+      display: flex; justify-content: space-between;
+      font-size: 13px; padding: 4px 0;
+    }
+    .confirm-row .label { color: var(--color-text-muted); }
+    .confirm-row .value { font-weight: 600; }
+    .confirm-row.highlight { border-top: 1px solid var(--color-border); padding-top: 8px; margin-top: 4px; }
+    .confirm-row.highlight .value { color: var(--color-success); font-size: 15px; }
+    .confirm-actions { display: flex; gap: 8px; justify-content: center; }
+
+    /* ──────── Success state ──────── */
+    .success-body { padding: 32px 24px; text-align: center; }
+    .success-check {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: #dcfce7; color: var(--color-success);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px; margin: 0 auto 16px;
+    }
+    .success-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+    .success-subtitle { font-size: 13px; color: var(--color-text-muted); margin-bottom: 16px; }
+    .success-detail {
+      background: var(--color-surface-2); border-radius: var(--radius-md);
+      padding: 16px; text-align: left; margin-bottom: 20px;
+    }
+    .success-detail-row {
+      display: flex; justify-content: space-between;
+      font-size: 13px; padding: 3px 0;
+    }
+    .success-detail-row .label { color: var(--color-text-muted); }
+    .success-detail-row .value { font-weight: 600; }
+
+    /* ──────── Error state ──────── */
+    .error-banner {
+      display: flex; align-items: flex-start; gap: 8px;
+      padding: 10px 14px; border-radius: var(--radius-md);
+      background: #fef2f2; border: 1px solid #fecaca;
+      margin-bottom: 16px;
+    }
+    .error-banner-icon { color: var(--color-error); font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+    .error-banner-text { font-size: 13px; color: #991b1b; }
+    .error-banner-dismiss { margin-left: auto; background: none; border: none; color: #991b1b; cursor: pointer; font-size: 14px; }
+
+    /* ──────── Loading spinner ──────── */
+    .spinner {
+      width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff; border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ──────── Entry point: action button on Cash row ──────── */
+    .cash-row-demo {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 14px; background: var(--color-surface-2);
+      border-radius: var(--radius-md); border: 1px solid var(--color-border);
+    }
+    .cash-row-left { display: flex; align-items: center; gap: 8px; }
+    .cash-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--color-success); }
+    .cash-label { font-size: 13px; font-weight: 600; }
+    .cash-row-right { display: flex; align-items: center; gap: 12px; }
+    .cash-amount { font-size: 14px; font-weight: 700; color: var(--color-success); font-family: var(--font-mono); }
+    .issue-btn {
+      padding: 4px 10px; border-radius: 6px; border: 1px solid var(--color-primary);
+      background: transparent; color: var(--color-primary); font-size: 11px;
+      font-weight: 600; cursor: pointer; transition: all 0.15s;
+    }
+    .issue-btn:hover { background: var(--color-primary); color: #fff; }
+
+    .full-width { grid-column: 1 / -1; }
+
+    .note-box {
+      background: #fffbeb; border: 1px solid #fde68a;
+      border-radius: var(--radius-md); padding: 10px 14px;
+      font-size: 12px; color: #92400e; margin-top: 12px;
+      display: flex; align-items: flex-start; gap: 6px;
+    }
+    .note-box-icon { flex-shrink: 0; }
+  </style>
+</head>
+<body>
+  <h1>Issue Store Credit — Design Mockup</h1>
+  <p class="subtitle">Flow: Customer Detail → Cash row → "Issue Credit" button → Modal form → Confirm → Success/Error</p>
+
+  <div class="states-grid">
+
+    <!-- ════════════════════════════════════════════ -->
+    <!-- STATE 1: Entry point — Cash row with button -->
+    <!-- ════════════════════════════════════════════ -->
+    <div class="state-card">
+      <div class="state-label">1. Entry Point — Cash Row in Wallet Section</div>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div class="cash-row-demo">
+          <div class="cash-row-left">
+            <span class="cash-dot"></span>
+            <span class="cash-label">Cash</span>
+          </div>
+          <div class="cash-row-right">
+            <div style="text-align: right;">
+              <span class="cash-amount">₹477.00</span>
+              <div style="font-size: 11px; color: var(--color-text-muted);">Store Credit ₹169.00 + Gift Card ₹308.00</div>
+            </div>
+            <button class="issue-btn">+ Issue Credit</button>
+          </div>
+        </div>
+        <div class="note-box">
+          <span class="note-box-icon">💡</span>
+          <span>The "Issue Credit" button appears on the Cash row. Clicking opens the issue credit form as a nested modal/panel.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════ -->
+    <!-- STATE 2: Empty form — initial state         -->
+    <!-- ════════════════════════════════════════════ -->
+    <div class="state-card">
+      <div class="state-label">2. Issue Credit Form — Initial (Empty)</div>
+      <div class="modal-backdrop">
+        <div class="modal-header">
+          <h3>Issue Store Credit</h3>
+          <button class="close-btn">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="credit-customer">
+            <div class="credit-avatar">DT</div>
+            <div class="credit-customer-info">
+              <div class="credit-customer-name">Dhruv Tiwari</div>
+              <div class="credit-customer-phone">+91 90440 00100</div>
+            </div>
+            <div class="credit-customer-balance">
+              <div class="credit-customer-balance-val">₹477.00</div>
+              <div class="credit-customer-balance-label">current cash balance</div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Amount <span class="required">*</span></label>
+              <div class="amount-input-wrap">
+                <span class="amount-prefix">₹</span>
+                <input class="form-input" type="text" placeholder="0.00">
+              </div>
+              <div class="form-hint">Credit will be added to the customer's cash wallet</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Expiry (days)</label>
+              <input class="form-input" type="text" placeholder="Default from policy" value="">
+              <div class="form-hint">Leave blank to use wallet policy default</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Reason <span class="required">*</span></label>
+            <div class="reason-pills">
+              <span class="reason-pill">Refund</span>
+              <span class="reason-pill">Goodwill</span>
+              <span class="reason-pill">Apology</span>
+              <span class="reason-pill">Compensation</span>
+              <span class="reason-pill">Promotional</span>
+              <span class="reason-pill">Other</span>
+            </div>
+            <textarea class="form-textarea" placeholder="Describe why this credit is being issued..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Internal Reference</label>
+            <input class="form-input" type="text" placeholder="e.g. Shopify order #1234, support ticket #567">
+            <div class="form-hint">Optional — for your team's tracking</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost">Cancel</button>
+          <button class="btn btn-primary" disabled>Issue Credit</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════ -->
+    <!-- STATE 3: Filled form with preview           -->
+    <!-- ════════════════════════════════════════════ -->
+    <div class="state-card">
+      <div class="state-label">3. Form Filled — With Live Preview</div>
+      <div class="modal-backdrop">
+        <div class="modal-header">
+          <h3>Issue Store Credit</h3>
+          <button class="close-btn">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="credit-customer">
+            <div class="credit-avatar">DT</div>
+            <div class="credit-customer-info">
+              <div class="credit-customer-name">Dhruv Tiwari</div>
+              <div class="credit-customer-phone">+91 90440 00100</div>
+            </div>
+            <div class="credit-customer-balance">
+              <div class="credit-customer-balance-val">₹477.00</div>
+              <div class="credit-customer-balance-label">current cash balance</div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Amount <span class="required">*</span></label>
+              <div class="amount-input-wrap">
+                <span class="amount-prefix">₹</span>
+                <input class="form-input" type="text" value="500.00" style="border-color: var(--color-primary);">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Expiry (days)</label>
+              <input class="form-input" type="text" value="90">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Reason <span class="required">*</span></label>
+            <div class="reason-pills">
+              <span class="reason-pill active">Refund</span>
+              <span class="reason-pill">Goodwill</span>
+              <span class="reason-pill">Apology</span>
+              <span class="reason-pill">Compensation</span>
+              <span class="reason-pill">Promotional</span>
+              <span class="reason-pill">Other</span>
+            </div>
+            <textarea class="form-textarea" style="border-color: var(--color-primary);">Customer returned defective product from order #4521. Full refund issued as store credit per customer preference.</textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Internal Reference</label>
+            <input class="form-input" type="text" value="Shopify #4521, Freshdesk #8832">
+          </div>
+
+          <div class="credit-preview">
+            <div class="credit-preview-title">Credit Summary</div>
+            <div class="credit-preview-row">
+              <span class="label">Credit amount</span>
+              <span class="value">₹500.00</span>
+            </div>
+            <div class="credit-preview-row">
+              <span class="label">Bucket</span>
+              <span class="value">Store Credit</span>
+            </div>
+            <div class="credit-preview-row">
+              <span class="label">Expires</span>
+              <span class="value">28 Jun 2026 (90 days)</span>
+            </div>
+            <div class="credit-preview-divider"></div>
+            <div class="credit-preview-row total">
+              <span class="label">New cash balance</span>
+              <span class="value">₹977.00</span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost">Cancel</button>
+          <button class="btn btn-primary">Issue ₹500.00 Credit</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════ -->
+    <!-- STATE 4: Validation errors                  -->
+    <!-- ════════════════════════════════════════════ -->
+    <div class="state-card">
+      <div class="state-label">4. Validation Errors</div>
+      <div class="modal-backdrop">
+        <div class="modal-header">
+          <h3>Issue Store Credit</h3>
+          <button class="close-btn">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="credit-customer">
+            <div class="credit-avatar">DT</div>
+            <div class="credit-customer-info">
+              <div class="credit-customer-name">Dhruv Tiwari</div>
+              <div class="credit-customer-phone">+91 90440 00100</div>
+            </div>
+            <div class="credit-customer-balance">
+              <div class="credit-customer-balance-val">₹477.00</div>
+              <div class="credit-customer-balance-label">current cash balance</div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Amount <span class="required">*</span></label>
+              <div class="amount-input-wrap">
+                <span class="amount-prefix">₹</span>
+                <input class="form-input error" type="text" value="-50">
+              </div>
+              <div class="form-error">⚠ Amount must be greater than ₹0</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Expiry (days)</label>
+              <input class="form-input error" type="text" value="0">
+              <div class="form-error">⚠ Expiry must be at least 1 day</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Reason <span class="required">*</span></label>
+            <div class="reason-pills">
+              <span class="reason-pill">Refund</span>
+              <span class="reason-pill">Goodwill</span>
+              <span class="reason-pill">Apology</span>
+              <span class="reason-pill">Compensation</span>
+              <span class="reason-pill">Promotional</span>
+              <span class="reason-pill">Other</span>
+            </div>
+            <textarea class="form-textarea error" placeholder="Describe why this credit is being issued..."></textarea>
+            <div class="form-error">⚠ Reason is required</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Internal Reference</label>
+            <input class="form-input" type="text" placeholder="e.g. Shopify order #1234, support ticket #567">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost">Cancel</button>
+          <button class="btn btn-primary" disabled>Issue Credit</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════ -->
+    <!-- STATE 5: Confirmation step                  -->
+    <!-- ════════════════════════════════════════════ -->
+    <div class="state-card">
+      <div class="state-label">5. Confirmation Step</div>
+      <div class="modal-backdrop">
+        <div class="modal-header">
+          <h3>Confirm Store Credit</h3>
+          <button class="close-btn">×</button>
+        </div>
+        <div class="confirm-overlay">
+          <div class="confirm-icon">💳</div>
+          <div class="confirm-title">Issue ₹500.00 store credit?</div>
+          <div class="confirm-subtitle">This will immediately add funds to the customer's wallet.</div>
+
+          <div class="confirm-summary">
+            <div class="confirm-row">
+              <span class="label">Customer</span>
+              <span class="value">Dhruv Tiwari</span>
+            </div>
+            <div class="confirm-row">
+              <span class="label">Amount</span>
+              <span class="value">₹500.00</span>
+            </div>
+            <div class="confirm-row">
+              <span class="label">Reason</span>
+              <span class="value">Refund</span>
+            </div>
+            <div class="confirm-row">
+              <span class="label">Expires</span>
+              <span class="value">28 Jun 2026 (90 days)</span>
+            </div>
+            <div class="confirm-row">
+              <span class="label">Reference</span>
+              <span class="value">Shopify #4521</span>
+            </div>
+            <div class="confirm-row highlight">
+              <span class="label">New balance</span>
+              <span class="value">₹477.00 → ₹977.00</span>
+            </div>
+          </div>
+
+          <div class="confirm-actions">
+            <button class="btn btn-ghost">Go Back</button>
+            <button class="btn btn-primary">Confirm & Issue Credit</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════ -->
+    <!-- STATE 6: Loading / Processing               -->
+    <!-- ════════════════════════════════════════════ -->
+    <div class="state-card">
+      <div class="state-label">6. Processing</div>
+      <div class="modal-backdrop">
+        <div class="modal-header">
+          <h3>Confirm Store Credit</h3>
+          <button class="close-btn" style="opacity: 0.3; pointer-events: none;">×</button>
+        </div>
+        <div class="confirm-overlay">
+          <div class="confirm-icon">💳</div>
+          <div class="confirm-title">Issue ₹500.00 store credit?</div>
+          <div class="confirm-subtitle">This will immediately add funds to the customer's wallet.</div>
+
+          <div class="confirm-summary" style="opacity: 0.5;">
+            <div class="confirm-row">
+              <span class="label">Customer</span>
+              <span class="value">Dhruv Tiwari</span>
+            </div>
+            <div class="confirm-row">
+              <span class="label">Amount</span>
+              <span class="value">₹500.00</span>
+            </div>
+            <div class="confirm-row">
+              <span class="label">Reason</span>
+              <span class="value">Refund</span>
+            </div>
+            <div class="confirm-row highlight">
+              <span class="label">New balance</span>
+              <span class="value">₹477.00 → ₹977.00</span>
+            </div>
+          </div>
+
+          <div class="confirm-actions">
+            <button class="btn btn-ghost" disabled style="opacity: 0.5;">Go Back</button>
+            <button class="btn btn-primary" disabled style="opacity: 0.8;">
+              <span class="spinner"></span>
+              Processing...
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════ -->
+    <!-- STATE 7: Success                            -->
+    <!-- ════════════════════════════════════════════ -->
+    <div class="state-card">
+      <div class="state-label">7. Success</div>
+      <div class="modal-backdrop">
+        <div class="modal-header">
+          <h3>Store Credit Issued</h3>
+          <button class="close-btn">×</button>
+        </div>
+        <div class="success-body">
+          <div class="success-check">✓</div>
+          <div class="success-title">₹500.00 credit issued successfully</div>
+          <div class="success-subtitle">The credit has been added to Dhruv Tiwari's wallet</div>
+
+          <div class="success-detail">
+            <div class="success-detail-row">
+              <span class="label">Transaction ID</span>
+              <span class="value" style="font-family: var(--font-mono); font-size: 12px;">txn_a3f8e21b</span>
+            </div>
+            <div class="success-detail-row">
+              <span class="label">Amount</span>
+              <span class="value" style="color: var(--color-success);">+₹500.00</span>
+            </div>
+            <div class="success-detail-row">
+              <span class="label">Bucket</span>
+              <span class="value">Store Credit</span>
+            </div>
+            <div class="success-detail-row">
+              <span class="label">New cash balance</span>
+              <span class="value">₹977.00</span>
+            </div>
+            <div class="success-detail-row">
+              <span class="label">Expires</span>
+              <span class="value">28 Jun 2026</span>
+            </div>
+          </div>
+
+          <button class="btn btn-primary" style="width: 100%; justify-content: center;">Done</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════ -->
+    <!-- STATE 8: API Error                          -->
+    <!-- ════════════════════════════════════════════ -->
+    <div class="state-card">
+      <div class="state-label">8. API Error — Retry Flow</div>
+      <div class="modal-backdrop">
+        <div class="modal-header">
+          <h3>Issue Store Credit</h3>
+          <button class="close-btn">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="error-banner">
+            <span class="error-banner-icon">⚠</span>
+            <div>
+              <div class="error-banner-text" style="font-weight: 600; margin-bottom: 2px;">Failed to issue credit</div>
+              <div class="error-banner-text">The server returned an error. Please try again or contact support if the issue persists.</div>
+            </div>
+            <button class="error-banner-dismiss">×</button>
+          </div>
+
+          <div class="credit-customer">
+            <div class="credit-avatar">DT</div>
+            <div class="credit-customer-info">
+              <div class="credit-customer-name">Dhruv Tiwari</div>
+              <div class="credit-customer-phone">+91 90440 00100</div>
+            </div>
+            <div class="credit-customer-balance">
+              <div class="credit-customer-balance-val">₹477.00</div>
+              <div class="credit-customer-balance-label">current cash balance</div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Amount <span class="required">*</span></label>
+              <div class="amount-input-wrap">
+                <span class="amount-prefix">₹</span>
+                <input class="form-input" type="text" value="500.00">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Expiry (days)</label>
+              <input class="form-input" type="text" value="90">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Reason <span class="required">*</span></label>
+            <div class="reason-pills">
+              <span class="reason-pill active">Refund</span>
+              <span class="reason-pill">Goodwill</span>
+              <span class="reason-pill">Apology</span>
+              <span class="reason-pill">Compensation</span>
+              <span class="reason-pill">Promotional</span>
+              <span class="reason-pill">Other</span>
+            </div>
+            <textarea class="form-textarea">Customer returned defective product from order #4521.</textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Internal Reference</label>
+            <input class="form-input" type="text" value="Shopify #4521">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost">Cancel</button>
+          <button class="btn btn-primary">Retry — Issue ₹500.00 Credit</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════ -->
+    <!-- STATE 9: Large amount warning               -->
+    <!-- ════════════════════════════════════════════ -->
+    <div class="state-card full-width">
+      <div class="state-label">9. Large Amount Warning (High-value guard)</div>
+      <div style="max-width: 560px;">
+        <div class="modal-backdrop">
+          <div class="modal-header">
+            <h3>Issue Store Credit</h3>
+            <button class="close-btn">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="credit-customer">
+              <div class="credit-avatar">DT</div>
+              <div class="credit-customer-info">
+                <div class="credit-customer-name">Dhruv Tiwari</div>
+                <div class="credit-customer-phone">+91 90440 00100</div>
+              </div>
+              <div class="credit-customer-balance">
+                <div class="credit-customer-balance-val">₹477.00</div>
+                <div class="credit-customer-balance-label">current cash balance</div>
+              </div>
+            </div>
+
+            <div style="display: flex; align-items: flex-start; gap: 8px; padding: 10px 14px; border-radius: var(--radius-md); background: #fffbeb; border: 1px solid #fde68a; margin-bottom: 16px;">
+              <span style="color: #f59e0b; font-size: 16px; flex-shrink: 0;">⚠</span>
+              <div>
+                <div style="font-size: 13px; font-weight: 600; color: #92400e; margin-bottom: 2px;">High-value credit</div>
+                <div style="font-size: 12px; color: #92400e;">This amount (₹10,000.00) exceeds your typical credit range. Please double-check before proceeding.</div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Amount <span class="required">*</span></label>
+                <div class="amount-input-wrap">
+                  <span class="amount-prefix">₹</span>
+                  <input class="form-input" type="text" value="10,000.00" style="border-color: var(--color-warning);">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Expiry (days)</label>
+                <input class="form-input" type="text" value="30">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Reason <span class="required">*</span></label>
+              <div class="reason-pills">
+                <span class="reason-pill">Refund</span>
+                <span class="reason-pill">Goodwill</span>
+                <span class="reason-pill">Apology</span>
+                <span class="reason-pill active">Compensation</span>
+                <span class="reason-pill">Promotional</span>
+                <span class="reason-pill">Other</span>
+              </div>
+              <textarea class="form-textarea">Major service failure affecting customer's subscription for 3 months. Compensation as agreed with customer success team.</textarea>
+            </div>
+
+            <div class="credit-preview" style="background: #fffbeb; border-color: #fde68a;">
+              <div class="credit-preview-title" style="color: #92400e;">Credit Summary</div>
+              <div class="credit-preview-row">
+                <span class="label" style="color: #92400e;">Credit amount</span>
+                <span class="value" style="color: #92400e;">₹10,000.00</span>
+              </div>
+              <div class="credit-preview-row">
+                <span class="label" style="color: #92400e;">Expires</span>
+                <span class="value" style="color: #92400e;">29 Apr 2026 (30 days)</span>
+              </div>
+              <div class="credit-preview-divider" style="border-color: #fde68a;"></div>
+              <div class="credit-preview-row total">
+                <span class="label" style="color: #92400e;">New cash balance</span>
+                <span class="value" style="color: #92400e;">₹10,477.00</span>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-ghost">Cancel</button>
+            <button class="btn btn-primary" style="background: var(--color-warning);">Issue ₹10,000.00 Credit</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

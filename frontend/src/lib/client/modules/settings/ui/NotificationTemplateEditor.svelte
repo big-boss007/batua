@@ -11,7 +11,9 @@
     onSave: (templateId: string, data: UpdateTemplateRequest) => void;
   } = $props();
 
+  // svelte-ignore state_referenced_locally
   let bodyTemplate = $state(template.body_template);
+  // svelte-ignore state_referenced_locally
   let isActive = $state(template.is_active);
 
   let variablePattern = /\{\{(\w+)\}\}/g;

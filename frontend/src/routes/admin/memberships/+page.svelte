@@ -868,7 +868,6 @@
   .confirm-text { font-size: 13px; line-height: 1.5; }
   .confirm-text.danger { color: #991b1b; }
   .confirm-text.success { color: #065f46; }
-  .confirm-text.info { color: #3730a3; }
   .confirm-actions { display: flex; gap: 8px; }
 
   .tier-select-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
@@ -894,7 +893,5 @@
     font-size: 12px; padding: 8px 12px; border-radius: 6px; margin-bottom: 4px;
   }
   .extend-preview.green { color: #065f46; background: #ecfdf5; }
-  .extend-preview.blue { color: #3730a3; background: #eef2ff; }
-
   .actions-dimmed { opacity: 0.4; pointer-events: none; }
 </style>

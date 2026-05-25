@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gift Cards UAT Report</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f3f4f6;
+    color: #1f2937;
+    line-height: 1.6;
+    padding: 2rem;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  h1 { font-size: 1.75rem; font-weight: 700; color: #111827; }
+  h2 { font-size: 1.35rem; font-weight: 600; color: #111827; margin-bottom: 1rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem; }
+
+  .header {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .header-meta { font-size: 0.875rem; color: #6b7280; }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .summary-item {
+    background: #fff;
+    border-radius: 10px;
+    padding: 1.25rem;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .summary-item .value { font-size: 2rem; font-weight: 700; line-height: 1.2; }
+  .summary-item .label { font-size: 0.75rem; color: #6b7280; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.25rem; }
+  .summary-item.pass .value { color: #059669; }
+  .summary-item.fail .value { color: #dc2626; }
+  .summary-item.bug .value { color: #d97706; }
+  .summary-item.total .value { color: #2563eb; }
+  .summary-item.skip .value { color: #6b7280; }
+
+  .section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  .test-case {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .test-case.pass { border-left: 4px solid #059669; }
+  .test-case.fail { border-left: 4px solid #dc2626; }
+  .test-case.bug { border-left: 4px solid #d97706; }
+  .test-case.skip { border-left: 4px solid #6b7280; }
+
+  .test-case h3 { display: flex; align-items: center; gap: 0.75rem; }
+
+  .badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .badge-pass { background: #d1fae5; color: #065f46; }
+  .badge-fail { background: #fee2e2; color: #991b1b; }
+  .badge-bug { background: #fef3c7; color: #92400e; }
+  .badge-skip { background: #f3f4f6; color: #4b5563; }
+
+  .severity {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    margin-left: 0.5rem;
+  }
+  .severity-high { background: #fee2e2; color: #991b1b; }
+  .severity-medium { background: #fef3c7; color: #92400e; }
+  .severity-low { background: #f3f4f6; color: #4b5563; }
+
+  .test-id {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+    background: #f3f4f6;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-family: monospace;
+  }
+
+  .steps { margin: 0.75rem 0; padding-left: 1.5rem; }
+  .steps li { margin-bottom: 0.25rem; font-size: 0.9rem; }
+
+  .screenshot-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+  .screenshot-grid img {
+    width: 100%;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+    cursor: pointer;
+  }
+  .screenshot-grid img:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  .screenshot-caption {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+    text-align: center;
+  }
+
+  .notes {
+    background: #f9fafb;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    margin-top: 0.75rem;
+  }
+  .notes strong { color: #374151; }
+
+  .bug-detail {
+    background: #fffbeb;
+    border: 1px solid #fcd34d;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    margin-top: 0.75rem;
+  }
+  .bug-detail p { margin-bottom: 0.25rem; }
+
+  .bug-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    margin-top: 1rem;
+  }
+  .bug-table th {
+    text-align: left;
+    padding: 0.6rem 0.8rem;
+    background: #f9fafb;
+    border-bottom: 2px solid #e5e7eb;
+    font-weight: 600;
+  }
+  .bug-table td {
+    padding: 0.6rem 0.8rem;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: top;
+  }
+
+  .env-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+  .env-table td {
+    padding: 0.4rem 0.8rem;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .env-table td:first-child {
+    font-weight: 600;
+    color: #374151;
+    width: 200px;
+  }
+
+  .data-check {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+    margin-top: 0.75rem;
+    font-family: monospace;
+  }
+
+  @media print {
+    body { background: #fff; padding: 1rem; }
+    .section, .header, .summary-item { box-shadow: none; border: 1px solid #e5e7eb; }
+    .test-case { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div>
+      <h1>Gift Cards UAT Report</h1>
+      <p class="header-meta">Batua Project &mdash; 26 March 2026 &mdash; Merchant: Sherwani Studio (<code>sherwanistudio</code>)</p>
+    </div>
+    <div class="header-meta">
+      Generated by Claude Code UAT Agent
+    </div>
+  </div>
+
+  <!-- SUMMARY GRID -->
+  <div class="summary-grid">
+    <div class="summary-item total"><span class="value">13</span><span class="label">Total Tests</span></div>
+    <div class="summary-item pass"><span class="value">12</span><span class="label">Passed</span></div>
+    <div class="summary-item fail"><span class="value">0</span><span class="label">Failed</span></div>
+    <div class="summary-item bug"><span class="value">1</span><span class="label">Bugs</span></div>
+    <div class="summary-item skip"><span class="value">0</span><span class="label">Skipped</span></div>
+  </div>
+
+  <!-- BUG SUMMARY TABLE -->
+  <div class="section">
+    <h2>Bug Summary</h2>
+    <table class="bug-table">
+      <thead><tr><th>ID</th><th>Severity</th><th>Test Case</th><th>Description</th><th>Root Cause</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="test-id">#7</span></td>
+          <td><span class="severity severity-low">LOW</span></td>
+          <td>Gift Card Check Title Visibility</td>
+          <td>The "Check Gift Card" heading on the storefront gift card check page is barely visible &mdash; it uses <code>var(--color-text)</code> which resolves to a dark color on the dark storefront card background</td>
+          <td>The storefront uses hardcoded dark hex colors for the card background but the title inherits a CSS variable that doesn't account for this dark context. The subtitle ("Enter your gift card code...") uses <code>var(--color-text-muted)</code> which is more visible.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- STAKEHOLDER 1: MERCHANT ADMIN -->
+  <div class="section">
+    <h2>Stakeholder 1: Merchant Admin</h2>
+
+    <!-- Test #1 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#1</span> Gift Cards Page Load &mdash; Dashboard Stats &amp; All Cards (Light Mode) <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Navigate to http://localhost:5174/admin/gift-cards</li>
+        <li>Verify the page loads with "Gift Cards" heading</li>
+        <li>Verify 5 dashboard stat cards are present: Total Issued, Outstanding Value, Active, Claimed, Expired</li>
+        <li>Verify the "All Cards" tab is selected by default with a table of gift cards</li>
+        <li>Check console for errors &mdash; only favicon 404 (non-issue)</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="gift-cards-uat/01-admin-page-load-light.png" alt="Gift Cards admin page in light mode">
+          <p class="screenshot-caption">Gift Cards page &mdash; light mode, dashboard stats, All Cards tab with 1 card</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Page loads correctly. Dashboard shows: 1 Total Issued, &#8377;100.00 Outstanding Value, 1 Active, 0 Claimed, 0 Expired. Three tabs visible: All Cards (selected), Issue Card, Bulk Issue. Table shows 1 card with masked code (****-****-****-HYBC), amount &#8377;100.00, balance &#8377;100.00, status "active" (green pill), created date. Only console error is favicon.png 404 &mdash; cosmetic.
+      </div>
+    </div>
+
+    <!-- Test #2 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#2</span> Gift Card Detail Modal <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Click on the gift card row in the All Cards table</li>
+        <li>Verify a detail modal opens with full card information</li>
+        <li>Verify masked code with reveal button, status badge, amounts, dates</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="gift-cards-uat/02-admin-card-detail-modal.png" alt="Gift Card detail modal">
+          <p class="screenshot-caption">Detail modal &mdash; masked code, reveal button, amounts, claim status, dates</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Modal displays:<br>
+        &bull; <strong>Code:</strong> ****-****-****-HYBC with eye icon to reveal full code<br>
+        &bull; <strong>Status:</strong> "active" green badge<br>
+        &bull; <strong>Initial Amount:</strong> &#8377;100.00<br>
+        &bull; <strong>Current Balance:</strong> &#8377;100.00<br>
+        &bull; <strong>Used:</strong> &#8377;0.00 (0%)<br>
+        &bull; <strong>Claimed:</strong> No<br>
+        &bull; <strong>Created:</strong> 23 Mar 2026, 04:40 pm<br>
+        &bull; <strong>Expires:</strong> 31 Mar 2026<br>
+        Close button (&times;) works correctly to dismiss modal.
+      </div>
+    </div>
+
+    <!-- Test #3 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#3</span> Issue Card Tab &mdash; Empty Form <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Click the "Issue Card" tab</li>
+        <li>Verify the form appears with Amount and Expiry Date fields</li>
+        <li>Verify "Issue Gift Card" button is disabled when form is empty</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="gift-cards-uat/03-admin-issue-card-empty.png" alt="Issue Card form empty state">
+          <p class="screenshot-caption">Issue Card tab &mdash; empty form with Amount and Expiry Date fields</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Form shows two fields: "Amount (&#8377;)" (number input with placeholder "e.g. 500") and "Expiry Date" (date picker with dd/mm/yyyy format). The "Issue Gift Card" button is correctly disabled until the amount field is filled. Clean, minimal form layout.
+      </div>
+    </div>
+
+    <!-- Test #4 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#4</span> Issue Card Tab &mdash; Filled Form <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Enter 500 in the Amount field</li>
+        <li>Select 30/06/2026 as the Expiry Date</li>
+        <li>Verify "Issue Gift Card" button becomes enabled</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="gift-cards-uat/04-admin-issue-card-filled.png" alt="Issue Card form filled">
+          <p class="screenshot-caption">Issue Card form &mdash; &#8377;500 amount, 30/06/2026 expiry, button enabled</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Amount field accepts numeric input (500). Date picker shows 30/06/2026 in dd/mm/yyyy locale format. "Issue Gift Card" button is now enabled (purple, clickable). The button text and styling clearly indicate the primary action. Form validation works: button was disabled when empty, enabled once amount was provided.
+      </div>
+    </div>
+
+    <!-- Test #5 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#5</span> Bulk Issue Tab <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Click the "Bulk Issue" tab</li>
+        <li>Verify the CSV upload form appears</li>
+        <li>Verify file drop zone, column documentation, and sample CSV download link</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="gift-cards-uat/05-admin-bulk-issue-tab.png" alt="Bulk Issue tab">
+          <p class="screenshot-caption">Bulk Issue tab &mdash; CSV upload with drop zone and sample download</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Bulk Issue section shows:<br>
+        &bull; <strong>Title:</strong> "Bulk Issue Gift Cards"<br>
+        &bull; <strong>Description:</strong> "Upload a CSV to issue multiple gift cards at once. Each row creates one gift card."<br>
+        &bull; <strong>Drop zone:</strong> File upload area with "Drop a CSV file or click to browse" and "Choose File" button<br>
+        &bull; <strong>Columns:</strong> "amount (required), recipient_phone (optional)"<br>
+        &bull; <strong>Sample:</strong> "Download sample CSV" link and column hints<br>
+        Clean design with clear instructions for CSV format.
+      </div>
+    </div>
+
+    <!-- Test #6 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#6</span> Dark Mode <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Toggle theme to dark mode</li>
+        <li>Verify the Gift Cards page renders correctly in dark mode</li>
+        <li>Check stat cards, table, tabs, sidebar contrast</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="gift-cards-uat/06-admin-dark-mode.png" alt="Gift Cards in dark mode">
+          <p class="screenshot-caption">Dark mode &mdash; good contrast, readable stats, table, and status pills</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Dark mode applies correctly across all elements. Sidebar has dark background with active "Gift Cards" item highlighted in purple. Stat cards have dark surface background with visible borders. Table renders with proper contrast &mdash; white text on dark rows. "active" status pill remains visible with green text/background. Tab underline (purple) is clearly visible.
+      </div>
+    </div>
+
+    <!-- Test #7 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#7</span> Console &amp; Network Check <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Review console messages across all admin page interactions</li>
+        <li>Review network requests for failed API calls</li>
+      </ol>
+      <div class="notes">
+        <strong>Notes:</strong> Only console error across all admin tests is <code>favicon.png 404</code> &mdash; cosmetic, not functional. Key API calls observed and verified:<br>
+        &bull; <code>GET /gift-cards/merchant/{id}</code> &rarr; 200 (returns array of gift cards)<br>
+        &bull; <code>GET /gift-cards/merchant/{id}/stats</code> &rarr; 200 (returns dashboard statistics)<br>
+        Both endpoints return correct data matching the UI display. No unexpected 4xx/5xx errors.
+      </div>
+    </div>
+  </div>
+
+  <!-- STAKEHOLDER 2: CUSTOMER STOREFRONT -->
+  <div class="section">
+    <h2>Stakeholder 2: Customer Storefront</h2>
+
+    <!-- Test #8 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#8</span> Gift Card Check Page &mdash; Page Load <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Navigate to http://localhost:5174/s/sherwanistudio/gift-cards/check</li>
+        <li>Verify the page loads with merchant branding and code input form</li>
+        <li>Verify "Check Balance" button is present</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="gift-cards-uat/07-storefront-gift-check-page.png" alt="Storefront gift card check page">
+          <p class="screenshot-caption">Gift card check page &mdash; dark card design, code input, Check Balance button</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Page loads with dark card design (hardcoded hex colors as intended). Merchant name "Sherwani Studio" displayed in header with avatar initial "S". Subtitle reads "Enter your gift card code to check the balance". Input field has label "Gift Card Code" and placeholder "BRZE-XXXX-XXXX-XXXX". "Check Balance" button is styled in purple. The "Check Gift Card" heading exists but is barely visible against the dark background (see Bug #7 in bug table).
+      </div>
+    </div>
+
+    <!-- Test #9 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#9</span> Valid Gift Card Code &mdash; Balance Display <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Enter valid code "BRZE-Z2ZG-EUA5-HYBC"</li>
+        <li>Click "Check Balance"</li>
+        <li>Verify gift card details are displayed: code, balance, status, expiry</li>
+        <li>Verify "Claim to Wallet" button is present</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="gift-cards-uat/08-storefront-valid-code.png" alt="Valid gift card result">
+          <p class="screenshot-caption">Valid code result &mdash; full card display with balance, progress bar, claim button</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> After checking a valid code, the page displays:<br>
+        &bull; <strong>Header:</strong> "Gift Card" with "Active" green badge<br>
+        &bull; <strong>Code:</strong> Full code displayed: BRZE-Z2ZG-EUA5-HYBC (no masking in storefront)<br>
+        &bull; <strong>Balance:</strong> &#8377;100.00 (green) with "Initial" &#8377;100.00<br>
+        &bull; <strong>Progress bar:</strong> Full green bar (100% remaining)<br>
+        &bull; <strong>Expiry:</strong> "Expires 31 Mar 2026"<br>
+        &bull; <strong>Action:</strong> "Claim &#8377;100.00 to Wallet" green button<br>
+        &bull; <strong>Note:</strong> "Amount will be added to your gift card balance"<br>
+        &bull; <strong>Link:</strong> "Check another card" at bottom<br>
+        API call: <code>GET /gift-cards/BRZE-Z2ZG-EUA5-HYBC</code> &rarr; 200.
+      </div>
+    </div>
+
+    <!-- Test #10 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#10</span> Invalid Gift Card Code &mdash; Error Message <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Navigate fresh to the gift card check page</li>
+        <li>Enter invalid code "INVALID-CODE-1234"</li>
+        <li>Click "Check Balance"</li>
+        <li>Verify an error message appears</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="gift-cards-uat/09-storefront-invalid-code.png" alt="Invalid gift card code error">
+          <p class="screenshot-caption">Invalid code &mdash; clear error message in red</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Error message "Gift card not found. Please check the code and try again." appears in a red-tinted box below the form. The input retains the entered code so the user can correct it. Button remains active for retry. API call: <code>GET /gift-cards/INVALID-CODE-1234</code> &rarr; 404. No crash, no exposed internal errors.
+      </div>
+    </div>
+
+    <!-- Test #11 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#11</span> Mobile Viewport (375px) &mdash; Check Page <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Resize browser to 375&times;812 (iPhone viewport)</li>
+        <li>Navigate to the gift card check page</li>
+        <li>Verify the page renders responsively</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="gift-cards-uat/10-storefront-mobile-375.png" alt="Storefront gift card check at 375px">
+          <p class="screenshot-caption">Mobile 375px &mdash; check page renders well, full-width form</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Storefront is fully responsive at 375px. The card design scales to full width. Input field and button fill available space. Placeholder text is readable. Merchant header with "S" avatar remains visible and well-positioned.
+      </div>
+    </div>
+
+    <!-- Test #12 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#12</span> Mobile Viewport (375px) &mdash; Valid Result <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>At 375px viewport, enter valid code "BRZE-Z2ZG-EUA5-HYBC"</li>
+        <li>Click "Check Balance"</li>
+        <li>Verify the gift card result renders correctly on mobile</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="gift-cards-uat/11-storefront-mobile-result.png" alt="Storefront valid result at 375px">
+          <p class="screenshot-caption">Mobile 375px &mdash; gift card result with balance, progress bar, claim button</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Gift card result displays correctly at mobile width. Code is fully visible and not truncated. Balance amounts (&#8377;100.00) are prominently displayed. Progress bar spans full width. "Claim &#8377;100.00 to Wallet" button fills available width. "Check another card" link is accessible below. All text is readable at this viewport size.
+      </div>
+    </div>
+
+    <!-- Test #13 -->
+    <div class="test-case bug">
+      <h3><span class="test-id">#13</span> Storefront &mdash; Title Visibility <span class="badge badge-bug">BUG</span> <span class="severity severity-low">LOW</span></h3>
+      <ol class="steps">
+        <li>Navigate to the gift card check page</li>
+        <li>Observe the "Check Gift Card" heading text visibility</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="gift-cards-uat/07-storefront-gift-check-page.png" alt="Title barely visible">
+          <p class="screenshot-caption">Title "Check Gift Card" is nearly invisible against dark background</p>
+        </div>
+      </div>
+      <div class="bug-detail">
+        <p><strong>Expected:</strong> The "Check Gift Card" heading should be clearly visible on the dark storefront card</p>
+        <p><strong>Actual:</strong> The heading uses <code>color: var(--color-text)</code> which resolves to a dark color, making it barely visible against the dark card background (#1a1d27)</p>
+        <p><strong>Root cause:</strong> The <code>.gift-check-title</code> CSS class uses <code>var(--color-text)</code> which is designed for light backgrounds. The storefront card uses hardcoded dark hex colors intentionally, but the title doesn't use a hardcoded light color to match. The subtitle works fine because it uses <code>var(--color-text-muted)</code> which has better contrast.</p>
+        <p><strong>Suggested fix:</strong> Change <code>.gift-check-title</code> color to a hardcoded light value (e.g., <code>#e5e7eb</code>) or use <code>var(--color-text-muted)</code> which has better contrast on the dark card</p>
+        <p><strong>Reproduction rate:</strong> Always</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- DATA INTEGRITY SECTION -->
+  <div class="section">
+    <h2>Data Integrity Checks</h2>
+
+    <div class="test-case pass">
+      <h3><span class="test-id">DI-1</span> Gift Card Balance &mdash; DB vs API vs UI <span class="badge badge-pass">PASS</span></h3>
+      <div class="data-check">
+        DB query: SELECT code, initial_amount, current_amount, is_claimed, is_active<br>
+        &nbsp;&nbsp;FROM gift_cards WHERE merchant_id = 'b0000000-...-050'<br>
+        DB result: code=BRZE-Z2ZG-EUA5-HYBC, initial=100, current=100, claimed=false, active=true<br>
+        <br>
+        API: GET /gift-cards/BRZE-Z2ZG-EUA5-HYBC<br>
+        Response: { initial_amount: 100.0, current_amount: 100.0, is_claimed: false, is_active: true }<br>
+        <br>
+        Admin UI: Initial Amount &#8377;100.00, Current Balance &#8377;100.00, Used &#8377;0.00 (0%), Claimed: No<br>
+        Storefront UI: Balance &#8377;100.00, Initial &#8377;100.00, 100% remaining<br>
+        <br>
+        Result: MATCH (DB = API = Admin UI = Storefront UI)
+      </div>
+    </div>
+
+    <div class="test-case pass">
+      <h3><span class="test-id">DI-2</span> Gift Card Stats &mdash; API vs Admin Dashboard <span class="badge badge-pass">PASS</span></h3>
+      <div class="data-check">
+        API: GET /gift-cards/merchant/b0000000-...-050/stats<br>
+        Response: {<br>
+        &nbsp;&nbsp;total_issued: 1,<br>
+        &nbsp;&nbsp;total_outstanding_value: 100.0,<br>
+        &nbsp;&nbsp;total_active: 1,<br>
+        &nbsp;&nbsp;total_claimed: 0,<br>
+        &nbsp;&nbsp;total_expired: 0<br>
+        }<br>
+        <br>
+        Admin Dashboard Cards:<br>
+        &nbsp;&nbsp;Total Issued: 1, Outstanding Value: &#8377;100.00, Active: 1, Claimed: 0, Expired: 0<br>
+        <br>
+        Result: MATCH (API stats = Dashboard display for all 5 metrics)
+      </div>
+    </div>
+
+    <div class="test-case pass">
+      <h3><span class="test-id">DI-3</span> Gift Card Expiry Date &mdash; DB vs UI <span class="badge badge-pass">PASS</span></h3>
+      <div class="data-check">
+        DB: expires_at = 2026-03-31 05:30:00+05:30 (IST)<br>
+        API: expires_at = "2026-03-31T00:00:00Z" (UTC)<br>
+        Admin Detail: "Expires: 31 Mar 2026"<br>
+        Storefront: "Expires 31 Mar 2026"<br>
+        <br>
+        Result: MATCH (date consistently shown as 31 Mar 2026 across all surfaces)
+      </div>
+    </div>
+  </div>
+
+  <!-- ENVIRONMENT SECTION -->
+  <div class="section">
+    <h2>Test Environment</h2>
+    <table class="env-table">
+      <tr><td>Date</td><td>2026-03-26 18:10</td></tr>
+      <tr><td>Backend URL</td><td>http://localhost:3000</td></tr>
+      <tr><td>Frontend URL</td><td>http://localhost:5174</td></tr>
+      <tr><td>Database</td><td>batua (local PostgreSQL)</td></tr>
+      <tr><td>Merchant</td><td>Sherwani Studio (ID: b0000000-0000-0000-0000-000000000050, slug: sherwanistudio)</td></tr>
+      <tr><td>Test Gift Card</td><td>BRZE-Z2ZG-EUA5-HYBC (&#8377;100.00, active, unclaimed, expires 31 Mar 2026)</td></tr>
+      <tr><td>DB Table</td><td>gift_cards (18 columns, 1 row for this merchant)</td></tr>
+      <tr><td>Browser</td><td>Chromium (Playwright)</td></tr>
+      <tr><td>Total Screenshots</td><td>11</td></tr>
+      <tr><td>Git Commit</td><td>69b4439 (release branch)</td></tr>
+    </table>
+  </div>
+
+</div>
+</body>
+</html>

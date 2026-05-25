@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings My Store — 3 More Redesign Options</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f3f4f6;
+    color: #1a1a2e;
+    padding: 32px 16px 64px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .design-label {
+    text-align: center;
+    color: #9ca3af;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  .option-title {
+    text-align: center;
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 24px;
+  }
+  .options-row {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+  .option-card {
+    width: 420px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+  }
+
+  /* Shared */
+  .tab-bar {
+    display: flex;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 0 24px;
+  }
+  .tab { padding: 12px 16px; font-size: 13px; color: #9ca3af; font-weight: 500; }
+  .tab.active { color: #6366f1; border-bottom: 2px solid #6366f1; font-weight: 600; }
+  .section-label { font-size: 11px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px; }
+  .field-label { font-size: 12px; font-weight: 500; color: #6b7280; margin-bottom: 4px; }
+  .field-input {
+    padding: 8px 12px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #1a1a2e;
+    width: 100%;
+  }
+  .pill-sm {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    background: #ede9fe;
+    color: #6366f1;
+  }
+  .btn-primary-sm {
+    padding: 8px 20px;
+    background: #6366f1;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .btn-outline-sm {
+    padding: 4px 10px;
+    background: none;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #6b7280;
+  }
+  .btn-filled-sm {
+    padding: 4px 10px;
+    background: #6366f1;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .divider { height: 1px; background: #e5e7eb; }
+  code.mono {
+    font-family: 'SF Mono', monospace;
+    font-size: 12px;
+  }
+
+  /* === OPTION 4: Segmented Panels === */
+  .opt4-content { padding: 0; }
+  .opt4-panel {
+    padding: 20px 24px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .opt4-panel:last-child { border-bottom: none; }
+  .opt4-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .opt4-panel-title { font-size: 13px; font-weight: 700; color: #1a1a2e; }
+  .opt4-inline-fields { display: flex; gap: 10px; }
+  .opt4-inline-field { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+  .opt4-identity-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .opt4-avatar {
+    width: 44px; height: 44px; border-radius: 10px;
+    background: linear-gradient(135deg, #6366f1, #818cf8);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 18px; color: #fff; flex-shrink: 0;
+  }
+  .opt4-store-name { font-size: 17px; font-weight: 700; color: #1a1a2e; }
+  .opt4-store-meta { font-size: 12px; color: #9ca3af; margin-top: 2px; }
+  .opt4-store-meta code { font-family: 'SF Mono', monospace; font-size: 11px; background: #f3f4f6; padding: 1px 6px; border-radius: 4px; }
+  .opt4-links-row { display: flex; gap: 8px; }
+  .opt4-link-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 8px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .opt4-link-item:hover { border-color: #c7d2fe; }
+  .opt4-link-icon { font-size: 18px; }
+  .opt4-link-name { font-size: 11px; font-weight: 600; color: #1a1a2e; }
+  .opt4-link-path { font-size: 9px; color: #9ca3af; font-family: 'SF Mono', monospace; }
+
+  /* === OPTION 5: Minimal Clean Form === */
+  .opt5-content { padding: 24px; }
+  .opt5-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .opt5-top-left { display: flex; align-items: center; gap: 12px; }
+  .opt5-avatar {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: #6366f1;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 16px; color: #fff;
+  }
+  .opt5-name { font-size: 16px; font-weight: 700; color: #1a1a2e; }
+  .opt5-slug { font-size: 11px; color: #9ca3af; font-family: 'SF Mono', monospace; }
+  .opt5-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .opt5-field { display: flex; flex-direction: column; gap: 3px; }
+  .opt5-field.full { grid-column: 1 / -1; }
+  .opt5-read-row { display: flex; align-items: center; gap: 8px; }
+  .opt5-read-value {
+    font-size: 13px;
+    font-weight: 500;
+    color: #1a1a2e;
+  }
+  .opt5-actions { display: flex; justify-content: space-between; align-items: center; }
+  .opt5-links { display: flex; gap: 6px; }
+  .opt5-link-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #1a1a2e;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .opt5-link-btn:hover { border-color: #6366f1; color: #6366f1; }
+  .opt5-link-btn .icon { font-size: 12px; }
+
+  /* === OPTION 6: Wide two-column === */
+  .opt6-card {
+    width: 680px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+  }
+  .opt6-tab-bar {
+    display: flex;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 0 28px;
+  }
+  .opt6-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .opt6-left {
+    padding: 24px 28px;
+    border-right: 1px solid #e5e7eb;
+  }
+  .opt6-right {
+    padding: 24px 28px;
+  }
+  .opt6-fields { display: flex; flex-direction: column; gap: 14px; }
+  .opt6-field { display: flex; flex-direction: column; gap: 3px; }
+  .opt6-info-card {
+    padding: 16px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    margin-bottom: 16px;
+  }
+  .opt6-info-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .opt6-info-row:last-child { margin-bottom: 0; }
+  .opt6-info-label { font-size: 12px; color: #9ca3af; }
+  .opt6-info-value { font-size: 13px; font-weight: 600; color: #1a1a2e; }
+  .opt6-links { display: flex; flex-direction: column; gap: 10px; }
+  .opt6-link-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    transition: border-color 0.2s;
+  }
+  .opt6-link-row:hover { border-color: #c7d2fe; }
+  .opt6-link-left { display: flex; align-items: center; gap: 10px; }
+  .opt6-link-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; background: #f3f4f6;
+  }
+  .opt6-link-name { font-size: 13px; font-weight: 600; color: #1a1a2e; }
+  .opt6-link-path { font-size: 11px; color: #9ca3af; font-family: 'SF Mono', monospace; }
+  .opt6-link-btns { display: flex; gap: 4px; }
+
+  @media print {
+    body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  }
+  @page { size: A4 landscape; margin: 10mm; }
+</style>
+</head>
+<body>
+
+<div class="design-label">Settings — My Store Tab — 3 More Options</div>
+
+<div class="options-row">
+
+<!-- OPTION 4: Segmented Panels -->
+<div>
+  <div class="option-title">Option 4: Segmented Panels</div>
+  <div class="option-card">
+    <div class="tab-bar">
+      <div class="tab active">My Store</div>
+      <div class="tab">Wallet Policies</div>
+      <div class="tab">Connectors</div>
+      <div class="tab">Notifications</div>
+    </div>
+    <div class="opt4-content">
+      <!-- Identity panel -->
+      <div class="opt4-panel">
+        <div class="opt4-identity-row">
+          <div class="opt4-avatar">C</div>
+          <div>
+            <div class="opt4-store-name">Chai & Co</div>
+            <div class="opt4-store-meta"><code>/s/chaiandco</code> · <span class="pill-sm">Growth</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Edit panel -->
+      <div class="opt4-panel">
+        <div class="opt4-panel-header">
+          <div class="opt4-panel-title">Store Details</div>
+          <button class="btn-primary-sm">Save</button>
+        </div>
+        <div class="opt4-inline-fields">
+          <div class="opt4-inline-field">
+            <div class="field-label">Name</div>
+            <div class="field-input">Chai & Co</div>
+          </div>
+          <div class="opt4-inline-field">
+            <div class="field-label">Slug</div>
+            <div class="field-input">chaiandco</div>
+          </div>
+        </div>
+        <div style="margin-top:10px">
+          <div class="field-label">Domain</div>
+          <div class="field-input">chaiandco.myshopify.co</div>
+        </div>
+      </div>
+
+      <!-- Links panel -->
+      <div class="opt4-panel">
+        <div class="opt4-panel-title" style="margin-bottom:12px">Customer Links</div>
+        <div class="opt4-links-row">
+          <div class="opt4-link-item">
+            <div class="opt4-link-icon">💰</div>
+            <div class="opt4-link-name">Rewards</div>
+            <div class="opt4-link-path">/s/chaiandco</div>
+          </div>
+          <div class="opt4-link-item">
+            <div class="opt4-link-icon">🎁</div>
+            <div class="opt4-link-name">Gift Cards</div>
+            <div class="opt4-link-path">/gift-cards/check</div>
+          </div>
+          <div class="opt4-link-item">
+            <div class="opt4-link-icon">🔗</div>
+            <div class="opt4-link-name">Referrals</div>
+            <div class="opt4-link-path">/refer</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- OPTION 5: Minimal Clean -->
+<div>
+  <div class="option-title">Option 5: Minimal Compact</div>
+  <div class="option-card">
+    <div class="tab-bar">
+      <div class="tab active">My Store</div>
+      <div class="tab">Wallet Policies</div>
+      <div class="tab">Connectors</div>
+      <div class="tab">Notifications</div>
+    </div>
+    <div class="opt5-content">
+      <div class="opt5-top-row">
+        <div class="opt5-top-left">
+          <div class="opt5-avatar">C</div>
+          <div>
+            <div class="opt5-name">Chai & Co</div>
+            <div class="opt5-slug">/s/chaiandco</div>
+          </div>
+        </div>
+        <span class="pill-sm">Growth</span>
+      </div>
+
+      <div class="opt5-fields">
+        <div class="opt5-field">
+          <div class="field-label">Store Name</div>
+          <div class="field-input">Chai & Co</div>
+        </div>
+        <div class="opt5-field">
+          <div class="field-label">Slug</div>
+          <div class="field-input">chaiandco</div>
+        </div>
+        <div class="opt5-field full">
+          <div class="field-label">Domain</div>
+          <div class="field-input">chaiandco.myshopify.co</div>
+        </div>
+      </div>
+
+      <div class="opt5-actions">
+        <div class="opt5-links">
+          <button class="opt5-link-btn"><span class="icon">💰</span> Rewards</button>
+          <button class="opt5-link-btn"><span class="icon">🎁</span> Gift Cards</button>
+          <button class="opt5-link-btn"><span class="icon">🔗</span> Referrals</button>
+        </div>
+        <button class="btn-primary-sm">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- OPTION 6: Wide two-column -->
+<div>
+  <div class="option-title">Option 6: Split View</div>
+  <div class="opt6-card">
+    <div class="opt6-tab-bar">
+      <div class="tab active">My Store</div>
+      <div class="tab">Wallet Policies</div>
+      <div class="tab">Connectors</div>
+      <div class="tab">Notifications</div>
+    </div>
+    <div class="opt6-layout">
+      <div class="opt6-left">
+        <div class="section-label" style="margin-top:0">Store Details</div>
+        <div class="opt6-fields">
+          <div class="opt6-field">
+            <div class="field-label">Store Name</div>
+            <div class="field-input">Chai & Co</div>
+          </div>
+          <div class="opt6-field">
+            <div class="field-label">Domain</div>
+            <div class="field-input">chaiandco.myshopify.co</div>
+          </div>
+          <div class="opt6-field">
+            <div class="field-label">Slug</div>
+            <div class="field-input">chaiandco</div>
+          </div>
+          <button class="btn-primary-sm" style="align-self:flex-start">Save Changes</button>
+        </div>
+      </div>
+      <div class="opt6-right">
+        <div class="opt6-info-card">
+          <div class="opt6-info-row">
+            <div class="opt6-info-label">Plan</div>
+            <span class="pill-sm">Growth</span>
+          </div>
+          <div class="opt6-info-row">
+            <div class="opt6-info-label">Storefront</div>
+            <div class="opt6-info-value" style="font-family:'SF Mono',monospace;font-size:12px">/s/chaiandco</div>
+          </div>
+        </div>
+
+        <div class="section-label">Customer Links</div>
+        <div class="opt6-links">
+          <div class="opt6-link-row">
+            <div class="opt6-link-left">
+              <div class="opt6-link-icon">💰</div>
+              <div>
+                <div class="opt6-link-name">Rewards Hub</div>
+                <div class="opt6-link-path">/s/chaiandco</div>
+              </div>
+            </div>
+            <div class="opt6-link-btns">
+              <button class="btn-outline-sm">Copy</button>
+              <button class="btn-filled-sm">Open</button>
+            </div>
+          </div>
+          <div class="opt6-link-row">
+            <div class="opt6-link-left">
+              <div class="opt6-link-icon">🎁</div>
+              <div>
+                <div class="opt6-link-name">Gift Cards</div>
+                <div class="opt6-link-path">/s/chaiandco/gift-cards/check</div>
+              </div>
+            </div>
+            <div class="opt6-link-btns">
+              <button class="btn-outline-sm">Copy</button>
+              <button class="btn-filled-sm">Open</button>
+            </div>
+          </div>
+          <div class="opt6-link-row">
+            <div class="opt6-link-left">
+              <div class="opt6-link-icon">🔗</div>
+              <div>
+                <div class="opt6-link-name">Referrals</div>
+                <div class="opt6-link-path">/s/chaiandco/refer</div>
+              </div>
+            </div>
+            <div class="opt6-link-btns">
+              <button class="btn-outline-sm">Copy</button>
+              <button class="btn-filled-sm">Open</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>

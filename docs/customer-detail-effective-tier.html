@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Customer Detail — Effective Tier Design</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f1f3; color: #1a1a2e; }
+
+  .design-wrapper { max-width: 680px; margin: 0 auto; padding: 40px 24px 80px; }
+  .design-title { text-align: center; font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .design-desc { text-align: center; color: #6b7280; font-size: 13px; margin-bottom: 32px; }
+
+  .state-nav {
+    display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;
+    margin-bottom: 32px; position: sticky; top: 0; background: #f0f1f3; padding: 12px 0; z-index: 10;
+  }
+  .state-tab {
+    padding: 7px 14px; border-radius: 8px; font-size: 12px; font-weight: 500;
+    cursor: pointer; border: 1px solid #d1d5db; background: white; color: #6b7280;
+  }
+  .state-tab.active { background: #6366f1; color: white; border-color: #6366f1; }
+  .state-tab:hover:not(.active) { background: #f3f4f6; }
+
+  .state-view { display: none; }
+  .state-view.active { display: block; }
+
+  .annotation { font-size: 11px; color: #9ca3af; background: #fafbfc; border: 1px dashed #d1d5db; border-radius: 6px; padding: 8px 12px; margin-bottom: 16px; }
+  .annotation strong { color: #6b7280; }
+
+  /* Section card */
+  .section { border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px; margin-bottom: 14px; background: white; }
+  .section.warn { border-color: #fde68a; background: #fffdf5; }
+  .section-title { font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+  .section-title-right { margin-left: auto; font-size: 11px; font-weight: 500; color: #f59e0b; }
+
+  /* Shared label/value */
+  .label { font-size: 10px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.04em; }
+  .value { font-size: 13px; font-weight: 500; color: #1a1a2e; margin-top: 2px; }
+
+  /* Tier badge */
+  .tier-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; background: #f3f4f6; color: #374151; }
+  .tier-badge.bronze { background: #fef3c7; color: #92400e; }
+  .tier-badge.silver { background: #f3f4f6; color: #374151; }
+  .tier-badge.gold { background: #fef9c3; color: #854d0e; }
+
+  /* Status pill */
+  .pill { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+  .pill-active { background: #d1fae5; color: #065f46; }
+  .pill-expiring { background: #fef3c7; color: #92400e; }
+
+  /* Unified progress bar */
+  .progress { margin-top: 10px; }
+  .progress-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
+  .progress-label { font-size: 11px; color: #9ca3af; }
+  .progress-value { font-size: 11px; font-weight: 500; color: #374151; }
+  .progress-value.warn { color: #f59e0b; }
+  .progress-track { height: 6px; border-radius: 3px; background: #e5e7eb; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 3px; }
+  .progress-fill.purple { background: #6366f1; }
+  .progress-fill.green { background: #22c55e; }
+  .progress-fill.amber { background: #f59e0b; }
+  .progress-footer { display: flex; justify-content: space-between; margin-top: 3px; font-size: 10px; color: #9ca3af; }
+
+  /* Effective tier callout */
+  .effective-box { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 8px; margin-top: 12px; font-size: 12px; }
+  .effective-box.upgrade { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+  .effective-box.match { background: #f9fafb; border: 1px solid #e5e7eb; color: #6b7280; }
+  .effective-icon { font-size: 14px; flex-shrink: 0; }
+  .effective-text { flex: 1; line-height: 1.4; }
+  .effective-mult { font-weight: 600; font-family: 'SF Mono', monospace; white-space: nowrap; }
+
+  /* Tier row */
+  .tier-row { display: flex; align-items: center; justify-content: space-between; }
+  .tier-left { display: flex; align-items: center; gap: 8px; }
+  .tier-source { font-size: 11px; color: #9ca3af; }
+  .tier-mult { font-size: 13px; font-weight: 600; font-family: 'SF Mono', monospace; color: #374151; }
+
+  /* Membership row */
+  .mem-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .mem-left { display: flex; align-items: center; gap: 8px; }
+  .mem-expires { font-size: 11px; color: #6b7280; }
+  .mem-expires.warn { color: #f59e0b; font-weight: 500; }
+  .mem-meta { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+  .no-data { font-size: 11px; color: #9ca3af; font-style: italic; }
+</style>
+</head>
+<body>
+
+<div class="design-wrapper">
+  <h1 class="design-title">Effective Tier — Design Options</h1>
+  <p class="design-desc">Showing which multiplier applies + unified progress bar style</p>
+
+  <div class="state-nav">
+    <button class="state-tab active" onclick="show('membership-higher')">Membership Higher</button>
+    <button class="state-tab" onclick="show('same-tier')">Same Tier</button>
+    <button class="state-tab" onclick="show('earned-higher')">Earned Higher</button>
+    <button class="state-tab" onclick="show('no-membership')">No Membership</button>
+    <button class="state-tab" onclick="show('expiring')">Expiring</button>
+  </div>
+
+  <!-- ═══ MEMBERSHIP HIGHER (Krish's case: Bronze earned, Silver membership) ═══ -->
+  <div class="state-view active" id="membership-higher">
+    <div class="annotation"><strong>Krish's case:</strong> Earned Bronze (1x) but has Silver membership (1.25x). Membership wins.</div>
+
+    <div class="section">
+      <div class="section-title">🏆 Loyalty Tier</div>
+      <div class="tier-row">
+        <div class="tier-left">
+          <span class="tier-badge bronze">Bronze</span>
+          <span class="tier-source">Earned via evaluation</span>
+        </div>
+        <span class="tier-mult">1x</span>
+      </div>
+      <div class="progress">
+        <div class="progress-header">
+          <span class="progress-label">Progress to Silver</span>
+          <span class="progress-value">66%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill purple" style="width: 66%;"></div>
+        </div>
+        <div class="progress-footer">
+          <span>4,500</span>
+          <span>6,800</span>
+        </div>
+      </div>
+      <div class="effective-box upgrade">
+        <span class="effective-icon">⬆</span>
+        <span class="effective-text">Membership override active — earning at <span class="effective-mult">1.25x</span> (Silver) instead of 1x (Bronze)</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">💎 Membership</div>
+      <div class="mem-row">
+        <div class="mem-left">
+          <span class="tier-badge silver">Silver</span>
+          <span class="pill pill-active">Active</span>
+        </div>
+        <span class="mem-expires">Expires 24 Mar 2027</span>
+      </div>
+      <div class="mem-meta">
+        <div><span class="label">Effective Multiplier</span><div class="value">1.25x</div></div>
+        <div><span class="label">Renewed</span><div class="value">0 times</div></div>
+        <div><span class="label">Falls back to</span><div class="value"><span class="tier-badge bronze" style="font-size: 10px; padding: 2px 8px;">Bronze 1x</span></div></div>
+      </div>
+      <div class="progress">
+        <div class="progress-header">
+          <span class="progress-label">Time remaining</span>
+          <span class="progress-value">364 days</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill green" style="width: 100%;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SAME TIER (Earned Silver, Membership Silver) ═══ -->
+  <div class="state-view" id="same-tier">
+    <div class="annotation"><strong>Same tier:</strong> Earned Silver (1.25x) and membership is also Silver (1.25x). No override needed.</div>
+
+    <div class="section">
+      <div class="section-title">🏆 Loyalty Tier</div>
+      <div class="tier-row">
+        <div class="tier-left">
+          <span class="tier-badge silver">Silver</span>
+          <span class="tier-source">Earned via evaluation</span>
+        </div>
+        <span class="tier-mult">1.25x</span>
+      </div>
+      <div class="progress">
+        <div class="progress-header">
+          <span class="progress-label">Progress to Gold</span>
+          <span class="progress-value">40%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill purple" style="width: 40%;"></div>
+        </div>
+        <div class="progress-footer">
+          <span>6,800</span>
+          <span>16,800</span>
+        </div>
+      </div>
+      <div class="effective-box match">
+        <span class="effective-icon">↔</span>
+        <span class="effective-text">Membership matches earned tier — earning at <span class="effective-mult">1.25x</span></span>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">💎 Membership</div>
+      <div class="mem-row">
+        <div class="mem-left">
+          <span class="tier-badge silver">Silver</span>
+          <span class="pill pill-active">Active</span>
+        </div>
+        <span class="mem-expires">Expires 15 Jan 2027</span>
+      </div>
+      <div class="mem-meta">
+        <div><span class="label">Effective Multiplier</span><div class="value">1.25x</div></div>
+        <div><span class="label">Renewed</span><div class="value">1 time</div></div>
+      </div>
+      <div class="progress">
+        <div class="progress-header">
+          <span class="progress-label">Time remaining</span>
+          <span class="progress-value">297 days</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill green" style="width: 81%;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ EARNED HIGHER (Earned Gold, Membership Silver) ═══ -->
+  <div class="state-view" id="earned-higher">
+    <div class="annotation"><strong>Earned higher:</strong> Earned Gold (1.5x) but membership is Silver (1.25x). Earned tier wins.</div>
+
+    <div class="section">
+      <div class="section-title">🏆 Loyalty Tier</div>
+      <div class="tier-row">
+        <div class="tier-left">
+          <span class="tier-badge gold">Gold</span>
+          <span class="tier-source">Earned via evaluation</span>
+        </div>
+        <span class="tier-mult">1.5x</span>
+      </div>
+      <div class="effective-box match">
+        <span class="effective-icon">🏆</span>
+        <span class="effective-text">Earned tier is higher — earning at <span class="effective-mult">1.5x</span> (membership Silver 1.25x is superseded)</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">💎 Membership</div>
+      <div class="mem-row">
+        <div class="mem-left">
+          <span class="tier-badge silver">Silver</span>
+          <span class="pill pill-active">Active</span>
+        </div>
+        <span class="mem-expires">Expires 02 Apr 2026</span>
+      </div>
+      <div class="mem-meta">
+        <div><span class="label">Multiplier</span><div class="value" style="color: #9ca3af; text-decoration: line-through;">1.25x</div></div>
+        <div><span class="label">Renewed</span><div class="value">0 times</div></div>
+      </div>
+      <div class="progress">
+        <div class="progress-header">
+          <span class="progress-label">Time remaining</span>
+          <span class="progress-value">9 days</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill green" style="width: 2.5%;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ NO MEMBERSHIP ═══ -->
+  <div class="state-view" id="no-membership">
+    <div class="annotation"><strong>No membership:</strong> Customer only has an earned tier. Simple case.</div>
+
+    <div class="section">
+      <div class="section-title">🏆 Loyalty Tier</div>
+      <div class="tier-row">
+        <div class="tier-left">
+          <span class="tier-badge silver">Silver</span>
+          <span class="tier-source">Earned via evaluation</span>
+        </div>
+        <span class="tier-mult">1.25x</span>
+      </div>
+      <div class="progress">
+        <div class="progress-header">
+          <span class="progress-label">Progress to Gold</span>
+          <span class="progress-value">55%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill purple" style="width: 55%;"></div>
+        </div>
+        <div class="progress-footer">
+          <span>9,200</span>
+          <span>16,800</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">💎 Membership</div>
+      <span class="no-data">No active membership</span>
+    </div>
+  </div>
+
+  <!-- ═══ EXPIRING MEMBERSHIP ═══ -->
+  <div class="state-view" id="expiring">
+    <div class="annotation"><strong>Expiring:</strong> Membership expiring in 9 days. Shows fallback tier + warning.</div>
+
+    <div class="section">
+      <div class="section-title">🏆 Loyalty Tier</div>
+      <div class="tier-row">
+        <div class="tier-left">
+          <span class="tier-badge bronze">Bronze</span>
+          <span class="tier-source">Earned via evaluation</span>
+        </div>
+        <span class="tier-mult">1x</span>
+      </div>
+      <div class="progress">
+        <div class="progress-header">
+          <span class="progress-label">Progress to Silver</span>
+          <span class="progress-value">71%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill purple" style="width: 71%;"></div>
+        </div>
+        <div class="progress-footer">
+          <span>4,820</span>
+          <span>6,800</span>
+        </div>
+      </div>
+      <div class="effective-box upgrade">
+        <span class="effective-icon">⬆</span>
+        <span class="effective-text">Membership override active — earning at <span class="effective-mult">1.5x</span> (Gold) instead of 1x (Bronze)</span>
+      </div>
+    </div>
+
+    <div class="section warn">
+      <div class="section-title">💎 Membership <span class="section-title-right">⚠ Expiring in 9 days</span></div>
+      <div class="mem-row">
+        <div class="mem-left">
+          <span class="tier-badge gold">Gold</span>
+          <span class="pill pill-expiring">Expiring Soon</span>
+        </div>
+        <span class="mem-expires warn">02 Apr 2026</span>
+      </div>
+      <div class="mem-meta">
+        <div><span class="label">Effective Multiplier</span><div class="value">1.5x</div></div>
+        <div><span class="label">Renewed</span><div class="value">1 time</div></div>
+        <div><span class="label">Falls back to</span><div class="value"><span class="tier-badge bronze" style="font-size: 10px; padding: 2px 8px;">Bronze 1x</span></div></div>
+      </div>
+      <div class="progress">
+        <div class="progress-header">
+          <span class="progress-label">Time remaining</span>
+          <span class="progress-value warn">9 days</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill amber" style="width: 2.5%;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function show(id) {
+    document.querySelectorAll('.state-view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.state-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    const map = ['membership-higher','same-tier','earned-higher','no-membership','expiring'];
+    const tabs = document.querySelectorAll('.state-tab');
+    const idx = map.indexOf(id);
+    if (idx >= 0 && tabs[idx]) tabs[idx].classList.add('active');
+  }
+</script>
+
+</body>
+</html>

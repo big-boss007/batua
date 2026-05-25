@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loyalty — 4 Tab Mockup</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f3f4f6;
+    color: #1f2937;
+  }
+  .shell { display: flex; min-height: 100vh; }
+
+  /* ─── Sidebar ─── */
+  .sidebar {
+    width: 220px;
+    background: #fff;
+    border-right: 1px solid #e5e7eb;
+    padding: 20px 0;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .sidebar-brand {
+    font-size: 18px;
+    font-weight: 800;
+    color: #6366f1;
+    padding: 0 20px 20px;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    font-size: 13px;
+    color: #6b7280;
+    cursor: pointer;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+  }
+  .nav-item:hover { background: #f9fafb; }
+  .nav-item.active {
+    background: #ede9fe;
+    color: #6366f1;
+    font-weight: 600;
+    border-right: 3px solid #6366f1;
+  }
+  .nav-icon { width: 18px; text-align: center; }
+  .nav-bottom {
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid #f3f4f6;
+  }
+
+  /* ─── Top bar ─── */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 40px;
+    background: #fff;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+  .topbar-label { font-size: 14px; font-weight: 600; color: #374151; }
+  .topbar-merchant {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6366f1;
+    background: #ede9fe;
+    padding: 3px 10px;
+    border-radius: 6px;
+  }
+
+  /* ─── Main ─── */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .content {
+    padding: 32px 40px;
+    max-width: 1100px;
+  }
+  .page-header { margin-bottom: 24px; }
+  .page-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #111827;
+    margin-bottom: 4px;
+  }
+  .page-subtitle { font-size: 13px; color: #9ca3af; }
+
+  /* ─── Tabs ─── */
+  .tabs {
+    display: flex;
+    border-bottom: 2px solid #e5e7eb;
+    margin-bottom: 24px;
+  }
+  .tab {
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #6b7280;
+    cursor: pointer;
+    border: none;
+    background: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+  }
+  .tab:hover { color: #374151; }
+  .tab.active {
+    color: #6366f1;
+    font-weight: 600;
+    border-bottom-color: #6366f1;
+  }
+  .tab-content { display: none; }
+  .tab-content.visible { display: block; }
+
+  /* ─── Shared ─── */
+  .section-hdr {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #9ca3af;
+    margin-bottom: 12px;
+    margin-top: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .btn-primary {
+    height: 36px;
+    padding: 0 18px;
+    background: #6366f1;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn-sm {
+    height: 32px;
+    padding: 0 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid #d1d5db;
+    background: #fff;
+    color: #6b7280;
+  }
+  .pill {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .pill-blue { background: #dbeafe; color: #1d4ed8; }
+  .pill-green { background: #dcfce7; color: #166534; }
+  .pill-gray { background: #f3f4f6; color: #6b7280; }
+  .empty-state {
+    padding: 48px;
+    text-align: center;
+    color: #9ca3af;
+    font-size: 13px;
+  }
+
+  /* ─── Tab 1: Program & Tiers (from current /loyalty page) ─── */
+  .wizard-stepper {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 24px;
+  }
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .step-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .step-num.active { background: #6366f1; color: #fff; }
+  .step-num.done { background: #dcfce7; color: #166534; }
+  .step-num.pending { background: #f3f4f6; color: #9ca3af; }
+  .step-label { font-size: 13px; color: #374151; font-weight: 500; }
+  .step-line {
+    width: 48px;
+    height: 2px;
+    background: #e5e7eb;
+    margin: 0 8px;
+  }
+
+  .program-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .program-card-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 4px;
+  }
+  .program-card-desc {
+    font-size: 12px;
+    color: #9ca3af;
+    margin-bottom: 20px;
+  }
+  .form-field { margin-bottom: 16px; }
+  .form-field label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .form-field input, .form-field select {
+    height: 38px;
+    width: 100%;
+    max-width: 400px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 0 12px;
+    font-size: 14px;
+    color: #1f2937;
+  }
+  .form-hint {
+    font-size: 11px;
+    color: #9ca3af;
+    margin-top: 3px;
+  }
+  .tier-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .tier-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 14px 20px;
+  }
+  .tier-row-rank {
+    font-size: 11px;
+    color: #9ca3af;
+    font-weight: 700;
+    width: 48px;
+  }
+  .tier-row-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+    min-width: 100px;
+  }
+  .tier-row-detail {
+    font-size: 12px;
+    color: #6b7280;
+    flex: 1;
+  }
+  .tier-row-mult {
+    font-size: 12px;
+    font-weight: 700;
+    color: #6366f1;
+    background: #ede9fe;
+    padding: 2px 10px;
+    border-radius: 100px;
+  }
+
+  /* ─── Tab 2: Memberships (from current /memberships page) ─── */
+  .sub-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 20px;
+  }
+  .sub-tab {
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #6b7280;
+    cursor: pointer;
+    border: none;
+    background: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+  }
+  .sub-tab.active {
+    color: #6366f1;
+    font-weight: 600;
+    border-bottom-color: #6366f1;
+  }
+  .members-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .members-table th {
+    text-align: left;
+    padding: 10px 16px;
+    font-weight: 600;
+    color: #6b7280;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .members-table td {
+    padding: 10px 16px;
+    border-bottom: 1px solid #f3f4f6;
+    color: #374151;
+  }
+  .members-table tr:last-child td { border-bottom: none; }
+  .tier-pill {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .tier-bronze { background: #fef3c7; color: #92400e; }
+  .tier-silver { background: #f3f4f6; color: #374151; }
+  .tier-gold { background: #fef9c3; color: #854d0e; }
+
+  /* ─── Tab 3: Reward Rules (from current /rules page) ─── */
+  .rules-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .rule-item {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .rule-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .rule-name { font-size: 14px; font-weight: 600; color: #1f2937; }
+  .rule-meta { font-size: 12px; color: #9ca3af; }
+  .rule-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* ─── Tab 4: Campaigns (from current /campaigns page) ─── */
+  .campaign-item {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .campaign-name { font-size: 14px; font-weight: 600; color: #1f2937; }
+  .campaign-meta { font-size: 12px; color: #9ca3af; }
+  .campaign-dates { font-size: 12px; color: #6b7280; }
+  .templates-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .template-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 16px;
+    cursor: pointer;
+  }
+  .template-card:hover { border-color: #6366f1; }
+  .template-emoji { font-size: 24px; margin-bottom: 8px; }
+  .template-name { font-size: 13px; font-weight: 600; color: #1f2937; margin-bottom: 2px; }
+  .template-desc { font-size: 11px; color: #9ca3af; line-height: 1.4; }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <nav class="sidebar">
+    <div class="sidebar-brand">Batua</div>
+    <button class="nav-item"><span class="nav-icon">▦</span> Dashboard</button>
+    <button class="nav-item active"><span class="nav-icon">♥</span> Loyalty</button>
+    <button class="nav-item"><span class="nav-icon">⇄</span> Transactions</button>
+    <button class="nav-item"><span class="nav-icon">☖</span> Customers</button>
+    <button class="nav-item"><span class="nav-icon">☆</span> Gift Cards</button>
+    <button class="nav-item"><span class="nav-icon">→</span> Referrals</button>
+    <button class="nav-item"><span class="nav-icon">↗</span> Analytics</button>
+    <div class="nav-bottom">
+      <button class="nav-item"><span class="nav-icon">✉</span> Notifications</button>
+      <button class="nav-item"><span class="nav-icon">☸</span> Settings</button>
+    </div>
+  </nav>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <span class="topbar-label">Merchant Admin</span>
+        <span class="topbar-merchant">Kesar Kitchen</span>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="page-header">
+        <h1 class="page-title">Loyalty</h1>
+        <p class="page-subtitle">Manage your loyalty program, tiers, earning rules, and campaigns</p>
+      </div>
+
+      <div class="tabs">
+        <button class="tab active" onclick="showTab(this, 'program')">Program & Tiers</button>
+        <button class="tab" onclick="showTab(this, 'memberships')">Memberships</button>
+        <button class="tab" onclick="showTab(this, 'rules')">Reward Rules</button>
+        <button class="tab" onclick="showTab(this, 'campaigns')">Campaigns</button>
+      </div>
+
+      <!-- ══════════════════════════════════════ -->
+      <!-- TAB 1: Program & Tiers               -->
+      <!-- (exact content from /admin/loyalty)   -->
+      <!-- ══════════════════════════════════════ -->
+      <div id="tab-program" class="tab-content visible">
+        <p class="page-subtitle" style="margin-bottom: 20px;">Set up your loyalty program in a few easy steps</p>
+
+        <div class="wizard-stepper">
+          <div class="step">
+            <span class="step-num done">✓</span>
+            <span class="step-label">Program</span>
+          </div>
+          <div class="step-line"></div>
+          <div class="step">
+            <span class="step-num active">2</span>
+            <span class="step-label">Tiers</span>
+          </div>
+          <div class="step-line"></div>
+          <div class="step">
+            <span class="step-num pending">3</span>
+            <span class="step-label">Review</span>
+          </div>
+        </div>
+
+        <div class="program-card">
+          <div class="program-card-title">Set Up Your Loyalty Program</div>
+          <div class="program-card-desc">Give your program a name and choose how customers qualify for tiers</div>
+
+          <div class="form-field">
+            <label>Program Name</label>
+            <input type="text" placeholder="e.g. Rewards Club" value="Kesar Rewards">
+          </div>
+          <div class="form-field">
+            <label>Evaluation Criteria</label>
+            <select><option>Total Spend</option><option>Order Count</option><option>Points Earned</option></select>
+            <div class="form-hint">Determines how customers progress through tiers</div>
+          </div>
+          <div class="form-field">
+            <label>Evaluation Period</label>
+            <select><option>Lifetime (no reset)</option><option>Rolling 12 months</option></select>
+            <div class="form-hint">How far back to look when evaluating customer progress</div>
+          </div>
+        </div>
+
+        <div class="section-hdr">Tiers</div>
+        <div class="tier-list">
+          <div class="tier-row">
+            <span class="tier-row-rank">Rank 1</span>
+            <span class="tier-row-name">Bronze</span>
+            <span class="tier-row-detail">₹0+ spend · No expiry</span>
+            <span class="tier-row-mult">1× earn</span>
+            <button class="btn-sm">Edit</button>
+          </div>
+          <div class="tier-row">
+            <span class="tier-row-rank">Rank 2</span>
+            <span class="tier-row-name">Silver</span>
+            <span class="tier-row-detail">₹5,000+ spend · 365d</span>
+            <span class="tier-row-mult">1.5× earn</span>
+            <button class="btn-sm">Edit</button>
+          </div>
+          <div class="tier-row">
+            <span class="tier-row-rank">Rank 3</span>
+            <span class="tier-row-name">Gold</span>
+            <span class="tier-row-detail">₹15,000+ spend · 365d</span>
+            <span class="tier-row-mult">2× earn</span>
+            <button class="btn-sm">Edit</button>
+          </div>
+          <div class="tier-row">
+            <span class="tier-row-rank">Rank 4</span>
+            <span class="tier-row-name">Platinum</span>
+            <span class="tier-row-detail">₹50,000+ spend · 365d</span>
+            <span class="tier-row-mult">3× earn</span>
+            <button class="btn-sm">Edit</button>
+          </div>
+        </div>
+        <button class="btn-primary">+ Add Tier</button>
+      </div>
+
+      <!-- ══════════════════════════════════════ -->
+      <!-- TAB 2: Memberships                    -->
+      <!-- (exact content from /admin/memberships)-->
+      <!-- ══════════════════════════════════════ -->
+      <div id="tab-memberships" class="tab-content">
+        <p class="page-subtitle" style="margin-bottom: 20px;">Assign loyalty tiers to customers with a 1-year expiry</p>
+
+        <div class="sub-tabs">
+          <button class="sub-tab active">Subscribers</button>
+          <button class="sub-tab">Assign Membership</button>
+        </div>
+
+        <table class="members-table">
+          <thead>
+            <tr>
+              <th>Customer</th>
+              <th>Tier</th>
+              <th>Status</th>
+              <th>Started</th>
+              <th>Expires</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Aarav Sharma</td>
+              <td><span class="tier-pill tier-gold">Gold</span></td>
+              <td><span class="pill pill-green">Active</span></td>
+              <td>15 Jan 2026</td>
+              <td>15 Jan 2027</td>
+              <td><button class="btn-sm">Cancel</button></td>
+            </tr>
+            <tr>
+              <td>Priya Patel</td>
+              <td><span class="tier-pill tier-silver">Silver</span></td>
+              <td><span class="pill pill-green">Active</span></td>
+              <td>3 Feb 2026</td>
+              <td>3 Feb 2027</td>
+              <td><button class="btn-sm">Cancel</button></td>
+            </tr>
+            <tr>
+              <td>Rohan Gupta</td>
+              <td><span class="tier-pill tier-bronze">Bronze</span></td>
+              <td><span class="pill pill-green">Active</span></td>
+              <td>20 Dec 2025</td>
+              <td>20 Dec 2026</td>
+              <td><button class="btn-sm">Cancel</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ══════════════════════════════════════ -->
+      <!-- TAB 3: Reward Rules                   -->
+      <!-- (exact content from /admin/rules)     -->
+      <!-- ══════════════════════════════════════ -->
+      <div id="tab-rules" class="tab-content">
+        <div class="rules-header">
+          <p class="page-subtitle">Configure how customers earn and burn rewards</p>
+          <button class="btn-primary">+ New Rule</button>
+        </div>
+
+        <div class="rule-item">
+          <div class="rule-info">
+            <span class="rule-name">Order Reward 50</span>
+            <span class="rule-meta">0 entries · ₹0.00 · 0 customers</span>
+          </div>
+          <div class="rule-right">
+            <span class="pill pill-blue">reward</span>
+            <span class="pill pill-gray">order.completed</span>
+            <span style="font-size:12px; color:#9ca3af;">v1</span>
+            <span class="pill pill-green">Active</span>
+            <button class="btn-sm">Deactivate</button>
+          </div>
+        </div>
+
+        <div class="rule-item">
+          <div class="rule-info">
+            <span class="rule-name">Review Bonus 50</span>
+            <span class="rule-meta">0 entries · ₹0.00 · 0 customers</span>
+          </div>
+          <div class="rule-right">
+            <span class="pill pill-blue">reward</span>
+            <span class="pill pill-gray">review.submitted</span>
+            <span style="font-size:12px; color:#9ca3af;">v1</span>
+            <span class="pill pill-green">Active</span>
+            <button class="btn-sm">Deactivate</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════ -->
+      <!-- TAB 4: Campaigns                      -->
+      <!-- (exact content from /admin/campaigns) -->
+      <!-- ══════════════════════════════════════ -->
+      <div id="tab-campaigns" class="tab-content">
+        <p class="page-subtitle" style="margin-bottom: 20px;">Boost engagement with festive and seasonal reward campaigns</p>
+
+        <div class="section-hdr">Active & Upcoming</div>
+        <div class="campaign-item">
+          <div class="rule-info">
+            <span class="campaign-name">Holi 3× Points Weekend</span>
+            <span class="campaign-meta">Multiplier · 3× on Order Reward</span>
+          </div>
+          <div class="rule-right">
+            <span class="campaign-dates">14 Mar – 16 Mar 2026</span>
+            <span class="pill pill-green">Active</span>
+          </div>
+        </div>
+        <div class="campaign-item">
+          <div class="rule-info">
+            <span class="campaign-name">Summer Sale Bonus</span>
+            <span class="campaign-meta">Bonus · Extra 50 ★ on orders above ₹2,000</span>
+          </div>
+          <div class="rule-right">
+            <span class="campaign-dates">1 Apr – 30 Apr 2026</span>
+            <span class="pill pill-gray">Upcoming</span>
+          </div>
+        </div>
+
+        <div style="margin-top: 24px;">
+          <div class="section-hdr">Festive Templates</div>
+          <div class="templates-grid">
+            <div class="template-card">
+              <div class="template-emoji">🪔</div>
+              <div class="template-name">Diwali Dhamaka</div>
+              <div class="template-desc">5× points on all orders during Diwali week</div>
+            </div>
+            <div class="template-card">
+              <div class="template-emoji">🎄</div>
+              <div class="template-name">Christmas Cheer</div>
+              <div class="template-desc">Double points + bonus 100 ★ on first order</div>
+            </div>
+            <div class="template-card">
+              <div class="template-emoji">🏏</div>
+              <div class="template-name">IPL Season</div>
+              <div class="template-desc">2× points on match days</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  function showTab(btn, name) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('visible'));
+    document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('visible');
+    btn.classList.add('active');
+  }
+</script>
+
+</body>
+</html>

@@ -42,8 +42,11 @@
   let step = $state(1);
   let saving = $state(false);
 
+  // svelte-ignore state_referenced_locally
   let programName = $state(existingProgram?.name ?? '');
+  // svelte-ignore state_referenced_locally
   let evaluationCriteria = $state(existingProgram?.evaluation_criteria ?? 'spend');
+  // svelte-ignore state_referenced_locally
   let evaluationPeriodDays = $state<string>(
     existingProgram?.evaluation_period_days !== null &&
       existingProgram?.evaluation_period_days !== undefined
@@ -51,6 +54,7 @@
       : ''
   );
 
+  // svelte-ignore state_referenced_locally
   let wizardTiers = $state<Array<WizardTier>>(
     existingTiers.map((t) => ({
       id: t.id,
@@ -492,7 +496,7 @@
           <div class="if-group">
             <div>
               <span class="field-label">Rank</span>
-              <Input value={customRank} dataType="number" placeholder="{String(nextRank())}" onInput={(val) => { customRank = val; }} />
+              <Input value={customRank} dataType="number" placeholder={String(nextRank())} onInput={(val) => { customRank = val; }} />
             </div>
             <div>
               <span class="field-label">Threshold</span>
@@ -788,12 +792,6 @@
     color: var(--color-text-muted);
   }
 
-  .btn-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
   :global(.info-banner) {
     padding: var(--space-3) var(--space-4);
     border-radius: var(--radius-md);
@@ -939,18 +937,6 @@
     align-items: flex-end;
     padding-bottom: 1px;
     flex-shrink: 0;
-  }
-
-  .inline-form-action {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-  }
-
-  .inline-form-row {
-    display: flex;
-    gap: var(--space-2);
-    align-items: center;
   }
 
   /* Tier list */

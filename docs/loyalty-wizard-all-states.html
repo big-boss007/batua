@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loyalty Wizard — All States Design</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f0f1f3;
+    color: #1a1a2e;
+    min-height: 100vh;
+  }
+
+  /* ── Design chrome ── */
+  .design-wrapper {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+  .design-title {
+    text-align: center;
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .design-desc {
+    text-align: center;
+    color: #6b7280;
+    font-size: 14px;
+    margin-bottom: 36px;
+  }
+  .state-nav {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 36px;
+    position: sticky;
+    top: 0;
+    background: #f0f1f3;
+    padding: 12px 0;
+    z-index: 10;
+  }
+  .state-tab {
+    padding: 7px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid #d1d5db;
+    background: white;
+    color: #6b7280;
+    transition: all 0.15s;
+  }
+  .state-tab.active { background: #6366f1; color: white; border-color: #6366f1; }
+  .state-tab:hover:not(.active) { background: #f3f4f6; }
+  .state-tab.sep { border: none; background: none; color: #d1d5db; cursor: default; padding: 7px 4px; }
+
+  .state-view { display: none; }
+  .state-view.active { display: block; }
+
+  .state-label {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 16px;
+  }
+  .state-label.fresh { background: #dbeafe; color: #1d4ed8; }
+  .state-label.reconfig { background: #fef3c7; color: #92400e; }
+  .state-label.existing { background: #d1fae5; color: #065f46; }
+
+  /* ── Shared UI ── */
+  .page-sim {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .stepper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 36px;
+  }
+  .step { display: flex; align-items: center; gap: 8px; }
+  .step-dot {
+    width: 34px; height: 34px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 13px;
+    border: 2px solid #d1d5db; color: #9ca3af; background: white;
+  }
+  .step-dot.active { border-color: #6366f1; background: #6366f1; color: white; }
+  .step-dot.done { border-color: #22c55e; background: #22c55e; color: white; }
+  .step-text { font-size: 12px; font-weight: 500; color: #9ca3af; }
+  .step-text.active { color: #1a1a2e; }
+  .step-text.done { color: #22c55e; }
+  .step-line { width: 48px; height: 2px; background: #d1d5db; margin: 0 6px; }
+  .step-line.done { background: #22c55e; }
+
+  .card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+  .card-title { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+  .card-sub { font-size: 13px; color: #6b7280; margin-bottom: 24px; }
+
+  .form-group { margin-bottom: 18px; }
+  .form-label { display: block; font-size: 12px; font-weight: 500; color: #374151; margin-bottom: 5px; }
+  .form-input {
+    width: 100%; padding: 9px 12px; border: 1px solid #d1d5db;
+    border-radius: 7px; font-size: 13px; color: #1a1a2e; outline: none;
+  }
+  .form-input:focus { border-color: #6366f1; }
+  .form-input::placeholder { color: #9ca3af; }
+  .form-select {
+    width: 100%; padding: 9px 12px; border: 1px solid #d1d5db;
+    border-radius: 7px; font-size: 13px; color: #1a1a2e; background: white; outline: none;
+  }
+  .form-hint { font-size: 11px; color: #9ca3af; margin-top: 3px; }
+
+  .btn {
+    padding: 9px 18px; border-radius: 7px; font-size: 13px; font-weight: 500;
+    cursor: pointer; border: none; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn-primary { background: #6366f1; color: white; }
+  .btn-primary:hover { background: #4f46e5; }
+  .btn-secondary { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; }
+  .btn-ghost { background: transparent; color: #6b7280; }
+  .btn-success { background: #22c55e; color: white; }
+  .btn-success:hover { background: #16a34a; }
+  .btn-outline-primary { background: white; color: #6366f1; border: 1px solid #c7d2fe; }
+  .btn-outline-primary:hover { background: #f5f3ff; }
+
+  .btn-row { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; }
+
+  /* presets */
+  .presets-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 24px; }
+  .preset-card {
+    border: 2px dashed #d1d5db; border-radius: 10px; padding: 14px;
+    cursor: pointer; text-align: center; transition: all 0.15s;
+  }
+  .preset-card:hover { border-color: #6366f1; background: #f5f3ff; }
+  .preset-card.added { opacity: 0.5; border-style: solid; cursor: default; }
+  .preset-card.added:hover { border-color: #d1d5db; background: transparent; }
+  .preset-icon { font-size: 24px; margin-bottom: 6px; }
+  .preset-name { font-size: 13px; font-weight: 600; }
+  .preset-detail { font-size: 11px; color: #6b7280; margin-top: 2px; }
+  .preset-added { font-size: 10px; color: #22c55e; font-weight: 500; margin-top: 3px; }
+
+  /* wizard tier list */
+  .wt-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+  .wt-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px;
+  }
+  .wt-left { display: flex; align-items: center; gap: 12px; }
+  .wt-rank {
+    width: 26px; height: 26px; border-radius: 50%; background: #6366f1;
+    color: white; display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600;
+  }
+  .wt-name { font-size: 13px; font-weight: 600; }
+  .wt-right { display: flex; align-items: center; gap: 14px; }
+  .wt-stat { text-align: right; }
+  .wt-stat-label { font-size: 10px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.04em; }
+  .wt-stat-val { font-size: 13px; font-weight: 600; font-family: 'SF Mono', monospace; }
+  .wt-actions { display: flex; gap: 2px; }
+  .icon-btn {
+    width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+    border: none; border-radius: 5px; background: transparent; color: #9ca3af; cursor: pointer;
+  }
+  .icon-btn:hover { background: #f3f4f6; color: #374151; }
+  .icon-btn.danger:hover { background: #fef2f2; color: #dc2626; }
+
+  /* change indicator for reconfig */
+  .wt-item.modified { border-color: #fbbf24; background: #fffbeb; }
+  .wt-item.new-tier { border-color: #86efac; background: #f0fdf4; }
+  .wt-item.removed { border-color: #fca5a5; background: #fef2f2; opacity: 0.6; text-decoration: line-through; }
+  .wt-change-badge {
+    font-size: 9px; font-weight: 600; text-transform: uppercase;
+    padding: 2px 6px; border-radius: 4px; letter-spacing: 0.04em;
+  }
+  .wt-change-badge.modified { background: #fef3c7; color: #92400e; }
+  .wt-change-badge.new { background: #d1fae5; color: #065f46; }
+  .wt-change-badge.removed { background: #fee2e2; color: #991b1b; }
+
+  /* review */
+  .review-section { margin-bottom: 20px; }
+  .review-heading {
+    font-size: 12px; font-weight: 600; color: #6b7280;
+    text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px;
+  }
+  .review-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    padding: 14px; background: #f9fafb; border-radius: 8px; margin-bottom: 20px;
+  }
+  .review-field-label { font-size: 11px; color: #9ca3af; }
+  .review-field-value { font-size: 14px; font-weight: 500; margin-top: 1px; }
+  .review-tier-stack { display: flex; flex-direction: column; }
+  .review-tier {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 16px; background: #f9fafb; border: 1px solid #e5e7eb;
+  }
+  .review-tier:first-child { border-radius: 8px 8px 0 0; }
+  .review-tier:last-child { border-radius: 0 0 8px 8px; }
+  .review-tier:only-child { border-radius: 8px; }
+  .review-tier + .review-tier { border-top: none; }
+  .review-badge {
+    padding: 3px 10px; border-radius: 16px; font-size: 12px; font-weight: 600; white-space: nowrap;
+  }
+  .b-bronze { background: #fef3c7; color: #92400e; }
+  .b-silver { background: #f3f4f6; color: #374151; }
+  .b-gold { background: #fef9c3; color: #854d0e; }
+  .b-platinum { background: #ede9fe; color: #5b21b6; }
+  .b-custom { background: #dbeafe; color: #1d4ed8; }
+  .review-tier-info { flex: 1; display: flex; justify-content: space-between; }
+  .review-tier-detail { font-size: 12px; color: #6b7280; }
+  .review-tier-detail strong { color: #1a1a2e; }
+
+  .info-box {
+    padding: 12px 16px; border-radius: 8px; font-size: 12px; margin-bottom: 16px;
+  }
+  .info-box.green { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+  .info-box.amber { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+
+  /* inline form */
+  .inline-form {
+    display: grid; grid-template-columns: 1fr 70px 100px 100px;
+    gap: 10px; align-items: end; padding: 14px; background: #fafbfc;
+    border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 10px;
+  }
+
+  .or-divider { display: flex; align-items: center; gap: 10px; margin: 16px 0; }
+  .or-divider::before, .or-divider::after { content: ''; flex: 1; height: 1px; background: #e5e7eb; }
+  .or-divider span { font-size: 11px; color: #9ca3af; font-weight: 500; }
+
+  /* ── Existing loyalty page (non-wizard state) ── */
+  .existing-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
+  .existing-header-left h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .existing-header-left p { font-size: 13px; color: #6b7280; }
+  .existing-actions { display: flex; gap: 8px; align-items: center; }
+  .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .section-title { font-size: 16px; font-weight: 600; }
+  .tier-list-card {
+    background: white; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden;
+  }
+  .tier-row-existing {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 18px; border-bottom: 1px solid #e5e7eb;
+  }
+  .tier-row-existing:last-child { border-bottom: none; }
+  .tier-row-l { display: flex; align-items: center; gap: 10px; }
+  .tier-pill {
+    padding: 3px 10px; border-radius: 16px; font-size: 12px; font-weight: 600;
+    background: #f3f4f6; color: #374151;
+  }
+  .tier-mult { font-size: 11px; color: #6b7280; }
+  .tier-row-r { display: flex; align-items: center; gap: 16px; }
+  .tier-stat { text-align: right; }
+  .tier-stat-label { font-size: 10px; color: #9ca3af; text-transform: uppercase; }
+  .tier-stat-val { font-size: 13px; font-weight: 600; font-family: 'SF Mono', monospace; }
+
+  /* diff summary for reconfig review */
+  .diff-summary { margin-bottom: 16px; }
+  .diff-row {
+    display: flex; align-items: center; gap: 10px; padding: 8px 0;
+    font-size: 13px; border-bottom: 1px solid #f3f4f6;
+  }
+  .diff-row:last-child { border-bottom: none; }
+  .diff-icon { width: 20px; text-align: center; font-size: 14px; }
+  .diff-icon.add { color: #22c55e; }
+  .diff-icon.edit { color: #f59e0b; }
+  .diff-icon.del { color: #ef4444; }
+</style>
+</head>
+<body>
+
+<div class="design-wrapper">
+  <h1 class="design-title">Loyalty Wizard — All States</h1>
+  <p class="design-desc">Every screen the merchant sees across fresh setup, existing view, and reconfigure mode</p>
+
+  <div class="state-nav">
+    <button class="state-tab active" onclick="show('fresh-1')">Fresh: Step 1</button>
+    <button class="state-tab" onclick="show('fresh-2')">Fresh: Step 2</button>
+    <button class="state-tab" onclick="show('fresh-3')">Fresh: Step 3</button>
+    <span class="state-tab sep">|</span>
+    <button class="state-tab" onclick="show('existing')">Existing View</button>
+    <span class="state-tab sep">|</span>
+    <button class="state-tab" onclick="show('reconfig-1')">Reconfig: Step 1</button>
+    <button class="state-tab" onclick="show('reconfig-2')">Reconfig: Step 2</button>
+    <button class="state-tab" onclick="show('reconfig-3')">Reconfig: Step 3</button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- FRESH SETUP: STEP 1                                -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div class="state-view active" id="fresh-1">
+    <div class="page-sim">
+      <span class="state-label fresh">Fresh Setup</span>
+
+      <div class="stepper">
+        <div class="step"><div class="step-dot active">1</div><span class="step-text active">Program</span></div>
+        <div class="step-line"></div>
+        <div class="step"><div class="step-dot">2</div><span class="step-text">Tiers</span></div>
+        <div class="step-line"></div>
+        <div class="step"><div class="step-dot">3</div><span class="step-text">Review</span></div>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">Set Up Your Loyalty Program</h2>
+        <p class="card-sub">Give your program a name and choose how customers qualify for tiers</p>
+
+        <div class="form-group">
+          <label class="form-label">Program Name</label>
+          <input class="form-input" type="text" placeholder="e.g. Rewards Club" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Evaluation Criteria</label>
+          <select class="form-select">
+            <option selected>Total Spend</option>
+            <option>Order Count</option>
+            <option>Points Earned</option>
+          </select>
+          <p class="form-hint">Determines how customers progress through tiers</p>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Evaluation Period</label>
+          <select class="form-select">
+            <option selected>Lifetime (no reset)</option>
+            <option>Last 30 days</option>
+            <option>Last 90 days</option>
+            <option>Last 180 days</option>
+            <option>Last 365 days</option>
+          </select>
+          <p class="form-hint">How far back to look when evaluating customer progress</p>
+        </div>
+        <div class="btn-row">
+          <span></span>
+          <button class="btn btn-primary">Next: Add Tiers &rarr;</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- FRESH SETUP: STEP 2                                -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div class="state-view" id="fresh-2">
+    <div class="page-sim">
+      <span class="state-label fresh">Fresh Setup</span>
+
+      <div class="stepper">
+        <div class="step"><div class="step-dot done">&#10003;</div><span class="step-text done">Program</span></div>
+        <div class="step-line done"></div>
+        <div class="step"><div class="step-dot active">2</div><span class="step-text active">Tiers</span></div>
+        <div class="step-line"></div>
+        <div class="step"><div class="step-dot">3</div><span class="step-text">Review</span></div>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">Add Tiers</h2>
+        <p class="card-sub">Quick-add from presets or create custom tiers. You need at least 2 tiers.</p>
+
+        <p class="form-label" style="margin-bottom: 8px;">Quick-add a preset</p>
+        <div class="presets-grid">
+          <div class="preset-card added">
+            <div class="preset-icon">&#x1F944;</div>
+            <div class="preset-name">Bronze</div>
+            <div class="preset-detail" style="text-decoration: line-through;">Threshold: 0 &middot; 1x</div>
+            <div class="preset-added">Added</div>
+          </div>
+          <div class="preset-card added">
+            <div class="preset-icon">&#x1FA99;</div>
+            <div class="preset-name">Silver</div>
+            <div class="preset-detail" style="text-decoration: line-through;">Threshold: 500 &middot; 1.5x</div>
+            <div class="preset-added">Added</div>
+          </div>
+          <div class="preset-card">
+            <div class="preset-icon">&#x1F947;</div>
+            <div class="preset-name">Gold</div>
+            <div class="preset-detail">Threshold: 2,000 &middot; 2x</div>
+          </div>
+          <div class="preset-card">
+            <div class="preset-icon">&#x1F48E;</div>
+            <div class="preset-name">Platinum</div>
+            <div class="preset-detail">Threshold: 5,000 &middot; 3x</div>
+          </div>
+        </div>
+
+        <div class="or-divider"><span>or add custom</span></div>
+
+        <div class="inline-form">
+          <div><label class="form-label">Tier Name</label><input class="form-input" placeholder="e.g. Diamond" /></div>
+          <div><label class="form-label">Rank</label><input class="form-input" type="number" value="3" /></div>
+          <div><label class="form-label">Threshold</label><input class="form-input" type="number" placeholder="10000" /></div>
+          <div>
+            <label class="form-label">Multiplier</label>
+            <div style="display: flex; gap: 6px;">
+              <input class="form-input" type="number" value="1.0" step="0.5" style="width: 60px;" />
+              <button class="btn btn-secondary" style="padding: 9px 10px; white-space: nowrap; font-size: 12px;">+ Add</button>
+            </div>
+          </div>
+        </div>
+
+        <p class="form-label" style="margin: 16px 0 8px;">Your tiers (2 added)</p>
+        <div class="wt-list">
+          <div class="wt-item">
+            <div class="wt-left"><div class="wt-rank">1</div><span class="wt-name">Bronze</span></div>
+            <div class="wt-right">
+              <div class="wt-stat"><div class="wt-stat-label">Threshold</div><div class="wt-stat-val">0</div></div>
+              <div class="wt-stat"><div class="wt-stat-label">Multiplier</div><div class="wt-stat-val">1x</div></div>
+              <div class="wt-actions">
+                <button class="icon-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
+                <button class="icon-btn danger"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button>
+              </div>
+            </div>
+          </div>
+          <div class="wt-item">
+            <div class="wt-left"><div class="wt-rank">2</div><span class="wt-name">Silver</span></div>
+            <div class="wt-right">
+              <div class="wt-stat"><div class="wt-stat-label">Threshold</div><div class="wt-stat-val">500</div></div>
+              <div class="wt-stat"><div class="wt-stat-label">Multiplier</div><div class="wt-stat-val">1.5x</div></div>
+              <div class="wt-actions">
+                <button class="icon-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
+                <button class="icon-btn danger"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-ghost">&larr; Back</button>
+          <button class="btn btn-primary">Next: Review &rarr;</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- FRESH SETUP: STEP 3                                -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div class="state-view" id="fresh-3">
+    <div class="page-sim">
+      <span class="state-label fresh">Fresh Setup</span>
+
+      <div class="stepper">
+        <div class="step"><div class="step-dot done">&#10003;</div><span class="step-text done">Program</span></div>
+        <div class="step-line done"></div>
+        <div class="step"><div class="step-dot done">&#10003;</div><span class="step-text done">Tiers</span></div>
+        <div class="step-line done"></div>
+        <div class="step"><div class="step-dot active">3</div><span class="step-text active">Review</span></div>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">Review & Activate</h2>
+        <p class="card-sub">Review your loyalty program before activating it</p>
+
+        <div class="review-section">
+          <h3 class="review-heading">Program</h3>
+          <div class="review-grid">
+            <div><div class="review-field-label">Program Name</div><div class="review-field-value">Kesar Rewards</div></div>
+            <div><div class="review-field-label">Evaluation Criteria</div><div class="review-field-value">Total Spend</div></div>
+            <div><div class="review-field-label">Evaluation Period</div><div class="review-field-value">Lifetime</div></div>
+            <div><div class="review-field-label">Status</div><div class="review-field-value" style="color: #22c55e;">Active</div></div>
+          </div>
+        </div>
+
+        <div class="review-section">
+          <h3 class="review-heading">Tiers (2)</h3>
+          <div class="review-tier-stack">
+            <div class="review-tier">
+              <span class="review-badge b-bronze">Bronze</span>
+              <div class="review-tier-info">
+                <span class="review-tier-detail">Threshold: <strong>0</strong></span>
+                <span class="review-tier-detail">Multiplier: <strong>1x</strong></span>
+              </div>
+            </div>
+            <div class="review-tier">
+              <span class="review-badge b-silver">Silver</span>
+              <div class="review-tier-info">
+                <span class="review-tier-detail">Threshold: <strong>500</strong></span>
+                <span class="review-tier-detail">Multiplier: <strong>1.5x</strong></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-box green">
+          <strong>What happens next:</strong> Your loyalty program will be created and tiers set up.
+          Customers will be evaluated against these tiers when you run "Evaluate Tiers".
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-ghost">&larr; Back to Tiers</button>
+          <button class="btn btn-success" style="padding: 10px 24px;">Activate Program</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- EXISTING VIEW (program already set up)             -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div class="state-view" id="existing">
+    <div class="page-sim">
+      <span class="state-label existing">Existing Program</span>
+
+      <div class="existing-header">
+        <div class="existing-header-left">
+          <h1>Loyalty Program</h1>
+          <p>Manage your loyalty program, tiers, and customer distribution</p>
+        </div>
+        <div class="existing-actions">
+          <button class="btn btn-outline-primary" onclick="show('reconfig-1')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838.838-2.872a2 2 0 0 1 .506-.855z"/></svg>
+            Reconfigure
+          </button>
+          <button class="btn btn-secondary">Evaluate Tiers</button>
+        </div>
+      </div>
+
+      <!-- Program card -->
+      <div class="card" style="margin-bottom: 20px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px;">
+          <div><div class="review-field-label">Program Name</div><div class="review-field-value">Kesar Rewards</div></div>
+          <div><div class="review-field-label">Evaluation Criteria</div><div class="review-field-value">Total Spend</div></div>
+          <div><div class="review-field-label">Evaluation Period</div><div class="review-field-value">Lifetime</div></div>
+        </div>
+      </div>
+
+      <!-- Tiers section with edit/delete -->
+      <div class="section-header">
+        <h2 class="section-title">Tiers</h2>
+        <button class="btn btn-primary" style="font-size: 12px; padding: 7px 14px;">+ Add Tier</button>
+      </div>
+
+      <div class="tier-list-card">
+        <div class="tier-row-existing">
+          <div class="tier-row-l">
+            <span class="tier-pill" style="background: #fef3c7; color: #92400e;">Bronze 1x</span>
+          </div>
+          <div class="tier-row-r">
+            <div class="tier-stat"><div class="tier-stat-label">Threshold</div><div class="tier-stat-val">0</div></div>
+            <div class="tier-stat"><div class="tier-stat-label">Rank</div><div class="tier-stat-val">1</div></div>
+            <div class="wt-actions">
+              <button class="icon-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
+              <button class="icon-btn danger"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button>
+            </div>
+          </div>
+        </div>
+        <div class="tier-row-existing">
+          <div class="tier-row-l">
+            <span class="tier-pill">Silver 1.5x</span>
+          </div>
+          <div class="tier-row-r">
+            <div class="tier-stat"><div class="tier-stat-label">Threshold</div><div class="tier-stat-val">500</div></div>
+            <div class="tier-stat"><div class="tier-stat-label">Rank</div><div class="tier-stat-val">2</div></div>
+            <div class="wt-actions">
+              <button class="icon-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
+              <button class="icon-btn danger"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button>
+            </div>
+          </div>
+        </div>
+        <div class="tier-row-existing">
+          <div class="tier-row-l">
+            <span class="tier-pill" style="background: #fef9c3; color: #854d0e;">Gold 2x</span>
+          </div>
+          <div class="tier-row-r">
+            <div class="tier-stat"><div class="tier-stat-label">Threshold</div><div class="tier-stat-val">2,000</div></div>
+            <div class="tier-stat"><div class="tier-stat-label">Rank</div><div class="tier-stat-val">3</div></div>
+            <div class="wt-actions">
+              <button class="icon-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
+              <button class="icon-btn danger"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- RECONFIGURE: STEP 1 (pre-filled)                   -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div class="state-view" id="reconfig-1">
+    <div class="page-sim">
+      <span class="state-label reconfig">Reconfigure Mode</span>
+
+      <div class="stepper">
+        <div class="step"><div class="step-dot active">1</div><span class="step-text active">Program</span></div>
+        <div class="step-line"></div>
+        <div class="step"><div class="step-dot">2</div><span class="step-text">Tiers</span></div>
+        <div class="step-line"></div>
+        <div class="step"><div class="step-dot">3</div><span class="step-text">Review</span></div>
+      </div>
+
+      <div class="info-box amber" style="margin-bottom: 20px;">
+        <strong>Reconfigure mode:</strong> Your current program settings are pre-filled below. Make changes and walk through the wizard to update your program. No changes are saved until you confirm on the final step.
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">Update Program Settings</h2>
+        <p class="card-sub">Modify your program name, criteria, or evaluation period</p>
+
+        <div class="form-group">
+          <label class="form-label">Program Name</label>
+          <input class="form-input" type="text" value="Kesar Rewards" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Evaluation Criteria</label>
+          <select class="form-select">
+            <option selected>Total Spend</option>
+            <option>Order Count</option>
+            <option>Points Earned</option>
+          </select>
+          <p class="form-hint">Determines how customers progress through tiers</p>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Evaluation Period</label>
+          <select class="form-select">
+            <option selected>Lifetime (no reset)</option>
+            <option>Last 30 days</option>
+            <option>Last 90 days</option>
+            <option>Last 180 days</option>
+            <option>Last 365 days</option>
+          </select>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-ghost">&larr; Cancel</button>
+          <button class="btn btn-primary">Next: Edit Tiers &rarr;</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- RECONFIGURE: STEP 2 (existing tiers + changes)     -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div class="state-view" id="reconfig-2">
+    <div class="page-sim">
+      <span class="state-label reconfig">Reconfigure Mode</span>
+
+      <div class="stepper">
+        <div class="step"><div class="step-dot done">&#10003;</div><span class="step-text done">Program</span></div>
+        <div class="step-line done"></div>
+        <div class="step"><div class="step-dot active">2</div><span class="step-text active">Tiers</span></div>
+        <div class="step-line"></div>
+        <div class="step"><div class="step-dot">3</div><span class="step-text">Review</span></div>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">Edit Tiers</h2>
+        <p class="card-sub">Your existing tiers are shown below. Edit, remove, or add new ones.</p>
+
+        <p class="form-label" style="margin-bottom: 8px;">Quick-add a preset</p>
+        <div class="presets-grid">
+          <div class="preset-card added">
+            <div class="preset-icon">&#x1F944;</div>
+            <div class="preset-name">Bronze</div>
+            <div class="preset-detail" style="text-decoration: line-through;">Threshold: 0 &middot; 1x</div>
+            <div class="preset-added">Exists</div>
+          </div>
+          <div class="preset-card added">
+            <div class="preset-icon">&#x1FA99;</div>
+            <div class="preset-name">Silver</div>
+            <div class="preset-detail" style="text-decoration: line-through;">Threshold: 500 &middot; 1.5x</div>
+            <div class="preset-added">Exists</div>
+          </div>
+          <div class="preset-card added">
+            <div class="preset-icon">&#x1F947;</div>
+            <div class="preset-name">Gold</div>
+            <div class="preset-detail" style="text-decoration: line-through;">Threshold: 2,000 &middot; 2x</div>
+            <div class="preset-added">Exists</div>
+          </div>
+          <div class="preset-card">
+            <div class="preset-icon">&#x1F48E;</div>
+            <div class="preset-name">Platinum</div>
+            <div class="preset-detail">Threshold: 5,000 &middot; 3x</div>
+          </div>
+        </div>
+
+        <div class="or-divider"><span>or add custom</span></div>
+
+        <div class="inline-form">
+          <div><label class="form-label">Tier Name</label><input class="form-input" placeholder="e.g. Diamond" /></div>
+          <div><label class="form-label">Rank</label><input class="form-input" type="number" value="5" /></div>
+          <div><label class="form-label">Threshold</label><input class="form-input" type="number" placeholder="10000" /></div>
+          <div>
+            <label class="form-label">Multiplier</label>
+            <div style="display: flex; gap: 6px;">
+              <input class="form-input" type="number" value="1.0" step="0.5" style="width: 60px;" />
+              <button class="btn btn-secondary" style="padding: 9px 10px; font-size: 12px;">+ Add</button>
+            </div>
+          </div>
+        </div>
+
+        <p class="form-label" style="margin: 16px 0 8px;">Your tiers (3 existing + 1 new)</p>
+        <div class="wt-list">
+          <div class="wt-item">
+            <div class="wt-left"><div class="wt-rank">1</div><span class="wt-name">Bronze</span></div>
+            <div class="wt-right">
+              <div class="wt-stat"><div class="wt-stat-label">Threshold</div><div class="wt-stat-val">0</div></div>
+              <div class="wt-stat"><div class="wt-stat-label">Multiplier</div><div class="wt-stat-val">1x</div></div>
+              <div class="wt-actions">
+                <button class="icon-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
+                <button class="icon-btn danger"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button>
+              </div>
+            </div>
+          </div>
+          <div class="wt-item modified">
+            <div class="wt-left">
+              <div class="wt-rank">2</div>
+              <span class="wt-name">Silver</span>
+              <span class="wt-change-badge modified">Modified</span>
+            </div>
+            <div class="wt-right">
+              <div class="wt-stat"><div class="wt-stat-label">Threshold</div><div class="wt-stat-val" style="color: #b45309;">500 &rarr; 750</div></div>
+              <div class="wt-stat"><div class="wt-stat-label">Multiplier</div><div class="wt-stat-val">1.5x</div></div>
+              <div class="wt-actions">
+                <button class="icon-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
+                <button class="icon-btn danger"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button>
+              </div>
+            </div>
+          </div>
+          <div class="wt-item">
+            <div class="wt-left"><div class="wt-rank">3</div><span class="wt-name">Gold</span></div>
+            <div class="wt-right">
+              <div class="wt-stat"><div class="wt-stat-label">Threshold</div><div class="wt-stat-val">2,000</div></div>
+              <div class="wt-stat"><div class="wt-stat-label">Multiplier</div><div class="wt-stat-val">2x</div></div>
+              <div class="wt-actions">
+                <button class="icon-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
+                <button class="icon-btn danger"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button>
+              </div>
+            </div>
+          </div>
+          <div class="wt-item new-tier">
+            <div class="wt-left">
+              <div class="wt-rank" style="background: #22c55e;">4</div>
+              <span class="wt-name">Platinum</span>
+              <span class="wt-change-badge new">New</span>
+            </div>
+            <div class="wt-right">
+              <div class="wt-stat"><div class="wt-stat-label">Threshold</div><div class="wt-stat-val">5,000</div></div>
+              <div class="wt-stat"><div class="wt-stat-label">Multiplier</div><div class="wt-stat-val">3x</div></div>
+              <div class="wt-actions">
+                <button class="icon-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
+                <button class="icon-btn danger"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-ghost">&larr; Back</button>
+          <button class="btn btn-primary">Next: Review Changes &rarr;</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- RECONFIGURE: STEP 3 (diff-aware review)            -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div class="state-view" id="reconfig-3">
+    <div class="page-sim">
+      <span class="state-label reconfig">Reconfigure Mode</span>
+
+      <div class="stepper">
+        <div class="step"><div class="step-dot done">&#10003;</div><span class="step-text done">Program</span></div>
+        <div class="step-line done"></div>
+        <div class="step"><div class="step-dot done">&#10003;</div><span class="step-text done">Tiers</span></div>
+        <div class="step-line done"></div>
+        <div class="step"><div class="step-dot active">3</div><span class="step-text active">Review</span></div>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">Review Changes</h2>
+        <p class="card-sub">Here's what will change when you save</p>
+
+        <!-- Change summary -->
+        <div class="review-section">
+          <h3 class="review-heading">Changes Summary</h3>
+          <div class="diff-summary" style="background: #f9fafb; border-radius: 8px; padding: 14px;">
+            <div class="diff-row">
+              <span class="diff-icon edit">&#9998;</span>
+              <span><strong>Silver</strong> tier threshold changed from 500 &rarr; 750</span>
+            </div>
+            <div class="diff-row">
+              <span class="diff-icon add">+</span>
+              <span><strong>Platinum</strong> tier added (rank 4, threshold 5,000, 3x multiplier)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Final state -->
+        <div class="review-section">
+          <h3 class="review-heading">Final Tier Structure (4 tiers)</h3>
+          <div class="review-tier-stack">
+            <div class="review-tier">
+              <span class="review-badge b-bronze">Bronze</span>
+              <div class="review-tier-info">
+                <span class="review-tier-detail">Threshold: <strong>0</strong></span>
+                <span class="review-tier-detail">Multiplier: <strong>1x</strong></span>
+              </div>
+            </div>
+            <div class="review-tier" style="background: #fffbeb;">
+              <span class="review-badge b-silver">Silver</span>
+              <div class="review-tier-info">
+                <span class="review-tier-detail">Threshold: <strong style="color: #b45309;">750</strong> <span style="font-size: 11px; color: #9ca3af; text-decoration: line-through;">500</span></span>
+                <span class="review-tier-detail">Multiplier: <strong>1.5x</strong></span>
+              </div>
+              <span class="wt-change-badge modified">Modified</span>
+            </div>
+            <div class="review-tier">
+              <span class="review-badge b-gold">Gold</span>
+              <div class="review-tier-info">
+                <span class="review-tier-detail">Threshold: <strong>2,000</strong></span>
+                <span class="review-tier-detail">Multiplier: <strong>2x</strong></span>
+              </div>
+            </div>
+            <div class="review-tier" style="background: #f0fdf4;">
+              <span class="review-badge b-platinum">Platinum</span>
+              <div class="review-tier-info">
+                <span class="review-tier-detail">Threshold: <strong>5,000</strong></span>
+                <span class="review-tier-detail">Multiplier: <strong>3x</strong></span>
+              </div>
+              <span class="wt-change-badge new">New</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-box amber">
+          <strong>Note:</strong> Existing customers will keep their current tier until the next evaluation.
+          Run "Evaluate Tiers" after saving to reassign customers based on the new thresholds.
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-ghost">&larr; Back to Tiers</button>
+          <button class="btn btn-success" style="padding: 10px 24px;">Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function show(id) {
+    document.querySelectorAll('.state-view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.state-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    const tabs = document.querySelectorAll('.state-tab:not(.sep)');
+    const map = ['fresh-1','fresh-2','fresh-3','existing','reconfig-1','reconfig-2','reconfig-3'];
+    const idx = map.indexOf(id);
+    if (idx >= 0) tabs[idx].classList.add('active');
+  }
+</script>
+
+</body>
+</html>

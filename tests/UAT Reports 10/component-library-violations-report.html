@@ -1,0 +1,1469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Component Library Violations Report</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f3f4f6;
+    color: #1f2937;
+    line-height: 1.6;
+    padding: 2rem;
+  }
+
+  .container { max-width: 1200px; margin: 0 auto; }
+
+  h1 { font-size: 1.75rem; font-weight: 700; color: #111827; }
+  h2 { font-size: 1.35rem; font-weight: 600; color: #111827; margin-bottom: 1rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem; }
+
+  .header {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .header-meta { font-size: 0.875rem; color: #6b7280; }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .summary-item {
+    background: #fff;
+    border-radius: 10px;
+    padding: 1.25rem;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .summary-item .value { font-size: 2rem; font-weight: 700; line-height: 1.2; }
+  .summary-item .label { font-size: 0.75rem; color: #6b7280; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.25rem; }
+  .summary-item.total .value { color: #2563eb; }
+  .summary-item.high .value { color: #dc2626; }
+  .summary-item.medium .value { color: #d97706; }
+  .summary-item.low .value { color: #059669; }
+  .summary-item.files .value { color: #7c3aed; }
+
+  .section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  .violation-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .violation-card.high { border-left: 4px solid #dc2626; }
+  .violation-card.medium { border-left: 4px solid #d97706; }
+  .violation-card.low { border-left: 4px solid #059669; }
+
+  .violation-card h3 { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+
+  .badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .badge-high { background: #fee2e2; color: #991b1b; }
+  .badge-medium { background: #fef3c7; color: #92400e; }
+  .badge-low { background: #ecfdf5; color: #065f46; }
+  .badge-component { background: #ede9fe; color: #5b21b6; }
+
+  .file-path {
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    font-size: 0.8rem;
+    color: #6366f1;
+    background: #f5f3ff;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    word-break: break-all;
+  }
+
+  .code-block {
+    background: #1e1e2e;
+    color: #cdd6f4;
+    border-radius: 6px;
+    padding: 1rem;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    font-size: 0.8rem;
+    overflow-x: auto;
+    margin: 0.75rem 0;
+    line-height: 1.5;
+    white-space: pre;
+  }
+  .code-block .keyword { color: #cba6f7; }
+  .code-block .string { color: #a6e3a1; }
+  .code-block .tag { color: #89b4fa; }
+  .code-block .attr { color: #f9e2af; }
+  .code-block .comment { color: #6c7086; }
+
+  .recommendation {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    margin-top: 0.75rem;
+  }
+  .recommendation strong { color: #1e40af; }
+
+  .violation-meta {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin: 0.5rem 0;
+    font-size: 0.85rem;
+    color: #6b7280;
+  }
+  .violation-meta span { display: flex; align-items: center; gap: 0.25rem; }
+
+  .overview-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    margin-top: 1rem;
+  }
+  .overview-table th {
+    text-align: left;
+    padding: 0.6rem 0.8rem;
+    background: #f9fafb;
+    border-bottom: 2px solid #e5e7eb;
+    font-weight: 600;
+  }
+  .overview-table td {
+    padding: 0.6rem 0.8rem;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: top;
+  }
+  .overview-table tr:hover td { background: #f9fafb; }
+
+  .category-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+  .category-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+  }
+  .category-icon.button { background: #dbeafe; }
+  .category-icon.input { background: #fce7f3; }
+  .category-icon.modal { background: #ede9fe; }
+  .category-icon.pill { background: #d1fae5; }
+  .category-icon.table { background: #fef3c7; }
+  .category-icon.progress { background: #cffafe; }
+  .category-icon.loader { background: #fee2e2; }
+  .category-icon.avatar { background: #e0e7ff; }
+  .category-icon.pagination { background: #fce7f3; }
+  .category-icon.banner { background: #fef9c3; }
+  .category-icon.toast { background: #ffe4e6; }
+
+  .env-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+  .env-table td {
+    padding: 0.4rem 0.8rem;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .env-table td:first-child {
+    font-weight: 600;
+    color: #374151;
+    width: 200px;
+  }
+
+  .toc {
+    column-count: 2;
+    column-gap: 2rem;
+    font-size: 0.9rem;
+  }
+  .toc a { color: #4f46e5; text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .toc li { margin-bottom: 0.35rem; list-style: none; }
+  .toc .count { color: #9ca3af; font-size: 0.8rem; }
+
+  @media print {
+    body { background: #fff; padding: 1rem; }
+    .section, .header, .summary-item { box-shadow: none; border: 1px solid #e5e7eb; }
+    .violation-card { break-inside: avoid; }
+  }
+  @media (max-width: 768px) {
+    .toc { column-count: 1; }
+    body { padding: 1rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div>
+      <h1>Component Library Violations Report</h1>
+      <p class="header-meta">Batua Project &mdash; 27 March 2026 &mdash; Audit of <code>@juspay/svelte-ui-components</code> usage compliance</p>
+    </div>
+    <div class="header-meta">
+      Generated by Claude Code Audit Agent
+    </div>
+  </div>
+
+  <!-- SUMMARY GRID -->
+  <div class="summary-grid">
+    <div class="summary-item total"><span class="value">48</span><span class="label">Total Violations</span></div>
+    <div class="summary-item high"><span class="value">13</span><span class="label">High Severity</span></div>
+    <div class="summary-item medium"><span class="value">24</span><span class="label">Medium Severity</span></div>
+    <div class="summary-item low"><span class="value">11</span><span class="label">Low Severity</span></div>
+    <div class="summary-item files"><span class="value">22</span><span class="label">Files Affected</span></div>
+  </div>
+
+  <!-- GUIDELINE REFERENCE -->
+  <div class="section">
+    <h2>Guideline Reference</h2>
+    <p style="margin-bottom: 0.75rem;">From <code>CLAUDE.md</code> &mdash; Component Library section:</p>
+    <div class="code-block"><span class="comment">## Component Library &mdash; MANDATORY CHECK</span>
+
+<span class="keyword">BLOCKING:</span> Before writing ANY UI element, call <span class="string">list_components</span> from Svelte UI Components MCP.
+If the library has it (Button, Input, Select, Toggle, Pill, Progress, Table, Modal,
+Tabs, Pagination, Avatar, Tooltip, etc.), <span class="keyword">use it. Do not build custom versions.</span></div>
+    <p style="font-size: 0.9rem; color: #6b7280; margin-top: 0.5rem;">The <code>@juspay/svelte-ui-components</code> library provides <strong>55 components</strong>. This report identifies all places in the codebase where custom HTML/CSS was used instead of the available library component.</p>
+  </div>
+
+  <!-- TABLE OF CONTENTS -->
+  <div class="section">
+    <h2>Violation Categories</h2>
+    <ul class="toc">
+      <li><a href="#buttons">1. Custom Buttons</a> <span class="count">(11 violations)</span></li>
+      <li><a href="#modals">2. Custom Modals</a> <span class="count">(8 violations)</span></li>
+      <li><a href="#pills">3. Custom Badges / Pills</a> <span class="count">(7 violations)</span></li>
+      <li><a href="#inputs">4. Custom Inputs</a> <span class="count">(5 violations)</span></li>
+      <li><a href="#selects">5. Custom Selects</a> <span class="count">(4 violations)</span></li>
+      <li><a href="#progress">6. Custom Progress Bars</a> <span class="count">(3 violations)</span></li>
+      <li><a href="#loaders">7. Custom Loaders / Spinners</a> <span class="count">(3 violations)</span></li>
+      <li><a href="#banners">8. Custom Banners</a> <span class="count">(3 violations)</span></li>
+      <li><a href="#radios">9. Custom Radio Buttons</a> <span class="count">(1 violation)</span></li>
+      <li><a href="#avatars">10. Custom Avatars</a> <span class="count">(1 violation)</span></li>
+      <li><a href="#pagination">11. Custom Pagination</a> <span class="count">(1 violation)</span></li>
+      <li><a href="#toast">12. Missing Toast Renderer</a> <span class="count">(1 violation)</span></li>
+    </ul>
+  </div>
+
+  <!-- OVERVIEW TABLE -->
+  <div class="section">
+    <h2>File-Level Overview</h2>
+    <table class="overview-table">
+      <thead>
+        <tr><th>File</th><th>Violation Types</th><th>Count</th><th>Severity</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>routes/admin/memberships/+page.svelte</code></td>
+          <td>Modal, Pagination, Progress, Pill, Input, Select</td>
+          <td>6</td>
+          <td><span class="badge badge-high">HIGH</span></td>
+        </tr>
+        <tr>
+          <td><code>modules/rules/ui/RuleForm.svelte</code></td>
+          <td>Input (9 fields), Select (3 fields)</td>
+          <td>5</td>
+          <td><span class="badge badge-high">HIGH</span></td>
+        </tr>
+        <tr>
+          <td><code>routes/admin/gift-cards/+page.svelte</code></td>
+          <td>Modal</td>
+          <td>1</td>
+          <td><span class="badge badge-high">HIGH</span></td>
+        </tr>
+        <tr>
+          <td><code>routes/admin/customers/+page.svelte</code></td>
+          <td>Modal</td>
+          <td>1</td>
+          <td><span class="badge badge-high">HIGH</span></td>
+        </tr>
+        <tr>
+          <td><code>routes/admin/transactions/+page.svelte</code></td>
+          <td>Modal</td>
+          <td>1</td>
+          <td><span class="badge badge-high">HIGH</span></td>
+        </tr>
+        <tr>
+          <td><code>routes/admin/rules/+page.svelte</code></td>
+          <td>Modal, Pill</td>
+          <td>2</td>
+          <td><span class="badge badge-high">HIGH</span></td>
+        </tr>
+        <tr>
+          <td><code>modules/rules/ui/CampaignDetailModal.svelte</code></td>
+          <td>Modal, Button</td>
+          <td>2</td>
+          <td><span class="badge badge-high">HIGH</span></td>
+        </tr>
+        <tr>
+          <td><code>modules/rules/ui/StackingConfigModal.svelte</code></td>
+          <td>Modal, Button, Radio</td>
+          <td>3</td>
+          <td><span class="badge badge-high">HIGH</span></td>
+        </tr>
+        <tr>
+          <td><code>modules/rules/ui/CampaignForm.svelte</code></td>
+          <td>Input, Select</td>
+          <td>2</td>
+          <td><span class="badge badge-medium">MED</span></td>
+        </tr>
+        <tr>
+          <td><code>modules/rules/ui/FestiveTemplateGrid.svelte</code></td>
+          <td>Button</td>
+          <td>1</td>
+          <td><span class="badge badge-low">LOW</span></td>
+        </tr>
+        <tr>
+          <td><code>modules/gift-cards/ui/GiftCardConfirmation.svelte</code></td>
+          <td>Modal</td>
+          <td>1</td>
+          <td><span class="badge badge-high">HIGH</span></td>
+        </tr>
+        <tr>
+          <td><code>modules/gift-cards/ui/IssueGiftCardForm.svelte</code></td>
+          <td>Input (date)</td>
+          <td>1</td>
+          <td><span class="badge badge-medium">MED</span></td>
+        </tr>
+        <tr>
+          <td><code>modules/referrals/ui/ReferralCodesList.svelte</code></td>
+          <td>Table, Pill</td>
+          <td>2</td>
+          <td><span class="badge badge-medium">MED</span></td>
+        </tr>
+        <tr>
+          <td><code>modules/referrals/ui/ConversionsList.svelte</code></td>
+          <td>Table</td>
+          <td>1</td>
+          <td><span class="badge badge-medium">MED</span></td>
+        </tr>
+        <tr>
+          <td><code>routes/admin/referrals/+page.svelte</code></td>
+          <td>Pill, Radio</td>
+          <td>2</td>
+          <td><span class="badge badge-medium">MED</span></td>
+        </tr>
+        <tr>
+          <td><code>routes/admin/campaigns/+page.svelte</code></td>
+          <td>Button</td>
+          <td>1</td>
+          <td><span class="badge badge-medium">MED</span></td>
+        </tr>
+        <tr>
+          <td><code>routes/admin/notifications/+page.svelte</code></td>
+          <td>Button</td>
+          <td>1</td>
+          <td><span class="badge badge-medium">MED</span></td>
+        </tr>
+        <tr>
+          <td><code>routes/admin/settings/+page.svelte</code></td>
+          <td>Button</td>
+          <td>1</td>
+          <td><span class="badge badge-low">LOW</span></td>
+        </tr>
+        <tr>
+          <td><code>modules/memberships/ui/AssignForm.svelte</code></td>
+          <td>Select, Loader, Shimmer, Modal</td>
+          <td>4</td>
+          <td><span class="badge badge-high">HIGH</span></td>
+        </tr>
+        <tr>
+          <td><code>modules/customers/ui/CustomerSearch.svelte</code></td>
+          <td>Loader</td>
+          <td>1</td>
+          <td><span class="badge badge-low">LOW</span></td>
+        </tr>
+        <tr>
+          <td><code>modules/customers/ui/CustomerDetail.svelte</code></td>
+          <td>Progress</td>
+          <td>1</td>
+          <td><span class="badge badge-medium">MED</span></td>
+        </tr>
+        <tr>
+          <td><code>modules/storefront/ui/ProfileBar.svelte</code></td>
+          <td>Avatar, Button</td>
+          <td>2</td>
+          <td><span class="badge badge-medium">MED</span></td>
+        </tr>
+        <tr>
+          <td><code>modules/storefront/ui/TierCard.svelte</code></td>
+          <td>Progress</td>
+          <td>1</td>
+          <td><span class="badge badge-medium">MED</span></td>
+        </tr>
+        <tr>
+          <td><code>modules/storefront/ui/GiftCardStatus.svelte</code></td>
+          <td>Button</td>
+          <td>1</td>
+          <td><span class="badge badge-medium">MED</span></td>
+        </tr>
+        <tr>
+          <td><code>modules/storefront/ui/CampaignBanner.svelte</code></td>
+          <td>Banner</td>
+          <td>1</td>
+          <td><span class="badge badge-low">LOW</span></td>
+        </tr>
+        <tr>
+          <td><code>modules/rules/ui/EarnFormulaBanner.svelte</code></td>
+          <td>Banner</td>
+          <td>1</td>
+          <td><span class="badge badge-low">LOW</span></td>
+        </tr>
+        <tr>
+          <td><code>modules/customers/ui/TierWizard.svelte</code></td>
+          <td>Banner</td>
+          <td>1</td>
+          <td><span class="badge badge-low">LOW</span></td>
+        </tr>
+        <tr>
+          <td><code>modules/admin/ui/Sidebar.svelte</code></td>
+          <td>Button</td>
+          <td>1</td>
+          <td><span class="badge badge-low">LOW</span></td>
+        </tr>
+        <tr>
+          <td><code>modules/platform/ui/PlatformSidebar.svelte</code></td>
+          <td>Button</td>
+          <td>1</td>
+          <td><span class="badge badge-low">LOW</span></td>
+        </tr>
+        <tr>
+          <td><code>routes/s/[slug]/gift-cards/check/+page.svelte</code></td>
+          <td>Button</td>
+          <td>1</td>
+          <td><span class="badge badge-low">LOW</span></td>
+        </tr>
+        <tr>
+          <td><code>routes/admin/setup/+page.svelte</code></td>
+          <td>Pill</td>
+          <td>1</td>
+          <td><span class="badge badge-medium">MED</span></td>
+        </tr>
+        <tr>
+          <td><code>modules/foundation/store.ts</code></td>
+          <td>Toast (missing renderer)</td>
+          <td>1</td>
+          <td><span class="badge badge-high">HIGH</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- =============== CATEGORY 1: BUTTONS =============== -->
+  <div class="section" id="buttons">
+    <div class="category-header">
+      <div class="category-icon button">&#128998;</div>
+      <div>
+        <h2 style="border: none; margin: 0; padding: 0;">1. Custom Buttons (11 violations)</h2>
+        <p style="font-size: 0.85rem; color: #6b7280;">Should use <code>Button</code> from @juspay/svelte-ui-components</p>
+      </div>
+    </div>
+
+    <div class="violation-card medium">
+      <h3>
+        <span class="badge badge-medium">MEDIUM</span>
+        Custom action buttons with .btn classes
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">routes/admin/campaigns/+page.svelte:168-170</span>
+      </div>
+      <div class="code-block">&lt;<span class="tag">button</span> <span class="attr">class</span>=<span class="string">"btn btn-secondary btn-sm"</span>&gt;Settings&lt;/<span class="tag">button</span>&gt;
+&lt;<span class="tag">button</span> <span class="attr">class</span>=<span class="string">"btn btn-primary btn-sm"</span>&gt;+ Create Campaign&lt;/<span class="tag">button</span>&gt;</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Replace with <code>&lt;Button&gt;</code> component. Use the <code>btn-primary</code> / <code>btn-secondary</code> global variant classes which are already defined in <code>app.css</code>.
+      </div>
+    </div>
+
+    <div class="violation-card medium">
+      <h3>
+        <span class="badge badge-medium">MEDIUM</span>
+        Custom modal close and deactivate buttons
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">modules/rules/ui/CampaignDetailModal.svelte:66, 136</span>
+      </div>
+      <div class="code-block">&lt;<span class="tag">button</span> <span class="attr">class</span>=<span class="string">"modal-close"</span>&gt;&amp;times;&lt;/<span class="tag">button</span>&gt;
+&lt;<span class="tag">button</span> <span class="attr">class</span>=<span class="string">"btn-deactivate"</span>&gt;Deactivate&lt;/<span class="tag">button</span>&gt;</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Use <code>&lt;Button&gt;</code> with <code>btn-danger</code> class for the deactivate action. Modal close buttons can be handled by the Modal component's built-in close mechanism.
+      </div>
+    </div>
+
+    <div class="violation-card medium">
+      <h3>
+        <span class="badge badge-medium">MEDIUM</span>
+        Custom stacking option and action buttons
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">modules/rules/ui/StackingConfigModal.svelte:72-121</span>
+      </div>
+      <div class="code-block">&lt;<span class="tag">button</span> <span class="attr">class</span>=<span class="string">"stacking-option"</span>&gt;...&lt;/<span class="tag">button</span>&gt;
+&lt;<span class="tag">button</span> <span class="attr">class</span>=<span class="string">"btn-cancel"</span>&gt;Cancel&lt;/<span class="tag">button</span>&gt;
+&lt;<span class="tag">button</span> <span class="attr">class</span>=<span class="string">"btn-save"</span>&gt;Save&lt;/<span class="tag">button</span>&gt;</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Use <code>&lt;Button&gt;</code> with <code>btn-ghost</code> for cancel, <code>btn-primary</code> for save. Stacking options should use <code>Choicebox</code> component for radio-like selection.
+      </div>
+    </div>
+
+    <div class="violation-card low">
+      <h3>
+        <span class="badge badge-low">LOW</span>
+        Custom template card buttons
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">modules/rules/ui/FestiveTemplateGrid.svelte:32</span>
+      </div>
+      <div class="code-block">&lt;<span class="tag">button</span> <span class="attr">class</span>=<span class="string">"template-card"</span>&gt;...&lt;/<span class="tag">button</span>&gt;</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> These are card-shaped clickable areas. Consider wrapping in a semantic button or using <code>Choicebox</code> for template selection grids.
+      </div>
+    </div>
+
+    <div class="violation-card medium">
+      <h3>
+        <span class="badge badge-medium">MEDIUM</span>
+        Custom notification template selector
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">routes/admin/notifications/+page.svelte:98-108</span>
+      </div>
+      <div class="code-block">&lt;<span class="tag">button</span> <span class="attr">class</span>=<span class="string">"template-item"</span>&gt;...&lt;/<span class="tag">button</span>&gt;</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Use <code>Choicebox</code> for selection UI or <code>ListItem</code> for list-based selection patterns.
+      </div>
+    </div>
+
+    <div class="violation-card low">
+      <h3>
+        <span class="badge badge-low">LOW</span>
+        Custom icon buttons for copy and open
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">routes/admin/settings/+page.svelte:246-263</span>
+      </div>
+      <div class="code-block">&lt;<span class="tag">button</span> <span class="attr">class</span>=<span class="string">"icon-btn"</span>&gt;<span class="comment">&lt;!-- SVG icon --&gt;</span>&lt;/<span class="tag">button</span>&gt;
+&lt;<span class="tag">button</span> <span class="attr">class</span>=<span class="string">"icon-btn copied"</span>&gt;<span class="comment">&lt;!-- SVG icon --&gt;</span>&lt;/<span class="tag">button</span>&gt;</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Use <code>&lt;Button&gt;</code> with icon snippet. The Button component supports icon-only rendering via its icon slot.
+      </div>
+    </div>
+
+    <div class="violation-card medium">
+      <h3>
+        <span class="badge badge-medium">MEDIUM</span>
+        Custom claim and done buttons (storefront)
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">modules/storefront/ui/GiftCardStatus.svelte:75</span>
+      </div>
+      <div class="code-block">&lt;<span class="tag">button</span> <span class="attr">class</span>=<span class="string">"claim-btn"</span>&gt;Claim Gift Card&lt;/<span class="tag">button</span>&gt;
+&lt;<span class="tag">button</span> <span class="attr">class</span>=<span class="string">"done-btn"</span>&gt;Done&lt;/<span class="tag">button</span>&gt;</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Use <code>&lt;Button&gt;</code> with <code>btn-primary</code> for claim action. Note: storefront uses hardcoded hex colors, so Button CSS variables will need storefront-specific overrides.
+      </div>
+    </div>
+
+    <div class="violation-card low">
+      <h3>
+        <span class="badge badge-low">LOW</span>
+        Custom switch button (storefront)
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">modules/storefront/ui/ProfileBar.svelte:41</span>
+      </div>
+      <div class="code-block">&lt;<span class="tag">button</span> <span class="attr">class</span>=<span class="string">"switch-btn"</span>&gt;Switch&lt;/<span class="tag">button</span>&gt;</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Use <code>&lt;Button&gt;</code> with <code>btn-ghost</code> styling.
+      </div>
+    </div>
+
+    <div class="violation-card low">
+      <h3>
+        <span class="badge badge-low">LOW</span>
+        Custom sidebar toggle buttons
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">modules/admin/ui/Sidebar.svelte:52-87</span>
+        <span class="file-path">modules/platform/ui/PlatformSidebar.svelte:37</span>
+      </div>
+      <div class="code-block">&lt;<span class="tag">button</span> <span class="attr">class</span>=<span class="string">"toggle-btn"</span>&gt;<span class="comment">&lt;!-- SVG --&gt;</span>&lt;/<span class="tag">button</span>&gt;
+&lt;<span class="tag">button</span> <span class="attr">class</span>=<span class="string">"nav-item"</span>&gt;...&lt;/<span class="tag">button</span>&gt;
+&lt;<span class="tag">button</span> <span class="attr">class</span>=<span class="string">"nav-parent"</span>&gt;...&lt;/<span class="tag">button</span>&gt;</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Sidebar navigation buttons are specialized enough that custom styling may be justified here. Consider wrapping the toggle in <code>&lt;Button&gt;</code> for consistency, but nav items can remain custom.
+      </div>
+    </div>
+
+    <div class="violation-card low">
+      <h3>
+        <span class="badge badge-low">LOW</span>
+        Custom "Check another card" button
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">routes/s/[slug]/gift-cards/check/+page.svelte:118</span>
+      </div>
+      <div class="code-block"><span class="comment">// Button IS imported but not used for this element:</span>
+&lt;<span class="tag">button</span> <span class="attr">class</span>=<span class="string">"check-another"</span>&gt;Check another card&lt;/<span class="tag">button</span>&gt;</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> The file already imports <code>Button</code> but uses a custom element. Replace with <code>&lt;Button&gt;</code> to maintain consistency.
+      </div>
+    </div>
+  </div>
+
+  <!-- =============== CATEGORY 2: MODALS =============== -->
+  <div class="section" id="modals">
+    <div class="category-header">
+      <div class="category-icon modal">&#128999;</div>
+      <div>
+        <h2 style="border: none; margin: 0; padding: 0;">2. Custom Modals (8 violations)</h2>
+        <p style="font-size: 0.85rem; color: #6b7280;">Should use <code>Modal</code> from @juspay/svelte-ui-components</p>
+      </div>
+    </div>
+
+    <div class="violation-card high">
+      <h3>
+        <span class="badge badge-high">HIGH</span>
+        Gift Card detail modal
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">routes/admin/gift-cards/+page.svelte:234-244</span>
+      </div>
+      <div class="code-block">&lt;<span class="tag">div</span> <span class="attr">class</span>=<span class="string">"modal-overlay"</span> <span class="attr">onclick</span>={handleCloseDetail}&gt;
+  &lt;<span class="tag">div</span> <span class="attr">class</span>=<span class="string">"modal-card"</span> <span class="attr">role</span>=<span class="string">"dialog"</span>&gt;
+    &lt;<span class="tag">div</span> <span class="attr">class</span>=<span class="string">"modal-header"</span>&gt;
+      &lt;<span class="tag">h3</span>&gt;Gift Card Detail&lt;/<span class="tag">h3</span>&gt;
+      &lt;<span class="tag">button</span> <span class="attr">class</span>=<span class="string">"modal-close"</span>&gt;&amp;times;&lt;/<span class="tag">button</span>&gt;
+    &lt;/<span class="tag">div</span>&gt;
+    &lt;<span class="tag">div</span> <span class="attr">class</span>=<span class="string">"modal-body"</span>&gt;...&lt;/<span class="tag">div</span>&gt;
+  &lt;/<span class="tag">div</span>&gt;
+&lt;/<span class="tag">div</span>&gt;</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Replace with <code>&lt;Modal&gt;</code>. The library Modal handles overlay click-to-dismiss, Escape key, body scroll lock, and transition animations automatically. Eliminates ~100 lines of custom CSS.
+      </div>
+    </div>
+
+    <div class="violation-card high">
+      <h3>
+        <span class="badge badge-high">HIGH</span>
+        Memberships detail modal with action panel
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">routes/admin/memberships/+page.svelte:524-737</span>
+      </div>
+      <div class="code-block">&lt;<span class="tag">div</span> <span class="attr">class</span>=<span class="string">"modal-overlay"</span>&gt;
+  &lt;<span class="tag">div</span> <span class="attr">class</span>=<span class="string">"modal-panel"</span> <span class="attr">role</span>=<span class="string">"dialog"</span>&gt;
+    <span class="comment">&lt;!-- 200+ lines of custom modal content --&gt;</span>
+  &lt;/<span class="tag">div</span>&gt;
+&lt;/<span class="tag">div</span>&gt;</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> This is the largest custom modal in the codebase (~213 lines of markup + CSS). Use <code>&lt;Modal&gt;</code> with header/footer snippets. The action panel content can be rendered via children.
+      </div>
+    </div>
+
+    <div class="violation-card high">
+      <h3>
+        <span class="badge badge-high">HIGH</span>
+        Campaign detail modal
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">modules/rules/ui/CampaignDetailModal.svelte:61-140</span>
+      </div>
+      <div class="code-block">&lt;<span class="tag">div</span> <span class="attr">class</span>=<span class="string">"modal-overlay"</span>&gt;
+  &lt;<span class="tag">div</span> <span class="attr">class</span>=<span class="string">"modal-panel"</span>&gt;...&lt;/<span class="tag">div</span>&gt;
+&lt;/<span class="tag">div</span>&gt;</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Replace entire file's overlay/panel structure with <code>&lt;Modal&gt;</code>. Keep the campaign-specific content as the Modal's children.
+      </div>
+    </div>
+
+    <div class="violation-card high">
+      <h3>
+        <span class="badge badge-high">HIGH</span>
+        Stacking config modal
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">modules/rules/ui/StackingConfigModal.svelte:58-124</span>
+      </div>
+      <div class="code-block">&lt;<span class="tag">div</span> <span class="attr">class</span>=<span class="string">"modal-overlay"</span>&gt;
+  &lt;<span class="tag">div</span> <span class="attr">class</span>=<span class="string">"modal-panel"</span>&gt;
+    <span class="comment">&lt;!-- header, body, footer sections --&gt;</span>
+  &lt;/<span class="tag">div</span>&gt;
+&lt;/<span class="tag">div</span>&gt;</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Use <code>&lt;Modal&gt;</code> with header and footer snippets for the Save/Cancel buttons.
+      </div>
+    </div>
+
+    <div class="violation-card high">
+      <h3>
+        <span class="badge badge-high">HIGH</span>
+        Gift card confirmation modal
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">modules/gift-cards/ui/GiftCardConfirmation.svelte:68-147</span>
+      </div>
+      <div class="code-block">&lt;<span class="tag">div</span> <span class="attr">class</span>=<span class="string">"overlay"</span> <span class="attr">onclick</span>={onCancel}&gt;
+  &lt;<span class="tag">div</span> <span class="attr">class</span>=<span class="string">"modal"</span> <span class="attr">onclick</span>={e =&gt; e.stopPropagation()}&gt;
+    <span class="comment">&lt;!-- confirmation content --&gt;</span>
+  &lt;/<span class="tag">div</span>&gt;
+&lt;/<span class="tag">div</span>&gt;</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Replace with <code>&lt;Modal&gt;</code>. The <code>e.stopPropagation()</code> pattern for preventing overlay close is handled natively by the Modal component.
+      </div>
+    </div>
+
+    <div class="violation-card high">
+      <h3>
+        <span class="badge badge-high">HIGH</span>
+        Customer detail modal, Transaction detail modal, Rules modal
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">routes/admin/customers/+page.svelte:257-275</span>
+        <span class="file-path">routes/admin/transactions/+page.svelte</span>
+        <span class="file-path">routes/admin/rules/+page.svelte</span>
+      </div>
+      <div class="code-block"><span class="comment">// All follow the same pattern:</span>
+&lt;<span class="tag">div</span> <span class="attr">class</span>=<span class="string">"modal-overlay"</span>&gt;
+  &lt;<span class="tag">div</span> <span class="attr">class</span>=<span class="string">"modal-panel|modal-card"</span> <span class="attr">role</span>=<span class="string">"dialog"</span>&gt;
+    ...
+  &lt;/<span class="tag">div</span>&gt;
+&lt;/<span class="tag">div</span>&gt;</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> All admin detail panels should use a shared <code>&lt;Modal&gt;</code> or <code>&lt;Sheet&gt;</code> component (Sheet slides in from the side, which may be more appropriate for detail panels).
+      </div>
+    </div>
+
+    <div class="violation-card high">
+      <h3>
+        <span class="badge badge-high">HIGH</span>
+        Assign form modal
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">modules/memberships/ui/AssignForm.svelte:721-795</span>
+      </div>
+      <div class="code-block"><span class="comment">// Full custom modal with overlay + header + body + footer</span>
+&lt;<span class="tag">div</span> <span class="attr">class</span>=<span class="string">"modal-overlay"</span>&gt;...&lt;/<span class="tag">div</span>&gt;</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Use <code>&lt;Modal&gt;</code> component. This file also has custom Shimmer and Loader violations (see categories 7 and 8).
+      </div>
+    </div>
+  </div>
+
+  <!-- =============== CATEGORY 3: PILLS =============== -->
+  <div class="section" id="pills">
+    <div class="category-header">
+      <div class="category-icon pill">&#129001;</div>
+      <div>
+        <h2 style="border: none; margin: 0; padding: 0;">3. Custom Badges / Pills (7 violations)</h2>
+        <p style="font-size: 0.85rem; color: #6b7280;">Should use <code>Pill</code> from @juspay/svelte-ui-components</p>
+      </div>
+    </div>
+
+    <div class="violation-card medium">
+      <h3>
+        <span class="badge badge-medium">MEDIUM</span>
+        Referral code type badges
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">modules/referrals/ui/ReferralCodesList.svelte:30-47</span>
+      </div>
+      <div class="code-block">&lt;<span class="tag">span</span> <span class="attr">class</span>=<span class="string">"badge badge-info"</span>&gt;vanity&lt;/<span class="tag">span</span>&gt;
+&lt;<span class="tag">span</span> <span class="attr">class</span>=<span class="string">"badge badge-primary"</span>&gt;creator&lt;/<span class="tag">span</span>&gt;
+&lt;<span class="tag">span</span> <span class="attr">class</span>=<span class="string">"badge badge-muted"</span>&gt;auto&lt;/<span class="tag">span</span>&gt;
+&lt;<span class="tag">span</span> <span class="attr">class</span>=<span class="string">"badge {code.is_active ? 'badge-success' : 'badge-muted'}"</span>&gt;...&lt;/<span class="tag">span</span>&gt;</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Use <code>&lt;Pill&gt;</code> with the global variant classes: <code>pill-success</code>, <code>pill-info</code>, <code>pill-neutral</code>. These are already defined in <code>app.css</code>.
+      </div>
+    </div>
+
+    <div class="violation-card medium">
+      <h3>
+        <span class="badge badge-medium">MEDIUM</span>
+        Trigger default badge
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">routes/admin/referrals/+page.svelte:~200</span>
+      </div>
+      <div class="code-block">&lt;<span class="tag">span</span> <span class="attr">class</span>=<span class="string">"trigger-default-badge"</span>&gt;Default&lt;/<span class="tag">span</span>&gt;</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Use <code>&lt;Pill&gt;</code> with <code>pill-info</code> class.
+      </div>
+    </div>
+
+    <div class="violation-card medium">
+      <h3>
+        <span class="badge badge-medium">MEDIUM</span>
+        Tier badges with color variants
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">routes/admin/setup/+page.svelte:~400+</span>
+      </div>
+      <div class="code-block">&lt;<span class="tag">span</span> <span class="attr">class</span>=<span class="string">"tier-badge tier-bronze"</span>&gt;Bronze&lt;/<span class="tag">span</span>&gt;
+&lt;<span class="tag">span</span> <span class="attr">class</span>=<span class="string">"tier-badge tier-silver"</span>&gt;Silver&lt;/<span class="tag">span</span>&gt;
+&lt;<span class="tag">span</span> <span class="attr">class</span>=<span class="string">"tier-badge tier-gold"</span>&gt;Gold&lt;/<span class="tag">span</span>&gt;
+&lt;<span class="tag">span</span> <span class="attr">class</span>=<span class="string">"tier-badge tier-platinum"</span>&gt;Platinum&lt;/<span class="tag">span</span>&gt;</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Use <code>&lt;Pill&gt;</code> component. Define tier-specific CSS variable overrides for <code>--pill-background</code> and <code>--pill-color</code> to achieve the color differentiation.
+      </div>
+    </div>
+
+    <div class="violation-card medium">
+      <h3>
+        <span class="badge badge-medium">MEDIUM</span>
+        Membership status pills and tier badges
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">routes/admin/memberships/+page.svelte:454-621</span>
+      </div>
+      <div class="code-block">&lt;<span class="tag">span</span> <span class="attr">class</span>=<span class="string">"tier-badge {tierColorClass(sub.tier_name)}"</span>&gt;{sub.tier_name}&lt;/<span class="tag">span</span>&gt;
+&lt;<span class="tag">span</span> <span class="attr">class</span>=<span class="string">"mult-badge"</span>&gt;{sub.earn_rate_multiplier}x&lt;/<span class="tag">span</span>&gt;
+&lt;<span class="tag">span</span> <span class="attr">class</span>=<span class="string">"status-pill s-{status}"</span>&gt;Active&lt;/<span class="tag">span</span>&gt;</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Use <code>&lt;Pill&gt;</code> with variant classes: <code>pill-success</code> for active, <code>pill-warning</code> for expiring, <code>pill-error</code> for cancelled/expired.
+      </div>
+    </div>
+
+    <div class="violation-card medium">
+      <h3>
+        <span class="badge badge-medium">MEDIUM</span>
+        Rule type badge
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">routes/admin/rules/+page.svelte:~200+</span>
+      </div>
+      <div class="code-block">&lt;<span class="tag">span</span> <span class="attr">class</span>=<span class="string">"rule-type-badge"</span>&gt;{rule.rule_type}&lt;/<span class="tag">span</span>&gt;</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Use <code>&lt;Pill&gt;</code> with <code>pill-info</code> or <code>pill-neutral</code> class.
+      </div>
+    </div>
+
+    <div class="violation-card low">
+      <h3>
+        <span class="badge badge-low">LOW</span>
+        Merchant name badge in layout
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">routes/admin/+layout.svelte:~150+</span>
+      </div>
+      <div class="code-block">&lt;<span class="tag">span</span> <span class="attr">class</span>=<span class="string">"merchant-name-badge"</span>&gt;{merchantName}&lt;/<span class="tag">span</span>&gt;</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Use <code>&lt;Pill&gt;</code> with <code>pill-neutral</code> class for a subtle badge appearance.
+      </div>
+    </div>
+  </div>
+
+  <!-- =============== CATEGORY 4: INPUTS =============== -->
+  <div class="section" id="inputs">
+    <div class="category-header">
+      <div class="category-icon input">&#128997;</div>
+      <div>
+        <h2 style="border: none; margin: 0; padding: 0;">4. Custom Inputs (5 violations, 15+ instances)</h2>
+        <p style="font-size: 0.85rem; color: #6b7280;">Should use <code>Input</code> from @juspay/svelte-ui-components</p>
+      </div>
+    </div>
+
+    <div class="violation-card high">
+      <h3>
+        <span class="badge badge-high">HIGH</span>
+        9 custom text inputs with .field-input class
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">modules/rules/ui/RuleForm.svelte:146, 161, 190, 202, 213, 232, 249, 269, 289</span>
+      </div>
+      <div class="code-block">&lt;<span class="tag">input</span>
+  <span class="attr">id</span>=<span class="string">"rule-name"</span>
+  <span class="attr">type</span>=<span class="string">"text"</span>
+  <span class="attr">class</span>=<span class="string">"field-input"</span>
+  <span class="attr">class:field-error</span>={nameError !== null &amp;&amp; name.length &gt; 0}
+  <span class="attr">value</span>={name}
+  <span class="attr">oninput</span>={(e) =&gt; { name = e.currentTarget.value; }}
+  <span class="attr">placeholder</span>=<span class="string">"e.g. 10% Points Back on Orders"</span>
+/&gt;</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Replace all <code>.field-input</code> instances with <code>&lt;Input&gt;</code> component. The library Input supports built-in validation via <code>regex</code> and <code>customValidator</code> props, eliminating the need for the custom <code>field-error</code> class pattern.
+      </div>
+    </div>
+
+    <div class="violation-card medium">
+      <h3>
+        <span class="badge badge-medium">MEDIUM</span>
+        Custom form inputs in CampaignForm
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">modules/rules/ui/CampaignForm.svelte:115, 130, 153, 172, 182</span>
+      </div>
+      <div class="code-block">&lt;<span class="tag">input</span> <span class="attr">class</span>=<span class="string">"field-input"</span> <span class="attr">type</span>=<span class="string">"text"</span> ... /&gt;
+&lt;<span class="tag">input</span> <span class="attr">class</span>=<span class="string">"field-input"</span> <span class="attr">type</span>=<span class="string">"datetime-local"</span> ... /&gt;</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Use <code>&lt;Input&gt;</code> component. For datetime fields, the Input component can render as various types.
+      </div>
+    </div>
+
+    <div class="violation-card medium">
+      <h3>
+        <span class="badge badge-medium">MEDIUM</span>
+        Custom filter search input
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">routes/admin/memberships/+page.svelte:402-407</span>
+      </div>
+      <div class="code-block">&lt;<span class="tag">input</span>
+  <span class="attr">class</span>=<span class="string">"filter-input"</span>
+  <span class="attr">placeholder</span>=<span class="string">"Search by name or phone..."</span>
+  <span class="attr">value</span>={searchQuery}
+  <span class="attr">oninput</span>={(e) =&gt; { searchQuery = (e.target as HTMLInputElement).value; }}
+/&gt;</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Use <code>&lt;Input&gt;</code> component with search icon via the left snippet.
+      </div>
+    </div>
+
+    <div class="violation-card medium">
+      <h3>
+        <span class="badge badge-medium">MEDIUM</span>
+        Custom date input for gift card expiry
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">modules/gift-cards/ui/IssueGiftCardForm.svelte:34</span>
+      </div>
+      <div class="code-block">&lt;<span class="tag">input</span> <span class="attr">id</span>=<span class="string">"gc-expires"</span> <span class="attr">class</span>=<span class="string">"date-input"</span> <span class="attr">type</span>=<span class="string">"date"</span> <span class="attr">bind:value</span>={expiresAt} <span class="attr">required</span> /&gt;</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Use <code>&lt;Input&gt;</code> component or the library's <code>Calendar</code> component for a richer date-picking experience.
+      </div>
+    </div>
+  </div>
+
+  <!-- =============== CATEGORY 5: SELECTS =============== -->
+  <div class="section" id="selects">
+    <div class="category-header">
+      <div class="category-icon input">&#128997;</div>
+      <div>
+        <h2 style="border: none; margin: 0; padding: 0;">5. Custom Selects (4 violations, 8+ instances)</h2>
+        <p style="font-size: 0.85rem; color: #6b7280;">Should use <code>Select</code> from @juspay/svelte-ui-components</p>
+      </div>
+    </div>
+
+    <div class="violation-card high">
+      <h3>
+        <span class="badge badge-high">HIGH</span>
+        Native selects with .field-input class in RuleForm
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">modules/rules/ui/RuleForm.svelte:190, 202, 213</span>
+      </div>
+      <div class="code-block">&lt;<span class="tag">select</span> <span class="attr">id</span>=<span class="string">"event-type"</span> <span class="attr">class</span>=<span class="string">"field-input"</span> <span class="attr">value</span>={eventType}&gt;
+  {#each EVENT_TYPES as et}
+    &lt;<span class="tag">option</span> <span class="attr">value</span>={et.value}&gt;{et.label}&lt;/<span class="tag">option</span>&gt;
+  {/each}
+&lt;/<span class="tag">select</span>&gt;</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Use <code>&lt;Select&gt;</code> component with <code>items: SelectItem[]</code> prop. Map EVENT_TYPES to SelectItem format: <code>{ id: et.value, label: et.label }</code>.
+      </div>
+    </div>
+
+    <div class="violation-card medium">
+      <h3>
+        <span class="badge badge-medium">MEDIUM</span>
+        Native select for tier assignment
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">modules/memberships/ui/AssignForm.svelte:258</span>
+      </div>
+      <div class="code-block">&lt;<span class="tag">select</span> <span class="attr">class</span>=<span class="string">"native-select"</span> <span class="attr">bind:value</span>={selectedTierId}&gt;
+  &lt;<span class="tag">option</span> <span class="attr">value</span>=<span class="string">""</span> <span class="attr">disabled</span>&gt;Select tier...&lt;/<span class="tag">option</span>&gt;
+  {#each tiers as tier}
+    &lt;<span class="tag">option</span> <span class="attr">value</span>={tier.id}&gt;{tier.name} (Rank {tier.rank})&lt;/<span class="tag">option</span>&gt;
+  {/each}
+&lt;/<span class="tag">select</span>&gt;</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Use <code>&lt;Select&gt;</code> component with items mapped from tiers array.
+      </div>
+    </div>
+
+    <div class="violation-card medium">
+      <h3>
+        <span class="badge badge-medium">MEDIUM</span>
+        Filter select dropdowns
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">routes/admin/memberships/+page.svelte:408, 413</span>
+      </div>
+      <div class="code-block">&lt;<span class="tag">select</span> <span class="attr">class</span>=<span class="string">"filter-select"</span>&gt;
+  {#each tierFilterItems as item}
+    &lt;<span class="tag">option</span> <span class="attr">value</span>={item.id}&gt;{item.label}&lt;/<span class="tag">option</span>&gt;
+  {/each}
+&lt;/<span class="tag">select</span>&gt;</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Use <code>&lt;Select&gt;</code> component. The items are already in a compatible format.
+      </div>
+    </div>
+
+    <div class="violation-card medium">
+      <h3>
+        <span class="badge badge-medium">MEDIUM</span>
+        Campaign form selects
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">modules/rules/ui/CampaignForm.svelte:153, 172</span>
+      </div>
+      <div class="code-block">&lt;<span class="tag">select</span> <span class="attr">class</span>=<span class="string">"field-input"</span> <span class="attr">value</span>={campaignType}&gt;
+  &lt;<span class="tag">option</span> <span class="attr">value</span>=<span class="string">"festive"</span>&gt;Festive&lt;/<span class="tag">option</span>&gt;
+  &lt;<span class="tag">option</span> <span class="attr">value</span>=<span class="string">"retention"</span>&gt;Retention&lt;/<span class="tag">option</span>&gt;
+  ...
+&lt;/<span class="tag">select</span>&gt;</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Use <code>&lt;Select&gt;</code> component with static items array.
+      </div>
+    </div>
+  </div>
+
+  <!-- =============== CATEGORY 6: PROGRESS =============== -->
+  <div class="section" id="progress">
+    <div class="category-header">
+      <div class="category-icon progress">&#129000;</div>
+      <div>
+        <h2 style="border: none; margin: 0; padding: 0;">6. Custom Progress Bars (3 violations)</h2>
+        <p style="font-size: 0.85rem; color: #6b7280;">Should use <code>Progress</code> from @juspay/svelte-ui-components</p>
+      </div>
+    </div>
+
+    <div class="violation-card medium">
+      <h3>
+        <span class="badge badge-medium">MEDIUM</span>
+        Tier progress bar (storefront)
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">modules/storefront/ui/TierCard.svelte:89-100</span>
+      </div>
+      <div class="code-block">&lt;<span class="tag">div</span> <span class="attr">class</span>=<span class="string">"progress-track"</span>&gt;
+  &lt;<span class="tag">div</span> <span class="attr">class</span>=<span class="string">"progress-fill"</span> <span class="attr">style</span>=<span class="string">"width: {percentage}%"</span>&gt;&lt;/<span class="tag">div</span>&gt;
+&lt;/<span class="tag">div</span>&gt;</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Use <code>&lt;Progress value={percentage} /&gt;</code>. The library component supports configurable height, colors, border-radius, and animated transitions.
+      </div>
+    </div>
+
+    <div class="violation-card medium">
+      <h3>
+        <span class="badge badge-medium">MEDIUM</span>
+        Customer detail progress bar
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">modules/customers/ui/CustomerDetail.svelte:~200+</span>
+      </div>
+      <div class="code-block"><span class="comment">/* Custom CSS: */</span>
+.progress-track { height: 6px; border-radius: 3px; background: var(--color-border); }
+.progress-fill { height: 100%; border-radius: 3px; }</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Use <code>&lt;Progress&gt;</code> component with CSS variable overrides: <code>--progress-height: 6px</code>.
+      </div>
+    </div>
+
+    <div class="violation-card medium">
+      <h3>
+        <span class="badge badge-medium">MEDIUM</span>
+        Membership detail progress bar
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">routes/admin/memberships/+page.svelte:622-629</span>
+      </div>
+      <div class="code-block">&lt;<span class="tag">div</span> <span class="attr">class</span>=<span class="string">"detail-progress-bar"</span>&gt;
+  &lt;<span class="tag">div</span>
+    <span class="attr">class</span>=<span class="string">"detail-progress-fill"</span>
+    <span class="attr">class:green</span>={status === 'active'}
+    <span class="attr">class:amber</span>={status === 'expiring'}
+    <span class="attr">style</span>=<span class="string">"width: {progressPct}%;"</span>
+  &gt;&lt;/<span class="tag">div</span>&gt;
+&lt;/<span class="tag">div</span>&gt;</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Use <code>&lt;Progress value={progressPct} /&gt;</code>. Set <code>--progress-foreground</code> dynamically based on status (green for active, amber for expiring).
+      </div>
+    </div>
+  </div>
+
+  <!-- =============== CATEGORY 7: LOADERS =============== -->
+  <div class="section" id="loaders">
+    <div class="category-header">
+      <div class="category-icon loader">&#128308;</div>
+      <div>
+        <h2 style="border: none; margin: 0; padding: 0;">7. Custom Loaders / Spinners (3 violations)</h2>
+        <p style="font-size: 0.85rem; color: #6b7280;">Should use <code>Loader</code> or <code>LoadingDots</code> from @juspay/svelte-ui-components</p>
+      </div>
+    </div>
+
+    <div class="violation-card medium">
+      <h3>
+        <span class="badge badge-medium">MEDIUM</span>
+        Custom search spinner
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">modules/customers/ui/CustomerSearch.svelte:103-118</span>
+      </div>
+      <div class="code-block">.search-spinner {
+  width: 16px; height: 16px;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Use <code>&lt;Loader /&gt;</code> component (rotating circular spinner) or <code>&lt;LoadingDots size="small" /&gt;</code> for inline loading indication.
+      </div>
+    </div>
+
+    <div class="violation-card medium">
+      <h3>
+        <span class="badge badge-medium">MEDIUM</span>
+        Custom assignment spinner with text
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">modules/memberships/ui/AssignForm.svelte:679-690</span>
+      </div>
+      <div class="code-block">.spinner {
+  width: 24px; height: 24px;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-primary, #6366f1);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Use <code>&lt;Loader /&gt;</code> component. For spinner + text combinations, use <code>&lt;BrandLoader&gt;</code> or wrap <code>&lt;Loader /&gt;</code> with a text label.
+      </div>
+    </div>
+
+    <div class="violation-card medium">
+      <h3>
+        <span class="badge badge-medium">MEDIUM</span>
+        Custom skeleton/shimmer animation
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">modules/memberships/ui/AssignForm.svelte:698-708</span>
+      </div>
+      <div class="code-block">.skeleton {
+  background: linear-gradient(90deg, var(--color-surface) 25%,
+    var(--color-border) 50%, var(--color-surface) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Use <code>&lt;Shimmer /&gt;</code> component. Other files in the codebase (Overview, Customers, Gift Cards pages) already use it correctly.
+      </div>
+    </div>
+  </div>
+
+  <!-- =============== CATEGORY 8: BANNERS =============== -->
+  <div class="section" id="banners">
+    <div class="category-header">
+      <div class="category-icon banner">&#128993;</div>
+      <div>
+        <h2 style="border: none; margin: 0; padding: 0;">8. Custom Banners (3 violations)</h2>
+        <p style="font-size: 0.85rem; color: #6b7280;">Should use <code>Banner</code> from @juspay/svelte-ui-components</p>
+      </div>
+    </div>
+
+    <div class="violation-card low">
+      <h3>
+        <span class="badge badge-low">LOW</span>
+        Custom campaign banner (storefront)
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">modules/storefront/ui/CampaignBanner.svelte:24-95</span>
+      </div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Consider using <code>&lt;Banner&gt;</code> component as wrapper. However, storefront banners have highly custom visual requirements (hardcoded hex colors), so this may be justified as an exception.
+      </div>
+    </div>
+
+    <div class="violation-card low">
+      <h3>
+        <span class="badge badge-low">LOW</span>
+        Custom earn formula banner
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">modules/rules/ui/EarnFormulaBanner.svelte:24-141</span>
+      </div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Use <code>&lt;Banner&gt;</code> component for the outer container with icon and dismiss capability. The formula content can be rendered as children.
+      </div>
+    </div>
+
+    <div class="violation-card low">
+      <h3>
+        <span class="badge badge-low">LOW</span>
+        Custom info banners in TierWizard
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">modules/customers/ui/TierWizard.svelte (multiple instances)</span>
+      </div>
+      <div class="code-block">&lt;<span class="tag">div</span> <span class="attr">class</span>=<span class="string">"info-banner amber"</span>&gt;Warning text...&lt;/<span class="tag">div</span>&gt;
+&lt;<span class="tag">div</span> <span class="attr">class</span>=<span class="string">"info-banner green"</span>&gt;Success text...&lt;/<span class="tag">div</span>&gt;</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Use <code>&lt;Banner&gt;</code> component. The library Banner supports different visual variants via CSS variable theming.
+      </div>
+    </div>
+  </div>
+
+  <!-- =============== CATEGORY 9: RADIOS =============== -->
+  <div class="section" id="radios">
+    <div class="category-header">
+      <div class="category-icon input">&#128997;</div>
+      <div>
+        <h2 style="border: none; margin: 0; padding: 0;">9. Custom Radio Buttons (1 violation)</h2>
+        <p style="font-size: 0.85rem; color: #6b7280;">Should use <code>Radio</code> or <code>Choicebox</code> from @juspay/svelte-ui-components</p>
+      </div>
+    </div>
+
+    <div class="violation-card medium">
+      <h3>
+        <span class="badge badge-medium">MEDIUM</span>
+        Native radio inputs for code creation trigger
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">routes/admin/referrals/+page.svelte:261, 268</span>
+      </div>
+      <div class="code-block">&lt;<span class="tag">input</span> <span class="attr">type</span>=<span class="string">"radio"</span> <span class="attr">name</span>=<span class="string">"code_trigger"</span> <span class="attr">value</span>=<span class="string">"on_registration"</span> <span class="attr">bind:group</span>={codeCreationTrigger} /&gt;
+&lt;<span class="tag">input</span> <span class="attr">type</span>=<span class="string">"radio"</span> <span class="attr">name</span>=<span class="string">"code_trigger"</span> <span class="attr">value</span>=<span class="string">"on_first_purchase"</span> <span class="attr">bind:group</span>={codeCreationTrigger} /&gt;</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Use <code>&lt;Radio&gt;</code> component for styled radio inputs, or <code>&lt;Choicebox&gt;</code> for a more visual selection experience.
+      </div>
+    </div>
+  </div>
+
+  <!-- =============== CATEGORY 10: AVATARS =============== -->
+  <div class="section" id="avatars">
+    <div class="category-header">
+      <div class="category-icon avatar">&#128309;</div>
+      <div>
+        <h2 style="border: none; margin: 0; padding: 0;">10. Custom Avatars (1 violation)</h2>
+        <p style="font-size: 0.85rem; color: #6b7280;">Should use <code>Avatar</code> from @juspay/svelte-ui-components</p>
+      </div>
+    </div>
+
+    <div class="violation-card medium">
+      <h3>
+        <span class="badge badge-medium">MEDIUM</span>
+        Custom initials avatar with gradient
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">modules/storefront/ui/ProfileBar.svelte:58-70</span>
+      </div>
+      <div class="code-block">&lt;<span class="tag">div</span> <span class="attr">class</span>=<span class="string">"avatar"</span>&gt;{getInitials(name)}&lt;/<span class="tag">div</span>&gt;
+
+<span class="comment">/* Custom styling: */</span>
+.avatar {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #818cf8);
+  display: flex;
+  align-items: center; justify-content: center;
+  font-weight: 600; font-size: 16px; color: #fff;
+}</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Use <code>&lt;Avatar text={getInitials(name)} /&gt;</code>. Configure size and colors via <code>--avatar-size</code>, <code>--avatar-background</code>, and <code>--avatar-color</code> CSS variables.
+      </div>
+    </div>
+  </div>
+
+  <!-- =============== CATEGORY 11: PAGINATION =============== -->
+  <div class="section" id="pagination">
+    <div class="category-header">
+      <div class="category-icon pagination">&#128997;</div>
+      <div>
+        <h2 style="border: none; margin: 0; padding: 0;">11. Custom Pagination (1 violation)</h2>
+        <p style="font-size: 0.85rem; color: #6b7280;">Should use <code>Pagination</code> from @juspay/svelte-ui-components</p>
+      </div>
+    </div>
+
+    <div class="violation-card high">
+      <h3>
+        <span class="badge badge-high">HIGH</span>
+        Complete custom pagination control
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">routes/admin/memberships/+page.svelte:483-492</span>
+      </div>
+      <div class="code-block">&lt;<span class="tag">div</span> <span class="attr">class</span>=<span class="string">"pagination-bar"</span>&gt;
+  &lt;<span class="tag">span</span> <span class="attr">class</span>=<span class="string">"pagination-info"</span>&gt;
+    Showing {start}&ndash;{end} of {total} memberships
+  &lt;/<span class="tag">span</span>&gt;
+  &lt;<span class="tag">div</span> <span class="attr">class</span>=<span class="string">"page-btns"</span>&gt;
+    &lt;<span class="tag">button</span> <span class="attr">class</span>=<span class="string">"page-btn"</span> <span class="attr">disabled</span>={currentPage &lt;= 1}&gt;&lsaquo;&lt;/<span class="tag">button</span>&gt;
+    {#each pages as p}
+      &lt;<span class="tag">button</span> <span class="attr">class</span>=<span class="string">"page-btn"</span> <span class="attr">class:active</span>={currentPage === p}&gt;{p}&lt;/<span class="tag">button</span>&gt;
+    {/each}
+    &lt;<span class="tag">button</span> <span class="attr">class</span>=<span class="string">"page-btn"</span> <span class="attr">disabled</span>={currentPage &gt;= totalPages}&gt;&rsaquo;&lt;/<span class="tag">button</span>&gt;
+  &lt;/<span class="tag">div</span>&gt;
+&lt;/<span class="tag">div</span>&gt;</div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Use <code>&lt;Pagination totalPages={totalPages} currentPage={currentPage} onpagechange={...} /&gt;</code>. The library component handles ellipsis for large page counts, disabled states, and custom arrow snippets.
+      </div>
+    </div>
+  </div>
+
+  <!-- =============== CATEGORY 12: TOAST =============== -->
+  <div class="section" id="toast">
+    <div class="category-header">
+      <div class="category-icon toast">&#128308;</div>
+      <div>
+        <h2 style="border: none; margin: 0; padding: 0;">12. Missing Toast Renderer (1 violation)</h2>
+        <p style="font-size: 0.85rem; color: #6b7280;">Should use <code>Toast</code> from @juspay/svelte-ui-components</p>
+      </div>
+    </div>
+
+    <div class="violation-card high">
+      <h3>
+        <span class="badge badge-high">HIGH</span>
+        Toast store exists but no Toast UI component renders them
+      </h3>
+      <div class="violation-meta">
+        <span class="file-path">modules/foundation/store.ts:79-127</span>
+      </div>
+      <div class="code-block"><span class="comment">// The toast store is used throughout the app:</span>
+toastStore.push({ type: 'success', message: 'Saved!' });
+toastStore.push({ type: 'error', message: 'Failed to save' });
+
+<span class="comment">// But NO component renders these toasts in the UI!</span></div>
+      <div class="recommendation">
+        <strong>Recommendation:</strong> Add a <code>&lt;Toast&gt;</code> component from the library in the root layout (<code>+layout.svelte</code>) that subscribes to the toast store and renders notifications. Without this, all <code>toastStore.push()</code> calls throughout the app are silently discarded.
+      </div>
+    </div>
+  </div>
+
+  <!-- =============== RECOMMENDATIONS SUMMARY =============== -->
+  <div class="section">
+    <h2>Prioritized Remediation Plan</h2>
+    <table class="overview-table">
+      <thead>
+        <tr><th>Priority</th><th>Category</th><th>Impact</th><th>Effort</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-high">P0</span></td>
+          <td>Toast Renderer</td>
+          <td>User feedback completely missing</td>
+          <td>Low (1 file)</td>
+          <td>Add <code>&lt;Toast&gt;</code> to root layout, subscribe to toast store</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-high">P1</span></td>
+          <td>Custom Modals (8)</td>
+          <td>Accessibility gaps (focus trap, scroll lock), inconsistent dismiss behavior</td>
+          <td>Medium (8 files)</td>
+          <td>Replace all <code>.modal-overlay</code> patterns with <code>&lt;Modal&gt;</code> or <code>&lt;Sheet&gt;</code></td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-high">P1</span></td>
+          <td>Custom Inputs &amp; Selects (9)</td>
+          <td>No built-in validation, inconsistent focus states</td>
+          <td>Medium (6 files)</td>
+          <td>Replace <code>.field-input</code> / <code>.filter-input</code> / native <code>&lt;select&gt;</code> with library components</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-medium">P2</span></td>
+          <td>Custom Pills (7)</td>
+          <td>Inconsistent badge styling across pages</td>
+          <td>Low (6 files)</td>
+          <td>Replace <code>.badge-*</code> / <code>.tier-badge</code> / <code>.status-pill</code> with <code>&lt;Pill&gt;</code></td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-medium">P2</span></td>
+          <td>Custom Buttons (11)</td>
+          <td>Inconsistent hover/focus/loading states</td>
+          <td>Medium (11 files)</td>
+          <td>Replace custom <code>.btn-*</code> / <code>.icon-btn</code> with <code>&lt;Button&gt;</code></td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-medium">P2</span></td>
+          <td>Custom Progress (3)</td>
+          <td>No animated transitions, inconsistent heights</td>
+          <td>Low (3 files)</td>
+          <td>Replace <code>.progress-track/.progress-fill</code> with <code>&lt;Progress&gt;</code></td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-medium">P2</span></td>
+          <td>Custom Pagination (1)</td>
+          <td>No ellipsis for large page counts</td>
+          <td>Low (1 file)</td>
+          <td>Replace <code>.pagination-bar</code> with <code>&lt;Pagination&gt;</code></td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-low">P3</span></td>
+          <td>Custom Loaders (3)</td>
+          <td>Cosmetic inconsistency</td>
+          <td>Low (2 files)</td>
+          <td>Replace <code>.spinner</code> / <code>.skeleton</code> with <code>&lt;Loader&gt;</code> / <code>&lt;Shimmer&gt;</code></td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-low">P3</span></td>
+          <td>Custom Avatar (1)</td>
+          <td>Minor visual inconsistency</td>
+          <td>Low (1 file)</td>
+          <td>Replace custom <code>.avatar</code> div with <code>&lt;Avatar&gt;</code></td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-low">P3</span></td>
+          <td>Custom Banners (3)</td>
+          <td>Minor visual inconsistency</td>
+          <td>Low (3 files)</td>
+          <td>Replace custom <code>.info-banner</code> with <code>&lt;Banner&gt;</code></td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-low">P3</span></td>
+          <td>Custom Radios (1)</td>
+          <td>Unstyled native radio buttons</td>
+          <td>Low (1 file)</td>
+          <td>Replace native <code>&lt;input type="radio"&gt;</code> with <code>&lt;Radio&gt;</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ENVIRONMENT SECTION -->
+  <div class="section">
+    <h2>Audit Details</h2>
+    <table class="env-table">
+      <tr><td>Date</td><td>2026-03-27</td></tr>
+      <tr><td>Scope</td><td><code>frontend/src/routes/</code> and <code>frontend/src/lib/client/modules/*/ui/</code></td></tr>
+      <tr><td>Component Library</td><td><code>@juspay/svelte-ui-components</code> (55 components available)</td></tr>
+      <tr><td>Files Scanned</td><td>All <code>.svelte</code> files in routes and module UI directories</td></tr>
+      <tr><td>Files with Violations</td><td>22</td></tr>
+      <tr><td>Total Violations</td><td>48</td></tr>
+      <tr><td>Guideline Source</td><td><code>CLAUDE.md</code> &mdash; "Component Library &mdash; MANDATORY CHECK" section</td></tr>
+      <tr><td>Auditor</td><td>Claude Code Audit Agent</td></tr>
+    </table>
+  </div>
+
+</div>
+</body>
+</html>

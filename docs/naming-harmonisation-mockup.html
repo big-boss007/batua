@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Naming Harmonisation — Before / After</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8f9fa; color: #1a1a2e; padding: 40px; }
+
+  .page-title { font-size: 24px; font-weight: 700; text-align: center; margin-bottom: 4px; }
+  .page-sub { font-size: 14px; color: #9ca3af; text-align: center; margin-bottom: 40px; }
+
+  .section { margin-bottom: 48px; }
+  .section-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; color: #374151; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px; }
+
+  .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+
+  .card {
+    border-radius: 12px; border: 1px solid #e5e7eb; overflow: hidden; background: white;
+  }
+
+  .card-header {
+    padding: 12px 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .card-header.before { background: #fef2f2; color: #dc2626; border-bottom: 1px solid #fecaca; }
+  .card-header.after { background: #f0fdf4; color: #16a34a; border-bottom: 1px solid #bbf7d0; }
+
+  .card-body { padding: 20px; }
+
+  /* Mock page header */
+  .mock-page { background: #fafafa; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; }
+  .mock-title { font-size: 22px; font-weight: 700; color: #1a1a2e; }
+  .mock-subtitle { font-size: 13px; color: #9ca3af; margin-top: 4px; }
+  .mock-badge { display: inline-block; padding: 4px 12px; background: #6366f1; color: white; border-radius: 6px; font-size: 12px; font-weight: 600; margin-top: 12px; }
+
+  /* Mock wizard step */
+  .mock-wizard { background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px 20px; margin-top: 12px; }
+  .mock-wizard-title { font-size: 16px; font-weight: 600; color: #374151; }
+  .mock-wizard-sub { font-size: 12px; color: #9ca3af; margin-top: 2px; }
+  .mock-steps { display: flex; gap: 8px; margin-top: 12px; }
+  .mock-step { padding: 4px 12px; border-radius: 16px; font-size: 11px; font-weight: 600; }
+  .mock-step.active { background: #6366f1; color: white; }
+  .mock-step.inactive { background: #f3f4f6; color: #9ca3af; }
+
+  .mock-field { margin-top: 12px; }
+  .mock-field-label { font-size: 12px; color: #6b7280; margin-bottom: 4px; }
+  .mock-field-input { padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 13px; color: #374151; background: #fafafa; width: 200px; }
+
+  /* Mock summary */
+  .mock-summary { background: #fafafa; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px 16px; margin-top: 12px; }
+  .mock-summary-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px; }
+  .mock-summary-label { color: #9ca3af; }
+  .mock-summary-value { color: #374151; font-weight: 500; }
+
+  /* Mock empty state */
+  .mock-empty { text-align: center; padding: 16px; color: #9ca3af; font-size: 13px; border: 1px dashed #e5e7eb; border-radius: 8px; margin-top: 12px; }
+
+  /* Mock toast */
+  .mock-toast { display: inline-block; padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 500; margin-top: 8px; }
+  .mock-toast.success { background: #d1fae5; color: #065f46; }
+
+  /* Change highlight */
+  .change { background: #fef08a; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+  .strike { text-decoration: line-through; color: #d1d5db; }
+
+  /* Change table */
+  .changes-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+  .changes-table th { text-align: left; padding: 8px 12px; background: #f9fafb; border-bottom: 2px solid #e5e7eb; font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.03em; }
+  .changes-table td { padding: 8px 12px; border-bottom: 1px solid #f3f4f6; font-size: 13px; }
+  .changes-table td:first-child { color: #9ca3af; font-size: 12px; }
+  .changes-table .old { color: #ef4444; text-decoration: line-through; }
+  .changes-table .new { color: #16a34a; font-weight: 600; }
+
+  .note { margin-top: 16px; padding: 12px 16px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; font-size: 12px; color: #1e40af; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<div class="page-title">Naming Harmonisation</div>
+<div class="page-sub">Aligning page titles, subtitles, wizard text, toasts, and empty states across Earn Rules &amp; Tiers pages</div>
+
+<!-- ============================================ -->
+<!-- CHANGE SUMMARY TABLE -->
+<!-- ============================================ -->
+<div class="section">
+  <div class="section-title">All Changes</div>
+  <table class="changes-table">
+    <thead>
+      <tr>
+        <th>Location</th>
+        <th>Before</th>
+        <th>After</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Rules page &lt;title&gt;</td>
+        <td class="old">Rules - Batua Admin</td>
+        <td class="new">Earn Rules - Batua Admin</td>
+      </tr>
+      <tr>
+        <td>Rules page heading</td>
+        <td class="old">Reward Rules</td>
+        <td class="new">Earn Rules</td>
+      </tr>
+      <tr>
+        <td>Rules page empty state</td>
+        <td class="old">No rules configured yet. Create your first reward rule to get started.</td>
+        <td class="new">No earn rules configured yet. Create your first rule to get started.</td>
+      </tr>
+      <tr>
+        <td>Loyalty page &lt;title&gt;</td>
+        <td class="old">Program & Tiers - Batua</td>
+        <td class="new">Tiers - Batua Admin</td>
+      </tr>
+      <tr>
+        <td>Loyalty page heading (both instances)</td>
+        <td class="old">Program & Tiers</td>
+        <td class="new">Tiers</td>
+      </tr>
+      <tr>
+        <td>Loyalty page subtitle (fresh setup)</td>
+        <td class="old">Set up your loyalty program in a few easy steps</td>
+        <td class="new">Set up your loyalty tiers in a few easy steps</td>
+      </tr>
+      <tr>
+        <td>Loyalty page subtitle (reconfigure)</td>
+        <td class="old">Reconfigure your loyalty program</td>
+        <td class="new">Reconfigure your loyalty tiers</td>
+      </tr>
+      <tr>
+        <td>Loyalty page subtitle (manage)</td>
+        <td class="old">Manage your loyalty program, tiers, and customer distribution</td>
+        <td class="new">Manage your tiers and customer distribution</td>
+      </tr>
+      <tr>
+        <td>Summary section label</td>
+        <td class="old">Program Name</td>
+        <td class="new">Tier Program</td>
+      </tr>
+      <tr>
+        <td>Wizard step 1 heading (fresh)</td>
+        <td class="old">Set Up Your Loyalty Program</td>
+        <td class="new">Set Up Your Tiers</td>
+      </tr>
+      <tr>
+        <td>Wizard step 1 heading (reconfigure)</td>
+        <td class="old">Update Program Settings</td>
+        <td class="new">Update Tier Settings</td>
+      </tr>
+      <tr>
+        <td>Wizard step pills (all 3 screens)</td>
+        <td class="old">1 Program &nbsp; 2 Tiers &nbsp; 3 Review</td>
+        <td class="new">1 Settings &nbsp; 2 Tiers &nbsp; 3 Review</td>
+      </tr>
+      <tr>
+        <td>Wizard field label</td>
+        <td class="old">Program Name</td>
+        <td class="new">Tier Program Name</td>
+      </tr>
+      <tr>
+        <td>Wizard review heading</td>
+        <td class="old">Program</td>
+        <td class="new">Settings</td>
+      </tr>
+      <tr>
+        <td>Wizard review label</td>
+        <td class="old">Program Name</td>
+        <td class="new">Tier Program Name</td>
+      </tr>
+      <tr>
+        <td>Wizard review subtitle (fresh)</td>
+        <td class="old">Review your loyalty program before activating</td>
+        <td class="new">Review your tier configuration before activating</td>
+      </tr>
+      <tr>
+        <td>Wizard "what happens next"</td>
+        <td class="old">Your loyalty program will be created and tiers set up.</td>
+        <td class="new">Your tiers will be created and activated.</td>
+      </tr>
+      <tr>
+        <td>Wizard button (fresh)</td>
+        <td class="old">Activate Program</td>
+        <td class="new">Activate Tiers</td>
+      </tr>
+      <tr>
+        <td>Wizard toast (fresh)</td>
+        <td class="old">Loyalty program activated!</td>
+        <td class="new">Loyalty tiers activated!</td>
+      </tr>
+      <tr>
+        <td>Wizard toast (update)</td>
+        <td class="old">Loyalty program updated!</td>
+        <td class="new">Loyalty tiers updated!</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ============================================ -->
+<!-- EARN RULES PAGE -->
+<!-- ============================================ -->
+<div class="section">
+  <div class="section-title">1. Earn Rules Page (/admin/rules)</div>
+
+  <div class="comparison">
+    <div class="card">
+      <div class="card-header before">Before</div>
+      <div class="card-body">
+        <div class="mock-page">
+          <div class="mock-title"><span class="strike">Reward Rules</span></div>
+          <div class="mock-subtitle">Configure how customers earn and burn rewards</div>
+        </div>
+        <div class="mock-empty"><span class="strike">No rules configured yet. Create your first reward rule to get started.</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header after">After</div>
+      <div class="card-body">
+        <div class="mock-page">
+          <div class="mock-title"><span class="change">Earn Rules</span></div>
+          <div class="mock-subtitle">Configure how customers earn and burn rewards</div>
+        </div>
+        <div class="mock-empty"><span class="change">No earn rules configured yet. Create your first rule to get started.</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- TIERS PAGE — MAIN VIEW -->
+<!-- ============================================ -->
+<div class="section">
+  <div class="section-title">2. Tiers Page — Main View (/admin/loyalty)</div>
+
+  <div class="comparison">
+    <div class="card">
+      <div class="card-header before">Before</div>
+      <div class="card-body">
+        <div class="mock-page">
+          <div class="mock-title"><span class="strike">Program & Tiers</span></div>
+          <div class="mock-subtitle"><span class="strike">Manage your loyalty program, tiers, and customer distribution</span></div>
+        </div>
+        <div class="mock-summary">
+          <div class="mock-summary-row"><span class="mock-summary-label"><span class="strike">Program Name</span></span><span class="mock-summary-value">Loyalty Program</span></div>
+          <div class="mock-summary-row"><span class="mock-summary-label">Evaluation Criteria</span><span class="mock-summary-value">Points Earned</span></div>
+          <div class="mock-summary-row"><span class="mock-summary-label">Evaluation Period</span><span class="mock-summary-value">Last 365 days</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header after">After</div>
+      <div class="card-body">
+        <div class="mock-page">
+          <div class="mock-title"><span class="change">Tiers</span></div>
+          <div class="mock-subtitle"><span class="change">Manage your tiers and customer distribution</span></div>
+        </div>
+        <div class="mock-summary">
+          <div class="mock-summary-row"><span class="mock-summary-label"><span class="change">Tier Program</span></span><span class="mock-summary-value">Loyalty Program</span></div>
+          <div class="mock-summary-row"><span class="mock-summary-label">Evaluation Criteria</span><span class="mock-summary-value">Points Earned</span></div>
+          <div class="mock-summary-row"><span class="mock-summary-label">Evaluation Period</span><span class="mock-summary-value">Last 365 days</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- TIERS PAGE — WIZARD STEP 1 -->
+<!-- ============================================ -->
+<div class="section">
+  <div class="section-title">3. Tiers Page — Wizard Step 1 (Fresh Setup)</div>
+
+  <div class="comparison">
+    <div class="card">
+      <div class="card-header before">Before</div>
+      <div class="card-body">
+        <div class="mock-page">
+          <div class="mock-title"><span class="strike">Program & Tiers</span></div>
+          <div class="mock-subtitle"><span class="strike">Set up your loyalty program in a few easy steps</span></div>
+        </div>
+        <div class="mock-wizard">
+          <div class="mock-wizard-title"><span class="strike">Set Up Your Loyalty Program</span></div>
+          <div class="mock-wizard-sub">Configure how customers qualify for tiers</div>
+          <div class="mock-steps">
+            <span class="mock-step active"><span class="strike">1 Program</span></span>
+            <span class="mock-step inactive">2 Tiers</span>
+            <span class="mock-step inactive">3 Review</span>
+          </div>
+          <div class="mock-field">
+            <div class="mock-field-label"><span class="strike">Program Name</span></div>
+            <div class="mock-field-input">e.g. Rewards Club</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header after">After</div>
+      <div class="card-body">
+        <div class="mock-page">
+          <div class="mock-title"><span class="change">Tiers</span></div>
+          <div class="mock-subtitle"><span class="change">Set up your loyalty tiers in a few easy steps</span></div>
+        </div>
+        <div class="mock-wizard">
+          <div class="mock-wizard-title"><span class="change">Set Up Your Tiers</span></div>
+          <div class="mock-wizard-sub">Configure how customers qualify for tiers</div>
+          <div class="mock-steps">
+            <span class="mock-step active"><span class="change">1 Settings</span></span>
+            <span class="mock-step inactive">2 Tiers</span>
+            <span class="mock-step inactive">3 Review</span>
+          </div>
+          <div class="mock-field">
+            <div class="mock-field-label"><span class="change">Tier Program Name</span></div>
+            <div class="mock-field-input">e.g. Rewards Club</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- TIERS PAGE — WIZARD STEP 3 (REVIEW) -->
+<!-- ============================================ -->
+<div class="section">
+  <div class="section-title">4. Tiers Page — Wizard Step 3 (Review)</div>
+
+  <div class="comparison">
+    <div class="card">
+      <div class="card-header before">Before</div>
+      <div class="card-body">
+        <div class="mock-wizard">
+          <div class="mock-wizard-title"><span class="strike">Review your loyalty program before activating</span></div>
+          <div class="mock-steps">
+            <span class="mock-step inactive"><span class="strike">1 Program</span></span>
+            <span class="mock-step inactive">2 Tiers</span>
+            <span class="mock-step active">3 Review</span>
+          </div>
+          <div style="margin-top: 12px; font-size: 14px; font-weight: 600; color: #374151;"><span class="strike">Program</span></div>
+          <div class="mock-summary">
+            <div class="mock-summary-row"><span class="mock-summary-label"><span class="strike">Program Name</span></span><span class="mock-summary-value">Rewards Club</span></div>
+            <div class="mock-summary-row"><span class="mock-summary-label">Evaluation</span><span class="mock-summary-value">Points Earned</span></div>
+          </div>
+          <div style="margin-top: 12px; font-size: 12px; color: #6b7280;"><span class="strike">Your loyalty program will be created and tiers set up.</span></div>
+          <div class="mock-badge"><span class="strike">Activate Program</span></div>
+          <div class="mock-toast success" style="margin-top: 8px;"><span class="strike">Loyalty program activated!</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header after">After</div>
+      <div class="card-body">
+        <div class="mock-wizard">
+          <div class="mock-wizard-title"><span class="change">Review your tier configuration before activating</span></div>
+          <div class="mock-steps">
+            <span class="mock-step inactive"><span class="change">1 Settings</span></span>
+            <span class="mock-step inactive">2 Tiers</span>
+            <span class="mock-step active">3 Review</span>
+          </div>
+          <div style="margin-top: 12px; font-size: 14px; font-weight: 600; color: #374151;"><span class="change">Settings</span></div>
+          <div class="mock-summary">
+            <div class="mock-summary-row"><span class="mock-summary-label"><span class="change">Tier Program Name</span></span><span class="mock-summary-value">Rewards Club</span></div>
+            <div class="mock-summary-row"><span class="mock-summary-label">Evaluation</span><span class="mock-summary-value">Points Earned</span></div>
+          </div>
+          <div style="margin-top: 12px; font-size: 12px; color: #6b7280;"><span class="change">Your tiers will be created and activated.</span></div>
+          <div class="mock-badge"><span class="change">Activate Tiers</span></div>
+          <div class="mock-toast success" style="margin-top: 8px;"><span class="change">Loyalty tiers activated!</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <strong>Principle:</strong> The word "Program" is replaced with context-specific terms. The sidebar says "Tiers", so the page should talk about tiers, not a generic "program". The underlying data model (<code>LoyaltyProgram</code>, <code>createProgram</code>) stays unchanged — only user-facing labels are updated. Variable names in code remain as-is since they match the API types.
+</div>
+
+</body>
+</html>

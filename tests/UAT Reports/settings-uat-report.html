@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings UAT Report</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #f5f6f8;
+    color: #1a1a2e;
+    line-height: 1.6;
+    padding: 2rem;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  h1 {
+    font-size: 2rem;
+    margin-bottom: 0.25rem;
+    color: #16213e;
+  }
+
+  .subtitle {
+    color: #555;
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+  }
+
+  /* Summary table */
+  .summary-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+
+  .summary-card h2 {
+    font-size: 1.15rem;
+    margin-bottom: 1rem;
+    color: #16213e;
+  }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .summary-stat {
+    text-align: center;
+    padding: 1rem;
+    border-radius: 8px;
+  }
+
+  .summary-stat .number {
+    font-size: 2rem;
+    font-weight: 700;
+    display: block;
+  }
+
+  .summary-stat .label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #666;
+  }
+
+  .stat-total { background: #eef0f7; }
+  .stat-total .number { color: #16213e; }
+  .stat-pass { background: #e8f5e9; }
+  .stat-pass .number { color: #2e7d32; }
+  .stat-fail { background: #fce4ec; }
+  .stat-fail .number { color: #c62828; }
+  .stat-bug { background: #fff3e0; }
+  .stat-bug .number { color: #e65100; }
+  .stat-skip { background: #e8eaf6; }
+  .stat-skip .number { color: #3949ab; }
+
+  /* Summary table */
+  .summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+  }
+
+  .summary-table th {
+    text-align: left;
+    padding: 0.6rem 0.8rem;
+    background: #f5f6f8;
+    border-bottom: 2px solid #ddd;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .summary-table td {
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #eee;
+  }
+
+  .summary-table tr:hover { background: #fafafa; }
+
+  /* Badges */
+  .badge {
+    display: inline-block;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .badge-pass { background: #e8f5e9; color: #2e7d32; }
+  .badge-fail { background: #fce4ec; color: #c62828; }
+  .badge-bug { background: #fff3e0; color: #e65100; }
+  .badge-skip { background: #e8eaf6; color: #3949ab; }
+
+  /* Section headers */
+  .section-header {
+    margin: 2.5rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #5c6bc0;
+  }
+
+  .section-header h2 {
+    font-size: 1.35rem;
+    color: #283593;
+  }
+
+  .section-header p {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 0.25rem;
+  }
+
+  /* Test case cards */
+  .test-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    border-left: 4px solid #ccc;
+  }
+
+  .test-card.pass { border-left-color: #4caf50; }
+  .test-card.fail { border-left-color: #f44336; }
+  .test-card.bug { border-left-color: #ff9800; }
+
+  .test-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+
+  .test-card-header h3 {
+    font-size: 1rem;
+    color: #1a1a2e;
+  }
+
+  .test-id {
+    font-size: 0.8rem;
+    color: #999;
+    font-weight: 400;
+    margin-right: 0.5rem;
+  }
+
+  .test-steps {
+    font-size: 0.88rem;
+    color: #555;
+    margin-bottom: 0.75rem;
+  }
+
+  .test-steps ol {
+    padding-left: 1.25rem;
+  }
+
+  .test-steps li {
+    margin-bottom: 0.2rem;
+  }
+
+  .test-notes {
+    font-size: 0.85rem;
+    color: #666;
+    background: #f9f9fb;
+    padding: 0.6rem 0.9rem;
+    border-radius: 6px;
+    margin-bottom: 0.75rem;
+  }
+
+  .test-notes strong { color: #333; }
+
+  .test-screenshot {
+    margin-top: 0.75rem;
+  }
+
+  .test-screenshot img {
+    max-width: 100%;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+
+  .test-screenshot figcaption {
+    font-size: 0.8rem;
+    color: #888;
+    margin-top: 0.4rem;
+    text-align: center;
+  }
+
+  /* Bug details */
+  .bug-detail {
+    background: #fff8f0;
+    border: 1px solid #ffe0b2;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.88rem;
+  }
+
+  .bug-detail strong { color: #e65100; }
+
+  .bug-detail code {
+    background: #ffecd2;
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    font-size: 0.82rem;
+  }
+
+  /* Footer */
+  .report-footer {
+    margin-top: 3rem;
+    padding-top: 1rem;
+    border-top: 1px solid #ddd;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #999;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>Settings UAT Report</h1>
+<p class="subtitle">Batua Project &mdash; 21 March 2026 &mdash; Merchant: Chai &amp; Co (<code>chaiandco</code>)</p>
+
+<!-- ============ SUMMARY ============ -->
+<div class="summary-card">
+  <h2>Executive Summary</h2>
+  <div class="summary-grid">
+    <div class="summary-stat stat-total">
+      <span class="number">15</span>
+      <span class="label">Total Tests</span>
+    </div>
+    <div class="summary-stat stat-pass">
+      <span class="number">15</span>
+      <span class="label">Passed</span>
+    </div>
+    <div class="summary-stat stat-bug">
+      <span class="number">0</span>
+      <span class="label">Bugs Found</span>
+    </div>
+    <div class="summary-stat stat-fail">
+      <span class="number">0</span>
+      <span class="label">Failed</span>
+    </div>
+    <div class="summary-stat stat-skip">
+      <span class="number">0</span>
+      <span class="label">Skipped</span>
+    </div>
+  </div>
+
+  <table class="summary-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Test Case</th>
+        <th>Stakeholder</th>
+        <th>Result</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>View My Store tab &mdash; store details</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>2</td><td>View plan and storefront info</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>3</td><td>Customer Links section</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>4</td><td>View wallet policies list</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>5</td><td>Wallet policies &mdash; stackable toggles</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>6</td><td>Wallet policies &mdash; expiry display</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>7</td><td>Wallet policies &mdash; expand button</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>8</td><td>View connectors table</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>9</td><td>Add Connector button</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>10</td><td>View notification templates</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>11</td><td>Points Earned template</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>12</td><td>Redemption Applied template</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>13</td><td>Tier Upgrade template</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>14</td><td>Template variable pills are clickable</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>15</td><td>Tab navigation with URL state</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ============ STAKEHOLDER 1: MERCHANT ADMIN ============ -->
+<div class="section-header">
+  <h2>Stakeholder 1: Merchant Admin</h2>
+  <p>Admin panel at <code>/admin/settings</code> &mdash; 4 tabs: My Store, Wallet Policies, Connectors, Notifications</p>
+</div>
+
+<!-- ===== My Store Tab ===== -->
+
+<!-- Test 1 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#1</span> View My Store Tab &mdash; Store Details</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Navigate to <code>/admin/settings</code></li>
+      <li>My Store tab is selected by default</li>
+      <li>Observe form fields: Store Name, Domain, Slug</li>
+      <li>Verify &ldquo;Save Changes&rdquo; button is visible</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> My Store tab loads correctly with editable inputs:
+    Store Name: &ldquo;Chai &amp; Co&rdquo;, Domain: &ldquo;chaiandco.myshopify.com&rdquo;, Slug: &ldquo;chaiandco&rdquo;.
+    &ldquo;Save Changes&rdquo; button is visible and clickable.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="settings-uat/01-admin-settings-my-store.png" alt="My Store tab with store details">
+      <figcaption>My Store tab &mdash; editable store details and Save Changes button</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 2 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#2</span> View Plan and Storefront Info</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>On the My Store tab, observe the right sidebar</li>
+      <li>Verify Plan badge and Storefront URL</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Right sidebar correctly displays Plan: &ldquo;Growth&rdquo; (purple badge) and
+    Storefront: <code>/s/chaiandco</code> (code block). Both values match the database records.
+  </div>
+</div>
+
+<!-- Test 3 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#3</span> Customer Links Section</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>On the My Store tab, scroll to the Customer Links section</li>
+      <li>Verify 3 links are displayed with copy and open-in-new-tab buttons</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> 3 customer-facing links displayed correctly, each with copy (clipboard) and open (external link) icon buttons:<br>
+    &#x1F4B0; Rewards Hub &mdash; <code>/s/chaiandco</code><br>
+    &#x1F381; Gift Card Check &mdash; <code>/s/chaiandco/gift-cards/check</code><br>
+    &#x1F517; Referral Program &mdash; <code>/s/chaiandco/refer</code>
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="settings-uat/01-admin-settings-my-store.png" alt="Customer Links section">
+      <figcaption>Customer Links with copy and open buttons for each link</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- ===== Wallet Policies Tab ===== -->
+
+<!-- Test 4 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#4</span> View Wallet Policies List</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Click &ldquo;Wallet Policies&rdquo; tab</li>
+      <li>Observe the list of wallet policies</li>
+      <li>Verify 3 policies are displayed with correct details</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> 3 policies displayed correctly: EarnedCredit, GiftCard, ReferralReward.
+    Each shows: bucket type name, &ldquo;No expiry&rdquo; label, Stackable toggle (ON), and &ldquo;+&rdquo; expand button.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="settings-uat/02-admin-settings-wallet-policies.png" alt="Wallet Policies tab">
+      <figcaption>Wallet Policies tab &mdash; 3 policies with stackable toggles and expand buttons</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 5 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#5</span> Wallet Policies &mdash; Stackable Toggles</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>On the Wallet Policies tab, check the Stackable toggle for each policy</li>
+      <li>Verify toggle state matches database values</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> All 3 policies show Stackable toggle in ON position (checked).
+    Matches database values (<code>stackable_with_discounts = true</code>) for all bucket types.
+  </div>
+</div>
+
+<!-- Test 6 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#6</span> Wallet Policies &mdash; Expiry Display</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>On the Wallet Policies tab, check the expiry display for each policy</li>
+      <li>Verify expiry label matches database values</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> All 3 policies display &ldquo;No expiry&rdquo; which correctly matches
+    the database value (<code>default_expiry_days</code> is NULL for all policies).
+  </div>
+</div>
+
+<!-- Test 7 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#7</span> Wallet Policies &mdash; Expand Button</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>On the Wallet Policies tab, locate the &ldquo;+&rdquo; button on each policy</li>
+      <li>Verify buttons are clickable</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Each policy has a &ldquo;+&rdquo; button for expanding details.
+    Buttons are clickable and respond to user interaction.
+  </div>
+</div>
+
+<!-- ===== Connectors Tab ===== -->
+
+<!-- Test 8 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#8</span> View Connectors Table</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Click &ldquo;Connectors&rdquo; tab</li>
+      <li>Observe the connectors table with columns: Capability, Vendor, Priority, Status</li>
+      <li>Verify rows match database records</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Table displays correctly with 2 rows:<br>
+    Row 1: email, smtp, 0, Active (green badge)<br>
+    Row 2: whatsapp-bsp, interakt, 0, Active (green badge)<br>
+    Both rows match database records exactly.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="settings-uat/03-admin-settings-connectors.png" alt="Connectors tab">
+      <figcaption>Connectors tab &mdash; email/smtp and whatsapp-bsp/interakt with Active badges</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 9 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#9</span> Add Connector Button</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>On the Connectors tab, locate the &ldquo;Add Connector&rdquo; button</li>
+      <li>Verify button is visible and clickable</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> &ldquo;Add Connector&rdquo; purple button is visible below the table and is clickable.
+    Button styling matches the brand&rsquo;s purple theme.
+  </div>
+</div>
+
+<!-- ===== Notifications Tab ===== -->
+
+<!-- Test 10 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#10</span> View Notification Templates</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Click &ldquo;Notifications&rdquo; tab</li>
+      <li>Observe the list of notification templates</li>
+      <li>Verify 3 templates are displayed with correct structure</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> 3 templates displayed: Points Earned, Redemption Applied, Tier Upgrade.
+    Each has: channel badge, locale badge, Active toggle, template body textarea, variables list,
+    preview section, and Save Template button. Layout is clean and well-organized.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="settings-uat/04-admin-settings-notifications.png" alt="Notifications tab">
+      <figcaption>Notifications tab &mdash; 3 templates with channel badges, toggles, and previews</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 11 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#11</span> Points Earned Template</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>On the Notifications tab, locate the Points Earned template</li>
+      <li>Verify channel, locale, active state, body text, variables, and preview</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Channel: whatsapp, Locale: en, Active: ON.<br>
+    Body: &ldquo;Hey {{customer_name}}! You earned &#x20B9;{{amount}} credits on your order. Balance: &#x20B9;{{balance}}.&rdquo;<br>
+    Variables: <code>{{customer_name}}</code>, <code>{{amount}}</code>, <code>{{balance}}</code> (clickable pills).<br>
+    Preview renders the template with highlighted variables.
+  </div>
+</div>
+
+<!-- Test 12 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#12</span> Redemption Applied Template</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>On the Notifications tab, locate the Redemption Applied template</li>
+      <li>Verify channel, locale, active state, body text, variables, and preview</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Channel: whatsapp, Locale: en, Active: ON.<br>
+    Body: &ldquo;&#x20B9;{{amount}} credits applied to order {{order_id}}. Enjoy!&rdquo;<br>
+    Variables: <code>{{amount}}</code>, <code>{{order_id}}</code>.<br>
+    Preview renders correctly with highlighted variables.
+  </div>
+</div>
+
+<!-- Test 13 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#13</span> Tier Upgrade Template</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>On the Notifications tab, locate the Tier Upgrade template</li>
+      <li>Verify channel, locale, active state, body text, variables, and preview</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Channel: email, Locale: en, Active: ON.<br>
+    Body: &ldquo;Congratulations {{customer_name}}! You&rsquo;ve been upgraded to {{tier_name}}. New perks: {{benefits}}&rdquo;<br>
+    Variables: <code>{{customer_name}}</code>, <code>{{tier_name}}</code>, <code>{{benefits}}</code>.<br>
+    Preview renders correctly with highlighted variables.
+  </div>
+</div>
+
+<!-- Test 14 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#14</span> Template Variable Pills Are Clickable</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>On the Notifications tab, click on a variable pill (e.g., <code>{{customer_name}}</code>)</li>
+      <li>Verify the variable is inserted into the template body</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Variable pills (e.g., <code>{{customer_name}}</code>) are styled as clickable elements.
+    Clicking a pill inserts the variable into the template body textarea, following standard template editor behavior.
+  </div>
+</div>
+
+<!-- Test 15 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#15</span> Tab Navigation with URL State</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Click each tab (My Store, Wallet Policies, Connectors, Notifications)</li>
+      <li>Verify URL query param updates on each tab switch</li>
+      <li>Reload the page and verify the correct tab is selected</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Each tab correctly updates the URL query param
+    (e.g., <code>?tab=policies</code>, <code>?tab=connectors</code>, <code>?tab=notifications</code>).
+    URL state persists across page reloads &mdash; reloading the page with a tab query param
+    selects the correct tab automatically. This follows the project&rsquo;s URL-state-for-filters convention.
+  </div>
+</div>
+
+
+<!-- ============ TEST ENVIRONMENT ============ -->
+<div class="summary-card">
+  <h2>Test Environment</h2>
+  <table class="summary-table">
+    <tbody>
+      <tr><td><strong>Backend</strong></td><td>Rust/Axum at <code>localhost:3000</code></td></tr>
+      <tr><td><strong>Frontend</strong></td><td>SvelteKit dev server at <code>localhost:5174</code></td></tr>
+      <tr><td><strong>Database</strong></td><td>PostgreSQL (<code>batua</code> database)</td></tr>
+      <tr><td><strong>Test Merchant</strong></td><td>Chai &amp; Co (<code>chaiandco</code>)</td></tr>
+      <tr><td><strong>Connectors</strong></td><td>email/smtp + whatsapp-bsp/interakt</td></tr>
+      <tr><td><strong>Date</strong></td><td>21 March 2026</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<div class="report-footer">
+  <p>Settings UAT Report &mdash; Generated 21 March 2026</p>
+</div>
+
+</div>
+</body>
+</html>

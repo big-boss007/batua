@@ -159,13 +159,6 @@
     gap: var(--space-3);
   }
 
-  .list-title {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
-    margin-bottom: var(--space-2);
-  }
-
   .empty-state {
     padding: var(--space-8);
     text-align: center;

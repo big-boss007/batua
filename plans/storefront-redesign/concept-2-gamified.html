@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Concept 2: Gamified Rewards</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #0a0a0f;
+    color: #e4e4ed;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+  }
+
+  .page-title {
+    font-size: 28px;
+    font-weight: 800;
+    color: #f59e0b;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+  .page-subtitle {
+    font-size: 14px;
+    color: #8888a0;
+    margin-bottom: 40px;
+    text-align: center;
+    max-width: 500px;
+    line-height: 1.6;
+  }
+
+  .phone {
+    width: 375px;
+    min-height: 812px;
+    background: #0a0a0f;
+    border-radius: 40px;
+    border: 3px solid #2a2a3a;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 25px 80px rgba(245, 158, 11, 0.1);
+  }
+
+  .notch {
+    width: 150px;
+    height: 28px;
+    background: #000;
+    border-radius: 0 0 20px 20px;
+    margin: 0 auto;
+  }
+
+  .screen {
+    padding: 12px 20px 40px;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0 16px;
+    margin-bottom: 16px;
+  }
+  .logo {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #7c6aff, #6b5ce7);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 16px;
+    color: white;
+  }
+  .brand-name {
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .streak-badge {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: linear-gradient(135deg, #f59e0b20, #f59e0b10);
+    border: 1px solid #f59e0b30;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #f59e0b;
+  }
+
+  /* Greeting */
+  .greeting {
+    margin-bottom: 20px;
+  }
+  .greeting-text {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+  .greeting-sub {
+    font-size: 13px;
+    color: #8888a0;
+  }
+
+  /* Level Card */
+  .level-card {
+    background: linear-gradient(135deg, #1a1520 0%, #12121a 100%);
+    border: 1px solid #2a2a3a;
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .level-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #7c6aff, #f59e0b, #10b981);
+  }
+
+  .level-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+  }
+  .level-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .level-shield {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #7c6aff20, #7c6aff08);
+    border: 2px solid #7c6aff40;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+  }
+  .level-name {
+    font-size: 11px;
+    color: #8888a0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+  }
+  .level-title {
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .level-xp {
+    text-align: right;
+  }
+  .level-xp-value {
+    font-size: 22px;
+    font-weight: 800;
+    color: #f59e0b;
+  }
+  .level-xp-label {
+    font-size: 10px;
+    color: #8888a0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* XP Progress Bar */
+  .xp-bar-container {
+    margin-bottom: 8px;
+  }
+  .xp-bar-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: #6b7280;
+    margin-bottom: 6px;
+  }
+  .xp-bar {
+    height: 8px;
+    background: #2a2a3a;
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+  }
+  .xp-bar-fill {
+    height: 100%;
+    width: 16%;
+    background: linear-gradient(90deg, #7c6aff, #a78bfa);
+    border-radius: 4px;
+    position: relative;
+  }
+  .xp-bar-fill::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 20px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3));
+    border-radius: 0 4px 4px 0;
+  }
+  .xp-milestone {
+    font-size: 11px;
+    color: #8888a0;
+    margin-top: 6px;
+  }
+  .xp-milestone strong {
+    color: #a78bfa;
+  }
+
+  /* Balance Section */
+  .balance-section {
+    background: #12121a;
+    border: 1px solid #2a2a3a;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .balance-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+  }
+  .balance-label {
+    font-size: 12px;
+    color: #8888a0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .balance-tag {
+    font-size: 10px;
+    background: #10b98120;
+    color: #10b981;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+  }
+  .balance-amount {
+    font-size: 36px;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 12px;
+  }
+  .balance-amount .currency {
+    font-size: 20px;
+    opacity: 0.5;
+    vertical-align: top;
+  }
+
+  .bucket-pills {
+    display: flex;
+    gap: 8px;
+  }
+  .bucket-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #1a1a26;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+  }
+  .bucket-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+  .bucket-dot.earned {
+    background: #7c6aff;
+  }
+  .bucket-dot.pending {
+    background: #f59e0b;
+  }
+
+  /* Achievement Section */
+  .achievements {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+  }
+  .achievement {
+    flex-shrink: 0;
+    width: 100px;
+    background: #12121a;
+    border: 1px solid #2a2a3a;
+    border-radius: 14px;
+    padding: 14px 10px;
+    text-align: center;
+  }
+  .achievement.unlocked {
+    border-color: #f59e0b30;
+    background: linear-gradient(135deg, #f59e0b08, #12121a);
+  }
+  .achievement.locked {
+    opacity: 0.4;
+  }
+  .achievement-icon {
+    font-size: 28px;
+    margin-bottom: 6px;
+  }
+  .achievement-name {
+    font-size: 10px;
+    font-weight: 600;
+    color: #8888a0;
+    line-height: 1.3;
+  }
+  .achievement.unlocked .achievement-name {
+    color: #f59e0b;
+  }
+
+  /* Transactions */
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .section-title {
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .section-link {
+    font-size: 12px;
+    color: #7c6aff;
+    font-weight: 500;
+  }
+
+  .tx-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .tx-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #12121a;
+    border-radius: 12px;
+  }
+  .tx-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .tx-icon.credit { background: #10b98118; }
+  .tx-icon.debit { background: #ef444418; }
+  .tx-icon.transfer { background: #7c6aff18; }
+  .tx-details { flex: 1; }
+  .tx-label {
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .tx-meta {
+    font-size: 11px;
+    color: #6b7280;
+    margin-top: 1px;
+  }
+  .tx-xp {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    font-size: 10px;
+    color: #f59e0b;
+    font-weight: 600;
+    background: #f59e0b15;
+    padding: 1px 6px;
+    border-radius: 8px;
+    margin-left: 6px;
+  }
+  .tx-amount {
+    font-size: 14px;
+    font-weight: 600;
+    text-align: right;
+  }
+  .tx-amount.credit { color: #10b981; }
+  .tx-amount.debit { color: #ef4444; }
+  .tx-amount.transfer { color: #7c6aff; }
+  .tx-time {
+    font-size: 10px;
+    color: #6b7280;
+    text-align: right;
+    margin-top: 1px;
+  }
+
+  /* Annotations */
+  .annotation-group {
+    margin-top: 60px;
+    width: 100%;
+    max-width: 700px;
+  }
+  .annotation-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #e4e4ed;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #2a2a3a;
+  }
+  .annotation {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    align-items: flex-start;
+  }
+  .annotation-num {
+    width: 28px;
+    height: 28px;
+    background: #f59e0b;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #000;
+    flex-shrink: 0;
+  }
+  .annotation-text {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #c4c4d4;
+  }
+  .annotation-text strong {
+    color: #e4e4ed;
+  }
+</style>
+</head>
+<body>
+
+<div class="page-title">Concept 2: Gamified Rewards</div>
+<div class="page-subtitle">
+  A playful, engagement-driven design that treats loyalty like a game. XP-based progression,
+  achievement badges, streak tracking, and visual level-up milestones to drive repeat visits.
+</div>
+
+<div class="phone">
+  <div class="notch"></div>
+  <div class="screen">
+
+    <!-- Header -->
+    <div class="header">
+      <div class="logo">H</div>
+      <div class="brand-name">HomeVibes</div>
+      <div class="streak-badge">🔥 3-day streak</div>
+    </div>
+
+    <!-- Greeting -->
+    <div class="greeting">
+      <div class="greeting-text">Hey there! 👋</div>
+      <div class="greeting-sub">Here's your rewards snapshot</div>
+    </div>
+
+    <!-- Level Card -->
+    <div class="level-card">
+      <div class="level-top">
+        <div class="level-badge">
+          <div class="level-shield">🥉</div>
+          <div>
+            <div class="level-name">Current Tier</div>
+            <div class="level-title">Bronze Member</div>
+          </div>
+        </div>
+        <div class="level-xp">
+          <div class="level-xp-value">491</div>
+          <div class="level-xp-label">XP Points</div>
+        </div>
+      </div>
+
+      <div class="xp-bar-container">
+        <div class="xp-bar-labels">
+          <span>Bronze</span>
+          <span>Silver — 3,000 XP</span>
+        </div>
+        <div class="xp-bar">
+          <div class="xp-bar-fill"></div>
+        </div>
+        <div class="xp-milestone">
+          Earn <strong>2,509 XP</strong> more to unlock Silver and get 1.5x rewards
+        </div>
+      </div>
+    </div>
+
+    <!-- Balance -->
+    <div class="balance-section">
+      <div class="balance-header">
+        <div class="balance-label">Wallet Balance</div>
+        <div class="balance-tag">Spendable</div>
+      </div>
+      <div class="balance-amount"><span class="currency">₹</span>491.00</div>
+      <div class="bucket-pills">
+        <div class="bucket-pill">
+          <div class="bucket-dot earned"></div>
+          Earned ₹491
+        </div>
+        <div class="bucket-pill">
+          <div class="bucket-dot pending"></div>
+          Pending ₹171
+        </div>
+      </div>
+    </div>
+
+    <!-- Achievements -->
+    <div class="section-header">
+      <div class="section-title">Achievements</div>
+    </div>
+    <div class="achievements">
+      <div class="achievement unlocked">
+        <div class="achievement-icon">🛒</div>
+        <div class="achievement-name">First Purchase</div>
+      </div>
+      <div class="achievement unlocked">
+        <div class="achievement-icon">💰</div>
+        <div class="achievement-name">₹100 Saved</div>
+      </div>
+      <div class="achievement unlocked">
+        <div class="achievement-icon">🔄</div>
+        <div class="achievement-name">Repeat Buyer</div>
+      </div>
+      <div class="achievement locked">
+        <div class="achievement-icon">🔒</div>
+        <div class="achievement-name">Refer a Friend</div>
+      </div>
+    </div>
+
+    <!-- Transactions -->
+    <div style="margin-top: 20px;">
+      <div class="section-header">
+        <div class="section-title">Recent Activity</div>
+        <div class="section-link">View All</div>
+      </div>
+
+      <div class="tx-list">
+        <div class="tx-item">
+          <div class="tx-icon transfer">⇄</div>
+          <div class="tx-details">
+            <div class="tx-label">Transferred <span class="tx-xp">+86 XP</span></div>
+            <div class="tx-meta">Earned Credit · 1 day ago</div>
+          </div>
+          <div>
+            <div class="tx-amount transfer">₹86.10</div>
+          </div>
+        </div>
+
+        <div class="tx-item">
+          <div class="tx-icon credit">+</div>
+          <div class="tx-details">
+            <div class="tx-label">Cashback <span class="tx-xp">+125 XP</span></div>
+            <div class="tx-meta">Order #1042 · 3 days ago</div>
+          </div>
+          <div>
+            <div class="tx-amount credit">+₹125.00</div>
+          </div>
+        </div>
+
+        <div class="tx-item">
+          <div class="tx-icon debit">−</div>
+          <div class="tx-details">
+            <div class="tx-label">Redeemed</div>
+            <div class="tx-meta">Order #1038 · 5 days ago</div>
+          </div>
+          <div>
+            <div class="tx-amount debit">−₹200.00</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Annotations -->
+<div class="annotation-group">
+  <div class="annotation-title">Key Design Changes</div>
+
+  <div class="annotation">
+    <div class="annotation-num">1</div>
+    <div class="annotation-text">
+      <strong>XP-based Progression:</strong> Reframes "points" as "XP" with a gaming-style level card. The rainbow gradient top border and shield icon create excitement around tier progression.
+    </div>
+  </div>
+
+  <div class="annotation">
+    <div class="annotation-num">2</div>
+    <div class="annotation-text">
+      <strong>Streak Tracking:</strong> A "🔥 3-day streak" badge in the header gamifies return visits. Creates a habit loop — users check in to maintain their streak.
+    </div>
+  </div>
+
+  <div class="annotation">
+    <div class="annotation-num">3</div>
+    <div class="annotation-text">
+      <strong>Achievement Badges:</strong> Horizontal scrolling achievement row shows unlocked milestones (First Purchase, ₹100 Saved, Repeat Buyer) and teases locked ones. Drives engagement through collectible mechanics.
+    </div>
+  </div>
+
+  <div class="annotation">
+    <div class="annotation-num">4</div>
+    <div class="annotation-text">
+      <strong>XP Earned per Transaction:</strong> Each transaction shows XP earned alongside the amount. Reinforces that every purchase is progress toward the next tier.
+    </div>
+  </div>
+
+  <div class="annotation">
+    <div class="annotation-num">5</div>
+    <div class="annotation-text">
+      <strong>Personalized Greeting:</strong> "Hey there! 👋" with contextual subtitle creates warmth. Could be personalized with name if available ("Hey Chirag!").
+    </div>
+  </div>
+
+  <div class="annotation">
+    <div class="annotation-num">6</div>
+    <div class="annotation-text">
+      <strong>Separated Balance & Tier:</strong> Balance is its own card (not competing with tier visually). Bucket breakdown uses colored dot pills — simpler and more scannable than progress bars.
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

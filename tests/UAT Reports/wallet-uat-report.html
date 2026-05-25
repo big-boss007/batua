@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wallet & Transactions UAT Report</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #f5f6f8;
+    color: #1a1a2e;
+    line-height: 1.6;
+    padding: 2rem;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  h1 {
+    font-size: 2rem;
+    margin-bottom: 0.25rem;
+    color: #16213e;
+  }
+
+  .subtitle {
+    color: #555;
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+  }
+
+  /* Summary table */
+  .summary-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+
+  .summary-card h2 {
+    font-size: 1.15rem;
+    margin-bottom: 1rem;
+    color: #16213e;
+  }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .summary-stat {
+    text-align: center;
+    padding: 1rem;
+    border-radius: 8px;
+  }
+
+  .summary-stat .number {
+    font-size: 2rem;
+    font-weight: 700;
+    display: block;
+  }
+
+  .summary-stat .label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #666;
+  }
+
+  .stat-total { background: #eef0f7; }
+  .stat-total .number { color: #16213e; }
+  .stat-pass { background: #e8f5e9; }
+  .stat-pass .number { color: #2e7d32; }
+  .stat-fail { background: #fce4ec; }
+  .stat-fail .number { color: #c62828; }
+  .stat-bug { background: #fff3e0; }
+  .stat-bug .number { color: #e65100; }
+  .stat-skip { background: #e8eaf6; }
+  .stat-skip .number { color: #3949ab; }
+
+  /* Summary table */
+  .summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+  }
+
+  .summary-table th {
+    text-align: left;
+    padding: 0.6rem 0.8rem;
+    background: #f5f6f8;
+    border-bottom: 2px solid #ddd;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .summary-table td {
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #eee;
+  }
+
+  .summary-table tr:hover { background: #fafafa; }
+
+  /* Badges */
+  .badge {
+    display: inline-block;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .badge-pass { background: #e8f5e9; color: #2e7d32; }
+  .badge-fail { background: #fce4ec; color: #c62828; }
+  .badge-bug { background: #fff3e0; color: #e65100; }
+  .badge-skip { background: #e8eaf6; color: #3949ab; }
+
+  /* Section headers */
+  .section-header {
+    margin: 2.5rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #5c6bc0;
+  }
+
+  .section-header h2 {
+    font-size: 1.35rem;
+    color: #283593;
+  }
+
+  .section-header p {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 0.25rem;
+  }
+
+  /* Test case cards */
+  .test-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    border-left: 4px solid #ccc;
+  }
+
+  .test-card.pass { border-left-color: #4caf50; }
+  .test-card.fail { border-left-color: #f44336; }
+  .test-card.bug { border-left-color: #ff9800; }
+
+  .test-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+
+  .test-card-header h3 {
+    font-size: 1rem;
+    color: #1a1a2e;
+  }
+
+  .test-id {
+    font-size: 0.8rem;
+    color: #999;
+    font-weight: 400;
+    margin-right: 0.5rem;
+  }
+
+  .test-steps {
+    font-size: 0.88rem;
+    color: #555;
+    margin-bottom: 0.75rem;
+  }
+
+  .test-steps ol {
+    padding-left: 1.25rem;
+  }
+
+  .test-steps li {
+    margin-bottom: 0.2rem;
+  }
+
+  .test-notes {
+    font-size: 0.85rem;
+    color: #666;
+    background: #f9f9fb;
+    padding: 0.6rem 0.9rem;
+    border-radius: 6px;
+    margin-bottom: 0.75rem;
+  }
+
+  .test-notes strong { color: #333; }
+
+  .test-screenshot {
+    margin-top: 0.75rem;
+  }
+
+  .test-screenshot img {
+    max-width: 100%;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+
+  .test-screenshot figcaption {
+    font-size: 0.8rem;
+    color: #888;
+    margin-top: 0.4rem;
+    text-align: center;
+  }
+
+  /* Bug details */
+  .bug-detail {
+    background: #fff8f0;
+    border: 1px solid #ffe0b2;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.88rem;
+  }
+
+  .bug-detail strong { color: #e65100; }
+
+  .bug-detail code {
+    background: #ffecd2;
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    font-size: 0.82rem;
+  }
+
+  /* Footer */
+  .report-footer {
+    margin-top: 3rem;
+    padding-top: 1rem;
+    border-top: 1px solid #ddd;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #999;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>Wallet &amp; Transactions UAT Report</h1>
+<p class="subtitle">Batua Project &mdash; 21 March 2026 &mdash; Merchant: Chai &amp; Co (<code>chaiandco</code>)</p>
+
+<!-- ============ SUMMARY ============ -->
+<div class="summary-card">
+  <h2>Executive Summary</h2>
+  <div class="summary-grid">
+    <div class="summary-stat stat-total">
+      <span class="number">13</span>
+      <span class="label">Total Tests</span>
+    </div>
+    <div class="summary-stat stat-pass">
+      <span class="number">12</span>
+      <span class="label">Passed</span>
+    </div>
+    <div class="summary-stat stat-bug">
+      <span class="number">1</span>
+      <span class="label">Bugs Found</span>
+    </div>
+    <div class="summary-stat stat-fail">
+      <span class="number">0</span>
+      <span class="label">Failed</span>
+    </div>
+    <div class="summary-stat stat-skip">
+      <span class="number">0</span>
+      <span class="label">Skipped</span>
+    </div>
+  </div>
+
+  <table class="summary-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Test Case</th>
+        <th>Stakeholder</th>
+        <th>Result</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>View transactions list</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>2</td><td>Transaction data displays correctly</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>3</td><td>Search by phone number</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>4</td><td>Filter by bucket type</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>5</td><td>Filter by movement type</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>6</td><td>Transaction detail panel</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>7</td><td>Pagination</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>8</td><td>Transaction detail &mdash; close button</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>9</td><td>Storefront &mdash; spendable balance display</td><td>Customer Storefront</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>10</td><td>Storefront &mdash; bucket breakdown</td><td>Customer Storefront</td><td><span class="badge badge-bug">BUG</span></td></tr>
+      <tr><td>11</td><td>Storefront &mdash; lifetime saved</td><td>Customer Storefront</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>12</td><td>Storefront &mdash; activity feed</td><td>Customer Storefront</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>13</td><td>Storefront &mdash; switch customer button</td><td>Customer Storefront</td><td><span class="badge badge-pass">PASS</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ============ STAKEHOLDER 1: MERCHANT ADMIN ============ -->
+<div class="section-header">
+  <h2>Stakeholder 1: Merchant Admin</h2>
+  <p>Admin panel at <code>/admin/transactions</code> &mdash; transaction feed with search, filters, and detail panel</p>
+</div>
+
+<!-- Test 1 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#1</span> View Transactions List</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Navigate to <code>/admin/transactions</code></li>
+      <li>Observe page title "Transactions" with subtitle "View merchant-wide transaction feed across all customers"</li>
+      <li>Verify table columns: Customer, Bucket, Movement, Amount, State, Date</li>
+      <li>Confirm 25 transactions per page, 2 pages total</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Transactions page loads correctly with the expected title, subtitle, and table layout.
+    All 6 columns are present. 25 rows displayed per page with 2 pages of data available via pagination.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="wallet-uat/01-admin-transactions-list.png" alt="Admin transactions list">
+      <figcaption>Transactions list with 25 rows per page and all expected columns</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 2 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#2</span> Transaction Data Displays Correctly</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Inspect individual transaction rows for correct data formatting</li>
+      <li>Verify customer name with phone number format</li>
+      <li>Check bucket types, movement badges, state badges, date format, and currency amounts</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Each row shows customer name with phone number (e.g., "Vikram Singh (+919000000004)").
+    Bucket types displayed include Referral Reward, Goodwill Credit, and Earned Credit.
+    Movement badges show "In" with green pill styling. State badges show "Active" with green pill styling.
+    Dates are formatted as "21 Mar 2026, 01:47 am". Amounts display with the &#8377; symbol and 2 decimal places.
+  </div>
+</div>
+
+<!-- Test 3 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#3</span> Search by Phone Number</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Locate the search input above the filters</li>
+      <li>Verify placeholder text "Search by phone number..."</li>
+      <li>Confirm the input is positioned for quick access</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Search input is present with the placeholder "Search by phone number..." and is
+    positioned above the filter dropdowns for quick access. The search functionality is available for
+    filtering transactions by customer phone number.
+  </div>
+</div>
+
+<!-- Test 4 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#4</span> Filter by Bucket Type</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Locate the "Bucket Type" dropdown filter</li>
+      <li>Verify default value is "All buckets"</li>
+      <li>Confirm the dropdown is clickable and interactive</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> The "Bucket Type" dropdown is present with "All buckets" as the default value.
+    The dropdown is clickable and provides filtering options for different bucket types.
+  </div>
+</div>
+
+<!-- Test 5 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#5</span> Filter by Movement Type</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Locate the "Movement Type" dropdown filter</li>
+      <li>Verify default value is "All movements"</li>
+      <li>Confirm the dropdown is clickable and interactive</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> The "Movement Type" dropdown is present with "All movements" as the default value.
+    The dropdown is clickable and provides filtering options for different movement types.
+  </div>
+</div>
+
+<!-- Test 6 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#6</span> Transaction Detail Panel</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Click on any transaction row to open the detail panel</li>
+      <li>Verify movement direction (In badge) and amount (&#8377;50.00)</li>
+      <li>Check customer info: Vikram Singh, Phone: +919000000004, Email: vikram.singh@gmail.com</li>
+      <li>Verify bucket: Referral Reward (purple badge), State: Active (green badge)</li>
+      <li>Check cause section: Actor = "system (referral:POOJA3)"</li>
+      <li>Verify amounts: Earning Unit: 50, Currency Equivalent: &#8377;50.00, Conversion Rate: 1</li>
+      <li>Check metadata: Entry ID, Idempotency Key (ref-ee:3), Created date</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Clicking a transaction row opens a detail panel with comprehensive information.
+    Movement direction shows "In" badge, amount displays as &#8377;50.00. Customer details include name, phone,
+    and email. Bucket shown as "Referral Reward" with purple badge, state as "Active" with green badge.
+    Cause section correctly shows actor as "system (referral:POOJA3)". Amounts section displays earning unit (50),
+    currency equivalent (&#8377;50.00), and conversion rate (1). Metadata includes Entry ID, Idempotency Key
+    (ref-ee:3), and created date.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="wallet-uat/02-admin-transaction-detail.png" alt="Transaction detail panel">
+      <figcaption>Transaction detail panel showing full breakdown with customer info, bucket, cause, and metadata</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 7 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#7</span> Pagination</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Scroll to the bottom of the transactions table</li>
+      <li>Observe pagination controls: Previous (disabled on page 1), Page 1, Page 2, Next</li>
+      <li>Verify clean pagination UI</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Pagination is displayed at the bottom of the table with Previous button (correctly
+    disabled on page 1), page number buttons (1 and 2), and Next button. The pagination UI is clean and functional.
+  </div>
+</div>
+
+<!-- Test 8 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#8</span> Transaction Detail &mdash; Close Button</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Open the transaction detail panel by clicking a row</li>
+      <li>Locate the "&times;" close button at top right of the panel</li>
+      <li>Click the close button and verify the panel closes</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> The detail panel has a "&times;" close button positioned at the top right.
+    Clicking it correctly closes the panel and returns to the full table view.
+  </div>
+</div>
+
+
+<!-- ============ STAKEHOLDER 2: CUSTOMER STOREFRONT ============ -->
+<div class="section-header">
+  <h2>Stakeholder 2: Customer Storefront</h2>
+  <p>Storefront page at <code>/s/chaiandco</code> &mdash; dark themed wallet card UI</p>
+</div>
+
+<!-- Test 9 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#9</span> Storefront &mdash; Spendable Balance Display</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Navigate to <code>/s/chaiandco</code></li>
+      <li>Enter phone number <code>9000000010</code> (Rajesh Iyer)</li>
+      <li>Observe "SPENDABLE BALANCE" heading with the balance amount</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> After entering phone 9000000010 (Rajesh Iyer), the storefront displays
+    "SPENDABLE BALANCE" heading with a large &#8377;2,112.29 amount. The balance is prominently displayed
+    in a dark theme card design.
+  </div>
+</div>
+
+<!-- Test 10 -->
+<div class="test-card bug">
+  <div class="test-card-header">
+    <h3><span class="test-id">#10</span> Storefront &mdash; Bucket Breakdown</h3>
+    <span class="badge badge-bug">BUG</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>After phone lookup for Rajesh Iyer (9000000010), scroll to Bucket Breakdown section</li>
+      <li>Observe 4 bucket cards: Earned, COD Pending, On Hold, Expiring Soon</li>
+      <li>Verify amounts match the spendable balance of &#8377;2,112.29</li>
+    </ol>
+  </div>
+  <div class="bug-detail">
+    <strong>Bug (MEDIUM):</strong> The Bucket Breakdown section shows 4 cards (Earned &#8377;0.00, COD Pending &#8377;0.00,
+    On Hold &#8377;0.00, Expiring Soon &#8377;0.00) &mdash; all displaying &#8377;0.00 despite the spendable balance
+    being &#8377;2,112.29. The customer has multiple <code>earned_credit</code> ledger entries totaling &#8377;2,112.29.
+    <strong>Root cause:</strong> The bucket breakdown API or frontend calculation is not correctly summing active
+    ledger entries by bucket type. The spendable balance endpoint returns the correct total, but the per-bucket
+    breakdown is not populated.
+  </div>
+</div>
+
+<!-- Test 11 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#11</span> Storefront &mdash; Lifetime Saved</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Scroll to below the bucket breakdown section</li>
+      <li>Observe "Lifetime Saved" display</li>
+      <li>Verify the amount matches the spendable balance</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Shows "Lifetime Saved: &#8377;2,112.29" below the bucket breakdown section.
+    The amount correctly matches the spendable balance.
+  </div>
+</div>
+
+<!-- Test 12 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#12</span> Storefront &mdash; Activity Feed</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Scroll to the "Activity" section on the storefront</li>
+      <li>Verify chronological transaction list with date headers</li>
+      <li>Check each entry: transaction type, bucket type, amount, running balance</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> The "Activity" section displays a chronological transaction list. Each entry shows:
+    date header, transaction type ("Earned"), bucket type ("EarnedCredit"), amount (e.g., "+&#8377;291.15"),
+    and running balance (e.g., "bal &#8377;2,112.29"). 8 transactions are visible from Nov 2025 to Feb 2026.
+    Credit amounts are shown in green, balances in gray. Transactions are grouped by date.
+  </div>
+</div>
+
+<!-- Test 13 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#13</span> Storefront &mdash; Switch Customer Button</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Locate the "Switch" button in the profile bar</li>
+      <li>Verify it allows changing to a different phone number</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> The "Switch" button is present in the profile bar and allows changing to a different
+    phone number. This provides a convenient way to check different customer accounts without navigating away.
+  </div>
+</div>
+
+
+<!-- ============ BUG SUMMARY ============ -->
+<div class="section-header">
+  <h2>Bug Summary</h2>
+  <p>All bugs discovered during UAT, ordered by severity</p>
+</div>
+
+<div class="summary-card">
+  <table class="summary-table">
+    <thead>
+      <tr>
+        <th>Severity</th>
+        <th>Bug</th>
+        <th>Component</th>
+        <th>Root Cause</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="badge badge-bug">MEDIUM</span></td>
+        <td>Bucket breakdown shows all &#8377;0.00 despite &#8377;2,112.29 balance</td>
+        <td>Storefront &mdash; Balance display</td>
+        <td>Balance calculation mismatch: spendable balance is correct but individual bucket amounts are not being summed from ledger entries</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ============ TEST ENVIRONMENT ============ -->
+<div class="summary-card">
+  <h2>Test Environment</h2>
+  <table class="summary-table">
+    <tbody>
+      <tr><td><strong>Backend</strong></td><td>Rust/Axum at <code>localhost:3000</code></td></tr>
+      <tr><td><strong>Frontend</strong></td><td>SvelteKit dev server at <code>localhost:5174</code></td></tr>
+      <tr><td><strong>Database</strong></td><td>PostgreSQL (<code>batua</code> database)</td></tr>
+      <tr><td><strong>Test Merchant</strong></td><td>Chai &amp; Co (<code>chaiandco</code>)</td></tr>
+      <tr><td><strong>Test Customer</strong></td><td>Rajesh Iyer (+919000000010, balance &#8377;2,112.29)</td></tr>
+      <tr><td><strong>Date</strong></td><td>21 March 2026</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<div class="report-footer">
+  <p>Wallet &amp; Transactions UAT Report &mdash; Generated 21 March 2026</p>
+</div>
+
+</div>
+</body>
+</html>

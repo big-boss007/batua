@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Overview Page — With Analytics Metrics Merged</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --color-bg: #ffffff;
+    --color-surface: #f8f9fa;
+    --color-surface-2: #f0f1f3;
+    --color-text: #1a1a2e;
+    --color-text-muted: #6b7280;
+    --color-border: #e5e7eb;
+    --color-primary: #7c6aff;
+    --color-primary-hover: #6b5ce7;
+    --color-success: #10b981;
+    --color-error: #ef4444;
+    --color-warning: #f59e0b;
+    --color-info: #3b82f6;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-full: 9999px;
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--color-text);
+    background: var(--color-bg);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ===== Page shell ===== */
+  .page-shell {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  .sidebar {
+    width: 220px;
+    background: #12121a;
+    color: #e4e4ed;
+    padding: 24px 0;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .sidebar-brand {
+    font-size: 18px;
+    font-weight: 700;
+    padding: 0 20px 20px;
+    color: #fff;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #8888a0;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+  }
+  .nav-item:hover { color: #e4e4ed; background: #1a1a26; }
+  .nav-item.active {
+    color: #fff;
+    background: #1a1a26;
+    border-left-color: var(--color-primary);
+  }
+  .nav-icon { width: 16px; text-align: center; }
+  .nav-child { padding-left: 46px; font-size: 12px; }
+
+  .main-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    padding: 0 24px;
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+  }
+  .top-bar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .merchant-label { font-size: 16px; font-weight: 600; }
+  .merchant-badge {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-primary);
+    background: var(--color-surface-2);
+    padding: 2px 12px;
+    border-radius: var(--radius-full);
+  }
+
+  .content {
+    flex: 1;
+    padding: 32px;
+    overflow-y: auto;
+  }
+
+  /* ===== Design variants ===== */
+  .variant-label {
+    display: inline-block;
+    background: var(--color-primary);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: var(--radius-full);
+    margin-bottom: 20px;
+  }
+
+  .dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    max-width: 1100px;
+  }
+  .dashboard-header { display: flex; flex-direction: column; gap: 4px; }
+  .dashboard-header h1 { font-size: 24px; font-weight: 700; }
+  .dashboard-header .subtitle { font-size: 13px; color: var(--color-text-muted); }
+
+  /* Metric cards grid */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .metric-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 24px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 150ms ease;
+  }
+  .metric-card:hover { box-shadow: var(--shadow-md); }
+  .metric-value {
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+  .metric-sub { font-size: 12px; color: var(--color-text-muted); }
+  .metric-label { font-size: 13px; color: var(--color-text-muted); font-weight: 500; }
+
+  /* Section titles */
+  .section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: 16px;
+  }
+
+  /* ===== NEW: COD & Orders section ===== */
+  .cod-orders-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .cod-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .cod-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 24px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-left: 3px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+  }
+  .cod-card.warning { border-left-color: var(--color-warning); }
+  .cod-card.success { border-left-color: var(--color-success); }
+  .cod-card.error { border-left-color: var(--color-error); }
+  .cod-card .cod-value { font-size: 22px; font-weight: 700; }
+  .cod-card .cod-label { font-size: 13px; color: var(--color-text-muted); font-weight: 500; }
+
+  .split-card {
+    padding: 24px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+  }
+  .split-title { font-size: 14px; font-weight: 600; margin-bottom: 16px; }
+  .split-bars { display: flex; flex-direction: column; gap: 14px; }
+  .split-bar-group { display: flex; flex-direction: column; gap: 6px; }
+  .split-header { display: flex; justify-content: space-between; }
+  .split-label { font-size: 13px; font-weight: 500; }
+  .split-value { font-size: 13px; font-weight: 700; }
+  .split-track { height: 10px; background: var(--color-surface-2); border-radius: var(--radius-full); overflow: hidden; }
+  .split-fill { height: 100%; border-radius: var(--radius-full); }
+  .split-prepaid { background: var(--color-primary); width: 60%; }
+  .split-cod { background: var(--color-warning); width: 40%; }
+
+  /* ===== NEW: Insights row ===== */
+  .insights-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .insight-card {
+    padding: 24px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+  }
+  .insight-card h4 { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+  .reduction-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--color-success);
+    border-radius: var(--radius-full);
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  .bar-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+  .bar-group:last-child { margin-bottom: 0; }
+  .bar-header { display: flex; justify-content: space-between; }
+  .bar-label { font-size: 13px; font-weight: 500; }
+  .bar-value { font-size: 13px; font-weight: 700; }
+  .bar-track { height: 10px; background: var(--color-surface-2); border-radius: var(--radius-full); overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: var(--radius-full); }
+  .bar-loyalty { background: var(--color-success); width: 28%; }
+  .bar-non-loyalty { background: var(--color-error); width: 100%; }
+
+  .repeat-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 8px;
+    min-height: 140px;
+  }
+  .repeat-value { font-size: 40px; font-weight: 700; color: var(--color-primary); line-height: 1; }
+  .repeat-label { font-size: 13px; color: var(--color-text-muted); font-weight: 500; }
+  .repeat-sub { font-size: 11px; color: var(--color-text-muted); }
+
+  /* Quick actions */
+  .actions-grid { display: flex; flex-wrap: wrap; gap: 12px; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 36px;
+    padding: 0 16px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: var(--radius-md);
+    border: none;
+    cursor: pointer;
+    transition: background 150ms;
+  }
+  .btn-primary { background: var(--color-primary); color: #fff; }
+  .btn-primary:hover { background: var(--color-primary-hover); }
+  .btn-secondary { background: var(--color-surface-2); color: var(--color-text); border: 1px solid var(--color-border); }
+  .btn-secondary:hover { background: var(--color-border); }
+
+  /* Separator between designs */
+  .separator {
+    margin: 60px 0;
+    border: none;
+    border-top: 2px dashed var(--color-border);
+  }
+
+  .note-box {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: var(--radius-lg);
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    font-size: 13px;
+    color: #92400e;
+    line-height: 1.5;
+  }
+  .note-box strong { font-weight: 700; }
+
+  .diff-tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  .diff-new { background: rgba(16, 185, 129, 0.15); color: var(--color-success); }
+  .diff-moved { background: rgba(59, 130, 246, 0.15); color: var(--color-info); }
+</style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- DESIGN: CURRENT OVERVIEW (for comparison)                     -->
+<!-- ============================================================ -->
+<div class="page-shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand">Batua</div>
+    <div class="nav-item"><span class="nav-icon">&#9638;</span> Wallet</div>
+    <div class="nav-item nav-child active">Overview</div>
+    <div class="nav-item nav-child">Wallet Policies</div>
+    <div class="nav-item"><span class="nav-icon">&#9829;</span> Loyalty</div>
+    <div class="nav-item"><span class="nav-icon">&#8644;</span> Transactions</div>
+    <div class="nav-item"><span class="nav-icon">&#9638;</span> Customers</div>
+    <div class="nav-item"><span class="nav-icon">&#9734;</span> Gift Cards</div>
+    <div class="nav-item"><span class="nav-icon">&#8594;</span> Referrals</div>
+    <div class="nav-item" style="color: #ef4444; text-decoration: line-through; opacity: 0.5;"><span class="nav-icon">&#8599;</span> Analytics</div>
+    <div class="nav-item"><span class="nav-icon">&#9993;</span> Notifications</div>
+    <div class="nav-item"><span class="nav-icon">&#9784;</span> Settings</div>
+  </aside>
+  <div class="main-area">
+    <div class="top-bar">
+      <div class="top-bar-left">
+        <span class="merchant-label">Merchant Admin</span>
+        <span class="merchant-badge">Saffron &amp; Sage</span>
+      </div>
+    </div>
+    <div class="content">
+      <span class="variant-label">Current Overview (before)</span>
+      <div class="dashboard">
+        <div class="dashboard-header">
+          <h1>Overview</h1>
+          <p class="subtitle">Overview of your wallet program</p>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <span class="metric-value">842</span>
+            <span class="metric-label">Active Customers</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-value" style="color: var(--color-success);">4,96,672 &#127942;</span>
+            <span class="metric-sub" style="color: var(--color-primary);">&#8776; &#8377;1,24,168.00</span>
+            <span class="metric-label">Active Points</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-value">4,96,672 &#127942;</span>
+            <span class="metric-sub">&#8776; &#8377;1,24,168.00</span>
+            <span class="metric-label">Total Earned</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-value">18,030 &#127942;</span>
+            <span class="metric-sub">&#8776; &#8377;4,507.50</span>
+            <span class="metric-label">Total Redeemed</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-value" style="color: var(--color-warning);">5,160 &#127942;</span>
+            <span class="metric-sub">&#8776; &#8377;1,290.00</span>
+            <span class="metric-label">COD Pending</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-value">24</span>
+            <span class="metric-label">Redemptions</span>
+          </div>
+        </div>
+
+        <section>
+          <h3 class="section-title">Quick Actions</h3>
+          <div class="actions-grid">
+            <button class="btn btn-primary">Create Rule</button>
+            <button class="btn btn-secondary">View Transactions</button>
+            <button class="btn btn-secondary">View Customers</button>
+            <button class="btn btn-secondary">View Storefront</button>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="separator" />
+
+<!-- ============================================================ -->
+<!-- DESIGN: ENHANCED OVERVIEW (analytics merged in)               -->
+<!-- ============================================================ -->
+<div class="page-shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand">Batua</div>
+    <div class="nav-item"><span class="nav-icon">&#9638;</span> Wallet</div>
+    <div class="nav-item nav-child active">Overview</div>
+    <div class="nav-item nav-child">Wallet Policies</div>
+    <div class="nav-item"><span class="nav-icon">&#9829;</span> Loyalty</div>
+    <div class="nav-item"><span class="nav-icon">&#8644;</span> Transactions</div>
+    <div class="nav-item"><span class="nav-icon">&#9638;</span> Customers</div>
+    <div class="nav-item"><span class="nav-icon">&#9734;</span> Gift Cards</div>
+    <div class="nav-item"><span class="nav-icon">&#8594;</span> Referrals</div>
+    <div class="nav-item"><span class="nav-icon">&#9993;</span> Notifications</div>
+    <div class="nav-item"><span class="nav-icon">&#9784;</span> Settings</div>
+  </aside>
+  <div class="main-area">
+    <div class="top-bar">
+      <div class="top-bar-left">
+        <span class="merchant-label">Merchant Admin</span>
+        <span class="merchant-badge">Saffron &amp; Sage</span>
+      </div>
+    </div>
+    <div class="content">
+      <span class="variant-label">Enhanced Overview (analytics removed from sidebar)</span>
+
+      <div class="note-box">
+        <strong>What changed:</strong> The standalone Analytics page is removed. Its 3 unique sections
+        (COD &amp; Orders, RTO Comparison, Repeat Rate) are merged below the existing metric cards.
+        The top 6 cards + Quick Actions remain identical. Total Expired is added as a 7th card since
+        it was only in Analytics before.
+      </div>
+
+      <div class="dashboard">
+        <div class="dashboard-header">
+          <h1>Overview</h1>
+          <p class="subtitle">Overview of your wallet program</p>
+        </div>
+
+        <!-- Existing 6 metric cards + 1 new -->
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <span class="metric-value">842</span>
+            <span class="metric-label">Active Customers</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-value" style="color: var(--color-success);">4,96,672 &#127942;</span>
+            <span class="metric-sub" style="color: var(--color-primary);">&#8776; &#8377;1,24,168.00</span>
+            <span class="metric-label">Active Points</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-value">4,96,672 &#127942;</span>
+            <span class="metric-sub">&#8776; &#8377;1,24,168.00</span>
+            <span class="metric-label">Total Earned</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-value">18,030 &#127942;</span>
+            <span class="metric-sub">&#8776; &#8377;4,507.50</span>
+            <span class="metric-label">Total Redeemed</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-value" style="color: var(--color-warning);">5,160 &#127942;</span>
+            <span class="metric-sub">&#8776; &#8377;1,290.00</span>
+            <span class="metric-label">COD Pending</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-value">24</span>
+            <span class="metric-label">Redemptions</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-value">0 &#127942;</span>
+            <span class="metric-sub">&#8776; &#8377;0.00</span>
+            <span class="metric-label">Total Expired <span class="diff-tag diff-new">new</span></span>
+          </div>
+        </div>
+
+        <!-- NEW: COD & Orders section (from Analytics) -->
+        <div class="cod-orders-section">
+          <h3 class="section-title">COD &amp; Orders <span class="diff-tag diff-moved">from analytics</span></h3>
+
+          <div class="cod-grid">
+            <div class="cod-card warning">
+              <span class="cod-value">1,290</span>
+              <span class="cod-label">COD Pending</span>
+            </div>
+            <div class="cod-card success">
+              <span class="cod-value">4,652.5</span>
+              <span class="cod-label">COD Delivered</span>
+            </div>
+            <div class="cod-card error">
+              <span class="cod-value">0</span>
+              <span class="cod-label">COD RTO</span>
+            </div>
+          </div>
+
+          <div class="split-card">
+            <div class="split-title">Prepaid vs COD Split</div>
+            <div class="split-bars">
+              <div class="split-bar-group">
+                <div class="split-header">
+                  <span class="split-label">Prepaid</span>
+                  <span class="split-value">300 (60%)</span>
+                </div>
+                <div class="split-track">
+                  <div class="split-fill split-prepaid"></div>
+                </div>
+              </div>
+              <div class="split-bar-group">
+                <div class="split-header">
+                  <span class="split-label">COD</span>
+                  <span class="split-value">200 (40%)</span>
+                </div>
+                <div class="split-track">
+                  <div class="split-fill split-cod"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- NEW: Insights row (from Analytics) -->
+        <div>
+          <h3 class="section-title">ROI Insights <span class="diff-tag diff-moved">from analytics</span></h3>
+          <div class="insights-row">
+            <div class="insight-card">
+              <h4>RTO Rate Comparison</h4>
+              <span class="reduction-badge">71% lower RTO with loyalty</span>
+              <div class="bar-group">
+                <div class="bar-header">
+                  <span class="bar-label">Loyalty Members</span>
+                  <span class="bar-value">8.0%</span>
+                </div>
+                <div class="bar-track">
+                  <div class="bar-fill bar-loyalty"></div>
+                </div>
+              </div>
+              <div class="bar-group">
+                <div class="bar-header">
+                  <span class="bar-label">Non-Members</span>
+                  <span class="bar-value">28.0%</span>
+                </div>
+                <div class="bar-track">
+                  <div class="bar-fill bar-non-loyalty"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="insight-card">
+              <div class="repeat-center">
+                <span class="repeat-value">35.0%</span>
+                <span class="repeat-label">Repeat Purchase Rate</span>
+                <span class="repeat-sub">Customers who ordered more than once</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick actions (unchanged) -->
+        <section>
+          <h3 class="section-title">Quick Actions</h3>
+          <div class="actions-grid">
+            <button class="btn btn-primary">Create Rule</button>
+            <button class="btn btn-secondary">View Transactions</button>
+            <button class="btn btn-secondary">View Customers</button>
+            <button class="btn btn-secondary">View Storefront</button>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

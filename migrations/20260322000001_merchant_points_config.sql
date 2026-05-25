@@ -1,0 +1,4 @@
+ALTER TABLE merchants
+  ADD COLUMN points_name TEXT NOT NULL DEFAULT 'Points',
+  ADD COLUMN points_icon TEXT NOT NULL DEFAULT 'pts',
+  ADD COLUMN points_to_currency_rate DOUBLE PRECISION NOT NULL DEFAULT 1.0;

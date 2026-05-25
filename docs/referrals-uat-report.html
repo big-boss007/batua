@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Referrals Feature — UAT Report</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: #f3f4f6; color: #1f2937; font-size: 14px; line-height: 1.6;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+
+  /* Header */
+  .report-header {
+    background: #1e293b; color: #fff; padding: 32px; border-radius: 12px;
+    margin-bottom: 24px;
+  }
+  .report-header h1 { font-size: 24px; margin-bottom: 8px; }
+  .report-header .meta { font-size: 13px; color: #94a3b8; }
+  .report-header .meta span { margin-right: 16px; }
+
+  /* Summary cards */
+  .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+  .summary-card {
+    background: #fff; border-radius: 10px; padding: 20px;
+    border: 1px solid #e5e7eb; text-align: center;
+  }
+  .summary-num { font-size: 28px; font-weight: 700; }
+  .summary-num.green { color: #10b981; }
+  .summary-num.red { color: #ef4444; }
+  .summary-num.orange { color: #f59e0b; }
+  .summary-num.gray { color: #6b7280; }
+
+  .summary-label { font-size: 12px; color: #6b7280; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* Bug table */
+  .bug-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; background: #fff; border-radius: 10px; overflow: hidden; border: 1px solid #e5e7eb; }
+  .bug-table th { background: #f8fafc; padding: 10px 14px; text-align: left; font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e5e7eb; }
+  .bug-table td { padding: 10px 14px; border-bottom: 1px solid #f3f4f6; font-size: 13px; }
+  .bug-table tr:last-child td { border-bottom: none; }
+
+  /* Badges */
+  .badge {
+    display: inline-block; padding: 3px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px;
+  }
+  .badge-pass { background: #dcfce7; color: #166534; }
+  .badge-fail { background: #fef2f2; color: #991b1b; }
+  .badge-bug { background: #fefce8; color: #854d0e; }
+  .badge-high { background: #fef2f2; color: #991b1b; }
+  .badge-medium { background: #fefce8; color: #854d0e; }
+  .badge-low { background: #f3f4f6; color: #6b7280; }
+
+  /* Section */
+  .section { margin-bottom: 32px; }
+  .section-title {
+    font-size: 18px; font-weight: 700; padding-bottom: 10px;
+    border-bottom: 2px solid #e5e7eb; margin-bottom: 16px;
+  }
+
+  /* Test card */
+  .test-card {
+    background: #fff; border: 1px solid #e5e7eb; border-radius: 10px;
+    margin-bottom: 16px; overflow: hidden;
+  }
+  .test-card-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 20px; border-bottom: 1px solid #f3f4f6;
+  }
+  .test-card-title { font-size: 14px; font-weight: 600; }
+  .test-card-body { padding: 16px 20px; }
+  .test-card-body p { margin-bottom: 8px; font-size: 13px; color: #4b5563; }
+  .test-card-body strong { color: #1f2937; }
+  .test-card img {
+    max-width: 100%; border-radius: 8px; border: 1px solid #e5e7eb;
+    margin: 12px 0;
+  }
+  .test-steps { margin: 8px 0; padding-left: 20px; }
+  .test-steps li { font-size: 13px; color: #4b5563; margin-bottom: 4px; }
+  .bug-detail {
+    background: #fefce8; border: 1px solid #fde68a; border-radius: 6px;
+    padding: 10px 14px; margin-top: 8px; font-size: 12px;
+  }
+
+  /* Environment */
+  .env-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; border: 1px solid #e5e7eb; }
+  .env-table td { padding: 8px 14px; font-size: 13px; border-bottom: 1px solid #f3f4f6; }
+  .env-table td:first-child { font-weight: 600; color: #6b7280; width: 200px; }
+
+  @media print {
+    body { background: #fff; }
+    .test-card { break-inside: avoid; }
+    .report-header { background: #1e293b !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .badge { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .summary-card { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .screenshot img { max-height: 300px; object-fit: contain; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- ==================== HEADER ==================== -->
+<div class="report-header">
+  <h1>Referrals Feature &mdash; UAT Report</h1>
+  <div class="meta">
+    <span>Date: 2026-03-23</span>
+    <span>Feature: Referral Program (Admin + Storefront)</span>
+    <span>Environment: localhost:5174</span>
+  </div>
+</div>
+
+<!-- ==================== SUMMARY ==================== -->
+<div class="summary-grid">
+  <div class="summary-card"><div class="summary-num gray">5</div><div class="summary-label">Total Tests</div></div>
+  <div class="summary-card"><div class="summary-num green">4</div><div class="summary-label">Passed</div></div>
+  <div class="summary-card"><div class="summary-num red">0</div><div class="summary-label">Failed</div></div>
+  <div class="summary-card"><div class="summary-num orange">1</div><div class="summary-label">Bugs Found</div></div>
+</div>
+
+<!-- ==================== BUG SUMMARY ==================== -->
+<div class="section">
+  <h2 class="section-title">Bug Summary</h2>
+  <table class="bug-table">
+    <thead><tr><th>ID</th><th>Severity</th><th>Description</th><th>Root Cause</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>BUG-1</td>
+        <td><span class="badge badge-medium">MEDIUM</span></td>
+        <td>Referral reward value displays as "0" on the admin overview tab instead of the actual configured reward amount</td>
+        <td>The <code>reward_amount</code> field is likely not being loaded or rendered correctly in the overview component &mdash; the API may return the value but the component initializes with a default of 0 and does not reactively update when async data arrives</td>
+        <td><span class="badge badge-bug">OPEN</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ==================== MERCHANT ADMIN TESTS ==================== -->
+<div class="section">
+  <h2 class="section-title">Merchant Admin &mdash; Referrals (/admin/referrals)</h2>
+
+  <!-- Test 1 -->
+  <div class="test-card">
+    <div class="test-card-header">
+      <span class="test-card-title">REF-01: Referral Program Overview</span>
+      <span class="badge badge-bug">BUG</span>
+    </div>
+    <div class="test-card-body">
+      <ol class="test-steps">
+        <li>Navigate to <code>/admin/referrals</code></li>
+        <li>Verify the Program configuration tab is displayed as the default view</li>
+        <li>Check that the referral reward value is shown correctly</li>
+      </ol>
+      <p><strong>Expected:</strong> Program overview tab displays the configured referral reward amount, program status, and program settings.</p>
+      <p><strong>Actual:</strong> The program configuration tab loads correctly, but the referral reward value displays as <strong>"0"</strong> instead of the actual configured reward amount. All other program fields (status, toggles) render as expected.</p>
+      <img src="referrals-uat/01-admin-referrals.png" alt="Admin referrals overview tab showing reward as 0">
+      <div class="bug-detail">
+        <strong>BUG-1 (MEDIUM):</strong> Referral reward value displays as "0" on the admin overview tab. The <code>reward_amount</code> field is not being loaded or displayed correctly in the overview component. This is likely the same class of issue seen previously (B1 in the v2 report) where <code>$state()</code> initializes from a prop at mount time before async data arrives, and never updates reactively when the prop changes from null to the loaded value.
+      </div>
+    </div>
+  </div>
+
+  <!-- Test 2 -->
+  <div class="test-card">
+    <div class="test-card-header">
+      <span class="test-card-title">REF-02: Referral Codes Tab</span>
+      <span class="badge badge-pass">PASS</span>
+    </div>
+    <div class="test-card-body">
+      <ol class="test-steps">
+        <li>Click the "Codes" tab on the referrals page</li>
+        <li>Verify the "Create Code" form is displayed</li>
+        <li>Verify the existing referral codes list with usage counts</li>
+      </ol>
+      <p><strong>Expected:</strong> Codes tab shows the Create Code form (customer ID input, checkboxes) and a table of existing referral codes with their usage/conversion counts.</p>
+      <p><strong>Actual:</strong> The Codes tab renders correctly. The Create Code form is present with the customer ID input field and configuration options. The codes list table displays all existing referral codes with their associated usage counts. All data matches the API response.</p>
+      <img src="referrals-uat/02-admin-referrals-codes.png" alt="Codes tab with Create Code form and code list">
+    </div>
+  </div>
+
+  <!-- Test 3 -->
+  <div class="test-card">
+    <div class="test-card-header">
+      <span class="test-card-title">REF-03: Referral Conversions Tab</span>
+      <span class="badge badge-pass">PASS</span>
+    </div>
+    <div class="test-card-body">
+      <ol class="test-steps">
+        <li>Click the "Conversions" tab on the referrals page</li>
+        <li>Verify conversion records are displayed</li>
+        <li>Check that each record shows referrer, referee, code, date, and reward amount</li>
+      </ol>
+      <p><strong>Expected:</strong> Conversions tab displays a list of referral conversion records, each showing the referrer, referee, referral code used, conversion date, and reward amount credited.</p>
+      <p><strong>Actual:</strong> The Conversions tab renders correctly with all conversion records. Each row displays the referrer identifier, referee identifier, the referral code used, the conversion date, and the reward amount. Data is consistent with the API response.</p>
+      <img src="referrals-uat/03-admin-referrals-conversions.png" alt="Conversions tab with conversion records">
+    </div>
+  </div>
+</div>
+
+<!-- ==================== CUSTOMER STOREFRONT TESTS ==================== -->
+<div class="section">
+  <h2 class="section-title">Customer Storefront &mdash; Referral Landing (/s/{slug}/refer/{code})</h2>
+
+  <!-- Test 4 -->
+  <div class="test-card">
+    <div class="test-card-header">
+      <span class="test-card-title">REF-04: Referral Landing Page</span>
+      <span class="badge badge-pass">PASS</span>
+    </div>
+    <div class="test-card-body">
+      <ol class="test-steps">
+        <li>Navigate to <code>/s/chaiandco/refer/REF01001A</code></li>
+        <li>Verify the invitation heading, reward amount, and code display</li>
+      </ol>
+      <p><strong>Expected:</strong> Landing page shows "You've been invited!" heading, "Get 27 Stars in rewards on your first order" subtext, and the referral code REF01001A displayed in a dashed border box.</p>
+      <p><strong>Actual:</strong> All elements render correctly:</p>
+      <ul>
+        <li>Heading: "You've been invited!" &mdash; correct</li>
+        <li>Reward text: "Get 27 Stars in rewards on your first order" &mdash; correct, uses merchant's points name ("Stars")</li>
+        <li>Code display: REF01001A shown in a dashed border box &mdash; correct</li>
+      </ul>
+      <img src="storefront-uat/14-storefront-referral.png" alt="Storefront referral landing page for REF01001A">
+    </div>
+  </div>
+
+  <!-- Test 5 -->
+  <div class="test-card">
+    <div class="test-card-header">
+      <span class="test-card-title">REF-05: How It Works Steps</span>
+      <span class="badge badge-pass">PASS</span>
+    </div>
+    <div class="test-card-body">
+      <ol class="test-steps">
+        <li>On the referral landing page, scroll to the "How it works" section</li>
+        <li>Verify all three steps are displayed with correct content</li>
+      </ol>
+      <p><strong>Expected:</strong> Three-step guide explaining the referral process: (1) Shop at Chai &amp; Co, (2) Use code at checkout, (3) Get 27 Stars credited.</p>
+      <p><strong>Actual:</strong> The "How it works" section renders all three steps correctly:</p>
+      <ul>
+        <li>Step 1: Shop at Chai &amp; Co &mdash; correct merchant name</li>
+        <li>Step 2: Use code at checkout &mdash; references the referral code</li>
+        <li>Step 3: Get 27 Stars credited &mdash; correct reward amount with merchant's points unit</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== ENVIRONMENT ==================== -->
+<div class="section">
+  <h2 class="section-title">Environment</h2>
+  <table class="env-table">
+    <tr><td>Frontend</td><td>SvelteKit &mdash; localhost:5174</td></tr>
+    <tr><td>Backend</td><td>Rust/Axum &mdash; localhost:3000</td></tr>
+    <tr><td>Database</td><td>PostgreSQL &mdash; batua (local)</td></tr>
+    <tr><td>Test Merchant</td><td>Chai &amp; Co (slug: chaiandco)</td></tr>
+    <tr><td>Test Referral Code</td><td>REF01001A</td></tr>
+    <tr><td>Date</td><td>2026-03-23</td></tr>
+  </table>
+</div>
+
+</div>
+</body>
+</html>

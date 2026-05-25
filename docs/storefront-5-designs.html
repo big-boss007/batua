@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Storefront — 5 Design Options</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: #0a0b0f;
+    color: #e2e2e8;
+    padding: 40px 32px;
+  }
+  h1 {
+    text-align: center; font-size: 28px; font-weight: 700;
+    margin-bottom: 8px; color: #fff;
+  }
+  .page-sub {
+    text-align: center; font-size: 14px; color: #6b7280;
+    margin-bottom: 48px;
+  }
+  .design-row {
+    display: flex; gap: 32px; justify-content: center;
+    flex-wrap: wrap; margin-bottom: 56px;
+  }
+  .design-col {
+    display: flex; flex-direction: column; align-items: center; gap: 16px;
+  }
+  .design-label {
+    text-align: center; padding: 10px 20px;
+    background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.25);
+    border-radius: 20px; font-size: 12px; font-weight: 600;
+    color: #a5b4fc; letter-spacing: 0.5px;
+  }
+  .design-tag {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 9px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.5px; margin-left: 8px; vertical-align: middle;
+  }
+  .tag-simple { background: rgba(74,222,128,0.15); color: #4ade80; }
+  .tag-detailed { background: rgba(251,191,36,0.15); color: #fbbf24; }
+  .design-desc {
+    max-width: 380px; text-align: center; font-size: 12px;
+    color: #6b7280; line-height: 1.5;
+  }
+
+  /* --- Phone Frame --- */
+  .phone {
+    width: 375px; background: #1a1d27;
+    border-radius: 24px; overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
+
+  /* --- Shared Components --- */
+  .hdr {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 24px; border-bottom: 1px solid #2a2d3a;
+  }
+  .hdr-logo {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: linear-gradient(135deg, #6366f1, #818cf8);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; color: #fff;
+  }
+  .hdr-name { font-size: 14px; font-weight: 600; }
+
+  .prof {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 24px;
+  }
+  .prof-left { display: flex; align-items: center; gap: 12px; }
+  .prof-av {
+    width: 42px; height: 42px; border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #818cf8);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 14px; color: #fff;
+  }
+  .prof-greet { font-size: 12px; color: #9ca3af; }
+  .prof-name { font-size: 17px; font-weight: 700; margin-top: 1px; }
+  .prof-meta { font-size: 11px; color: #9ca3af; margin-top: 1px; }
+  .prof-tier { color: #818cf8; font-weight: 600; }
+  .prof-switch {
+    font-size: 11px; color: #818cf8; background: none;
+    border: 1px solid #2a2d3a; padding: 4px 12px; border-radius: 16px;
+  }
+
+  .mult-strip {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 10px 24px; font-size: 12px; font-weight: 600; color: #818cf8;
+    background: linear-gradient(90deg, rgba(99,102,241,0.1), rgba(129,140,248,0.04));
+    border-top: 1px solid #2a2d3a; border-bottom: 1px solid #2a2d3a;
+  }
+  .mult-v { color: #4ade80; font-weight: 700; }
+
+  .div { height: 1px; background: #2a2d3a; }
+
+  .sec { padding: 18px 24px; }
+  .sec-title {
+    font-size: 11px; color: #9ca3af; text-transform: uppercase;
+    letter-spacing: 0.8px; margin-bottom: 12px; font-weight: 500;
+  }
+
+  /* --- Transaction rows (shared) --- */
+  .tx { display: flex; align-items: center; gap: 14px; padding: 12px 0; }
+  .tx + .tx { border-top: 1px solid #2a2d3a; }
+  .tx-bar { width: 3px; height: 28px; border-radius: 2px; flex-shrink: 0; }
+  .tx-bar-g { background: #4ade80; }
+  .tx-bar-r { background: #f87171; }
+  .tx-bar-p { background: #c4b5fd; }
+  .tx-body { flex: 1; }
+  .tx-lbl { font-size: 12px; font-weight: 500; }
+  .tx-sub { font-size: 10px; color: #9ca3af; margin-top: 1px; }
+  .tx-end { text-align: right; }
+  .tx-amt { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .tx-g { color: #4ade80; }
+  .tx-w { color: #fff; }
+  .tx-p { color: #c4b5fd; }
+  .tx-hint { font-size: 9px; color: #6b7280; margin-top: 1px; font-variant-numeric: tabular-nums; }
+
+  /* --- Bottom actions --- */
+  .btm { display: flex; gap: 8px; padding: 16px 24px; }
+  .btm-a {
+    flex: 1; padding: 12px; text-align: center;
+    border: 1px solid #2a2d3a; border-radius: 10px;
+    font-size: 11px; font-weight: 500; color: #9ca3af; text-decoration: none;
+  }
+  .btm-p { background: #6366f1; border-color: #6366f1; color: #fff; }
+
+  /* --- Tier row (compact) --- */
+  .tier-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 24px; background: rgba(255,255,255,0.02);
+    border-top: 1px solid #2a2d3a; border-bottom: 1px solid #2a2d3a;
+  }
+  .tier-left { display: flex; align-items: center; gap: 8px; }
+  .tier-badge-sm {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: rgba(255,255,255,0.06); border: 1px solid #2a2d3a;
+    border-radius: 14px; padding: 3px 10px 3px 8px;
+    font-size: 11px; font-weight: 600;
+  }
+  .tier-prog-mini { display: flex; align-items: center; gap: 6px; }
+  .tier-prog-track {
+    width: 60px; height: 4px; background: #2a2d3a; border-radius: 2px; overflow: hidden;
+  }
+  .tier-prog-fill { height: 100%; background: #818cf8; border-radius: 2px; }
+  .tier-prog-text { font-size: 10px; color: #9ca3af; }
+
+  /* Row separator */
+  .section-sep { height: 6px; background: rgba(0,0,0,0.2); }
+</style>
+</head>
+<body>
+
+<h1>Storefront Balance — 5 Design Options</h1>
+<p class="page-sub">Merchant: Chai & Co · Points name: "Stars" · Rate: 4 Stars = ₹1 · Customer: Priya (Gold, 1400★ points + ₹500 gift card)</p>
+
+<!-- ===================== ROW 1: Designs 1-3 ===================== -->
+<div class="design-row">
+
+<!-- ========== DESIGN 1: Full Detail (already proposed) ========== -->
+<div class="design-col">
+  <div class="design-label">Design 1 — Full Detail<span class="design-tag tag-detailed">Detailed</span></div>
+  <div class="phone">
+    <div class="hdr"><div class="hdr-logo">C</div><div class="hdr-name">Chai & Co</div></div>
+    <div class="prof">
+      <div class="prof-left">
+        <div class="prof-av">PS</div>
+        <div>
+          <div class="prof-greet">Welcome back,</div>
+          <div class="prof-name">Priya Sharma</div>
+          <div class="prof-meta"><span class="prof-tier">Gold</span> · Member</div>
+        </div>
+      </div>
+      <button class="prof-switch">Switch</button>
+    </div>
+    <div class="mult-strip">⚡ Earning <span class="mult-v">1.5x</span> Stars on every order</div>
+
+    <!-- Points balance (hero) -->
+    <div style="text-align:center; padding: 26px 24px 12px;">
+      <div style="font-size:11px; color:#9ca3af; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:6px;">Your Stars</div>
+      <div style="font-size:42px; font-weight:700; color:#4ade80; line-height:1; letter-spacing:-1px;">1,400<span style="font-size:16px; font-weight:600; color:#6ee7b7; margin-left:4px; letter-spacing:0;">★</span></div>
+      <div style="margin-top:8px; font-size:13px; color:#9ca3af;">worth <span style="color:#c4b5fd; font-weight:600;">₹350</span></div>
+      <div style="margin-top:6px; font-size:12px; color:#9ca3af;">2,000 total · <span style="color:#fde047;">600 pending</span></div>
+    </div>
+
+    <!-- Cash balance card -->
+    <div style="padding:0 24px 18px;">
+      <div style="background:rgba(196,181,253,0.06); border:1px solid #2a2d3a; border-radius:12px; padding:14px 18px; display:flex; align-items:center; justify-content:space-between;">
+        <div>
+          <div style="font-size:10px; color:#9ca3af; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:3px;">Cash Balance</div>
+          <div style="font-size:22px; font-weight:700; color:#c4b5fd;">₹500</div>
+        </div>
+        <div style="text-align:right; font-size:10px; color:#6b7280;">Gift Card ₹500<br>Refund ₹0</div>
+      </div>
+    </div>
+
+    <!-- Total redeemable -->
+    <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 24px; background:rgba(99,102,241,0.06); border-top:1px solid #2a2d3a; border-bottom:1px solid #2a2d3a;">
+      <div>
+        <div style="font-size:10px; color:#9ca3af;">Total Redeemable</div>
+        <div style="font-size:11px; color:#6b7280; margin-top:2px;">1,400★ + ₹500 cash</div>
+      </div>
+      <div style="font-size:20px; font-weight:700; color:#818cf8;">₹850</div>
+    </div>
+
+    <!-- 4-bucket grid -->
+    <div class="sec">
+      <div class="sec-title">Breakdown</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+        <div style="background:rgba(255,255,255,0.03); border:1px solid #2a2d3a; border-radius:10px; padding:12px 14px;">
+          <div style="font-size:10px; color:#9ca3af; text-transform:uppercase; letter-spacing:0.4px; margin-bottom:4px;">Earned</div>
+          <div style="font-size:16px; font-weight:600;">1,000 ★</div>
+          <div style="font-size:10px; color:#c4b5fd; margin-top:2px;">≈ ₹250</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03); border:1px solid #2a2d3a; border-radius:10px; padding:12px 14px;">
+          <div style="font-size:10px; color:#9ca3af; text-transform:uppercase; letter-spacing:0.4px; margin-bottom:4px;">Gift Card</div>
+          <div style="font-size:16px; font-weight:600; color:#c4b5fd;">₹500</div>
+          <div style="font-size:10px; color:#6b7280; margin-top:2px;">cash value</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03); border:1px solid #2a2d3a; border-radius:10px; padding:12px 14px;">
+          <div style="font-size:10px; color:#9ca3af; text-transform:uppercase; letter-spacing:0.4px; margin-bottom:4px;">Referral</div>
+          <div style="font-size:16px; font-weight:600;">400 ★</div>
+          <div style="font-size:10px; color:#c4b5fd; margin-top:2px;">≈ ₹100</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03); border:1px solid #2a2d3a; border-radius:10px; padding:12px 14px;">
+          <div style="font-size:10px; color:#9ca3af; text-transform:uppercase; letter-spacing:0.4px; margin-bottom:4px;">COD Pending</div>
+          <div style="font-size:16px; font-weight:600; color:#fde047;">600 ★</div>
+          <div style="font-size:10px; color:#fde04780; margin-top:2px;">pending delivery</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="div"></div>
+    <div class="sec">
+      <div class="sec-title">Recent Activity</div>
+      <div class="tx"><div class="tx-bar tx-bar-g"></div><div class="tx-body"><div class="tx-lbl">Earned</div><div class="tx-sub">Earned Credit · Today</div></div><div class="tx-end"><div class="tx-amt tx-g">+320 ★</div><div class="tx-hint">≈ ₹80</div></div></div>
+      <div class="tx"><div class="tx-bar tx-bar-r"></div><div class="tx-body"><div class="tx-lbl">Redeemed</div><div class="tx-sub">Earned Credit · 5d ago</div></div><div class="tx-end"><div class="tx-amt tx-w">-300 ★</div><div class="tx-hint">≈ ₹75</div></div></div>
+      <div class="tx"><div class="tx-bar tx-bar-p"></div><div class="tx-body"><div class="tx-lbl">Gift Card Claimed</div><div class="tx-sub">Gift Card · 10d ago</div></div><div class="tx-end"><div class="tx-amt tx-p">+₹500</div><div class="tx-hint">cash</div></div></div>
+    </div>
+    <div class="div"></div>
+    <div class="btm"><a class="btm-a">Gift Card</a><a class="btm-a btm-p">Refer & Earn</a></div>
+  </div>
+  <div class="design-desc">Full dual-unit display. Points hero + cash card + total redeemable strip + bucket grid with both units. Maximum information.</div>
+</div>
+
+<!-- ========== DESIGN 2: Single ₹ Hero (SIMPLE) ========== -->
+<div class="design-col">
+  <div class="design-label">Design 2 — Single ₹ Hero<span class="design-tag tag-simple">Simple</span></div>
+  <div class="phone">
+    <div class="hdr"><div class="hdr-logo">C</div><div class="hdr-name">Chai & Co</div></div>
+    <div class="prof">
+      <div class="prof-left">
+        <div class="prof-av">PS</div>
+        <div>
+          <div class="prof-greet">Welcome back,</div>
+          <div class="prof-name">Priya Sharma</div>
+          <div class="prof-meta"><span class="prof-tier">Gold</span> · Member</div>
+        </div>
+      </div>
+      <button class="prof-switch">Switch</button>
+    </div>
+    <div class="mult-strip">⚡ Earning <span class="mult-v">1.5x</span> Stars on every order</div>
+
+    <!-- Single hero number: total ₹ value -->
+    <div style="text-align:center; padding:32px 24px 16px;">
+      <div style="font-size:11px; color:#9ca3af; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:8px;">Available to Spend</div>
+      <div style="font-size:48px; font-weight:700; color:#4ade80; line-height:1; letter-spacing:-1px;">₹850</div>
+      <div style="margin-top:12px; font-size:13px; color:#9ca3af;">
+        1,400 Stars <span style="color:#6b7280;">·</span> ₹500 Cash
+      </div>
+    </div>
+
+    <!-- Compact tier -->
+    <div class="tier-row">
+      <div class="tier-left">
+        <div class="tier-badge-sm">★ Gold</div>
+      </div>
+      <div class="tier-prog-mini">
+        <div class="tier-prog-track"><div class="tier-prog-fill" style="width:60%"></div></div>
+        <div class="tier-prog-text">60%</div>
+      </div>
+    </div>
+
+    <!-- Transactions — all in ₹ -->
+    <div class="sec">
+      <div class="sec-title">Recent Activity</div>
+      <div class="tx"><div class="tx-bar tx-bar-g"></div><div class="tx-body"><div class="tx-lbl">Earned</div><div class="tx-sub">Order #1008 · Today</div></div><div class="tx-end"><div class="tx-amt tx-g">+₹80</div></div></div>
+      <div class="tx"><div class="tx-bar tx-bar-r"></div><div class="tx-body"><div class="tx-lbl">Redeemed</div><div class="tx-sub">Order #RED-002 · 5d ago</div></div><div class="tx-end"><div class="tx-amt tx-w">-₹75</div></div></div>
+      <div class="tx"><div class="tx-bar tx-bar-p"></div><div class="tx-body"><div class="tx-lbl">Gift Card Claimed</div><div class="tx-sub">BRZE-ABCD · 10d ago</div></div><div class="tx-end"><div class="tx-amt tx-p">+₹500</div></div></div>
+      <div class="tx"><div class="tx-bar tx-bar-g"></div><div class="tx-body"><div class="tx-lbl">Referral Reward</div><div class="tx-sub">PRIYA10 · 12d ago</div></div><div class="tx-end"><div class="tx-amt tx-g">+₹100</div></div></div>
+    </div>
+
+    <div class="div"></div>
+    <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 24px; background:rgba(99,102,241,0.04);">
+      <div style="font-size:12px; color:#9ca3af;">Lifetime Saved</div>
+      <div style="font-size:15px; font-weight:700; color:#818cf8;">₹1,230</div>
+    </div>
+    <div class="div"></div>
+    <div class="btm"><a class="btm-a">Gift Card</a><a class="btm-a btm-p">Refer & Earn</a></div>
+  </div>
+  <div class="design-desc">Everything converted to ₹ for the user. One big number: "₹850 available". Points mentioned only as subtitle context. Transactions all in ₹. Easiest to understand.</div>
+</div>
+
+<!-- ========== DESIGN 3: Points-Only Hero (SIMPLE) ========== -->
+<div class="design-col">
+  <div class="design-label">Design 3 — Points-First Minimal<span class="design-tag tag-simple">Simple</span></div>
+  <div class="phone">
+    <div class="hdr"><div class="hdr-logo">C</div><div class="hdr-name">Chai & Co</div></div>
+    <div class="prof">
+      <div class="prof-left">
+        <div class="prof-av">PS</div>
+        <div>
+          <div class="prof-greet">Welcome back,</div>
+          <div class="prof-name">Priya Sharma</div>
+          <div class="prof-meta"><span class="prof-tier">Gold</span> · Member</div>
+        </div>
+      </div>
+      <button class="prof-switch">Switch</button>
+    </div>
+    <div class="mult-strip">⚡ Earning <span class="mult-v">1.5x</span> Stars on every order</div>
+
+    <!-- Points only, big and clean -->
+    <div style="text-align:center; padding:36px 24px 20px;">
+      <div style="font-size:52px; font-weight:700; color:#4ade80; line-height:1; letter-spacing:-2px;">1,400</div>
+      <div style="font-size:16px; font-weight:600; color:#6ee7b7; margin-top:4px;">Stars</div>
+      <div style="margin-top:12px; font-size:14px; color:#9ca3af;">worth ₹850 at checkout</div>
+    </div>
+
+    <!-- Compact tier inline -->
+    <div class="tier-row">
+      <div class="tier-left"><div class="tier-badge-sm">★ Gold</div></div>
+      <div style="font-size:11px; color:#9ca3af;">6,000 ★ to Platinum</div>
+    </div>
+
+    <!-- Transactions — in stars -->
+    <div class="sec">
+      <div class="sec-title">Recent Activity</div>
+      <div class="tx"><div class="tx-bar tx-bar-g"></div><div class="tx-body"><div class="tx-lbl">Earned</div><div class="tx-sub">Order · Today</div></div><div class="tx-end"><div class="tx-amt tx-g">+320 ★</div></div></div>
+      <div class="tx"><div class="tx-bar tx-bar-r"></div><div class="tx-body"><div class="tx-lbl">Redeemed</div><div class="tx-sub">Order · 5d ago</div></div><div class="tx-end"><div class="tx-amt tx-w">-300 ★</div></div></div>
+      <div class="tx"><div class="tx-bar tx-bar-p"></div><div class="tx-body"><div class="tx-lbl">Gift Card</div><div class="tx-sub">Claimed · 10d ago</div></div><div class="tx-end"><div class="tx-amt tx-p">+2,000 ★</div></div></div>
+      <div class="tx"><div class="tx-bar tx-bar-g"></div><div class="tx-body"><div class="tx-lbl">Referral</div><div class="tx-sub">PRIYA10 · 12d ago</div></div><div class="tx-end"><div class="tx-amt tx-g">+400 ★</div></div></div>
+    </div>
+    <div class="div"></div>
+    <div class="btm"><a class="btm-a">Gift Card</a><a class="btm-a btm-p">Refer & Earn</a></div>
+  </div>
+  <div class="design-desc">Everything in Stars. Gift cards converted to stars for display. One mental model: "I have 1,400 Stars". ₹ shown only as checkout hint. Cleanest, but gift cards lose their ₹ identity.</div>
+</div>
+
+</div>
+
+<!-- ===================== ROW 2: Designs 4-5 ===================== -->
+<div class="design-row">
+
+<!-- ========== DESIGN 4: Side-by-Side Cards ========== -->
+<div class="design-col">
+  <div class="design-label">Design 4 — Side-by-Side Cards<span class="design-tag tag-detailed">Detailed</span></div>
+  <div class="phone">
+    <div class="hdr"><div class="hdr-logo">C</div><div class="hdr-name">Chai & Co</div></div>
+    <div class="prof">
+      <div class="prof-left">
+        <div class="prof-av">PS</div>
+        <div>
+          <div class="prof-greet">Welcome back,</div>
+          <div class="prof-name">Priya Sharma</div>
+          <div class="prof-meta"><span class="prof-tier">Gold</span> · Member</div>
+        </div>
+      </div>
+      <button class="prof-switch">Switch</button>
+    </div>
+    <div class="mult-strip">⚡ Earning <span class="mult-v">1.5x</span> Stars on every order</div>
+
+    <!-- Two cards side by side -->
+    <div style="padding:20px 24px; display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+      <!-- Points card -->
+      <div style="background:linear-gradient(135deg, rgba(74,222,128,0.08), rgba(74,222,128,0.02)); border:1px solid rgba(74,222,128,0.2); border-radius:16px; padding:20px 16px; text-align:center;">
+        <div style="font-size:10px; color:#6ee7b7; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:8px;">Stars</div>
+        <div style="font-size:32px; font-weight:700; color:#4ade80; line-height:1;">1,400</div>
+        <div style="font-size:11px; color:#9ca3af; margin-top:8px;">≈ ₹350</div>
+        <div style="margin-top:10px; font-size:10px; color:#fde047;">+600 pending</div>
+      </div>
+      <!-- Cash card -->
+      <div style="background:linear-gradient(135deg, rgba(196,181,253,0.08), rgba(196,181,253,0.02)); border:1px solid rgba(196,181,253,0.2); border-radius:16px; padding:20px 16px; text-align:center;">
+        <div style="font-size:10px; color:#c4b5fd; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:8px;">Cash</div>
+        <div style="font-size:32px; font-weight:700; color:#c4b5fd; line-height:1;">₹500</div>
+        <div style="font-size:11px; color:#9ca3af; margin-top:8px;">Gift Cards</div>
+        <div style="margin-top:10px; font-size:10px; color:#9ca3af;">no expiry</div>
+      </div>
+    </div>
+
+    <!-- Total -->
+    <div style="text-align:center; padding:0 24px 18px;">
+      <div style="font-size:12px; color:#9ca3af;">Checkout value</div>
+      <div style="font-size:24px; font-weight:700; color:#fff; margin-top:2px;">₹850</div>
+    </div>
+
+    <!-- Tier compact -->
+    <div class="tier-row">
+      <div class="tier-left"><div class="tier-badge-sm">★ Gold</div></div>
+      <div class="tier-prog-mini">
+        <div class="tier-prog-track"><div class="tier-prog-fill" style="width:60%"></div></div>
+        <div class="tier-prog-text">9K / 15K ★</div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-title">Recent Activity</div>
+      <div class="tx"><div class="tx-bar tx-bar-g"></div><div class="tx-body"><div class="tx-lbl">Earned</div><div class="tx-sub">Earned Credit · Today</div></div><div class="tx-end"><div class="tx-amt tx-g">+320 ★</div><div class="tx-hint">≈ ₹80</div></div></div>
+      <div class="tx"><div class="tx-bar tx-bar-r"></div><div class="tx-body"><div class="tx-lbl">Redeemed</div><div class="tx-sub">Earned Credit · 5d ago</div></div><div class="tx-end"><div class="tx-amt tx-w">-300 ★</div><div class="tx-hint">≈ ₹75</div></div></div>
+      <div class="tx"><div class="tx-bar tx-bar-p"></div><div class="tx-body"><div class="tx-lbl">Gift Card Claimed</div><div class="tx-sub">Gift Card · 10d ago</div></div><div class="tx-end"><div class="tx-amt tx-p">+₹500</div><div class="tx-hint">cash</div></div></div>
+    </div>
+    <div class="div"></div>
+    <div class="btm"><a class="btm-a">Gift Card</a><a class="btm-a btm-p">Refer & Earn</a></div>
+  </div>
+  <div class="design-desc">Equal visual weight to both currencies. Green card = points, purple card = cash. Combined ₹ total below. Clear separation but both visible at a glance.</div>
+</div>
+
+<!-- ========== DESIGN 5: Stacked Sections ========== -->
+<div class="design-col">
+  <div class="design-label">Design 5 — Stacked Sections<span class="design-tag tag-detailed">Detailed</span></div>
+  <div class="phone">
+    <div class="hdr"><div class="hdr-logo">C</div><div class="hdr-name">Chai & Co</div></div>
+    <div class="prof">
+      <div class="prof-left">
+        <div class="prof-av">PS</div>
+        <div>
+          <div class="prof-greet">Welcome back,</div>
+          <div class="prof-name">Priya Sharma</div>
+          <div class="prof-meta"><span class="prof-tier">Gold</span> · Member</div>
+        </div>
+      </div>
+      <button class="prof-switch">Switch</button>
+    </div>
+    <div class="mult-strip">⚡ Earning <span class="mult-v">1.5x</span> Stars on every order</div>
+
+    <!-- Total redeemable at top -->
+    <div style="text-align:center; padding:22px 24px 14px;">
+      <div style="font-size:11px; color:#9ca3af; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:6px;">Total Redeemable</div>
+      <div style="font-size:36px; font-weight:700; color:#fff; line-height:1;">₹850</div>
+    </div>
+
+    <!-- Points section -->
+    <div style="margin:0 24px; background:rgba(74,222,128,0.04); border:1px solid rgba(74,222,128,0.12); border-radius:14px; padding:16px 18px; margin-bottom:10px;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <div style="font-size:10px; color:#6ee7b7; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">Stars Earned</div>
+          <div style="font-size:26px; font-weight:700; color:#4ade80; margin-top:4px;">1,400 ★</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:14px; font-weight:600; color:#fff;">≈ ₹350</div>
+          <div style="font-size:10px; color:#9ca3af; margin-top:2px;">+600 pending</div>
+        </div>
+      </div>
+      <!-- Inline breakdown -->
+      <div style="display:flex; gap:16px; margin-top:12px; padding-top:12px; border-top:1px solid rgba(74,222,128,0.1);">
+        <div style="font-size:10px; color:#9ca3af;">Earned <span style="color:#fff; font-weight:500;">1,000</span></div>
+        <div style="font-size:10px; color:#9ca3af;">Referral <span style="color:#fff; font-weight:500;">400</span></div>
+        <div style="font-size:10px; color:#9ca3af;">COD <span style="color:#fde047; font-weight:500;">600</span></div>
+      </div>
+    </div>
+
+    <!-- Cash section -->
+    <div style="margin:0 24px; background:rgba(196,181,253,0.04); border:1px solid rgba(196,181,253,0.12); border-radius:14px; padding:16px 18px; margin-bottom:18px;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <div style="font-size:10px; color:#c4b5fd; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">Cash Balance</div>
+          <div style="font-size:26px; font-weight:700; color:#c4b5fd; margin-top:4px;">₹500</div>
+        </div>
+        <div style="text-align:right; font-size:10px; color:#9ca3af;">
+          Gift Card ₹500<br>Refund ₹0
+        </div>
+      </div>
+    </div>
+
+    <!-- Tier compact -->
+    <div class="tier-row">
+      <div class="tier-left"><div class="tier-badge-sm">★ Gold</div></div>
+      <div class="tier-prog-mini">
+        <div class="tier-prog-track"><div class="tier-prog-fill" style="width:60%"></div></div>
+        <div class="tier-prog-text">9K / 15K ★</div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-title">Recent Activity</div>
+      <div class="tx"><div class="tx-bar tx-bar-g"></div><div class="tx-body"><div class="tx-lbl">Earned</div><div class="tx-sub">Earned Credit · Today</div></div><div class="tx-end"><div class="tx-amt tx-g">+320 ★</div><div class="tx-hint">≈ ₹80</div></div></div>
+      <div class="tx"><div class="tx-bar tx-bar-r"></div><div class="tx-body"><div class="tx-lbl">Redeemed</div><div class="tx-sub">Earned Credit · 5d ago</div></div><div class="tx-end"><div class="tx-amt tx-w">-300 ★</div><div class="tx-hint">≈ ₹75</div></div></div>
+      <div class="tx"><div class="tx-bar tx-bar-p"></div><div class="tx-body"><div class="tx-lbl">Gift Card Claimed</div><div class="tx-sub">Gift Card · 10d ago</div></div><div class="tx-end"><div class="tx-amt tx-p">+₹500</div><div class="tx-hint">cash</div></div></div>
+    </div>
+    <div class="div"></div>
+    <div class="btm"><a class="btm-a">Gift Card</a><a class="btm-a btm-p">Refer & Earn</a></div>
+  </div>
+  <div class="design-desc">₹ total at top, then two stacked sections: green = Stars with inline bucket breakdown, purple = Cash. Clear hierarchy: total → stars → cash → activity.</div>
+</div>
+
+</div>
+
+<!-- ===================== COMPARISON TABLE ===================== -->
+<div style="max-width:900px; margin:0 auto;">
+  <table style="width:100%; border-collapse:collapse; font-size:12px; color:#9ca3af;">
+    <thead>
+      <tr style="border-bottom:1px solid #2a2d3a;">
+        <th style="text-align:left; padding:10px 12px; color:#e2e2e8; font-size:13px;"></th>
+        <th style="text-align:center; padding:10px 8px; color:#e2e2e8;">Design 1</th>
+        <th style="text-align:center; padding:10px 8px; color:#4ade80;">Design 2 ★</th>
+        <th style="text-align:center; padding:10px 8px; color:#4ade80;">Design 3 ★</th>
+        <th style="text-align:center; padding:10px 8px; color:#e2e2e8;">Design 4</th>
+        <th style="text-align:center; padding:10px 8px; color:#e2e2e8;">Design 5</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom:1px solid #1a1d27;"><td style="padding:8px 12px;">Hero number</td><td style="text-align:center;">Points</td><td style="text-align:center;">₹ total</td><td style="text-align:center;">Points</td><td style="text-align:center;">Both cards</td><td style="text-align:center;">₹ total</td></tr>
+      <tr style="border-bottom:1px solid #1a1d27;"><td style="padding:8px 12px;">Points/Cash split visible</td><td style="text-align:center;">✅</td><td style="text-align:center;">Subtitle only</td><td style="text-align:center;">❌ merged</td><td style="text-align:center;">✅ equal</td><td style="text-align:center;">✅ stacked</td></tr>
+      <tr style="border-bottom:1px solid #1a1d27;"><td style="padding:8px 12px;">Gift card stays in ₹</td><td style="text-align:center;">✅</td><td style="text-align:center;">✅</td><td style="text-align:center;">❌ → Stars</td><td style="text-align:center;">✅</td><td style="text-align:center;">✅</td></tr>
+      <tr style="border-bottom:1px solid #1a1d27;"><td style="padding:8px 12px;">Transactions unit</td><td style="text-align:center;">Native</td><td style="text-align:center;">All ₹</td><td style="text-align:center;">All ★</td><td style="text-align:center;">Native</td><td style="text-align:center;">Native</td></tr>
+      <tr style="border-bottom:1px solid #1a1d27;"><td style="padding:8px 12px;">Bucket breakdown</td><td style="text-align:center;">4-grid</td><td style="text-align:center;">❌ none</td><td style="text-align:center;">❌ none</td><td style="text-align:center;">❌ none</td><td style="text-align:center;">Inline</td></tr>
+      <tr style="border-bottom:1px solid #1a1d27;"><td style="padding:8px 12px;">Cognitive load</td><td style="text-align:center;">High</td><td style="text-align:center; color:#4ade80;">Low</td><td style="text-align:center; color:#4ade80;">Low</td><td style="text-align:center;">Medium</td><td style="text-align:center;">Medium</td></tr>
+      <tr><td style="padding:8px 12px;">Best for</td><td style="text-align:center;">Power users</td><td style="text-align:center;">Mass market</td><td style="text-align:center;">Gamification</td><td style="text-align:center;">Visual clarity</td><td style="text-align:center;">Balance of both</td></tr>
+    </tbody>
+  </table>
+</div>
+
+</body>
+</html>

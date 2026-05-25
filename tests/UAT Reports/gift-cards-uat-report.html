@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gift Cards UAT Report</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #f5f6f8;
+    color: #1a1a2e;
+    line-height: 1.6;
+    padding: 2rem;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  h1 {
+    font-size: 2rem;
+    margin-bottom: 0.25rem;
+    color: #16213e;
+  }
+
+  .subtitle {
+    color: #555;
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+  }
+
+  /* Summary table */
+  .summary-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+
+  .summary-card h2 {
+    font-size: 1.15rem;
+    margin-bottom: 1rem;
+    color: #16213e;
+  }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .summary-stat {
+    text-align: center;
+    padding: 1rem;
+    border-radius: 8px;
+  }
+
+  .summary-stat .number {
+    font-size: 2rem;
+    font-weight: 700;
+    display: block;
+  }
+
+  .summary-stat .label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #666;
+  }
+
+  .stat-total { background: #eef0f7; }
+  .stat-total .number { color: #16213e; }
+  .stat-pass { background: #e8f5e9; }
+  .stat-pass .number { color: #2e7d32; }
+  .stat-fail { background: #fce4ec; }
+  .stat-fail .number { color: #c62828; }
+  .stat-bug { background: #fff3e0; }
+  .stat-bug .number { color: #e65100; }
+  .stat-skip { background: #e8eaf6; }
+  .stat-skip .number { color: #3949ab; }
+
+  /* Summary table */
+  .summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+  }
+
+  .summary-table th {
+    text-align: left;
+    padding: 0.6rem 0.8rem;
+    background: #f5f6f8;
+    border-bottom: 2px solid #ddd;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .summary-table td {
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #eee;
+  }
+
+  .summary-table tr:hover { background: #fafafa; }
+
+  /* Badges */
+  .badge {
+    display: inline-block;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .badge-pass { background: #e8f5e9; color: #2e7d32; }
+  .badge-fail { background: #fce4ec; color: #c62828; }
+  .badge-bug { background: #fff3e0; color: #e65100; }
+  .badge-skip { background: #e8eaf6; color: #3949ab; }
+
+  /* Section headers */
+  .section-header {
+    margin: 2.5rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #5c6bc0;
+  }
+
+  .section-header h2 {
+    font-size: 1.35rem;
+    color: #283593;
+  }
+
+  .section-header p {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 0.25rem;
+  }
+
+  /* Test case cards */
+  .test-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    border-left: 4px solid #ccc;
+  }
+
+  .test-card.pass { border-left-color: #4caf50; }
+  .test-card.fail { border-left-color: #f44336; }
+  .test-card.bug { border-left-color: #ff9800; }
+
+  .test-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+
+  .test-card-header h3 {
+    font-size: 1rem;
+    color: #1a1a2e;
+  }
+
+  .test-id {
+    font-size: 0.8rem;
+    color: #999;
+    font-weight: 400;
+    margin-right: 0.5rem;
+  }
+
+  .test-steps {
+    font-size: 0.88rem;
+    color: #555;
+    margin-bottom: 0.75rem;
+  }
+
+  .test-steps ol {
+    padding-left: 1.25rem;
+  }
+
+  .test-steps li {
+    margin-bottom: 0.2rem;
+  }
+
+  .test-notes {
+    font-size: 0.85rem;
+    color: #666;
+    background: #f9f9fb;
+    padding: 0.6rem 0.9rem;
+    border-radius: 6px;
+    margin-bottom: 0.75rem;
+  }
+
+  .test-notes strong { color: #333; }
+
+  .test-screenshot {
+    margin-top: 0.75rem;
+  }
+
+  .test-screenshot img {
+    max-width: 100%;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+
+  .test-screenshot figcaption {
+    font-size: 0.8rem;
+    color: #888;
+    margin-top: 0.4rem;
+    text-align: center;
+  }
+
+  /* Bug details */
+  .bug-detail {
+    background: #fff8f0;
+    border: 1px solid #ffe0b2;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.88rem;
+  }
+
+  .bug-detail strong { color: #e65100; }
+
+  .bug-detail code {
+    background: #ffecd2;
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    font-size: 0.82rem;
+  }
+
+  /* Footer */
+  .report-footer {
+    margin-top: 3rem;
+    padding-top: 1rem;
+    border-top: 1px solid #ddd;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #999;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>Gift Cards UAT Report</h1>
+<p class="subtitle">Batua Project &mdash; 21 March 2026 &mdash; Merchant: Chai &amp; Co (<code>chaiandco</code>)</p>
+
+<!-- ============ SUMMARY ============ -->
+<div class="summary-card">
+  <h2>Executive Summary</h2>
+  <div class="summary-grid">
+    <div class="summary-stat stat-total">
+      <span class="number">12</span>
+      <span class="label">Total Tests</span>
+    </div>
+    <div class="summary-stat stat-pass">
+      <span class="number">11</span>
+      <span class="label">Passed</span>
+    </div>
+    <div class="summary-stat stat-bug">
+      <span class="number">1</span>
+      <span class="label">Bugs Found</span>
+    </div>
+    <div class="summary-stat stat-fail">
+      <span class="number">0</span>
+      <span class="label">Failed</span>
+    </div>
+    <div class="summary-stat stat-skip">
+      <span class="number">0</span>
+      <span class="label">Skipped</span>
+    </div>
+  </div>
+
+  <table class="summary-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Test Case</th>
+        <th>Stakeholder</th>
+        <th>Result</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>View gift cards dashboard stats</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>2</td><td>View gift cards list (All Cards tab)</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>3</td><td>View gift card detail panel</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>4</td><td>Issue Card tab &mdash; form UI</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>5</td><td>Issue Card tab &mdash; button disabled without amount</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>6</td><td>Bulk Issue tab &mdash; CSV upload</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>7</td><td>Bulk Issue tab &mdash; no submit without file</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>8</td><td>Gift card check page &mdash; initial load</td><td>Customer Storefront</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>9</td><td>Gift card check &mdash; button disabled without code</td><td>Customer Storefront</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>10</td><td>Gift card check page &mdash; accessible from storefront home</td><td>Customer Storefront</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>11</td><td>Gift card code format validation</td><td>Customer Storefront</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>12</td><td>Navigation back to storefront</td><td>Customer Storefront</td><td><span class="badge badge-bug">BUG</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ============ STAKEHOLDER 1: MERCHANT ADMIN ============ -->
+<div class="section-header">
+  <h2>Stakeholder 1: Merchant Admin</h2>
+  <p>Admin panel at <code>/admin/gift-cards</code> &mdash; 3 tabs: All Cards, Issue Card, Bulk Issue</p>
+</div>
+
+<!-- Test 1 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#1</span> View Gift Cards Dashboard Stats</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Navigate to <code>/admin/gift-cards</code></li>
+      <li>Observe stats bar at the top of the page</li>
+      <li>Verify values match database records</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Stats bar displays correctly: 1 Total Issued, &#8377;914.00 Outstanding Value,
+    1 Active, 0 Claimed, 0 Expired. All values match the database (1 gift card for Chai &amp; Co merchant
+    with initial_amount=914, current_amount=914).
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="gift-cards-uat/01-admin-gift-cards-list.png" alt="Gift cards dashboard stats">
+      <figcaption>Stats bar showing correct totals matching database records</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 2 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#2</span> View Gift Cards List (All Cards Tab)</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>View the All Cards tab (default tab)</li>
+      <li>Observe table columns and card data</li>
+      <li>Verify code masking, amounts, status, and date</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Table shows 1 card with columns: Code, Amount, Balance, Status, Created.
+    Code is masked: <code>****-****-****-7RF8</code>. Amount: &#8377;914.00, Balance: &#8377;914.00,
+    Status: "active" (green badge), Created: 21 Mar 2026, 01:47 am. All data is accurate and well-formatted.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="gift-cards-uat/01-admin-gift-cards-list.png" alt="Gift cards list table">
+      <figcaption>All Cards tab showing masked code, amounts, status badge, and formatted date</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 3 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#3</span> View Gift Card Detail Panel</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Click on the card row in the list table</li>
+      <li>Observe the detail panel that opens</li>
+      <li>Verify all fields: code, amounts, usage, dates</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Detail panel opens showing masked code with "Reveal code" eye icon button.
+    Initial Amount: &#8377;914.00, Current Balance: &#8377;914.00, Used: &#8377;0.00 (0%), Claimed: No.
+    Created: 21 Mar 2026, 01:47 am, Expires: 21 Mar 2027. All values are correct and clearly displayed.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="gift-cards-uat/02-admin-gift-card-detail.png" alt="Gift card detail panel">
+      <figcaption>Detail panel with masked code, amounts, usage percentage, and expiry date</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 4 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#4</span> Issue Card Tab &mdash; Form UI</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Click "Issue Card" tab</li>
+      <li>Observe form fields and layout</li>
+      <li>Verify input types and placeholders</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Form shows: Amount (&#8377;) number input with "e.g. 500" placeholder,
+    Expiry Date input (dd/mm/yyyy date picker), and "Issue Gift Card" button (disabled until amount entered).
+    Clean, minimal form design with appropriate input types.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="gift-cards-uat/03-admin-issue-card-form.png" alt="Issue card form">
+      <figcaption>Issue Card tab with amount input, date picker, and disabled submit button</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 5 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#5</span> Issue Card Tab &mdash; Button Disabled Without Amount</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Navigate to the Issue Card tab</li>
+      <li>Leave the amount field empty</li>
+      <li>Observe the "Issue Gift Card" button state</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> "Issue Gift Card" button is correctly disabled when the amount field is empty.
+    This prevents accidental empty submissions and provides proper form validation behavior.
+  </div>
+</div>
+
+<!-- Test 6 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#6</span> Bulk Issue Tab &mdash; CSV Upload</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Click "Bulk Issue" tab</li>
+      <li>Observe file upload area and format instructions</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Shows file upload area with "Upload CSV" heading.
+    Format hint: "amount, recipient_phone (optional)". Standard file picker ("Choose file" / "No file chosen").
+    Clear instructions for the expected CSV format.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="gift-cards-uat/04-admin-bulk-issue.png" alt="Bulk issue CSV upload">
+      <figcaption>Bulk Issue tab with CSV upload area and format hint</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 7 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#7</span> Bulk Issue Tab &mdash; No Submit Without File</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Navigate to the Bulk Issue tab</li>
+      <li>Do not select any file</li>
+      <li>Check for submit button visibility</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> No submit button is visible until a file is selected.
+    This prevents accidental empty submissions and ensures users must provide a CSV file before proceeding.
+  </div>
+</div>
+
+
+<!-- ============ STAKEHOLDER 2: CUSTOMER STOREFRONT ============ -->
+<div class="section-header">
+  <h2>Stakeholder 2: Customer Storefront</h2>
+  <p>Gift card check page at <code>/s/chaiandco/gift-cards/check</code> &mdash; dark themed card UI</p>
+</div>
+
+<!-- Test 8 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#8</span> Gift Card Check Page &mdash; Initial Load</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Navigate to <code>/s/chaiandco/gift-cards/check</code></li>
+      <li>Observe page layout: merchant header, heading, input, button</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Dark themed card UI with "Chai &amp; Co" merchant header.
+    "Check Gift Card" heading with subtitle "Enter your gift card code to check the balance".
+    Code input with placeholder "BRZE-XXXX-XXXX-XXXX". "Check Balance" button (disabled until code entered).
+    Clean and well-designed page layout.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="gift-cards-uat/05-storefront-gift-card-check.png" alt="Gift card check page">
+      <figcaption>Gift card check page with code input and disabled Check Balance button</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 9 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#9</span> Gift Card Check &mdash; Button Disabled Without Code</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Navigate to the gift card check page</li>
+      <li>Leave the code input field empty</li>
+      <li>Observe the "Check Balance" button state</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> "Check Balance" button is correctly disabled when the code field is empty.
+    Proper form validation prevents users from submitting without entering a gift card code.
+  </div>
+</div>
+
+<!-- Test 10 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#10</span> Gift Card Check Page &mdash; Accessible from Storefront Home</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Navigate to the main storefront page at <code>/s/chaiandco</code></li>
+      <li>Look for a gift card check link</li>
+      <li>Click the link and verify navigation</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Link "&#127873; Check Gift Card" is visible on the main storefront page (<code>/s/chaiandco</code>).
+    Clicking it navigates correctly to <code>/s/chaiandco/gift-cards/check</code>. Good discoverability for the feature.
+  </div>
+</div>
+
+<!-- Test 11 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#11</span> Gift Card Code Format Validation</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Navigate to the gift card check page</li>
+      <li>Observe the input placeholder for format guidance</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Input placeholder shows expected format (<code>BRZE-XXXX-XXXX-XXXX</code>).
+    Clear guidance for users on the gift card code format. Users can immediately understand how to
+    enter their code.
+  </div>
+</div>
+
+<!-- Test 12 -->
+<div class="test-card bug">
+  <div class="test-card-header">
+    <h3><span class="test-id">#12</span> Navigation Back to Storefront</h3>
+    <span class="badge badge-bug">BUG</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Navigate to <code>/s/chaiandco/gift-cards/check</code></li>
+      <li>Look for a back button or link to return to the main storefront page</li>
+    </ol>
+  </div>
+  <div class="bug-detail">
+    <strong>Bug (LOW):</strong> No back button or link to return to the main storefront page from the gift card
+    check page. Users must manually navigate or use the browser back button. A back link or navigation element
+    should be added to the gift card check page layout for better UX.
+  </div>
+</div>
+
+
+<!-- ============ BUG SUMMARY ============ -->
+<div class="section-header">
+  <h2>Bug Summary</h2>
+  <p>All bugs discovered during UAT, ordered by severity</p>
+</div>
+
+<div class="summary-card">
+  <table class="summary-table">
+    <thead>
+      <tr>
+        <th>Severity</th>
+        <th>Bug</th>
+        <th>Component</th>
+        <th>Root Cause</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="badge badge-bug">LOW</span></td>
+        <td>No back navigation from gift card check page</td>
+        <td>Storefront &mdash; Gift Card Check</td>
+        <td>Missing back link/button to return to main storefront page from <code>/s/{slug}/gift-cards/check</code></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ============ TEST ENVIRONMENT ============ -->
+<div class="summary-card">
+  <h2>Test Environment</h2>
+  <table class="summary-table">
+    <tbody>
+      <tr><td><strong>Backend</strong></td><td>Rust/Axum at <code>localhost:3000</code></td></tr>
+      <tr><td><strong>Frontend</strong></td><td>SvelteKit dev server at <code>localhost:5174</code></td></tr>
+      <tr><td><strong>Database</strong></td><td>PostgreSQL (<code>batua</code> database)</td></tr>
+      <tr><td><strong>Test Merchant</strong></td><td>Chai &amp; Co (<code>chaiandco</code>)</td></tr>
+      <tr><td><strong>Test Gift Card</strong></td><td>Code: <code>****-****-****-7RF8</code>, Amount: &#8377;914.00</td></tr>
+      <tr><td><strong>Date</strong></td><td>21 March 2026</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<div class="report-footer">
+  <p>Gift Cards UAT Report &mdash; Generated 21 March 2026</p>
+</div>
+
+</div>
+</body>
+</html>

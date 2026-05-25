@@ -39,10 +39,15 @@
     onCancel: () => void;
   } = $props();
 
+  // svelte-ignore state_referenced_locally
   let minRedemption = $state(String(policy.min_redemption ?? ''));
+  // svelte-ignore state_referenced_locally
   let maxPerOrderPct = $state(String(policy.max_per_order_pct ?? ''));
+  // svelte-ignore state_referenced_locally
   let maxPerOrderFixed = $state(String(policy.max_per_order_fixed ?? ''));
+  // svelte-ignore state_referenced_locally
   let stackable = $state(policy.stackable_with_discounts);
+  // svelte-ignore state_referenced_locally
   let expiryDays = $state(String(policy.default_expiry_days ?? ''));
   let isPoints = $derived(isPointsBucket(policy.bucket_type));
   let unitIcon = $derived(isPoints ? pointsIcon : '₹');

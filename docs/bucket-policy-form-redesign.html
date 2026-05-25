@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bucket Policy Form — Redesign</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f3f4f6;
+    color: #1f2937;
+    padding: 40px;
+  }
+  h1 {
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    text-align: center;
+    color: #6b7280;
+    font-size: 13px;
+    margin-bottom: 40px;
+  }
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .section-hdr {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6b7280;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  /* ─── List view ─── */
+  .policy-item {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    margin-bottom: 8px;
+  }
+  .policy-header {
+    display: flex;
+    align-items: center;
+    padding: 14px 20px;
+    gap: 12px;
+    cursor: pointer;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+  }
+  .policy-header:hover { background: #f9fafb; border-radius: 10px; }
+  .policy-bucket {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2937;
+  }
+  .policy-summary {
+    font-size: 12px;
+    color: #9ca3af;
+    flex: 1;
+  }
+  .toggle-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #6b7280;
+    font-weight: 500;
+  }
+  .toggle-pill {
+    width: 36px;
+    height: 20px;
+    background: #6366f1;
+    border-radius: 10px;
+    position: relative;
+  }
+  .toggle-pill::after {
+    content: '';
+    position: absolute;
+    right: 2px;
+    top: 2px;
+    width: 16px;
+    height: 16px;
+    background: #fff;
+    border-radius: 50%;
+  }
+  .expand-icon {
+    font-size: 14px;
+    color: #9ca3af;
+    width: 20px;
+    text-align: center;
+  }
+
+  /* ─── Form view ─── */
+  .form-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 24px;
+  }
+  .form-header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .form-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1f2937;
+  }
+  .form-desc {
+    font-size: 12px;
+    color: #9ca3af;
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .field label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+  }
+  .field input {
+    height: 38px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 0 12px;
+    font-size: 14px;
+    color: #1f2937;
+    outline: none;
+  }
+  .field input:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 2px rgba(99,102,241,0.12);
+  }
+  .field-hint {
+    font-size: 10px;
+    color: #9ca3af;
+    margin-top: 1px;
+  }
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .toggle-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+  }
+  .toggle-desc {
+    font-size: 11px;
+    color: #9ca3af;
+  }
+  .form-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+  .btn-save {
+    height: 36px;
+    padding: 0 20px;
+    background: #6366f1;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn-cancel {
+    height: 36px;
+    padding: 0 20px;
+    background: #fff;
+    color: #6b7280;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .divider { height: 32px; }
+
+  /* Before/After labels */
+  .label-block {
+    margin-bottom: 32px;
+  }
+  .label-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 3px 10px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+  }
+  .label-tag.before { background: #fef2f2; color: #dc2626; }
+  .label-tag.after { background: #f0fdf4; color: #16a34a; }
+</style>
+</head>
+<body>
+
+<h1>Bucket Policy Form — Redesign</h1>
+<p class="subtitle">Before & after comparison. Merchant: Kesar Kitchen (Points icon: 💰, Name: Credits)</p>
+
+<div class="container">
+
+  <!-- ═══════ BEFORE ═══════ -->
+  <div class="label-block">
+    <span class="label-tag before">Before</span>
+  </div>
+
+  <div class="section-hdr">Global Bucket Policies</div>
+  <div class="form-card" style="margin-bottom: 12px;">
+    <div class="form-title" style="margin-bottom: 20px;">EarnedCredit</div>
+    <div class="form-grid">
+      <div class="field">
+        <label>Min Redemption (★)</label>
+        <input type="text" value="10">
+      </div>
+      <div class="field">
+        <label>Step Size (★)</label>
+        <input type="text" value="1">
+      </div>
+      <div class="field">
+        <label>Max Per Order (%)</label>
+        <input type="text" value="59">
+      </div>
+      <div class="field">
+        <label>Max Per Order Fixed (₹)</label>
+        <input type="text" value="990">
+      </div>
+      <div class="field">
+        <label>Default Expiry (days)</label>
+        <input type="text" value="109">
+      </div>
+    </div>
+    <div class="toggle-row">
+      <div class="toggle-pill"></div>
+      <span class="toggle-label">Stackable with discounts</span>
+    </div>
+    <button class="btn-save">Save Policy</button>
+  </div>
+  <button class="btn-cancel" style="margin-bottom: 40px;">Cancel</button>
+
+  <div class="divider"></div>
+
+  <!-- ═══════ AFTER ═══════ -->
+  <div class="label-block">
+    <span class="label-tag after">After</span>
+  </div>
+
+  <div class="section-hdr">Global Bucket Policies</div>
+  <div class="form-card">
+    <div class="form-header">
+      <span class="form-title">Earned Credit</span>
+    </div>
+    <p class="form-desc">Controls how earned loyalty credits can be redeemed at checkout — limits, caps, expiry, and discount stacking.</p>
+
+    <div class="form-grid">
+      <div class="field">
+        <label>Min Redemption (💰)</label>
+        <input type="text" value="10">
+        <span class="field-hint">Customer must have at least this many to redeem</span>
+      </div>
+      <div class="field">
+        <label>Max Per Order (%)</label>
+        <input type="text" value="59">
+        <span class="field-hint">Max % of order value payable with credits</span>
+      </div>
+      <div class="field">
+        <label>Max Per Order (💰)</label>
+        <input type="text" value="990">
+        <span class="field-hint">Absolute cap on credits per order</span>
+      </div>
+      <div class="field">
+        <label>Default Expiry (days)</label>
+        <input type="text" value="109">
+        <span class="field-hint">Credits expire this many days after earning</span>
+      </div>
+    </div>
+
+    <div class="toggle-row">
+      <div class="toggle-pill"></div>
+      <div>
+        <span class="toggle-label">Stackable with discounts</span>
+        <div class="toggle-desc">Allow credits alongside Shopify discount codes</div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn-cancel">Cancel</button>
+      <button class="btn-save">Save Policy</button>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

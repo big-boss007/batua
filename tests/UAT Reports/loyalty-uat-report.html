@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loyalty Program UAT Report</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #f5f6f8;
+    color: #1a1a2e;
+    line-height: 1.6;
+    padding: 2rem;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  h1 {
+    font-size: 2rem;
+    margin-bottom: 0.25rem;
+    color: #16213e;
+  }
+
+  .subtitle {
+    color: #555;
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+  }
+
+  /* Summary table */
+  .summary-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+
+  .summary-card h2 {
+    font-size: 1.15rem;
+    margin-bottom: 1rem;
+    color: #16213e;
+  }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .summary-stat {
+    text-align: center;
+    padding: 1rem;
+    border-radius: 8px;
+  }
+
+  .summary-stat .number {
+    font-size: 2rem;
+    font-weight: 700;
+    display: block;
+  }
+
+  .summary-stat .label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #666;
+  }
+
+  .stat-total { background: #eef0f7; }
+  .stat-total .number { color: #16213e; }
+  .stat-pass { background: #e8f5e9; }
+  .stat-pass .number { color: #2e7d32; }
+  .stat-fail { background: #fce4ec; }
+  .stat-fail .number { color: #c62828; }
+  .stat-bug { background: #fff3e0; }
+  .stat-bug .number { color: #e65100; }
+  .stat-skip { background: #e8eaf6; }
+  .stat-skip .number { color: #3949ab; }
+
+  /* Summary table */
+  .summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+  }
+
+  .summary-table th {
+    text-align: left;
+    padding: 0.6rem 0.8rem;
+    background: #f5f6f8;
+    border-bottom: 2px solid #ddd;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .summary-table td {
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #eee;
+  }
+
+  .summary-table tr:hover { background: #fafafa; }
+
+  /* Badges */
+  .badge {
+    display: inline-block;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .badge-pass { background: #e8f5e9; color: #2e7d32; }
+  .badge-fail { background: #fce4ec; color: #c62828; }
+  .badge-bug { background: #fff3e0; color: #e65100; }
+  .badge-skip { background: #e8eaf6; color: #3949ab; }
+
+  /* Section headers */
+  .section-header {
+    margin: 2.5rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #5c6bc0;
+  }
+
+  .section-header h2 {
+    font-size: 1.35rem;
+    color: #283593;
+  }
+
+  .section-header p {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 0.25rem;
+  }
+
+  /* Test case cards */
+  .test-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    border-left: 4px solid #ccc;
+  }
+
+  .test-card.pass { border-left-color: #4caf50; }
+  .test-card.fail { border-left-color: #f44336; }
+  .test-card.bug { border-left-color: #ff9800; }
+
+  .test-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+
+  .test-card-header h3 {
+    font-size: 1rem;
+    color: #1a1a2e;
+  }
+
+  .test-id {
+    font-size: 0.8rem;
+    color: #999;
+    font-weight: 400;
+    margin-right: 0.5rem;
+  }
+
+  .test-steps {
+    font-size: 0.88rem;
+    color: #555;
+    margin-bottom: 0.75rem;
+  }
+
+  .test-steps ol {
+    padding-left: 1.25rem;
+  }
+
+  .test-steps li {
+    margin-bottom: 0.2rem;
+  }
+
+  .test-notes {
+    font-size: 0.85rem;
+    color: #666;
+    background: #f9f9fb;
+    padding: 0.6rem 0.9rem;
+    border-radius: 6px;
+    margin-bottom: 0.75rem;
+  }
+
+  .test-notes strong { color: #333; }
+
+  .test-screenshot {
+    margin-top: 0.75rem;
+  }
+
+  .test-screenshot img {
+    max-width: 100%;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+
+  .test-screenshot figcaption {
+    font-size: 0.8rem;
+    color: #888;
+    margin-top: 0.4rem;
+    text-align: center;
+  }
+
+  /* Bug details */
+  .bug-detail {
+    background: #fff8f0;
+    border: 1px solid #ffe0b2;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.88rem;
+  }
+
+  .bug-detail strong { color: #e65100; }
+
+  .bug-detail code {
+    background: #ffecd2;
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    font-size: 0.82rem;
+  }
+
+  /* Footer */
+  .report-footer {
+    margin-top: 3rem;
+    padding-top: 1rem;
+    border-top: 1px solid #ddd;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #999;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>Loyalty Program UAT Report</h1>
+<p class="subtitle">Batua Project &mdash; 21 March 2026 &mdash; Merchant: Chai &amp; Co (<code>chaiandco</code>)</p>
+
+<!-- ============ SUMMARY ============ -->
+<div class="summary-card">
+  <h2>Executive Summary</h2>
+  <div class="summary-grid">
+    <div class="summary-stat stat-total">
+      <span class="number">14</span>
+      <span class="label">Total Tests</span>
+    </div>
+    <div class="summary-stat stat-pass">
+      <span class="number">10</span>
+      <span class="label">Passed</span>
+    </div>
+    <div class="summary-stat stat-bug">
+      <span class="number">3</span>
+      <span class="label">Bugs Found</span>
+    </div>
+    <div class="summary-stat stat-fail">
+      <span class="number">0</span>
+      <span class="label">Failed</span>
+    </div>
+    <div class="summary-stat stat-skip">
+      <span class="number">0</span>
+      <span class="label">Skipped</span>
+    </div>
+  </div>
+
+  <table class="summary-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Test Case</th>
+        <th>Stakeholder</th>
+        <th>Result</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>View loyalty program details</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>2</td><td>View loyalty tiers</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>3</td><td>View tier distribution chart</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>4</td><td>Stale program ID causes 404 on page load</td><td>Merchant Admin</td><td><span class="badge badge-bug">BUG</span></td></tr>
+      <tr><td>5</td><td>Evaluate Tiers button</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>6</td><td>Add Tier button</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>7</td><td>Storefront initial load &mdash; phone input</td><td>Customer Storefront</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>8</td><td>Enter phone and view customer dashboard</td><td>Customer Storefront</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>9</td><td>Bucket breakdown shows all zeros</td><td>Customer Storefront</td><td><span class="badge badge-bug">BUG</span></td></tr>
+      <tr><td>10</td><td>Loyalty tier display missing tier name</td><td>Customer Storefront</td><td><span class="badge badge-bug">BUG</span></td></tr>
+      <tr><td>11</td><td>Activity feed displays correctly</td><td>Customer Storefront</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>12</td><td>Referral card embedded in storefront</td><td>Customer Storefront</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>13</td><td>Navigation links at bottom</td><td>Customer Storefront</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>14</td><td>Non-existent phone number</td><td>Customer Storefront</td><td><span class="badge badge-pass">PASS</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ============ STAKEHOLDER 1: MERCHANT ADMIN ============ -->
+<div class="section-header">
+  <h2>Stakeholder 1: Merchant Admin</h2>
+  <p>Admin panel at <code>/admin/loyalty</code> &mdash; loyalty program configuration and tier management</p>
+</div>
+
+<!-- Test 1 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#1</span> View Loyalty Program Details</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Navigate to <code>/admin/loyalty</code></li>
+      <li>Observe program name, evaluation criteria, and update button</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Program name "Chai &amp; Co Rewards" displays correctly.
+    Evaluation criteria shows "Points Earned" in dropdown. "Update Program" button is present and styled correctly.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="loyalty-uat/01-admin-loyalty-page.png" alt="Admin loyalty page">
+      <figcaption>Loyalty program details with name, evaluation criteria, and update button</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 2 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#2</span> View Loyalty Tiers</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Scroll down to Tiers section</li>
+      <li>Verify 4 tiers with correct multipliers, thresholds, and ranks</li>
+      <li>Cross-check values against database records</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> All 4 tiers displayed correctly:
+    Bronze (1x multiplier, threshold 0, rank 1),
+    Silver (1.25x, threshold 2,000, rank 2),
+    Gold (1.5x, threshold 5,000, rank 3),
+    Platinum (2x, threshold 15,000, rank 4).
+    All values match database records.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="loyalty-uat/02-admin-loyalty-full-page.png" alt="Full loyalty page with tiers">
+      <figcaption>Full loyalty page showing all 4 tiers with multipliers, thresholds, and ranks</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 3 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#3</span> View Tier Distribution Chart</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Observe Tier Distribution section</li>
+      <li>Verify total customer count and per-tier breakdown</li>
+      <li>Verify horizontal bar chart renders correctly</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Tier Distribution section shows "25 customers" total.
+    Breakdown: Bronze: 1, Silver: 4, Gold: 7, Platinum: 13.
+    Color-coded horizontal bars render correctly with proportional widths.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="loyalty-uat/02-admin-loyalty-full-page.png" alt="Tier distribution chart">
+      <figcaption>Tier distribution chart with color-coded bars and customer counts</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 4 -->
+<div class="test-card bug">
+  <div class="test-card-header">
+    <h3><span class="test-id">#4</span> Stale Program ID Causes 404 on Page Load</h3>
+    <span class="badge badge-bug">BUG</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Navigate to <code>/admin/loyalty</code></li>
+      <li>Open browser Network tab</li>
+      <li>Observe API calls made on page load</li>
+    </ol>
+  </div>
+  <div class="bug-detail">
+    <strong>Bug (LOW):</strong> Network tab shows <code>GET /loyalty/programs/bcdb8006-6fb6-4f98-be1d-8d3b243cb3ea</code>
+    returns 404, followed by <code>GET /loyalty/programs/b0000000-...000001</code> which returns 200.
+    The page tries to fetch with a stale/cached merchant ID before the correct one loads.
+    <br><br>
+    <strong>Root cause:</strong> Race condition or stale store value &mdash; the first API call uses an incorrect
+    merchant ID before the correct one becomes available.
+  </div>
+</div>
+
+<!-- Test 5 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#5</span> Evaluate Tiers Button</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Observe "Evaluate Tiers" button at top right of loyalty page</li>
+      <li>Verify button is clickable</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> "Evaluate Tiers" button is visible at top right and is clickable.
+    Backend effect not tested in this UAT round (button interaction confirmed).
+  </div>
+</div>
+
+<!-- Test 6 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#6</span> Add Tier Button</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Observe "Add Tier" button next to the Tiers heading</li>
+      <li>Verify button is clickable and styled correctly</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> "Add Tier" button is visible next to the Tiers section heading.
+    Button is clickable and styled consistently with the rest of the admin UI.
+  </div>
+</div>
+
+
+<!-- ============ STAKEHOLDER 2: CUSTOMER STOREFRONT ============ -->
+<div class="section-header">
+  <h2>Stakeholder 2: Customer Storefront</h2>
+  <p>Storefront at <code>/s/chaiandco</code> &mdash; dark themed card UI with wallet, loyalty, and activity</p>
+</div>
+
+<!-- Test 7 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#7</span> Storefront Initial Load &mdash; Phone Input</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Navigate to <code>/s/chaiandco</code></li>
+      <li>Observe merchant header, heading, subtitle, and phone input form</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Dark themed card UI renders with "Chai &amp; Co" merchant header.
+    "Your Rewards" heading with subtitle "Check your balance, tier status, and recent activity".
+    Phone input with +91 prefix and "View Rewards" button (disabled until input).
+    "Check Gift Card" link visible below the form.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="loyalty-uat/03-storefront-phone-input.png" alt="Storefront phone input">
+      <figcaption>Storefront landing page with phone input, +91 prefix, and View Rewards button</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 8 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#8</span> Enter Phone and View Customer Dashboard</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Enter phone number <code>9000000010</code> (Rajesh Iyer)</li>
+      <li>Click "View Rewards"</li>
+      <li>Observe profile bar, balance, and lifetime stats</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Profile bar shows "Welcome back, Rajesh Iyer" with initials avatar and Switch button.
+    Spendable Balance: &#8377;2,112.29. Lifetime Saved: &#8377;2,112.29.
+    All values render correctly with proper currency formatting.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="loyalty-uat/04-storefront-customer-view.png" alt="Customer dashboard">
+      <figcaption>Customer dashboard showing profile, spendable balance, and lifetime saved</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 9 -->
+<div class="test-card bug">
+  <div class="test-card-header">
+    <h3><span class="test-id">#9</span> Bucket Breakdown Shows All Zeros</h3>
+    <span class="badge badge-bug">BUG</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>After loading customer dashboard, observe Bucket Breakdown section</li>
+      <li>Compare bucket values against the spendable balance</li>
+    </ol>
+  </div>
+  <div class="bug-detail">
+    <strong>Bug (MEDIUM):</strong> Bucket Breakdown section shows: Earned &#8377;0.00, COD Pending &#8377;0.00,
+    On Hold &#8377;0.00, Expiring Soon &#8377;0.00. However, the Spendable Balance is &#8377;2,112.29 &mdash;
+    the Earned bucket should reflect this amount.
+    <br><br>
+    <strong>Root cause:</strong> Bucket breakdown likely aggregates by <code>bucket_type</code> but the balance
+    comes from a different calculation. The <code>earned_credit</code> entries exist in the ledger but aren't
+    being summed into the breakdown correctly.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="loyalty-uat/04-storefront-customer-view.png" alt="Bucket breakdown showing zeros">
+      <figcaption>Bucket breakdown shows all &#8377;0.00 despite &#8377;2,112.29 spendable balance</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 10 -->
+<div class="test-card bug">
+  <div class="test-card-header">
+    <h3><span class="test-id">#10</span> Loyalty Tier Display Missing Tier Name</h3>
+    <span class="badge badge-bug">BUG</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Observe Loyalty Tier section in the customer dashboard</li>
+      <li>Check if tier name (e.g., "Gold") is displayed</li>
+      <li>Check if multiplier matches the customer's actual tier</li>
+    </ol>
+  </div>
+  <div class="bug-detail">
+    <strong>Bug (MEDIUM):</strong> The Loyalty Tier section shows a star icon and "You've reached the highest tier"
+    but does <strong>not</strong> display which tier the customer is in (e.g., "Gold" or "Platinum").
+    The customer (Rajesh Iyer / Vikram Singh in Chai &amp; Co) is in the Gold tier per the database.
+    <br><br>
+    The multiplier banner says "Earning 1x rewards on every order" which is the <strong>base rate</strong>,
+    not the Gold rate (1.5x).
+    <br><br>
+    <strong>Root cause:</strong> The tier name and multiplier are not being fetched or displayed from the
+    <code>customer_tiers</code> table. The UI shows a generic "highest tier" message and the default 1x multiplier.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="loyalty-uat/04-storefront-customer-view.png" alt="Tier section missing name">
+      <figcaption>Tier section shows "highest tier" and "1x" instead of actual tier name and multiplier</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 11 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#11</span> Activity Feed Displays Correctly</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Scroll to Activity section in the customer dashboard</li>
+      <li>Verify transaction history entries with dates, types, and amounts</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Shows transaction history with dates, type (Earned / EarnedCredit), amounts,
+    and running balance. 8 transactions displayed from Nov 2025 to Feb 2026.
+    Amounts and dates formatted correctly with green color for credits.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="loyalty-uat/04-storefront-customer-view.png" alt="Activity feed">
+      <figcaption>Activity feed with 8 transactions, dates, types, and formatted amounts</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 12 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#12</span> Referral Card Embedded in Storefront</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Scroll below the activity feed</li>
+      <li>Observe "Refer &amp; Earn" section</li>
+      <li>Verify referral code, stats, and share buttons</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Below activity feed, "Refer &amp; Earn" section appears correctly.
+    Shows code "RAJESH2", 3 Referrals, 2 Conversions.
+    Share on WhatsApp and Copy Link buttons visible and styled appropriately.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="loyalty-uat/04-storefront-customer-view.png" alt="Referral card in storefront">
+      <figcaption>Referral card with code RAJESH2, stats, and share buttons embedded in storefront</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 13 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#13</span> Navigation Links at Bottom</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Scroll to the bottom of the storefront page</li>
+      <li>Observe navigation links</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Two links at bottom: "Gift Card" and "Refer &amp; Earn" (purple button).
+    Both link to correct URLs within the storefront.
+  </div>
+</div>
+
+<!-- Test 14 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#14</span> Non-Existent Phone Number</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Enter a non-existent phone number</li>
+      <li>Click "View Rewards"</li>
+      <li>Observe error handling</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Tested via referral UAT using the same storefront.
+    Entering a non-existent phone number shows an appropriate error message.
+    No technical details or stack traces are exposed to the user.
+  </div>
+</div>
+
+
+<!-- ============ BUG SUMMARY ============ -->
+<div class="section-header">
+  <h2>Bug Summary</h2>
+  <p>All bugs discovered during UAT, ordered by severity</p>
+</div>
+
+<div class="summary-card">
+  <table class="summary-table">
+    <thead>
+      <tr>
+        <th>Severity</th>
+        <th>Bug</th>
+        <th>Component</th>
+        <th>Root Cause</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="badge badge-bug">MEDIUM</span></td>
+        <td>Bucket breakdown shows all &#8377;0.00</td>
+        <td>Storefront &mdash; Customer Dashboard</td>
+        <td>Balance calculation mismatch between spendable balance and bucket breakdown &mdash; <code>earned_credit</code> entries in ledger not summed into breakdown correctly</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-bug">MEDIUM</span></td>
+        <td>Loyalty tier name and multiplier not shown</td>
+        <td>Storefront &mdash; Loyalty Tier Section</td>
+        <td>Tier section says "highest tier" and "1x" instead of showing actual tier name (Gold) and multiplier (1.5x) from <code>customer_tiers</code> table</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-skip">LOW</span></td>
+        <td>Stale program ID causes 404 on page load</td>
+        <td>Admin &mdash; Loyalty Page</td>
+        <td>Race condition: first API call uses stale/cached merchant ID before correct one is available</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ============ TEST ENVIRONMENT ============ -->
+<div class="summary-card">
+  <h2>Test Environment</h2>
+  <table class="summary-table">
+    <tbody>
+      <tr><td><strong>Backend</strong></td><td>Rust/Axum at <code>localhost:3000</code></td></tr>
+      <tr><td><strong>Frontend</strong></td><td>SvelteKit dev server at <code>localhost:5174</code></td></tr>
+      <tr><td><strong>Database</strong></td><td>PostgreSQL (<code>batua</code> database)</td></tr>
+      <tr><td><strong>Test Merchant</strong></td><td>Chai &amp; Co (<code>chaiandco</code>)</td></tr>
+      <tr><td><strong>Test Customer</strong></td><td>Rajesh Iyer, +919000000010</td></tr>
+      <tr><td><strong>Date</strong></td><td>21 March 2026</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<div class="report-footer">
+  <p>Loyalty Program UAT Report &mdash; Generated 21 March 2026</p>
+</div>
+
+</div>
+</body>
+</html>

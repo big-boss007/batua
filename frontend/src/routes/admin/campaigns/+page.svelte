@@ -182,7 +182,7 @@
   {#if selectedTemplate !== null}
     <div class="modal-overlay" role="presentation" onclick={() => { selectedTemplate = null; }}>
       <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-      <div class="modal-panel" role="dialog" aria-label="Create campaign from template" onclick={(e) => e.stopPropagation()}>
+      <div class="modal-panel" role="dialog" aria-label="Create campaign from template" tabindex="-1" onclick={(e) => e.stopPropagation()} onkeydown={(e) => { if (e.key === 'Escape') { selectedTemplate = null; } }}>
         <CampaignForm
           template={selectedTemplate}
           {rules}
@@ -197,7 +197,7 @@
   {#if showCreateModal}
     <div class="modal-overlay" role="presentation" onclick={() => { showCreateModal = false; }}>
       <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-      <div class="modal-panel" role="dialog" aria-label="Create campaign" onclick={(e) => e.stopPropagation()}>
+      <div class="modal-panel" role="dialog" aria-label="Create campaign" tabindex="-1" onclick={(e) => e.stopPropagation()} onkeydown={(e) => { if (e.key === 'Escape') { showCreateModal = false; } }}>
         <CampaignForm
           {rules}
           existingCampaigns={$campaignsStore}

@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Referrals UAT Report</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f3f4f6;
+    color: #1f2937;
+    line-height: 1.6;
+    padding: 2rem;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  h1 { font-size: 1.75rem; font-weight: 700; color: #111827; }
+  h2 { font-size: 1.35rem; font-weight: 600; color: #111827; margin-bottom: 1rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem; }
+
+  .header {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .header-meta { font-size: 0.875rem; color: #6b7280; }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .summary-item {
+    background: #fff;
+    border-radius: 10px;
+    padding: 1.25rem;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .summary-item .value { font-size: 2rem; font-weight: 700; line-height: 1.2; }
+  .summary-item .label { font-size: 0.75rem; color: #6b7280; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.25rem; }
+  .summary-item.pass .value { color: #059669; }
+  .summary-item.fail .value { color: #dc2626; }
+  .summary-item.bug .value { color: #d97706; }
+  .summary-item.total .value { color: #2563eb; }
+  .summary-item.skip .value { color: #6b7280; }
+
+  .section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  .test-case {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .test-case.pass { border-left: 4px solid #059669; }
+  .test-case.fail { border-left: 4px solid #dc2626; }
+  .test-case.bug { border-left: 4px solid #d97706; }
+  .test-case.skip { border-left: 4px solid #6b7280; }
+
+  .test-case h3 { display: flex; align-items: center; gap: 0.75rem; }
+
+  .badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .badge-pass { background: #d1fae5; color: #065f46; }
+  .badge-fail { background: #fee2e2; color: #991b1b; }
+  .badge-bug { background: #fef3c7; color: #92400e; }
+  .badge-skip { background: #f3f4f6; color: #4b5563; }
+
+  .severity {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    margin-left: 0.5rem;
+  }
+  .severity-high { background: #fee2e2; color: #991b1b; }
+  .severity-medium { background: #fef3c7; color: #92400e; }
+  .severity-low { background: #f3f4f6; color: #4b5563; }
+
+  .test-id {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+    background: #f3f4f6;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-family: monospace;
+  }
+
+  .steps { margin: 0.75rem 0; padding-left: 1.5rem; }
+  .steps li { margin-bottom: 0.25rem; font-size: 0.9rem; }
+
+  .screenshot-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+  .screenshot-grid img {
+    width: 100%;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+    cursor: pointer;
+  }
+  .screenshot-grid img:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  .screenshot-caption {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+    text-align: center;
+  }
+
+  .notes {
+    background: #f9fafb;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    margin-top: 0.75rem;
+  }
+  .notes strong { color: #374151; }
+
+  .bug-detail {
+    background: #fffbeb;
+    border: 1px solid #fcd34d;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    margin-top: 0.75rem;
+  }
+  .bug-detail p { margin-bottom: 0.25rem; }
+
+  .bug-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    margin-top: 1rem;
+  }
+  .bug-table th {
+    text-align: left;
+    padding: 0.6rem 0.8rem;
+    background: #f9fafb;
+    border-bottom: 2px solid #e5e7eb;
+    font-weight: 600;
+  }
+  .bug-table td {
+    padding: 0.6rem 0.8rem;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: top;
+  }
+
+  .env-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+  .env-table td {
+    padding: 0.4rem 0.8rem;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .env-table td:first-child {
+    font-weight: 600;
+    color: #374151;
+    width: 200px;
+  }
+
+  .data-check {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+    margin-top: 0.75rem;
+    font-family: monospace;
+  }
+
+  @media print {
+    body { background: #fff; padding: 1rem; }
+    .section, .header, .summary-item { box-shadow: none; border: 1px solid #e5e7eb; }
+    .test-case { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div>
+      <h1>Referrals UAT Report</h1>
+      <p class="header-meta">Batua Project &mdash; 26 March 2026 &mdash; Merchant: Sherwani Studio (<code>sherwanistudio</code>)</p>
+    </div>
+    <div class="header-meta">
+      Generated by Claude Code UAT Agent
+    </div>
+  </div>
+
+  <!-- SUMMARY GRID -->
+  <div class="summary-grid">
+    <div class="summary-item total"><span class="value">13</span><span class="label">Total Tests</span></div>
+    <div class="summary-item pass"><span class="value">11</span><span class="label">Passed</span></div>
+    <div class="summary-item fail"><span class="value">0</span><span class="label">Failed</span></div>
+    <div class="summary-item bug"><span class="value">1</span><span class="label">Bugs</span></div>
+    <div class="summary-item skip"><span class="value">1</span><span class="label">Skipped</span></div>
+  </div>
+
+  <!-- BUG SUMMARY TABLE -->
+  <div class="section">
+    <h2>Bug Summary</h2>
+    <table class="bug-table">
+      <thead><tr><th>ID</th><th>Severity</th><th>Test Case</th><th>Description</th><th>Root Cause</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="test-id">#5</span></td>
+          <td><span class="severity severity-medium">MEDIUM</span></td>
+          <td>Conversion Rate Metric</td>
+          <td>Conversion rate displays as 0.6% instead of the correct 56.3% (67 conversions / 119 referrals)</td>
+          <td>Backend returns rate as a decimal (0.563) but frontend displays it as-is with a % suffix. The backend calculation at <code>src/services/referrals/storage.rs:328</code> divides conversions/referrals without multiplying by 100.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- STAKEHOLDER 1: MERCHANT ADMIN &mdash; REFERRAL PROGRAM -->
+  <div class="section">
+    <h2>Stakeholder 1: Merchant Admin &mdash; Referral Program</h2>
+
+    <!-- Test #1 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#1</span> Referral Program &mdash; Page Load (Light Mode) <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Navigate to http://localhost:5174/admin/referrals</li>
+        <li>Verify the page loads with program status, stats, and referral codes table</li>
+        <li>Check console for errors</li>
+        <li>Verify all sections present: program banner, metrics, codes table, conversions table</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="referrals-uat/01-admin-referrals-page-load.png" alt="Referral program page in light mode">
+          <p class="screenshot-caption">Referral program page &mdash; light mode with program status, 4 metric cards, and codes table</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Page loads correctly. Shows program status banner ("Active &mdash; Referrer: 100 Jewels, Referee: 50 Jewels") with Pause button. Four metric cards: 15 Total Codes, 119 Referrals, 67 Conversions, 0.6% Conversion Rate. All 15 referral codes listed in a table sorted by conversions descending. Columns: Code, Mobile, Type (Standard/Creator), Conversions, Status. No console errors (only favicon 404). No failed network requests.
+      </div>
+    </div>
+
+    <!-- Test #2 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#2</span> Recent Conversions Table <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Scroll down past the referral codes table</li>
+        <li>Verify the "Recent Conversions" section is visible</li>
+        <li>Check columns: Referrer, Referee, Order, Status, Date</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="referrals-uat/03-admin-conversions-table.png" alt="Recent conversions table">
+          <p class="screenshot-caption">Recent Conversions table &mdash; 10 most recent conversions with referrer/referee phone numbers, order IDs, and dates</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Conversions table shows 10 recent entries. Each row shows referrer phone, referee phone, order ID (e.g. order:ref-sherx15-1), status (all "Clean" &mdash; no suspicious activity), and formatted date. Data is sorted by date descending. Most recent conversion is 26 Mar.
+      </div>
+    </div>
+
+    <!-- Test #3 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#3</span> Edit Program Settings <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Click the "Edit Program" button in the top-right</li>
+        <li>Verify the settings form appears with pre-filled values</li>
+        <li>Check all form fields: Referrer Reward, Referee Reward, Limit toggle, Active toggle</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="referrals-uat/04-admin-edit-program-modal.png" alt="Edit referral program form">
+          <p class="screenshot-caption">Edit Program view &mdash; reconfigure mode with pre-filled settings, "How it Works" diagram</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Clicking "Edit Program" navigates to a settings form (not a modal). Shows: Referrer Reward (100 Jewels), Referee Reward (50 Jewels), "Limit referrals per customer" toggle (off), "Program active" toggle (on). Includes a helpful "How it Works" diagram showing referrer &rarr; code &rarr; referee flow. Orange banner: "Reconfigure mode: Your current settings are pre-filled. Changes take effect immediately on save." Save Changes and Cancel buttons present.
+      </div>
+    </div>
+
+    <!-- Test #4 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#4</span> Referral Program &mdash; Dark Mode <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Toggle the theme to dark mode</li>
+        <li>Verify the referral program page renders correctly</li>
+        <li>Check text readability, table borders, metric cards contrast</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="referrals-uat/05-admin-referrals-dark-mode.png" alt="Referral program in dark mode">
+          <p class="screenshot-caption">Referral program page &mdash; dark mode with good contrast across all elements</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Dark mode renders correctly. Sidebar, header, metric cards, status banner, and tables all adapt to dark backgrounds. Text is readable. "Active" and "Standard"/"Creator" pills maintain visibility. No contrast issues.
+      </div>
+    </div>
+
+    <!-- Test #5 -->
+    <div class="test-case bug">
+      <h3><span class="test-id">#5</span> Conversion Rate Calculation <span class="badge badge-bug">BUG</span> <span class="severity severity-medium">MEDIUM</span></h3>
+      <ol class="steps">
+        <li>Compare the displayed conversion rate (0.6%) with the actual data</li>
+        <li>Query DB: 67 conversions / 119 referrals = 56.3%</li>
+        <li>The admin UI shows 0.6% which is incorrect</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="referrals-uat/01-admin-referrals-page-load.png" alt="Conversion rate showing 0.6%">
+          <p class="screenshot-caption">Metric card shows 0.6% conversion rate &mdash; should be 56.3%</p>
+        </div>
+      </div>
+      <div class="bug-detail">
+        <p><strong>Expected:</strong> Conversion rate should display as 56.3% (67/119 * 100)</p>
+        <p><strong>Actual:</strong> Displays as 0.6% (the raw decimal 0.563 rounded to 1 decimal, shown with % suffix)</p>
+        <p><strong>Root cause:</strong> <code>src/services/referrals/storage.rs:328</code> computes <code>total_conversions as f64 / total_referrals as f64</code> yielding 0.563, but does not multiply by 100. The frontend at <code>+page.svelte:275</code> shows <code>analytics.conversion_rate.toFixed(1)%</code> treating the value as already a percentage.</p>
+        <p><strong>Fix:</strong> Multiply by 100 in the backend: <code>(total_conversions as f64 / total_referrals as f64) * 100.0</code></p>
+      </div>
+    </div>
+
+    <!-- Test #6 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#6</span> Console Errors &amp; Network Requests <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Open DevTools console on /admin/referrals</li>
+        <li>Check for JavaScript errors (ignoring favicon 404)</li>
+        <li>Check network requests for failed API calls</li>
+      </ol>
+      <div class="notes">
+        <strong>Notes:</strong> Zero console errors. Zero failed network requests (excluding favicon.png 404). All API endpoints return 200.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- STAKEHOLDER 2: MERCHANT ADMIN &mdash; INFLUENCERS -->
+  <div class="section">
+    <h2>Stakeholder 2: Merchant Admin &mdash; Influencers</h2>
+
+    <!-- Test #7 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#7</span> Influencers &mdash; Page Load (Light Mode) <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Navigate to http://localhost:5174/admin/influencers</li>
+        <li>Verify the page loads with influencer list</li>
+        <li>Check summary cards and table columns</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="referrals-uat/06-admin-influencers-page.png" alt="Influencers page in light mode">
+          <p class="screenshot-caption">Influencers page &mdash; 3 active influencers with commission rates and conversions</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Page shows 2 summary cards: 3 Active Influencers, 9 Total Conversions. Table columns: Influencer (phone), Code, Commission, Conversions, Status. Three creators listed: SHERX007 (12%, 6 conversions), SHERX014 (9%, 3 conversions), TESTCREATOR (5%, 0 conversions). "+ Add Influencer" button in top-right. All data matches DB records.
+      </div>
+    </div>
+
+    <!-- Test #8 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#8</span> Influencers &mdash; Dark Mode <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Toggle to dark mode on the influencers page</li>
+        <li>Verify readability and contrast</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="referrals-uat/07-admin-influencers-dark-mode.png" alt="Influencers page in dark mode">
+          <p class="screenshot-caption">Influencers page &mdash; dark mode with consistent styling</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Dark mode renders correctly. Commission rate text, code badges, and "Active" pills remain readable. Table borders adapt. Summary cards maintain good contrast.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- STAKEHOLDER 3: CUSTOMER STOREFRONT -->
+  <div class="section">
+    <h2>Stakeholder 3: Customer Storefront</h2>
+
+    <!-- Test #9 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#9</span> Storefront &mdash; Refer &amp; Earn Page (Desktop) <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Navigate to http://localhost:5174/s/sherwanistudio</li>
+        <li>Enter phone number 9050000001 (Shreya Mehta, code SHERX002)</li>
+        <li>Navigate to /s/sherwanistudio/refer</li>
+        <li>Verify referral code card with stats and share buttons</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="referrals-uat/09-storefront-refer-page.png" alt="Storefront refer page desktop">
+          <p class="screenshot-caption">Refer &amp; Earn page &mdash; code SHERX002, 5 referrals, 7 conversions, WhatsApp + Copy Link buttons</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Referral card displays correctly. Shows: merchant header "Sherwani Studio", "Your referral program" subtitle with "Change number" link, referral code SHERX002 in a dashed-border box, stats (5 Referrals, 7 Conversions), "Share on WhatsApp" (green) and "Copy Link" (outline) buttons. Instruction text: "Share your code and earn 100 pts for each referral". Referral stats match DB (total_referrals=5, total_conversions=7).
+      </div>
+    </div>
+
+    <!-- Test #10 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#10</span> Storefront &mdash; Refer &amp; Earn Page (Mobile 375px) <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Resize viewport to 375x812 (iPhone SE)</li>
+        <li>Navigate to the refer page</li>
+        <li>Verify responsive layout and button sizing</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="referrals-uat/10-storefront-refer-mobile.png" alt="Storefront refer page mobile">
+          <p class="screenshot-caption">Mobile viewport (375px) &mdash; card adapts well, buttons stack properly</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Mobile layout works well. Card fills the viewport width with appropriate padding. Code is large and readable. Stats display side-by-side with divider. "Share on WhatsApp" and "Copy Link" buttons are adequately sized for touch targets. "Change number" link is accessible.
+      </div>
+    </div>
+
+    <!-- Test #11 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#11</span> Storefront &mdash; Referral Landing Page (Desktop) <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Navigate to http://localhost:5174/s/sherwanistudio/refer/SHERX002</li>
+        <li>Verify the referral landing page for new customers</li>
+        <li>Check code display, reward info, how-it-works steps, and Shop Now CTA</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="referrals-uat/11-storefront-referral-landing.png" alt="Referral landing page desktop">
+          <p class="screenshot-caption">Referral landing page &mdash; gift box hero, 50 pts reward, code display, how-it-works, Shop Now CTA</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Landing page is visually appealing. Shows: gift box emoji hero, "Get 50 [jewels] in rewards on your first order", dashed code box (SHERX002), "How it works" section with 3 steps (Shop &rarr; Use code at checkout &rarr; Get 50 credited to wallet), prominent purple "Shop Now" CTA button. Referee reward (50) matches the program config in DB.
+      </div>
+    </div>
+
+    <!-- Test #12 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#12</span> Storefront &mdash; Referral Landing Page (Mobile 375px) <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Resize to 375px and load /s/sherwanistudio/refer/SHERX002</li>
+        <li>Verify responsive layout</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="referrals-uat/12-storefront-referral-landing-mobile.png" alt="Referral landing page mobile">
+          <p class="screenshot-caption">Mobile viewport (375px) &mdash; landing page renders correctly on small screens</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Mobile layout renders correctly. All elements stack vertically. Code is readable. "Shop Now" button spans full width. How-it-works steps are legible. Good spacing throughout.
+      </div>
+    </div>
+
+    <!-- Test #13 -->
+    <div class="test-case skip">
+      <h3><span class="test-id">#13</span> Storefront &mdash; Customer With No Referral Code <span class="badge badge-skip">SKIP</span></h3>
+      <ol class="steps">
+        <li>Login with a customer who has no referral code</li>
+        <li>Navigate to /s/sherwanistudio/refer</li>
+        <li>Verify empty state or code generation flow</li>
+      </ol>
+      <div class="notes">
+        <strong>Notes:</strong> Skipped &mdash; all seeded customers for Sherwani Studio already have referral codes assigned. Would require creating a new customer to test the empty/no-code state. This is a gap in seed data coverage rather than a bug.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- DATA INTEGRITY -->
+  <div class="section">
+    <h2>Data Integrity</h2>
+
+    <div class="test-case pass">
+      <h3>Database vs. Admin UI Comparison</h3>
+      <div class="data-check">
+        <pre>
+-- Referral codes count
+SELECT COUNT(*) FROM referral_codes
+WHERE merchant_id = 'b0000000-0000-0000-0000-000000000050';
+-- Result: 15   |  Admin UI: 15   MATCH
+
+-- Total referrals (sum across all codes)
+SELECT SUM(total_referrals) FROM referral_codes
+WHERE merchant_id = 'b0000000-0000-0000-0000-000000000050';
+-- Result: 119  |  Admin UI: 119  MATCH
+
+-- Total conversions (sum across all codes)
+SELECT SUM(total_conversions) FROM referral_codes
+WHERE merchant_id = 'b0000000-0000-0000-0000-000000000050';
+-- Result: 67   |  Admin UI: 67   MATCH
+
+-- Actual conversions in referral_conversions table
+SELECT COUNT(*) FROM referral_conversions
+WHERE merchant_id = 'b0000000-0000-0000-0000-000000000050';
+-- Result: 28   (actual conversion records)
+
+-- Conversion rate (correct)
+SELECT ROUND(SUM(total_conversions)::numeric /
+  NULLIF(SUM(total_referrals), 0)::numeric * 100, 1)
+FROM referral_codes
+WHERE merchant_id = 'b0000000-0000-0000-0000-000000000050';
+-- Result: 56.3%  |  Admin UI: 0.6%   MISMATCH (BUG #5)
+
+-- Creator/influencer count
+SELECT COUNT(*) FROM referral_codes
+WHERE merchant_id = 'b0000000-0000-0000-0000-000000000050'
+AND is_creator = true;
+-- Result: 3    |  Influencers UI: 3  MATCH
+
+-- Creator total conversions
+SELECT SUM(total_conversions) FROM referral_codes
+WHERE merchant_id = 'b0000000-0000-0000-0000-000000000050'
+AND is_creator = true;
+-- Result: 9    |  Influencers UI: 9  MATCH
+
+-- Storefront: Customer SHERX002 (Shreya Mehta)
+SELECT total_referrals, total_conversions FROM referral_codes
+WHERE code = 'SHERX002';
+-- Result: 5 referrals, 7 conversions
+-- Storefront UI: 5 REFERRALS, 7 CONVERSIONS  MATCH
+
+-- Program config
+SELECT referrer_reward_amount, referee_reward_amount, is_active
+FROM referral_programs
+WHERE merchant_id = 'b0000000-0000-0000-0000-000000000050';
+-- Result: 100, 50, true
+-- Admin UI: "Active - Referrer: 100, Referee: 50"  MATCH
+-- Storefront landing: "Get 50 in rewards"  MATCH
+        </pre>
+      </div>
+      <div class="notes">
+        <strong>Summary:</strong> All data points match between DB and UI except the conversion rate calculation (Bug #5). Referral codes count, referral totals, conversion totals, influencer data, program config, and per-customer stats all align correctly across admin, influencers page, and storefront.
+      </div>
+    </div>
+  </div>
+
+  <!-- ENVIRONMENT -->
+  <div class="section">
+    <h2>Environment</h2>
+    <table class="env-table">
+      <tr><td>Application</td><td>Batua (Breeze Retention Suite)</td></tr>
+      <tr><td>Frontend URL</td><td>http://localhost:5174</td></tr>
+      <tr><td>Backend URL</td><td>http://localhost:3000</td></tr>
+      <tr><td>Database</td><td>PostgreSQL &mdash; <code>batua</code></td></tr>
+      <tr><td>Merchant</td><td>Sherwani Studio (<code>sherwanistudio</code>, ID: <code>b0000000-0000-0000-0000-000000000050</code>)</td></tr>
+      <tr><td>Test Customer</td><td>Shreya Mehta (+919050000001, code SHERX002)</td></tr>
+      <tr><td>Browser</td><td>Chromium (Playwright-managed)</td></tr>
+      <tr><td>Desktop Viewport</td><td>1280 x 800</td></tr>
+      <tr><td>Mobile Viewport</td><td>375 x 812</td></tr>
+      <tr><td>Date</td><td>26 March 2026</td></tr>
+      <tr><td>Tester</td><td>Claude Code UAT Agent</td></tr>
+    </table>
+  </div>
+
+</div>
+</body>
+</html>

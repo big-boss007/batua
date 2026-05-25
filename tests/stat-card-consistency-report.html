@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stat Card Styling Consistency Fix</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f3f4f6;
+    color: #1f2937;
+    line-height: 1.6;
+    padding: 2rem;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  h1 { font-size: 1.75rem; font-weight: 700; color: #111827; }
+  h2 { font-size: 1.35rem; font-weight: 600; color: #111827; margin-bottom: 1rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem; }
+
+  .header {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .header-meta { font-size: 0.875rem; color: #6b7280; }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .summary-item {
+    background: #fff;
+    border-radius: 10px;
+    padding: 1.25rem;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .summary-item .value { font-size: 2rem; font-weight: 700; line-height: 1.2; }
+  .summary-item .label { font-size: 0.75rem; color: #6b7280; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.25rem; }
+  .summary-item.pass .value { color: #059669; }
+  .summary-item.fail .value { color: #dc2626; }
+  .summary-item.bug .value { color: #d97706; }
+  .summary-item.total .value { color: #2563eb; }
+  .summary-item.skip .value { color: #6b7280; }
+
+  .section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  .test-case {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .test-case.pass { border-left: 4px solid #059669; }
+  .test-case.fail { border-left: 4px solid #dc2626; }
+  .test-case.bug { border-left: 4px solid #d97706; }
+  .test-case.skip { border-left: 4px solid #6b7280; }
+
+  .test-case h3 { display: flex; align-items: center; gap: 0.75rem; }
+
+  .badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .badge-pass { background: #d1fae5; color: #065f46; }
+  .badge-fail { background: #fee2e2; color: #991b1b; }
+  .badge-bug { background: #fef3c7; color: #92400e; }
+  .badge-skip { background: #f3f4f6; color: #4b5563; }
+
+  .severity {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    margin-left: 0.5rem;
+  }
+  .severity-high { background: #fee2e2; color: #991b1b; }
+  .severity-medium { background: #fef3c7; color: #92400e; }
+  .severity-low { background: #f3f4f6; color: #4b5563; }
+
+  .test-id {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+    background: #f3f4f6;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-family: monospace;
+  }
+
+  .steps { margin: 0.75rem 0; padding-left: 1.5rem; }
+  .steps li { margin-bottom: 0.25rem; font-size: 0.9rem; }
+
+  .screenshot-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+  .screenshot-grid img {
+    width: 100%;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+    cursor: pointer;
+  }
+  .screenshot-grid img:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  .screenshot-caption {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+    text-align: center;
+  }
+
+  .notes {
+    background: #f9fafb;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    margin-top: 0.75rem;
+  }
+  .notes strong { color: #374151; }
+
+  .bug-detail {
+    background: #fffbeb;
+    border: 1px solid #fcd34d;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    margin-top: 0.75rem;
+  }
+  .bug-detail p { margin-bottom: 0.25rem; }
+
+  .bug-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    margin-top: 1rem;
+  }
+  .bug-table th {
+    text-align: left;
+    padding: 0.6rem 0.8rem;
+    background: #f9fafb;
+    border-bottom: 2px solid #e5e7eb;
+    font-weight: 600;
+  }
+  .bug-table td {
+    padding: 0.6rem 0.8rem;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: top;
+  }
+
+  .env-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+  .env-table td {
+    padding: 0.4rem 0.8rem;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .env-table td:first-child {
+    font-weight: 600;
+    color: #374151;
+    width: 200px;
+  }
+
+  .files-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    margin-top: 1rem;
+  }
+  .files-table th {
+    text-align: left;
+    padding: 0.6rem 0.8rem;
+    background: #f9fafb;
+    border-bottom: 2px solid #e5e7eb;
+    font-weight: 600;
+  }
+  .files-table td {
+    padding: 0.6rem 0.8rem;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: top;
+  }
+  .files-table code {
+    font-size: 0.8rem;
+    background: #f3f4f6;
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+  }
+
+  .comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    margin-top: 1rem;
+  }
+  .comparison-table th {
+    text-align: left;
+    padding: 0.6rem 0.8rem;
+    background: #f9fafb;
+    border-bottom: 2px solid #e5e7eb;
+    font-weight: 600;
+  }
+  .comparison-table td {
+    padding: 0.6rem 0.8rem;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: top;
+  }
+
+  .data-check {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+    margin-top: 0.75rem;
+    font-family: monospace;
+  }
+
+  @media print {
+    body { background: #fff; padding: 1rem; }
+    .section, .header, .summary-item { box-shadow: none; border: 1px solid #e5e7eb; }
+    .test-case { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div>
+      <h1>Stat Card Styling Consistency Fix</h1>
+      <p class="header-meta">Batua Project &mdash; 26 March 2026 &mdash; Merchant: Sherwani Studio (<code>sherwanistudio</code>)</p>
+    </div>
+    <div class="header-meta">
+      Generated by Claude Code UAT Agent
+    </div>
+  </div>
+
+  <!-- SUMMARY GRID -->
+  <div class="summary-grid">
+    <div class="summary-item total"><span class="value">5</span><span class="label">Total Tests</span></div>
+    <div class="summary-item pass"><span class="value">5</span><span class="label">Passed</span></div>
+    <div class="summary-item fail"><span class="value">0</span><span class="label">Failed</span></div>
+    <div class="summary-item bug"><span class="value">0</span><span class="label">Bugs</span></div>
+  </div>
+
+  <!-- WHAT WAS FIXED -->
+  <div class="section">
+    <h2>What Was Fixed</h2>
+    <p style="margin-bottom: 0.75rem;">Issue #3 from the Visual Consistency Audit (<code>docs/visual-audit/report.html</code>): <strong>"Stat Card Styling Inconsistency"</strong>. Four admin pages used stat/metric cards with two different implementations &mdash; Overview used the <code>MetricCard</code> component while Gift Cards, Referrals, and Influencers used custom inline <code>.stat-card</code> / <code>.metric-card</code> divs with different padding, font sizes, and structure.</p>
+    <p><strong>Fix:</strong> Added <code>size</code> prop (<code>"default" | "compact"</code>) and <code>displayValue</code> string prop to <code>MetricCard.svelte</code>. Migrated all three pages to use <code>&lt;MetricCard size="compact"&gt;</code>. Removed all custom stat card CSS from those pages.</p>
+  </div>
+
+  <!-- FILES MODIFIED -->
+  <div class="section">
+    <h2>Files Modified</h2>
+    <table class="files-table">
+      <thead><tr><th>File</th><th>Change</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>frontend/src/lib/client/modules/admin/ui/MetricCard.svelte</code></td>
+          <td>Added <code>size</code> prop (compact variant), <code>displayValue</code> prop</td>
+        </tr>
+        <tr>
+          <td><code>frontend/src/routes/admin/gift-cards/+page.svelte</code></td>
+          <td>Migrated to <code>&lt;MetricCard&gt;</code>, removed <code>.stat-card</code> CSS</td>
+        </tr>
+        <tr>
+          <td><code>frontend/src/routes/admin/referrals/+page.svelte</code></td>
+          <td>Migrated to <code>&lt;MetricCard&gt;</code>, removed <code>.metric-card</code> CSS</td>
+        </tr>
+        <tr>
+          <td><code>frontend/src/routes/admin/influencers/+page.svelte</code></td>
+          <td>Migrated to <code>&lt;MetricCard&gt;</code>, removed <code>.metric-card</code> CSS</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- BEFORE VS AFTER -->
+  <div class="section">
+    <h2>Before vs After</h2>
+    <table class="comparison-table">
+      <thead><tr><th>Property</th><th>Before (Custom divs)</th><th>After (MetricCard compact)</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Component</td>
+          <td>Inline <code>.stat-card</code> / <code>.metric-card</code></td>
+          <td><code>MetricCard</code> (shared)</td>
+        </tr>
+        <tr>
+          <td>Padding</td>
+          <td><code>space-4 space-5</code> (inconsistent)</td>
+          <td><code>space-4</code> (uniform)</td>
+        </tr>
+        <tr>
+          <td>Value font</td>
+          <td><code>font-size-lg</code> or <code>font-size-xl</code> (mixed)</td>
+          <td><code>font-size-xl</code> (consistent)</td>
+        </tr>
+        <tr>
+          <td>Label font</td>
+          <td><code>font-size-xs</code> (same)</td>
+          <td><code>font-size-xs</code> (same)</td>
+        </tr>
+        <tr>
+          <td>Shadow</td>
+          <td>Some had it, some didn't</td>
+          <td>All have <code>shadow-sm</code> + hover <code>shadow-md</code></td>
+        </tr>
+        <tr>
+          <td>Hover effect</td>
+          <td>Only gift cards had it</td>
+          <td>All cards have it</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- TEST RESULTS -->
+  <div class="section">
+    <h2>Test Results</h2>
+
+    <!-- Test #1 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#1</span> Gift Cards uses MetricCard compact <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Navigate to /admin/gift-cards</li>
+        <li>Verify stat cards render using MetricCard component with compact sizing</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="stat-card-proof-2-gift-cards.png" alt="Gift Cards page with MetricCard compact">
+          <p class="screenshot-caption">Gift Cards page &mdash; 5 MetricCard (compact), 5x1 grid</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> 5 cards in a row. Previously used custom <code>.stat-card</code> divs with <code>font-size-lg</code>. Now uses MetricCard with <code>font-size-xl</code> (compact). Consistent border, shadow, hover.
+      </div>
+    </div>
+
+    <!-- Test #2 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#2</span> Referrals uses MetricCard compact <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Navigate to /admin/referrals</li>
+        <li>Verify metric cards render using MetricCard component</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="stat-card-proof-3-referrals.png" alt="Referrals page with MetricCard compact">
+          <p class="screenshot-caption">Referrals page &mdash; 4 MetricCard (compact), 4x1 grid</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> 4 cards including "56.3%" conversion rate rendered via <code>displayValue</code> prop. Previously used custom <code>.metric-card</code> divs. Now uses MetricCard compact.
+      </div>
+    </div>
+
+    <!-- Test #3 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#3</span> Influencers uses MetricCard compact <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Navigate to /admin/influencers</li>
+        <li>Verify metric cards render using MetricCard component</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="stat-card-proof-4-influencers.png" alt="Influencers page with MetricCard compact">
+          <p class="screenshot-caption">Influencers page &mdash; 2 MetricCard (compact), 2x1 grid</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> 2 cards (Active Influencers: 3, Total Conversions: 9). Previously used custom <code>.metric-card</code> divs. Now uses MetricCard compact.
+      </div>
+    </div>
+
+    <!-- Test #4 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#4</span> Overview retains MetricCard default size <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Navigate to /admin (Overview)</li>
+        <li>Verify stat cards still use MetricCard default (larger) size</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="stat-card-proof-1-overview.png" alt="Overview page with MetricCard default size">
+          <p class="screenshot-caption">Overview page &mdash; 6 MetricCard (default size), 3x2 grid, larger padding/font</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> 6 cards in 3x2 grid. Uses MetricCard default size with larger padding (space-6) and font (2xl). Unchanged by this fix &mdash; confirms no regression.
+      </div>
+    </div>
+
+    <!-- Test #5 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#5</span> svelte-check passes with 0 errors <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Run <code>npx svelte-check --threshold error</code></li>
+      </ol>
+      <div class="notes">
+        <strong>Notes:</strong> 477 files, 0 errors. All MetricCard usage is type-safe.
+      </div>
+    </div>
+  </div>
+
+  <!-- ENVIRONMENT SECTION -->
+  <div class="section">
+    <h2>Test Environment</h2>
+    <table class="env-table">
+      <tr><td>Date</td><td>2026-03-26</td></tr>
+      <tr><td>Frontend URL</td><td>http://localhost:5174</td></tr>
+      <tr><td>Browser</td><td>Chromium (Playwright)</td></tr>
+      <tr><td>Total Screenshots</td><td>4</td></tr>
+    </table>
+  </div>
+
+</div>
+</body>
+</html>

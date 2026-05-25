@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Campaign Modal Spacing Fix</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: #f5f5f7; color: #1a1a2e; padding: 40px; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  h1 { font-size: 24px; font-weight: 700; margin-bottom: 6px; }
+  .subtitle { font-size: 13px; color: #6b7280; margin-bottom: 36px; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; background: #d1fae5; color: #065f46; margin-left: 8px; }
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px; }
+  .compare-item h2 { font-size: 14px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .compare-item .tag { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 6px; }
+  .tag-before { background: #fee2e2; color: #991b1b; }
+  .tag-after { background: #d1fae5; color: #065f46; }
+  .screenshot { border-radius: 10px; overflow: hidden; border: 1px solid #e5e7eb; box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+  .screenshot img { width: 100%; display: block; }
+  .fix-detail { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 20px; }
+  .fix-detail h3 { font-size: 13px; font-weight: 600; color: #7c6aff; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 10px; }
+  .fix-detail p { font-size: 13px; color: #374151; line-height: 1.6; }
+  code { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; background: #f3f4f6; padding: 2px 6px; border-radius: 4px; }
+  .footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #9ca3af; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>Campaign Modal Spacing Fix <span class="badge">Fixed</span></h1>
+<p class="subtitle">Removed extra right-side spacing in the Campaign Details modal. Same root cause as the Customer Detail modal.</p>
+
+<div class="compare">
+  <div class="compare-item">
+    <h2><span class="tag tag-before">Before</span> Extra spacing on the right</h2>
+    <div class="screenshot">
+      <img src="before.png" alt="Before — extra spacing on right side of campaign modal" />
+    </div>
+  </div>
+  <div class="compare-item">
+    <h2><span class="tag tag-after">After</span> Content fills full width</h2>
+    <div class="screenshot">
+      <img src="after.png" alt="After — content fills full width" />
+    </div>
+  </div>
+</div>
+
+<div class="fix-detail">
+  <h3>What was fixed</h3>
+  <p>
+    The <code>.modal-body</code> container inside <code>CampaignDetailModal.svelte</code> was not stretching to fill
+    the modal's slot content area. The Modal component's <code>.slot-content</code> uses <code>display: flex</code>,
+    but the child <code>.modal-body</code> didn't have <code>width: 100%</code>, so it only took its intrinsic content width.
+  </p>
+  <p style="margin-top: 8px;">
+    <strong>Fix:</strong> Added <code>width: 100%</code> to <code>.modal-body</code> in
+    <code>frontend/src/lib/client/modules/rules/ui/CampaignDetailModal.svelte</code>.
+  </p>
+</div>
+
+<div class="footer">
+  Generated 2 Apr 2026 &mdash; Batua Admin
+</div>
+
+</div>
+</body>
+</html>

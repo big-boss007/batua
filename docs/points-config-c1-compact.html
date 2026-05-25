@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C1 Compact Variants</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f0f1f3; color: #1a1a2e; font-size: 14px; line-height: 1.6;
+    padding: 40px 24px;
+  }
+  h1 { text-align: center; font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+  .page-sub { text-align: center; font-size: 13px; color: #6b7280; margin-bottom: 48px; }
+  .variant { margin-bottom: 48px; max-width: 780px; margin-left: auto; margin-right: auto; }
+  .variant-label {
+    display: inline-block; padding: 6px 16px; border-radius: 16px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.5px; margin-bottom: 8px;
+  }
+  .vl-a { background: #dbeafe; color: #1e40af; }
+  .vl-b { background: #dcfce7; color: #166534; }
+  .vl-c { background: #fefce8; color: #854d0e; }
+  .variant-desc { font-size: 12px; color: #6b7280; margin-bottom: 14px; }
+  .sec-hdr {
+    font-size: 11px; font-weight: 600; color: #6b7280; text-transform: uppercase;
+    letter-spacing: 0.8px; margin-bottom: 14px;
+  }
+  .form-label { font-size: 12px; color: #6b7280; font-weight: 500; margin-bottom: 3px; }
+  .form-input {
+    background: #f8f9fa; border: 1px solid #e5e7eb; border-radius: 8px;
+    padding: 9px 12px; font-size: 14px; color: #1a1a2e; width: 100%;
+  }
+  .form-hint { font-size: 10px; color: #9ca3af; margin-top: 2px; }
+  .form-field { display: flex; flex-direction: column; }
+  .save-btn {
+    background: #7c6aff; border: none; border-radius: 8px; padding: 9px 22px;
+    color: #fff; font-size: 13px; font-weight: 600;
+  }
+</style>
+</head>
+<body>
+
+<h1>C1 Gradient — Compact Variants</h1>
+<p class="page-sub">Same gradient card identity, tighter vertical spacing. Hints moved beside/below fields proportionally.</p>
+
+<!-- ==================== V1: Fields as 2-col rows, hints inline ==================== -->
+<div class="variant">
+  <div class="variant-label vl-a">V1 — 2-Column Fields, Hints Right-Aligned</div>
+  <div class="variant-desc">Fields in 2-col grid. Hints shown as right-aligned secondary text on the same row as the label. Card stays tall to anchor, fields are compact.</div>
+
+  <div class="sec-hdr">Points Configuration</div>
+  <div style="display: grid; grid-template-columns: 180px 1fr; gap: 20px; align-items: start;">
+    <!-- Card -->
+    <div style="background: linear-gradient(145deg, #ecfdf5, #d1fae5); border: 1px solid #a7f3d0; border-radius: 14px; padding: 20px 16px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+      <div style="font-size: 36px; line-height: 1;">★</div>
+      <div style="font-size: 18px; font-weight: 700; color: #1a1a2e; margin-top: 4px;">Stars</div>
+      <div style="width: 32px; height: 2px; background: #6ee7b7; border-radius: 1px; margin: 4px 0;"></div>
+      <div style="font-size: 20px; font-weight: 800; color: #059669;">4 ★ = ₹1</div>
+      <div style="font-size: 10px; color: #6b7280; margin-top: 4px; line-height: 1.4;">100★=₹25 · 500★=₹125<br>1,000★=₹250</div>
+    </div>
+    <!-- Fields -->
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div class="form-field">
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <div class="form-label">Points Name</div>
+            <div class="form-hint">e.g. "500 Stars"</div>
+          </div>
+          <div class="form-input">Stars</div>
+        </div>
+        <div class="form-field">
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <div class="form-label">Icon</div>
+            <div class="form-hint">e.g. "500 ★"</div>
+          </div>
+          <div class="form-input">★</div>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: end;">
+        <div class="form-field">
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <div class="form-label">₹ per Point</div>
+            <div class="form-hint">4 Stars = ₹1</div>
+          </div>
+          <div class="form-input">0.25</div>
+        </div>
+        <button class="save-btn">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== V2: Single row of 3 fields, card narrower ==================== -->
+<div class="variant">
+  <div class="variant-label vl-b">V2 — Narrow Card + 3-Field Row</div>
+  <div class="variant-desc">Card shrunk to icon+name+ratio only. All 3 fields on one row beside it. Most compact possible. Save inline.</div>
+
+  <div class="sec-hdr">Points Configuration</div>
+  <div style="display: grid; grid-template-columns: 140px 1fr; gap: 16px; align-items: start;">
+    <!-- Card (narrow) -->
+    <div style="background: linear-gradient(145deg, #ecfdf5, #d1fae5); border: 1px solid #a7f3d0; border-radius: 14px; padding: 18px 12px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 2px;">
+      <div style="font-size: 32px; line-height: 1;">★</div>
+      <div style="font-size: 16px; font-weight: 700; color: #1a1a2e; margin-top: 4px;">Stars</div>
+      <div style="font-size: 18px; font-weight: 800; color: #059669; margin-top: 2px;">4★ = ₹1</div>
+      <div style="font-size: 9px; color: #6b7280; margin-top: 4px;">100★=₹25 · 1K★=₹250</div>
+    </div>
+    <!-- Fields: single row of 3 + save -->
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <div style="display: grid; grid-template-columns: 1fr 80px 100px auto; gap: 10px; align-items: end;">
+        <div class="form-field">
+          <div class="form-label">Points Name</div>
+          <div class="form-input">Stars</div>
+        </div>
+        <div class="form-field">
+          <div class="form-label">Icon</div>
+          <div class="form-input">★</div>
+        </div>
+        <div class="form-field">
+          <div class="form-label">₹/Point</div>
+          <div class="form-input">0.25</div>
+        </div>
+        <button class="save-btn">Save</button>
+      </div>
+      <div class="form-hint" style="margin-top: -4px;">1 Star = ₹0.25 → 4 Stars = ₹1 · 100★ = ₹25 · 500★ = ₹125 · 1,000★ = ₹250</div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== V3: Card + 2 rows, tightest spacing ==================== -->
+<div class="variant">
+  <div class="variant-label vl-c">V3 — Balanced Card + 2 Tight Rows</div>
+  <div class="variant-desc">Card at natural size with just the essentials. Fields in 2 rows: [Name | Icon] then [Rate | Save]. Hints as right-aligned whispers. Sweet spot between V1 and V2.</div>
+
+  <div class="sec-hdr">Points Configuration</div>
+  <div style="display: grid; grid-template-columns: 160px 1fr; gap: 20px; align-items: center;">
+    <!-- Card -->
+    <div style="background: linear-gradient(145deg, #ecfdf5, #d1fae5); border: 1px solid #a7f3d0; border-radius: 14px; padding: 20px 14px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 3px;">
+      <div style="font-size: 40px; line-height: 1;">★</div>
+      <div style="font-size: 18px; font-weight: 700; color: #1a1a2e; margin-top: 2px;">Stars</div>
+      <div style="font-size: 22px; font-weight: 800; color: #059669; margin-top: 2px;">4 ★ = ₹1</div>
+      <div style="font-size: 10px; color: #6b7280; margin-top: 4px;">100★ = ₹25 · 1K★ = ₹250</div>
+    </div>
+    <!-- Fields -->
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <div style="display: grid; grid-template-columns: 1fr 100px; gap: 12px;">
+        <div class="form-field">
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <div class="form-label">Points Name</div>
+            <div class="form-hint">"500 Stars"</div>
+          </div>
+          <div class="form-input">Stars</div>
+        </div>
+        <div class="form-field">
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <div class="form-label">Icon</div>
+            <div class="form-hint">"500 ★"</div>
+          </div>
+          <div class="form-input">★</div>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: end;">
+        <div class="form-field">
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <div class="form-label">₹ Value per Point</div>
+            <div class="form-hint">1 Star = ₹0.25</div>
+          </div>
+          <div class="form-input">0.25</div>
+        </div>
+        <button class="save-btn">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Comparison -->
+<div style="max-width: 600px; margin: 24px auto 0;">
+  <table style="width: 100%; border-collapse: collapse; font-size: 12px; color: #6b7280;">
+    <thead>
+      <tr style="border-bottom: 1px solid #e5e7eb;">
+        <th style="text-align: left; padding: 6px 8px; color: #1a1a2e;"></th>
+        <th style="text-align: center; padding: 6px; color: #1e40af;">V1</th>
+        <th style="text-align: center; padding: 6px; color: #166534;">V2</th>
+        <th style="text-align: center; padding: 6px; color: #854d0e;">V3</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom: 1px solid #f3f4f6;"><td style="padding: 5px 8px;">Height</td><td style="text-align: center;">~160px</td><td style="text-align: center; color: #166534; font-weight: 600;">~110px</td><td style="text-align: center;">~140px</td></tr>
+      <tr style="border-bottom: 1px solid #f3f4f6;"><td style="padding: 5px 8px;">Card size</td><td style="text-align: center;">180px wide</td><td style="text-align: center;">140px narrow</td><td style="text-align: center;">160px balanced</td></tr>
+      <tr style="border-bottom: 1px solid #f3f4f6;"><td style="padding: 5px 8px;">Hints</td><td style="text-align: center; color: #1e40af; font-weight: 600;">Right of label</td><td style="text-align: center;">Below all fields</td><td style="text-align: center; color: #854d0e; font-weight: 600;">Right of label</td></tr>
+      <tr><td style="padding: 5px 8px;">Best for</td><td style="text-align: center;">Clarity</td><td style="text-align: center;">Density</td><td style="text-align: center;">Balance</td></tr>
+    </tbody>
+  </table>
+</div>
+
+</body>
+</html>

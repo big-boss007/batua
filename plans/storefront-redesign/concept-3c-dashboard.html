@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Concept 3C: Summary Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #0a0a0f;
+    color: #e4e4ed;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+  }
+  .page-title { font-size: 28px; font-weight: 800; color: #f59e0b; margin-bottom: 8px; text-align: center; }
+  .page-subtitle { font-size: 14px; color: #8888a0; margin-bottom: 40px; text-align: center; max-width: 520px; line-height: 1.6; }
+
+  .phone {
+    width: 375px; min-height: 812px; background: #0a0a0f;
+    border-radius: 40px; border: 3px solid #2a2a3a; overflow: hidden;
+    box-shadow: 0 25px 80px rgba(245,158,11,0.08);
+  }
+  .notch { width: 150px; height: 28px; background: #000; border-radius: 0 0 20px 20px; margin: 0 auto; }
+  .screen { padding: 12px 20px 40px; }
+
+  /* Header with avatar */
+  .header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 0 12px;
+  }
+  .header-left { display: flex; align-items: center; gap: 10px; }
+  .logo {
+    width: 32px; height: 32px; background: linear-gradient(135deg,#7c6aff,#6b5ce7);
+    border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px; color: white;
+  }
+  .brand-name { font-size: 15px; font-weight: 600; }
+  .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: white;
+  }
+
+  /* Profile bar */
+  .profile-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 0 20px;
+  }
+  .profile-info {}
+  .profile-name { font-size: 20px; font-weight: 800; color: white; margin-bottom: 1px; }
+  .profile-meta { font-size: 12px; color: #6b7280; }
+  .profile-meta .tier { color: #7c6aff; font-weight: 600; }
+  .profile-since { font-size: 10px; color: #4b5563; margin-top: 2px; }
+  .profile-right { text-align: right; }
+  .profile-lifetime-label { font-size: 10px; color: #4b5563; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+  .profile-lifetime-value { font-size: 18px; font-weight: 700; color: #10b981; }
+
+  .divider { height: 1px; background: #1a1a26; margin: 0 -20px; }
+
+  /* Summary Dashboard — NEW: balance + tier + stats in one glanceable view */
+  .dashboard {
+    padding: 20px 0;
+  }
+
+  /* Balance row */
+  .dash-balance {
+    text-align: center;
+    padding-bottom: 20px;
+  }
+  .dash-eyebrow {
+    font-size: 11px; color: #8888a0; text-transform: uppercase;
+    letter-spacing: 1.5px; font-weight: 500; margin-bottom: 6px;
+  }
+  .dash-amount {
+    font-size: 48px; font-weight: 800; color: white;
+    line-height: 1; letter-spacing: -2px; margin-bottom: 6px;
+  }
+  .dash-amount .currency { font-size: 26px; font-weight: 600; opacity: 0.4; vertical-align: top; letter-spacing: 0; margin-right: 2px; }
+  .dash-detail { font-size: 12px; color: #6b7280; }
+  .dash-detail .pending { color: #f59e0b; }
+
+  /* Four-stat grid */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 4px 0 0;
+  }
+  .stat-card {
+    padding: 14px;
+    background: #12121a;
+    border-radius: 12px;
+    border: 1px solid #1a1a26;
+  }
+  .stat-card-value { font-size: 18px; font-weight: 700; color: white; margin-bottom: 2px; }
+  .stat-card-label { font-size: 10px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-card-value.green { color: #10b981; }
+  .stat-card-value.amber { color: #f59e0b; }
+  .stat-card-value.purple { color: #7c6aff; }
+
+  /* Tier — compact */
+  .tier-section { padding: 20px 0; }
+  .tier-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .tier-left { display: flex; align-items: center; gap: 8px; }
+  .tier-dot { width: 10px; height: 10px; border-radius: 50%; background: #7c6aff; }
+  .tier-label { font-size: 13px; font-weight: 500; }
+  .tier-right { font-size: 12px; color: #8888a0; }
+  .tier-progress { display: flex; gap: 3px; height: 4px; margin-bottom: 8px; }
+  .tier-segment { flex: 1; background: #1a1a26; border-radius: 2px; }
+  .tier-segment.filled { background: #7c6aff; }
+  .tier-hint { font-size: 11px; color: #6b7280; }
+
+  /* Transactions with running balance */
+  .tx-section { padding-top: 8px; }
+  .tx-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 0 8px; }
+  .tx-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #8888a0; }
+  .tx-view-all { font-size: 12px; color: #7c6aff; font-weight: 500; }
+
+  .tx-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 0; border-bottom: 1px solid #12121a;
+  }
+  .tx-item:last-child { border-bottom: none; }
+  .tx-indicator { width: 4px; height: 32px; border-radius: 2px; flex-shrink: 0; }
+  .tx-indicator.credit { background: #10b981; }
+  .tx-indicator.debit { background: #ef4444; }
+  .tx-indicator.transfer { background: #7c6aff; }
+  .tx-details { flex: 1; }
+  .tx-label { font-size: 14px; font-weight: 500; color: #e4e4ed; }
+  .tx-meta { font-size: 12px; color: #4b5563; margin-top: 2px; }
+  .tx-right { text-align: right; }
+  .tx-amount { font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .tx-amount.credit { color: #10b981; }
+  .tx-amount.debit { color: #e4e4ed; }
+  .tx-amount.transfer { color: #8888a0; }
+  .tx-running {
+    font-size: 10px; color: #4b5563; margin-top: 2px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Bottom Actions */
+  .bottom-actions { display: flex; gap: 8px; padding-top: 20px; }
+  .bottom-action {
+    flex: 1; padding: 14px; text-align: center;
+    border: 1px solid #2a2a3a; border-radius: 12px;
+    font-size: 12px; font-weight: 500; color: #8888a0;
+  }
+  .bottom-action.primary { background: #7c6aff; border-color: #7c6aff; color: white; }
+
+  /* Annotations */
+  .annotation-group { margin-top: 60px; width: 100%; max-width: 700px; }
+  .annotation-title { font-size: 20px; font-weight: 700; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #2a2a3a; }
+  .annotation { display: flex; gap: 16px; margin-bottom: 20px; align-items: flex-start; }
+  .annotation-num {
+    width: 28px; height: 28px; background: #f59e0b; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: #000; flex-shrink: 0;
+  }
+  .annotation-text { font-size: 14px; line-height: 1.6; color: #c4c4d4; }
+  .annotation-text strong { color: #e4e4ed; }
+</style>
+</head>
+<body>
+
+<div class="page-title">3C: Summary Dashboard</div>
+<div class="page-subtitle">
+  Everything at a glance — profile + lifetime stats in the header area, a 4-stat grid
+  replacing the simple row, and transactions with running balance. Hierarchy: who you are →
+  full picture → progress → detailed history.
+</div>
+
+<div class="phone">
+  <div class="notch"></div>
+  <div class="screen">
+
+    <!-- Header -->
+    <div class="header">
+      <div class="header-left">
+        <div class="logo">H</div>
+        <div class="brand-name">HomeVibes</div>
+      </div>
+      <div class="avatar">PS</div>
+    </div>
+
+    <!-- Profile Bar — name + lifetime earnings -->
+    <div class="profile-bar">
+      <div class="profile-info">
+        <div class="profile-name">Priya Sharma</div>
+        <div class="profile-meta"><span class="tier">Bronze</span> · 8 orders</div>
+        <div class="profile-since">Member since Jan 2026</div>
+      </div>
+      <div class="profile-right">
+        <div class="profile-lifetime-label">Lifetime Saved</div>
+        <div class="profile-lifetime-value">₹1,240</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Dashboard -->
+    <div class="dashboard">
+      <div class="dash-balance">
+        <div class="dash-eyebrow">Spendable Balance</div>
+        <div class="dash-amount"><span class="currency">₹</span>491</div>
+        <div class="dash-detail">₹662 total · <span class="pending">₹171 pending</span></div>
+      </div>
+
+      <!-- 4-stat grid — NEW -->
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-card-value green">₹491</div>
+          <div class="stat-card-label">Earned</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-value amber">₹0</div>
+          <div class="stat-card-label">COD Pending</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-value">₹171</div>
+          <div class="stat-card-label">On Hold</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-value purple">₹45</div>
+          <div class="stat-card-label">Expiring Soon</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Tier -->
+    <div class="tier-section">
+      <div class="tier-row">
+        <div class="tier-left">
+          <div class="tier-dot"></div>
+          <div class="tier-label">Silver</div>
+        </div>
+        <div class="tier-right">491 / 3,000</div>
+      </div>
+      <div class="tier-progress">
+        <div class="tier-segment filled"></div>
+        <div class="tier-segment"></div>
+        <div class="tier-segment"></div>
+        <div class="tier-segment"></div>
+        <div class="tier-segment"></div>
+        <div class="tier-segment"></div>
+      </div>
+      <div class="tier-hint">2,509 points to Silver · unlocks 1.5x cashback</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Transactions with running balance -->
+    <div class="tx-section">
+      <div class="tx-header">
+        <div class="tx-title">Activity</div>
+        <div class="tx-view-all">View All</div>
+      </div>
+
+      <div class="tx-item">
+        <div class="tx-indicator transfer"></div>
+        <div class="tx-details">
+          <div class="tx-label">Transferred</div>
+          <div class="tx-meta">Earned Credit · Yesterday</div>
+        </div>
+        <div class="tx-right">
+          <div class="tx-amount transfer">₹86.10</div>
+          <div class="tx-running">bal ₹491.00</div>
+        </div>
+      </div>
+
+      <div class="tx-item">
+        <div class="tx-indicator credit"></div>
+        <div class="tx-details">
+          <div class="tx-label">Cashback Earned</div>
+          <div class="tx-meta">Order #1042 · Mar 17</div>
+        </div>
+        <div class="tx-right">
+          <div class="tx-amount credit">+₹125.00</div>
+          <div class="tx-running">bal ₹577.10</div>
+        </div>
+      </div>
+
+      <div class="tx-item">
+        <div class="tx-indicator debit"></div>
+        <div class="tx-details">
+          <div class="tx-label">Redeemed</div>
+          <div class="tx-meta">Order #1038 · Mar 15</div>
+        </div>
+        <div class="tx-right">
+          <div class="tx-amount debit">-₹200.00</div>
+          <div class="tx-running">bal ₹452.10</div>
+        </div>
+      </div>
+
+      <div class="tx-item">
+        <div class="tx-indicator credit"></div>
+        <div class="tx-details">
+          <div class="tx-label">Cashback Earned</div>
+          <div class="tx-meta">Order #1038 · Mar 15</div>
+        </div>
+        <div class="tx-right">
+          <div class="tx-amount credit">+₹50.00</div>
+          <div class="tx-running">bal ₹652.10</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-actions">
+      <div class="bottom-action">Gift Card</div>
+      <div class="bottom-action primary">Refer & Earn</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Annotations -->
+<div class="annotation-group">
+  <div class="annotation-title">What's New in 3C</div>
+  <div class="annotation">
+    <div class="annotation-num">1</div>
+    <div class="annotation-text"><strong>Profile Bar with Lifetime Stats:</strong> Customer name, tier, order count, and member-since on the left. "Lifetime Saved: ₹1,240" on the right. The avatar with initials (PS) in the top-right replaces the generic Switch link. Full identity at a glance.</div>
+  </div>
+  <div class="annotation">
+    <div class="annotation-num">2</div>
+    <div class="annotation-text"><strong>4-Stat Grid:</strong> Replaces the 3-column row with a 2x2 card grid. Adds a fourth metric — "Expiring Soon" (₹45 in purple). Each stat is color-coded and gets its own card for better scannability. More room for labels.</div>
+  </div>
+  <div class="annotation">
+    <div class="annotation-num">3</div>
+    <div class="annotation-text"><strong>Running Balance on Transactions:</strong> Each transaction shows "bal ₹491.00" — the wallet balance after that transaction. Lets customers trace how their balance changed over time, like a bank statement. Builds trust and transparency.</div>
+  </div>
+  <div class="annotation">
+    <div class="annotation-num">4</div>
+    <div class="annotation-text"><strong>Compact Date in Meta Line:</strong> Instead of date group headers, the date is inline in the meta text ("Order #1042 · Mar 17"). Saves vertical space and works better when transactions are sparse.</div>
+  </div>
+  <div class="annotation">
+    <div class="annotation-num">5</div>
+    <div class="annotation-text"><strong>Information Hierarchy:</strong> Identity + lifetime value → current balance → bucket breakdown → tier progress → transaction history with running balance. Starts with "who you are and what the program has done for you" before diving into details.</div>
+  </div>
+</div>
+
+</body>
+</html>

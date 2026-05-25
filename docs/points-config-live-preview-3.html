@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Points Configuration — Live Preview Variants</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f3f4f6;
+    color: #1f2937;
+    padding: 40px;
+  }
+  h1 {
+    text-align: center;
+    font-size: 28px;
+    margin-bottom: 8px;
+    color: #111827;
+  }
+  .subtitle {
+    text-align: center;
+    color: #6b7280;
+    font-size: 14px;
+    margin-bottom: 48px;
+  }
+  .design-block {
+    max-width: 780px;
+    margin: 0 auto 64px;
+  }
+  .design-label {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #6366f1;
+    margin-bottom: 8px;
+  }
+  .design-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 4px;
+  }
+  .design-desc {
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+
+  /* shared */
+  .section-hdr {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6b7280;
+    margin-bottom: 12px;
+  }
+  input {
+    height: 38px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 0 12px;
+    font-size: 14px;
+    color: #1f2937;
+    background: #fff;
+    outline: none;
+    width: 100%;
+  }
+  input:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 2px rgba(99,102,241,0.12);
+  }
+  label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .btn {
+    height: 38px;
+    padding: 0 24px;
+    background: #6366f1;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* ═══════ DESIGN A: Bordered Card ═══════ */
+  .a-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .a-grid {
+    display: grid;
+    grid-template-columns: 1fr 210px;
+  }
+  .a-form {
+    padding: 24px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .a-form-row {
+    display: flex;
+    gap: 12px;
+  }
+  .a-field { flex: 1; }
+  .a-field.narrow { flex: 0 0 90px; }
+  .a-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 4px;
+  }
+  .a-preview {
+    background: linear-gradient(165deg, #f0fdf4, #dcfce7);
+    border-left: 1px solid #bbf7d0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 28px 20px;
+    gap: 4px;
+  }
+  .a-preview-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #16a34a;
+    margin-bottom: 10px;
+  }
+  .a-preview-icon {
+    width: 52px;
+    height: 52px;
+    background: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    box-shadow: 0 2px 8px rgba(22,163,74,0.12);
+  }
+  .a-preview-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #14532d;
+    margin-top: 6px;
+  }
+  .a-preview-rate {
+    font-size: 20px;
+    font-weight: 800;
+    color: #059669;
+    margin-top: 2px;
+  }
+  .a-preview-eq {
+    font-size: 11px;
+    color: #16a34a;
+    opacity: 0.7;
+  }
+
+  /* ═══════ DESIGN B: Inset Preview ═══════ */
+  .b-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 24px 28px;
+  }
+  .b-top {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+  }
+  .b-form {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .b-form-row {
+    display: flex;
+    gap: 12px;
+  }
+  .b-field { flex: 1; }
+  .b-field.narrow { flex: 0 0 90px; }
+  .b-preview-box {
+    flex: 0 0 170px;
+    background: #fafafa;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .b-preview-icon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+    border: 1px solid #a7f3d0;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+  }
+  .b-preview-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-top: 6px;
+  }
+  .b-preview-rate {
+    font-size: 18px;
+    font-weight: 800;
+    color: #059669;
+    margin-top: 2px;
+  }
+  .b-preview-eq {
+    font-size: 11px;
+    color: #9ca3af;
+  }
+  .b-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #f3f4f6;
+  }
+
+  /* ═══════ DESIGN C: Bottom Preview Bar ═══════ */
+  .c-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .c-form {
+    padding: 24px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .c-form-row {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+  }
+  .c-field { flex: 1; }
+  .c-field.narrow { flex: 0 0 90px; }
+  .c-preview-bar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 28px;
+    background: linear-gradient(90deg, #f0fdf4, #ecfdf5 60%, #fff);
+    border-top: 1px solid #d1fae5;
+  }
+  .c-preview-badge {
+    width: 44px;
+    height: 44px;
+    background: #fff;
+    border: 2px solid #a7f3d0;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .c-preview-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+  .c-preview-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+  }
+  .c-preview-rate {
+    font-size: 18px;
+    font-weight: 800;
+    color: #059669;
+  }
+  .c-preview-eq {
+    font-size: 11px;
+    color: #6b7280;
+  }
+</style>
+</head>
+<body>
+
+<h1>Points Configuration — Live Preview</h1>
+<p class="subtitle">3 variations of the form + live preview layout</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- DESIGN A: Full-height sidebar preview -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="design-block">
+  <div class="design-label">Design A</div>
+  <div class="design-title">Sidebar Preview</div>
+  <div class="design-desc">
+    Full-height green preview panel on the right, form on the left.
+    Clear visual separation — the preview feels like a live badge.
+  </div>
+  <div class="a-card">
+    <div class="section-hdr" style="padding: 20px 28px 0;">Points Configuration</div>
+    <div class="a-grid">
+      <div class="a-form">
+        <div class="a-form-row">
+          <div class="a-field">
+            <label>Points Name</label>
+            <input type="text" value="Stars">
+          </div>
+          <div class="a-field narrow">
+            <label>Icon</label>
+            <input type="text" value="★">
+          </div>
+        </div>
+        <div>
+          <label>Value per Point (₹)</label>
+          <input type="text" value="0.25">
+        </div>
+        <div class="a-actions">
+          <button class="btn">Save</button>
+        </div>
+      </div>
+      <div class="a-preview">
+        <div class="a-preview-label">Preview</div>
+        <div class="a-preview-icon">★</div>
+        <div class="a-preview-name">Stars</div>
+        <div class="a-preview-rate">4 ★ = ₹1</div>
+        <div class="a-preview-eq">1 Stars = ₹0.25</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- DESIGN B: Inset card preview -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="design-block">
+  <div class="design-label">Design B</div>
+  <div class="design-title">Inset Preview Card</div>
+  <div class="design-desc">
+    Preview lives inside the same container as a nested card with a subtle background.
+    Everything in one padded box — feels cohesive and compact.
+  </div>
+  <div class="b-card">
+    <div class="section-hdr">Points Configuration</div>
+    <div class="b-top">
+      <div class="b-form">
+        <div class="b-form-row">
+          <div class="b-field">
+            <label>Points Name</label>
+            <input type="text" value="Stars">
+          </div>
+          <div class="b-field narrow">
+            <label>Icon</label>
+            <input type="text" value="★">
+          </div>
+        </div>
+        <div>
+          <label>Value per Point (₹)</label>
+          <input type="text" value="0.25">
+        </div>
+      </div>
+      <div class="b-preview-box">
+        <div class="b-preview-icon">★</div>
+        <div class="b-preview-name">Stars</div>
+        <div class="b-preview-rate">4 ★ = ₹1</div>
+        <div class="b-preview-eq">1 Stars = ₹0.25</div>
+      </div>
+    </div>
+    <div class="b-actions">
+      <button class="btn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- DESIGN C: Bottom preview bar -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="design-block">
+  <div class="design-label">Design C</div>
+  <div class="design-title">Bottom Preview Bar</div>
+  <div class="design-desc">
+    Form fields with the Save button inline. Preview is a horizontal bar at the bottom
+    with a badge icon — like a status strip. Most compact vertically.
+  </div>
+  <div class="c-card">
+    <div class="section-hdr" style="padding: 20px 28px 0;">Points Configuration</div>
+    <div class="c-form">
+      <div class="c-form-row">
+        <div class="c-field">
+          <label>Points Name</label>
+          <input type="text" value="Stars">
+        </div>
+        <div class="c-field narrow">
+          <label>Icon</label>
+          <input type="text" value="★">
+        </div>
+        <div class="c-field">
+          <label>Value per Point (₹)</label>
+          <input type="text" value="0.25">
+        </div>
+        <div style="display: flex; align-items: flex-end;">
+          <button class="btn">Save</button>
+        </div>
+      </div>
+    </div>
+    <div class="c-preview-bar">
+      <div class="c-preview-badge">★</div>
+      <div class="c-preview-info">
+        <div class="c-preview-name">Stars</div>
+        <div class="c-preview-rate">4 ★ = ₹1</div>
+      </div>
+      <div class="c-preview-eq" style="margin-left: auto;">1 Stars = ₹0.25</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

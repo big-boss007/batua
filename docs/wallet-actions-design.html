@@ -1,0 +1,1682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wallet Actions — Add / Remove / Expire Design System</title>
+  <style>
+    /* ══════════════════════════════════════════════════════
+       DESIGN TOKENS — mirrors Batua's app.css
+       ══════════════════════════════════════════════════════ */
+    :root {
+      --color-primary: #6366f1;
+      --color-primary-hover: #4f46e5;
+      --color-primary-light: #eef2ff;
+      --color-success: #22c55e;
+      --color-success-light: #dcfce7;
+      --color-success-dark: #166534;
+      --color-error: #ef4444;
+      --color-error-light: #fef2f2;
+      --color-error-dark: #991b1b;
+      --color-warning: #f59e0b;
+      --color-warning-light: #fffbeb;
+      --color-warning-dark: #92400e;
+      --color-text: #1e1e2e;
+      --color-text-muted: #6b7280;
+      --color-surface: #ffffff;
+      --color-surface-2: #f8f9fb;
+      --color-surface-3: #f1f3f5;
+      --color-border: #e5e7eb;
+      --radius-sm: 6px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-full: 9999px;
+      --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+      --space-5: 20px; --space-6: 24px; --space-8: 32px;
+      --font-size-2xs: 10px; --font-size-xs: 11px; --font-size-sm: 13px;
+      --font-size-base: 14px; --font-size-lg: 16px; --font-size-xl: 18px;
+      --font-mono: 'SF Mono', 'Fira Code', monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--color-surface-3); color: var(--color-text); line-height: 1.5;
+    }
+
+    /* ══════════ PAGE LAYOUT ══════════ */
+    .page-header {
+      background: linear-gradient(135deg, #312e81 0%, #4f46e5 50%, #6366f1 100%);
+      color: #fff; padding: 40px 48px 32px;
+    }
+    .page-header h1 { font-size: 26px; font-weight: 800; margin-bottom: 6px; }
+    .page-header p { font-size: 14px; opacity: 0.8; max-width: 800px; }
+
+    .toc {
+      background: var(--color-surface); border-bottom: 1px solid var(--color-border);
+      padding: 14px 48px; display: flex; gap: 8px; flex-wrap: wrap;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .toc a {
+      padding: 5px 14px; border-radius: var(--radius-full); font-size: var(--font-size-sm);
+      font-weight: 600; text-decoration: none; border: 1px solid var(--color-border);
+      color: var(--color-text-muted); transition: all 0.15s;
+    }
+    .toc a:hover { border-color: var(--color-primary); color: var(--color-primary); }
+    .toc a.toc-issue { border-color: #bbf7d0; color: var(--color-success-dark); background: var(--color-success-light); }
+    .toc a.toc-remove { border-color: #fecaca; color: var(--color-error-dark); background: var(--color-error-light); }
+    .toc a.toc-expire { border-color: #fde68a; color: var(--color-warning-dark); background: var(--color-warning-light); }
+    .toc a.toc-framework { border-color: #c7d2fe; color: #4338ca; background: var(--color-primary-light); }
+
+    .container { max-width: 1320px; margin: 0 auto; padding: 32px 48px; }
+
+    .section-header {
+      padding: 20px 0 12px; margin-bottom: 24px;
+      border-bottom: 2px solid var(--color-border);
+    }
+    .section-header h2 { font-size: var(--font-size-xl); font-weight: 800; display: flex; align-items: center; gap: 10px; }
+    .section-header p { font-size: var(--font-size-sm); color: var(--color-text-muted); margin-top: 4px; }
+    .section-badge {
+      padding: 3px 10px; border-radius: var(--radius-full); font-size: var(--font-size-xs);
+      font-weight: 700; letter-spacing: 0.03em;
+    }
+    .badge-issue { background: var(--color-success-light); color: var(--color-success-dark); }
+    .badge-remove { background: var(--color-error-light); color: var(--color-error-dark); }
+    .badge-expire { background: var(--color-warning-light); color: var(--color-warning-dark); }
+    .badge-framework { background: var(--color-primary-light); color: #4338ca; }
+
+    .states-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-bottom: 48px;
+    }
+    .state-card {
+      background: var(--color-surface); border-radius: var(--radius-lg);
+      padding: 20px; border: 1px solid var(--color-border);
+    }
+    .state-label {
+      font-size: var(--font-size-xs); font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      margin-bottom: 14px; padding-bottom: 8px;
+      border-bottom: 1px solid var(--color-border);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .state-label .num {
+      width: 20px; height: 20px; border-radius: 50%; display: inline-flex;
+      align-items: center; justify-content: center; font-size: 10px;
+      font-weight: 800; color: #fff;
+    }
+    .num-issue { background: var(--color-success); }
+    .num-remove { background: var(--color-error); }
+    .num-expire { background: var(--color-warning); }
+    .num-framework { background: var(--color-primary); }
+
+    .full-width { grid-column: 1 / -1; }
+
+    /* ══════════ SHARED MODAL COMPONENTS ══════════ */
+    .modal {
+      border-radius: var(--radius-lg); border: 1px solid var(--color-border);
+      background: var(--color-surface); overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    }
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 20px; border-bottom: 1px solid var(--color-border);
+    }
+    .modal-header h3 { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .close-btn {
+      width: 28px; height: 28px; border-radius: var(--radius-sm); border: none;
+      background: var(--color-surface-2); cursor: pointer; font-size: 16px;
+      display: flex; align-items: center; justify-content: center; color: var(--color-text-muted);
+    }
+    .modal-body { padding: 20px; }
+    .modal-footer {
+      display: flex; align-items: center; justify-content: flex-end;
+      gap: 8px; padding: 14px 20px;
+      border-top: 1px solid var(--color-border); background: var(--color-surface-2);
+    }
+
+    /* ── Action Tabs ── */
+    .action-tabs {
+      display: flex; gap: 4px; padding: 4px;
+      background: var(--color-surface-2); border-radius: var(--radius-md);
+      margin-bottom: 16px;
+    }
+    .action-tab {
+      flex: 1; padding: 7px 12px; border-radius: var(--radius-sm);
+      border: none; font-size: var(--font-size-sm); font-weight: 600;
+      cursor: pointer; background: transparent; color: var(--color-text-muted);
+      transition: all 0.15s; text-align: center;
+    }
+    .action-tab.active-issue { background: var(--color-success-light); color: var(--color-success-dark); box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+    .action-tab.active-remove { background: var(--color-error-light); color: var(--color-error-dark); box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+    .action-tab.active-expire { background: var(--color-warning-light); color: var(--color-warning-dark); box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+
+    /* ── Customer Banner ── */
+    .customer-banner {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 14px; background: var(--color-surface-2);
+      border-radius: var(--radius-md); margin-bottom: 16px;
+    }
+    .c-avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: var(--color-primary); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 800; flex-shrink: 0;
+    }
+    .c-info { flex: 1; min-width: 0; }
+    .c-name { font-size: var(--font-size-base); font-weight: 700; }
+    .c-phone { font-size: var(--font-size-xs); color: var(--color-text-muted); font-family: var(--font-mono); }
+    .c-balance-group { text-align: right; }
+    .c-balance-val { font-size: var(--font-size-base); font-weight: 800; }
+    .c-balance-val.points { color: var(--color-primary); }
+    .c-balance-val.cash { color: var(--color-success); }
+    .c-balance-label { font-size: var(--font-size-2xs); color: var(--color-text-muted); }
+
+    /* ── Form Elements ── */
+    .form-group { margin-bottom: 14px; }
+    .form-label { display: block; font-size: var(--font-size-xs); font-weight: 700; color: var(--color-text); margin-bottom: 5px; }
+    .form-label .req { color: var(--color-error); }
+    .form-hint { font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: 3px; }
+    .form-error { font-size: var(--font-size-xs); color: var(--color-error); margin-top: 3px; display: flex; align-items: center; gap: 4px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .form-input, .form-select, .form-textarea {
+      width: 100%; padding: 8px 12px; font-size: var(--font-size-base);
+      border: 1px solid var(--color-border); border-radius: var(--radius-md);
+      background: var(--color-surface); color: var(--color-text);
+      outline: none; transition: border-color 0.15s; font-family: inherit;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+    .form-input.error { border-color: var(--color-error); box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1); }
+    .form-textarea { resize: vertical; min-height: 56px; }
+
+    .amount-wrap { position: relative; }
+    .amount-prefix {
+      position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+      font-size: var(--font-size-base); font-weight: 700; color: var(--color-text-muted);
+    }
+    .amount-wrap .form-input { padding-left: 26px; font-weight: 700; font-family: var(--font-mono); }
+    .amount-wrap.points-input .form-input { padding-left: 12px; padding-right: 50px; }
+    .amount-suffix {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      font-size: var(--font-size-xs); font-weight: 600; color: var(--color-text-muted);
+    }
+
+    /* ── Bucket Selector (radio-card style) ── */
+    .bucket-selector { display: flex; flex-direction: column; gap: 6px; }
+    .bucket-option {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 14px; border-radius: var(--radius-md);
+      border: 1px solid var(--color-border); cursor: pointer;
+      transition: all 0.15s;
+    }
+    .bucket-option:hover { border-color: var(--color-primary); background: #fafbff; }
+    .bucket-option.selected { border-color: var(--color-primary); background: var(--color-primary-light); }
+    .bucket-option.selected .bucket-radio { border-color: var(--color-primary); background: var(--color-primary); }
+    .bucket-radio {
+      width: 16px; height: 16px; border-radius: 50%;
+      border: 2px solid var(--color-border); flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+    }
+    .bucket-radio::after {
+      content: ''; width: 6px; height: 6px; border-radius: 50%;
+      background: #fff; opacity: 0; transition: opacity 0.15s;
+    }
+    .bucket-option.selected .bucket-radio::after { opacity: 1; }
+    .bucket-label { font-size: var(--font-size-sm); font-weight: 600; flex: 1; }
+    .bucket-balance { font-size: var(--font-size-sm); font-weight: 700; font-family: var(--font-mono); }
+    .bucket-balance.points { color: var(--color-primary); }
+    .bucket-balance.cash { color: var(--color-success); }
+
+    /* ── Reason Pills ── */
+    .reason-pills { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 6px; }
+    .reason-pill {
+      padding: 3px 11px; border-radius: var(--radius-full);
+      border: 1px solid var(--color-border); background: var(--color-surface);
+      font-size: var(--font-size-xs); cursor: pointer; color: var(--color-text-muted);
+      transition: all 0.15s; font-weight: 500;
+    }
+    .reason-pill:hover { border-color: var(--color-primary); color: var(--color-primary); }
+    .reason-pill.active { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+    .reason-pill.active-red { background: var(--color-error); color: #fff; border-color: var(--color-error); }
+    .reason-pill.active-amber { background: var(--color-warning); color: #fff; border-color: var(--color-warning); }
+
+    /* ── Preview Boxes ── */
+    .preview-box { border-radius: var(--radius-md); padding: 12px 16px; margin-top: 4px; }
+    .preview-box.green { background: #f0fdf4; border: 1px solid #bbf7d0; }
+    .preview-box.red { background: #fef2f2; border: 1px solid #fecaca; }
+    .preview-box.amber { background: #fffbeb; border: 1px solid #fde68a; }
+    .preview-title {
+      font-size: var(--font-size-xs); font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px;
+    }
+    .preview-title.green { color: var(--color-success-dark); }
+    .preview-title.red { color: var(--color-error-dark); }
+    .preview-title.amber { color: var(--color-warning-dark); }
+    .preview-row { display: flex; justify-content: space-between; align-items: center; font-size: var(--font-size-sm); padding: 2px 0; }
+    .preview-row .lbl { opacity: 0.8; }
+    .preview-row .val { font-weight: 700; }
+    .preview-divider { border-top: 1px dashed; margin: 5px 0; opacity: 0.3; }
+    .preview-row.total .val { font-size: 15px; font-weight: 800; }
+
+    /* ── Tier Impact Warning ── */
+    .tier-impact {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 10px 14px; border-radius: var(--radius-md);
+      margin-top: 10px;
+    }
+    .tier-impact.downgrade { background: var(--color-error-light); border: 1px solid #fecaca; }
+    .tier-impact.safe { background: var(--color-success-light); border: 1px solid #bbf7d0; }
+    .tier-impact-icon { font-size: 18px; flex-shrink: 0; }
+    .tier-impact-text { font-size: var(--font-size-sm); }
+    .tier-impact-text strong { font-weight: 700; }
+    .tier-from-to { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+    .tier-badge {
+      padding: 2px 10px; border-radius: var(--radius-full);
+      font-size: var(--font-size-xs); font-weight: 700;
+    }
+    .tier-badge.gold { background: #fef3c7; color: #92400e; }
+    .tier-badge.silver { background: #f3f4f6; color: #4b5563; }
+    .tier-badge.bronze { background: #fde8d8; color: #9a3412; }
+    .tier-arrow { color: var(--color-text-muted); font-size: 12px; }
+
+    /* ── Buttons ── */
+    .btn {
+      padding: 8px 16px; border-radius: var(--radius-md); border: none;
+      font-size: var(--font-size-sm); font-weight: 700; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px; transition: all 0.15s;
+    }
+    .btn-primary { background: var(--color-primary); color: #fff; }
+    .btn-primary:hover { background: var(--color-primary-hover); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-success { background: var(--color-success); color: #fff; }
+    .btn-success:hover { background: #16a34a; }
+    .btn-danger { background: var(--color-error); color: #fff; }
+    .btn-danger:hover { background: #dc2626; }
+    .btn-warning { background: var(--color-warning); color: #fff; }
+    .btn-warning:hover { background: #d97706; }
+    .btn-ghost { background: transparent; color: var(--color-text-muted); border: 1px solid var(--color-border); }
+    .btn-ghost:hover { background: var(--color-surface-2); }
+
+    /* ── Confirm Overlay ── */
+    .confirm-body { padding: 24px; text-align: center; }
+    .confirm-icon { font-size: 44px; margin-bottom: 10px; }
+    .confirm-title { font-size: var(--font-size-lg); font-weight: 800; margin-bottom: 4px; }
+    .confirm-subtitle { font-size: var(--font-size-sm); color: var(--color-text-muted); margin-bottom: 18px; }
+    .confirm-summary {
+      background: var(--color-surface-2); border-radius: var(--radius-md);
+      padding: 14px 18px; text-align: left; margin-bottom: 18px;
+    }
+    .confirm-row { display: flex; justify-content: space-between; font-size: var(--font-size-sm); padding: 3px 0; }
+    .confirm-row .lbl { color: var(--color-text-muted); }
+    .confirm-row .val { font-weight: 700; }
+    .confirm-row.highlight { border-top: 1px solid var(--color-border); padding-top: 8px; margin-top: 4px; }
+    .confirm-actions { display: flex; gap: 8px; justify-content: center; }
+
+    /* ── Type-to-Confirm ── */
+    .type-confirm {
+      background: var(--color-surface-2); border-radius: var(--radius-md);
+      padding: 14px 18px; margin-bottom: 16px; text-align: center;
+    }
+    .type-confirm p { font-size: var(--font-size-sm); color: var(--color-text-muted); margin-bottom: 8px; }
+    .type-confirm code {
+      background: var(--color-error-light); color: var(--color-error);
+      padding: 2px 8px; border-radius: 4px; font-family: var(--font-mono);
+      font-size: var(--font-size-sm); font-weight: 700;
+    }
+    .type-confirm .form-input { text-align: center; font-family: var(--font-mono); margin-top: 8px; }
+
+    /* ── Success / Error ── */
+    .result-body { padding: 28px 24px; text-align: center; }
+    .result-icon {
+      width: 52px; height: 52px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px; margin: 0 auto 14px;
+    }
+    .result-icon.green { background: var(--color-success-light); color: var(--color-success); }
+    .result-icon.red { background: var(--color-error-light); color: var(--color-error); }
+    .result-icon.amber { background: var(--color-warning-light); color: var(--color-warning); }
+    .result-title { font-size: var(--font-size-lg); font-weight: 800; margin-bottom: 4px; }
+    .result-subtitle { font-size: var(--font-size-sm); color: var(--color-text-muted); margin-bottom: 14px; }
+    .result-detail {
+      background: var(--color-surface-2); border-radius: var(--radius-md);
+      padding: 14px 18px; text-align: left; margin-bottom: 18px;
+    }
+    .result-row { display: flex; justify-content: space-between; font-size: var(--font-size-sm); padding: 2px 0; }
+    .result-row .lbl { color: var(--color-text-muted); }
+    .result-row .val { font-weight: 700; }
+
+    .error-banner {
+      display: flex; align-items: flex-start; gap: 8px;
+      padding: 10px 14px; border-radius: var(--radius-md);
+      background: var(--color-error-light); border: 1px solid #fecaca;
+      margin-bottom: 14px;
+    }
+    .error-banner-icon { color: var(--color-error); font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+    .error-banner-text { font-size: var(--font-size-sm); color: var(--color-error-dark); }
+
+    .spinner {
+      width: 15px; height: 15px; border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff; border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Entry Points ── */
+    .entry-demo {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 14px; background: var(--color-surface-2);
+      border-radius: var(--radius-md); border: 1px solid var(--color-border);
+    }
+    .entry-left { display: flex; align-items: center; gap: 8px; }
+    .entry-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .entry-dot.points { background: var(--color-primary); }
+    .entry-dot.cash { background: var(--color-success); }
+    .entry-label { font-size: var(--font-size-sm); font-weight: 700; }
+    .entry-right { display: flex; align-items: center; gap: 10px; }
+    .entry-amount { font-size: var(--font-size-base); font-weight: 800; font-family: var(--font-mono); }
+    .entry-amount.points { color: var(--color-primary); }
+    .entry-amount.cash { color: var(--color-success); }
+    .entry-btn {
+      padding: 4px 10px; border-radius: var(--radius-sm);
+      font-size: var(--font-size-xs); font-weight: 700; cursor: pointer;
+      transition: all 0.15s; border: 1px solid;
+    }
+    .entry-btn.issue { border-color: var(--color-success); color: var(--color-success); background: transparent; }
+    .entry-btn.issue:hover { background: var(--color-success); color: #fff; }
+    .entry-more {
+      width: 26px; height: 26px; border-radius: var(--radius-sm);
+      border: 1px solid var(--color-border); background: transparent;
+      cursor: pointer; font-size: 14px; color: var(--color-text-muted);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .entry-dropdown {
+      position: absolute; right: 20px; top: 44px;
+      background: var(--color-surface); border: 1px solid var(--color-border);
+      border-radius: var(--radius-md); box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      padding: 4px; min-width: 160px; z-index: 10;
+    }
+    .entry-dropdown-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 12px; border-radius: var(--radius-sm);
+      font-size: var(--font-size-sm); cursor: pointer; border: none;
+      background: transparent; width: 100%; text-align: left;
+    }
+    .entry-dropdown-item:hover { background: var(--color-surface-2); }
+    .entry-dropdown-item.red { color: var(--color-error); }
+    .entry-dropdown-item.amber { color: var(--color-warning-dark); }
+
+    .note-box {
+      background: var(--color-primary-light); border: 1px solid #c7d2fe;
+      border-radius: var(--radius-md); padding: 10px 14px;
+      font-size: var(--font-size-xs); color: #4338ca; margin-top: 10px;
+      display: flex; align-items: flex-start; gap: 6px;
+    }
+
+    /* ── Notification toggle ── */
+    .notify-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 0;
+    }
+    .notify-text { font-size: var(--font-size-sm); }
+    .notify-sub { font-size: var(--font-size-xs); color: var(--color-text-muted); }
+    .toggle {
+      width: 34px; height: 18px; border-radius: 9px;
+      background: var(--color-border); position: relative; cursor: pointer;
+      transition: background 0.2s; flex-shrink: 0;
+    }
+    .toggle.on { background: var(--color-primary); }
+    .toggle::after {
+      content: ''; position: absolute; width: 14px; height: 14px;
+      border-radius: 50%; background: #fff; top: 2px; left: 2px;
+      transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    }
+    .toggle.on::after { transform: translateX(16px); }
+
+    /* ── Expire: bucket list with amounts ── */
+    .expire-bucket-list { display: flex; flex-direction: column; gap: 6px; }
+    .expire-bucket-card {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; border-radius: var(--radius-md);
+      border: 1px solid var(--color-border); cursor: pointer; transition: all 0.15s;
+    }
+    .expire-bucket-card:hover { border-color: var(--color-warning); }
+    .expire-bucket-card.selected { border-color: var(--color-warning); background: var(--color-warning-light); }
+    .expire-bucket-icon { font-size: 16px; flex-shrink: 0; }
+    .expire-bucket-info { flex: 1; }
+    .expire-bucket-name { font-size: var(--font-size-sm); font-weight: 700; }
+    .expire-bucket-sub { font-size: var(--font-size-xs); color: var(--color-text-muted); }
+    .expire-bucket-amount { font-size: var(--font-size-sm); font-weight: 800; font-family: var(--font-mono); }
+    .expire-check {
+      width: 18px; height: 18px; border-radius: 4px;
+      border: 2px solid var(--color-border); display: flex;
+      align-items: center; justify-content: center; transition: all 0.15s;
+    }
+    .expire-bucket-card.selected .expire-check { background: var(--color-warning); border-color: var(--color-warning); color: #fff; font-size: 11px; }
+
+    /* ── Warning banner ── */
+    .warning-banner {
+      display: flex; align-items: flex-start; gap: 8px;
+      padding: 10px 14px; border-radius: var(--radius-md);
+      background: var(--color-warning-light); border: 1px solid #fde68a;
+      margin-bottom: 14px;
+    }
+    .warning-banner-icon { color: var(--color-warning); font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+    .warning-banner-text { font-size: var(--font-size-sm); color: var(--color-warning-dark); }
+
+    /* Irreversible warning */
+    .irreversible-warning {
+      background: var(--color-error-light); border: 1px solid #fecaca;
+      border-radius: var(--radius-md); padding: 10px 14px;
+      font-size: var(--font-size-sm); color: var(--color-error-dark);
+      text-align: center; margin-bottom: 14px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════
+     PAGE HEADER
+     ══════════════════════════════════════════════════════════ -->
+<div class="page-header">
+  <h1>Wallet Actions — Unified Design System</h1>
+  <p>Three flows (Add, Remove, Expire) across two units (Cash and Points). A single WalletActionModal component with action tabs, shared form framework, and escalating confirmation severity.</p>
+</div>
+
+<div class="toc">
+  <a href="#framework" class="toc-framework">Design Framework</a>
+  <a href="#entry" class="toc-framework">Entry Points</a>
+  <a href="#add-cash" class="toc-issue">Add Cash</a>
+  <a href="#add-points" class="toc-issue">Add Points</a>
+  <a href="#remove-cash" class="toc-remove">Remove Cash</a>
+  <a href="#remove-points" class="toc-remove">Remove Points</a>
+  <a href="#expire-cash" class="toc-expire">Expire Cash</a>
+  <a href="#expire-points" class="toc-expire">Expire Points</a>
+  <a href="#shared" class="toc-framework">Shared States</a>
+</div>
+
+<div class="container">
+
+<!-- ══════════════════════════════════════════════════════════
+     0. DESIGN FRAMEWORK
+     ══════════════════════════════════════════════════════════ -->
+<div id="framework" class="section-header">
+  <h2><span class="section-badge badge-framework">FRAMEWORK</span> Design Framework — Anatomy of the Modal</h2>
+  <p>Every wallet action shares this anatomy. The modal adapts its fields, colors, buckets, preview, and confirmation severity based on the active tab and unit.</p>
+</div>
+
+<div class="states-grid">
+  <div class="state-card full-width">
+    <div class="state-label"><span class="num num-framework">0</span> COMPONENT ANATOMY</div>
+    <div class="modal" style="max-width: 540px;">
+      <div class="modal-header">
+        <h3>Wallet Action</h3>
+        <button class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- Action Tabs -->
+        <div style="margin-bottom: 6px;">
+          <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-muted); margin-bottom: 4px;">1. ACTION TABS — determines flow color, fields, and confirmation severity</div>
+          <div class="action-tabs">
+            <button class="action-tab active-issue">Add</button>
+            <button class="action-tab">Remove</button>
+            <button class="action-tab">Expire</button>
+          </div>
+        </div>
+
+        <!-- Customer Banner -->
+        <div style="margin-bottom: 6px;">
+          <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-muted); margin-bottom: 4px;">2. CUSTOMER BANNER — shows current balance for selected unit</div>
+          <div class="customer-banner">
+            <div class="c-avatar">DT</div>
+            <div class="c-info"><div class="c-name">Dhruv Tiwari</div><div class="c-phone">+91 90440 00100</div></div>
+            <div class="c-balance-group">
+              <div class="c-balance-val cash">&#8377;477.00</div>
+              <div class="c-balance-label">current cash balance</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bucket Selector -->
+        <div style="margin-bottom: 6px;">
+          <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-muted); margin-bottom: 4px;">3. BUCKET SELECTOR — contextual per action + unit. For remove/expire, shows only buckets with balance > 0</div>
+          <div class="bucket-selector">
+            <div class="bucket-option selected">
+              <div class="bucket-radio"></div>
+              <span class="bucket-label">Store Credit</span>
+              <span class="bucket-balance cash">&#8377;169.00</span>
+            </div>
+            <div class="bucket-option">
+              <div class="bucket-radio"></div>
+              <span class="bucket-label">Gift Card</span>
+              <span class="bucket-balance cash">&#8377;308.00</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Amount + Expiry Row -->
+        <div style="margin-top: 12px; margin-bottom: 6px;">
+          <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-muted); margin-bottom: 4px;">4. AMOUNT + EXPIRY — expiry only for Add. Amount hidden for Expire (expires all in bucket)</div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Amount <span class="req">*</span></label>
+              <div class="amount-wrap"><span class="amount-prefix">&#8377;</span><input class="form-input" value="500.00"></div>
+            </div>
+            <div class="form-group"><label class="form-label">Expiry (days)</label>
+              <input class="form-input" placeholder="Policy default">
+            </div>
+          </div>
+        </div>
+
+        <!-- Reason -->
+        <div style="margin-bottom: 6px;">
+          <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-muted); margin-bottom: 4px;">5. REASON — pills contextual per action. Free-text for detail. Reference for cross-system tracking</div>
+          <div class="form-group"><label class="form-label">Reason <span class="req">*</span></label>
+            <div class="reason-pills">
+              <span class="reason-pill active">Refund</span><span class="reason-pill">Goodwill</span><span class="reason-pill">Apology</span><span class="reason-pill">Compensation</span>
+            </div>
+            <textarea class="form-textarea" placeholder="Details..."></textarea>
+          </div>
+          <div class="form-group"><label class="form-label">Internal Reference</label>
+            <input class="form-input" placeholder="Shopify #1234, Freshdesk #567">
+          </div>
+        </div>
+
+        <!-- Preview -->
+        <div>
+          <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-muted); margin-bottom: 4px;">6. LIVE PREVIEW — color matches action. Shows balance impact + tier impact for points remove/expire</div>
+          <div class="preview-box green">
+            <div class="preview-title green">Add Summary</div>
+            <div class="preview-row"><span class="lbl">Amount</span><span class="val">+&#8377;500.00</span></div>
+            <div class="preview-row"><span class="lbl">Bucket</span><span class="val">Store Credit</span></div>
+            <div class="preview-divider" style="border-color: #86efac;"></div>
+            <div class="preview-row total"><span class="lbl">New cash balance</span><span class="val">&#8377;977.00</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-muted); margin-right: auto;">7. FOOTER — button color and label match action</div>
+        <button class="btn btn-ghost">Cancel</button>
+        <button class="btn btn-success">Add &#8377;500</button>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-top: 20px;">
+      <div style="background: var(--color-success-light); border: 1px solid #bbf7d0; border-radius: 8px; padding: 14px;">
+        <div style="font-size: 11px; font-weight: 800; color: var(--color-success-dark); text-transform: uppercase; margin-bottom: 6px;">Add</div>
+        <div style="font-size: 12px; color: var(--color-success-dark);">
+          <strong>Color:</strong> Green<br>
+          <strong>Confirm:</strong> Single step<br>
+          <strong>Fields:</strong> Bucket + Amount + Expiry + Reason + Reference + Notify toggle<br>
+          <strong>Preview:</strong> New balance (green)<br>
+          <strong>Cash Buckets:</strong> Store Credit, Customer Funded<br>
+          <strong>Points Buckets:</strong> Courtesy Points, Reward Points<br>
+          <strong>Reason Pills:</strong> Refund, Goodwill, Apology, Compensation, Promotional, Other
+        </div>
+      </div>
+      <div style="background: var(--color-error-light); border: 1px solid #fecaca; border-radius: 8px; padding: 14px;">
+        <div style="font-size: 11px; font-weight: 800; color: var(--color-error-dark); text-transform: uppercase; margin-bottom: 6px;">Remove</div>
+        <div style="font-size: 12px; color: var(--color-error-dark);">
+          <strong>Color:</strong> Red<br>
+          <strong>Confirm:</strong> Type-to-confirm amount<br>
+          <strong>Fields:</strong> Bucket (with balance) + Amount + Reason + Reference<br>
+          <strong>Preview:</strong> Balance after remove (red) + Tier impact<br>
+          <strong>Buckets:</strong> Only those with balance > 0<br>
+          <strong>No Expiry field</strong><br>
+          <strong>Reason Pills:</strong> Incorrect, Fraud/abuse, Chargeback, Dispute, Correction, Other
+        </div>
+      </div>
+      <div style="background: var(--color-warning-light); border: 1px solid #fde68a; border-radius: 8px; padding: 14px;">
+        <div style="font-size: 11px; font-weight: 800; color: var(--color-warning-dark); text-transform: uppercase; margin-bottom: 6px;">Expire</div>
+        <div style="font-size: 12px; color: var(--color-warning-dark);">
+          <strong>Color:</strong> Amber<br>
+          <strong>Confirm:</strong> Type bucket name + irreversibility warning<br>
+          <strong>Fields:</strong> Multi-bucket selection (checkboxes) + Reason + Reference<br>
+          <strong>Preview:</strong> What will expire (amber) + Tier impact<br>
+          <strong>No Amount field</strong> (expires all in selected buckets)<br>
+          <strong>No Expiry field</strong><br>
+          <strong>Reason Pills:</strong> Campaign ended, Policy change, Fraud/abuse, Account cleanup, Other
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     1. ENTRY POINTS
+     ══════════════════════════════════════════════════════════ -->
+<div id="entry" class="section-header">
+  <h2><span class="section-badge badge-framework">FRAMEWORK</span> Entry Points — Where Actions Start</h2>
+  <p>Actions launch from the wallet section of Customer Detail. The unit (Cash/Points) is pre-selected from context.</p>
+</div>
+
+<div class="states-grid">
+  <!-- Cash Row Entry -->
+  <div class="state-card">
+    <div class="state-label"><span class="num num-framework">E1</span> CASH ROW — BUTTON + OVERFLOW MENU</div>
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <div class="entry-demo">
+        <div class="entry-left">
+          <span class="entry-dot cash"></span>
+          <span class="entry-label">Cash</span>
+        </div>
+        <div class="entry-right">
+          <div style="text-align: right;">
+            <span class="entry-amount cash">&#8377;477.00</span>
+            <div style="font-size: 10px; color: var(--color-text-muted);">Store Credit &#8377;169 + Gift Card &#8377;308</div>
+          </div>
+          <button class="entry-btn issue">+ Add</button>
+          <div style="position: relative;">
+            <button class="entry-more">&middot;&middot;&middot;</button>
+          </div>
+        </div>
+      </div>
+      <div class="note-box">
+        <span>+ Add</span> opens modal with Add tab active, Cash unit pre-selected. The &middot;&middot;&middot; menu reveals Remove and Expire options.
+      </div>
+    </div>
+  </div>
+
+  <!-- Points Row Entry -->
+  <div class="state-card">
+    <div class="state-label"><span class="num num-framework">E2</span> POINTS ROW — BUTTON + OVERFLOW MENU</div>
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <div class="entry-demo">
+        <div class="entry-left">
+          <span class="entry-dot points"></span>
+          <span class="entry-label">Points</span>
+        </div>
+        <div class="entry-right">
+          <div style="text-align: right;">
+            <span class="entry-amount points">845 &#11088;</span>
+            <div style="font-size: 10px; color: var(--color-text-muted);">worth &#8377;84.50 &middot; Referral 94 + Earned 751</div>
+          </div>
+          <button class="entry-btn issue">+ Add</button>
+          <div style="position: relative;">
+            <button class="entry-more">&middot;&middot;&middot;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overflow menu -->
+  <div class="state-card">
+    <div class="state-label"><span class="num num-framework">E3</span> OVERFLOW MENU — DESTRUCTIVE ACTIONS</div>
+    <div style="position: relative; display: inline-block;">
+      <div class="entry-demo" style="width: 340px;">
+        <div class="entry-left">
+          <span class="entry-dot cash"></span>
+          <span class="entry-label">Cash</span>
+        </div>
+        <div class="entry-right">
+          <span class="entry-amount cash">&#8377;477.00</span>
+          <button class="entry-btn issue">+ Add</button>
+          <div style="position: relative;">
+            <button class="entry-more" style="background: var(--color-surface-2);">&middot;&middot;&middot;</button>
+            <div class="entry-dropdown" style="position: absolute; right: 0; top: 32px;">
+              <button class="entry-dropdown-item red">&#x2796; Remove</button>
+              <button class="entry-dropdown-item amber">&#x23F3; Expire</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- No balance state -->
+  <div class="state-card">
+    <div class="state-label"><span class="num num-framework">E4</span> ZERO BALANCE — REMOVE/EXPIRE DISABLED</div>
+    <div class="entry-demo">
+      <div class="entry-left">
+        <span class="entry-dot cash" style="opacity: 0.3;"></span>
+        <span class="entry-label" style="opacity: 0.5;">Cash</span>
+      </div>
+      <div class="entry-right">
+        <span class="entry-amount" style="color: var(--color-text-muted); opacity: 0.5;">&#8377;0.00</span>
+        <button class="entry-btn issue">+ Add</button>
+        <div style="position: relative;">
+          <button class="entry-more" style="opacity: 0.3; cursor: not-allowed;">&middot;&middot;&middot;</button>
+        </div>
+      </div>
+    </div>
+    <div class="note-box">When cash/points balance is zero, the overflow menu is disabled. Only "+ Add" remains available.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     2. ADD CASH
+     ══════════════════════════════════════════════════════════ -->
+<div id="add-cash" class="section-header">
+  <h2><span class="section-badge badge-issue">ADD</span> Add — Cash (&#8377;)</h2>
+  <p>Add cash to Store Credit or Customer Funded bucket. Green flow. Single confirmation.</p>
+</div>
+
+<div class="states-grid">
+  <!-- IC1: Empty Form -->
+  <div class="state-card">
+    <div class="state-label"><span class="num num-issue">1</span> EMPTY FORM</div>
+    <div class="modal">
+      <div class="modal-header"><h3>Wallet Action</h3><button class="close-btn">&times;</button></div>
+      <div class="modal-body">
+        <div class="action-tabs">
+          <button class="action-tab active-issue">Add</button>
+          <button class="action-tab">Remove</button>
+          <button class="action-tab">Expire</button>
+        </div>
+        <div class="customer-banner">
+          <div class="c-avatar">DT</div>
+          <div class="c-info"><div class="c-name">Dhruv Tiwari</div><div class="c-phone">+91 90440 00100</div></div>
+          <div class="c-balance-group"><div class="c-balance-val cash">&#8377;477.00</div><div class="c-balance-label">current cash balance</div></div>
+        </div>
+        <div class="form-group"><label class="form-label">Bucket <span class="req">*</span></label>
+          <div class="bucket-selector">
+            <div class="bucket-option selected"><div class="bucket-radio"></div><span class="bucket-label">Store Credit</span></div>
+            <div class="bucket-option"><div class="bucket-radio"></div><span class="bucket-label">Customer Funded</span></div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Amount (&#8377;) <span class="req">*</span></label>
+            <div class="amount-wrap"><span class="amount-prefix">&#8377;</span><input class="form-input" placeholder="0.00"></div>
+            <div class="form-hint">Will be added to cash wallet</div>
+          </div>
+          <div class="form-group"><label class="form-label">Expiry (days)</label>
+            <input class="form-input" placeholder="Policy default (104d)">
+            <div class="form-hint">Leave blank for wallet policy default</div>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Reason <span class="req">*</span></label>
+          <div class="reason-pills">
+            <span class="reason-pill">Refund</span><span class="reason-pill">Goodwill</span><span class="reason-pill">Apology</span>
+            <span class="reason-pill">Compensation</span><span class="reason-pill">Promotional</span><span class="reason-pill">Other</span>
+          </div>
+          <textarea class="form-textarea" placeholder="Describe why this is being added..."></textarea>
+        </div>
+        <div class="form-group"><label class="form-label">Internal Reference</label>
+          <input class="form-input" placeholder="e.g. Shopify order #1234, support ticket #567">
+        </div>
+        <div class="notify-row">
+          <div><div class="notify-text">Notify customer</div><div class="notify-sub">Send email notification to customer</div></div>
+          <div class="toggle on"></div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-ghost">Cancel</button><button class="btn btn-success" disabled>Add</button></div>
+    </div>
+  </div>
+
+  <!-- IC2: Filled with Preview -->
+  <div class="state-card">
+    <div class="state-label"><span class="num num-issue">2</span> FILLED — LIVE PREVIEW</div>
+    <div class="modal">
+      <div class="modal-header"><h3>Wallet Action</h3><button class="close-btn">&times;</button></div>
+      <div class="modal-body">
+        <div class="action-tabs">
+          <button class="action-tab active-issue">Add</button>
+          <button class="action-tab">Remove</button>
+          <button class="action-tab">Expire</button>
+        </div>
+        <div class="customer-banner">
+          <div class="c-avatar">DT</div>
+          <div class="c-info"><div class="c-name">Dhruv Tiwari</div><div class="c-phone">+91 90440 00100</div></div>
+          <div class="c-balance-group"><div class="c-balance-val cash">&#8377;477.00</div><div class="c-balance-label">current cash balance</div></div>
+        </div>
+        <div class="form-group"><label class="form-label">Bucket <span class="req">*</span></label>
+          <div class="bucket-selector">
+            <div class="bucket-option selected"><div class="bucket-radio"></div><span class="bucket-label">Store Credit</span></div>
+            <div class="bucket-option"><div class="bucket-radio"></div><span class="bucket-label">Customer Funded</span></div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Amount (&#8377;) <span class="req">*</span></label>
+            <div class="amount-wrap"><span class="amount-prefix">&#8377;</span><input class="form-input" value="500.00"></div>
+          </div>
+          <div class="form-group"><label class="form-label">Expiry (days)</label>
+            <input class="form-input" value="90">
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Reason <span class="req">*</span></label>
+          <div class="reason-pills"><span class="reason-pill active">Refund</span><span class="reason-pill">Goodwill</span><span class="reason-pill">Apology</span><span class="reason-pill">Compensation</span><span class="reason-pill">Promotional</span><span class="reason-pill">Other</span></div>
+          <textarea class="form-textarea">Customer returned defective item from order #4521.</textarea>
+        </div>
+        <div class="form-group"><label class="form-label">Internal Reference</label><input class="form-input" value="Shopify #4521, Freshdesk #8832"></div>
+        <div class="preview-box green">
+          <div class="preview-title green">Add Summary</div>
+          <div class="preview-row" style="color: var(--color-success-dark);"><span class="lbl">Amount</span><span class="val">+&#8377;500.00</span></div>
+          <div class="preview-row" style="color: var(--color-success-dark);"><span class="lbl">Bucket</span><span class="val">Store Credit</span></div>
+          <div class="preview-row" style="color: var(--color-success-dark);"><span class="lbl">Expires</span><span class="val">29 Jun 2026 (90 days)</span></div>
+          <div class="preview-divider" style="border-color: #86efac;"></div>
+          <div class="preview-row total" style="color: var(--color-success-dark);"><span class="lbl">New cash balance</span><span class="val">&#8377;977.00</span></div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-ghost">Cancel</button><button class="btn btn-success">Add &#8377;500</button></div>
+    </div>
+  </div>
+
+  <!-- IC3: Confirmation -->
+  <div class="state-card">
+    <div class="state-label"><span class="num num-issue">3</span> CONFIRMATION</div>
+    <div class="modal">
+      <div class="modal-header"><h3>Confirm Add</h3><button class="close-btn">&times;</button></div>
+      <div class="confirm-body">
+        <div class="confirm-icon">&#128179;</div>
+        <div class="confirm-title">Add &#8377;500.00 to Store Credit?</div>
+        <div class="confirm-subtitle">This will immediately add funds to the customer's wallet.</div>
+        <div class="confirm-summary">
+          <div class="confirm-row"><span class="lbl">Customer</span><span class="val">Dhruv Tiwari</span></div>
+          <div class="confirm-row"><span class="lbl">Amount</span><span class="val" style="color: var(--color-success);">+&#8377;500.00</span></div>
+          <div class="confirm-row"><span class="lbl">Bucket</span><span class="val">Store Credit</span></div>
+          <div class="confirm-row"><span class="lbl">Reason</span><span class="val">Refund</span></div>
+          <div class="confirm-row"><span class="lbl">Expires</span><span class="val">29 Jun 2026</span></div>
+          <div class="confirm-row highlight"><span class="lbl">New balance</span><span class="val" style="color: var(--color-success);">&#8377;477 &#8594; &#8377;977</span></div>
+        </div>
+        <div class="confirm-actions"><button class="btn btn-ghost">Go Back</button><button class="btn btn-success">Confirm &amp; Add</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- IC4: Success -->
+  <div class="state-card">
+    <div class="state-label"><span class="num num-issue">4</span> SUCCESS</div>
+    <div class="modal">
+      <div class="modal-header"><h3>Added</h3><button class="close-btn">&times;</button></div>
+      <div class="result-body">
+        <div class="result-icon green">&#10003;</div>
+        <div class="result-title">&#8377;500.00 added</div>
+        <div class="result-subtitle">Added to Dhruv Tiwari's Store Credit bucket</div>
+        <div class="result-detail">
+          <div class="result-row"><span class="lbl">Transaction ID</span><span class="val" style="font-family: var(--font-mono); font-size: 12px;">txn_a3f8e21b</span></div>
+          <div class="result-row"><span class="lbl">Amount</span><span class="val" style="color: var(--color-success);">+&#8377;500.00</span></div>
+          <div class="result-row"><span class="lbl">New cash balance</span><span class="val">&#8377;977.00</span></div>
+          <div class="result-row"><span class="lbl">Expires</span><span class="val">29 Jun 2026</span></div>
+        </div>
+        <button class="btn btn-success" style="width: 100%; justify-content: center;">Done</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     3. ADD POINTS
+     ══════════════════════════════════════════════════════════ -->
+<div id="add-points" class="section-header">
+  <h2><span class="section-badge badge-issue">ADD</span> Add — Points (&#11088;)</h2>
+  <p>Add points to Courtesy Points or Reward Points bucket. Amount entered in points, with INR equivalent shown live.</p>
+</div>
+
+<div class="states-grid">
+  <!-- IP1: Points Form -->
+  <div class="state-card">
+    <div class="state-label"><span class="num num-issue">1</span> POINTS FORM — FILLED</div>
+    <div class="modal">
+      <div class="modal-header"><h3>Wallet Action</h3><button class="close-btn">&times;</button></div>
+      <div class="modal-body">
+        <div class="action-tabs">
+          <button class="action-tab active-issue">Add</button>
+          <button class="action-tab">Remove</button>
+          <button class="action-tab">Expire</button>
+        </div>
+        <div class="customer-banner">
+          <div class="c-avatar">DT</div>
+          <div class="c-info"><div class="c-name">Dhruv Tiwari</div><div class="c-phone">+91 90440 00100</div></div>
+          <div class="c-balance-group"><div class="c-balance-val points">845 &#11088;</div><div class="c-balance-label">current points balance</div></div>
+        </div>
+        <div class="form-group"><label class="form-label">Bucket <span class="req">*</span></label>
+          <div class="bucket-selector">
+            <div class="bucket-option selected"><div class="bucket-radio"></div><span class="bucket-label">Courtesy Points</span></div>
+            <div class="bucket-option"><div class="bucket-radio"></div><span class="bucket-label">Reward Points</span></div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Points <span class="req">*</span></label>
+            <div class="amount-wrap points-input">
+              <input class="form-input" value="200" style="font-weight: 700; font-family: var(--font-mono);">
+              <span class="amount-suffix">points</span>
+            </div>
+            <div class="form-hint">Worth &#8377;20.00 at current rate (10:1)</div>
+          </div>
+          <div class="form-group"><label class="form-label">Expiry (days)</label>
+            <input class="form-input" placeholder="Policy default">
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Reason <span class="req">*</span></label>
+          <div class="reason-pills"><span class="reason-pill active">Goodwill</span><span class="reason-pill">Compensation</span><span class="reason-pill">Promotional</span><span class="reason-pill">Apology</span><span class="reason-pill">Other</span></div>
+          <textarea class="form-textarea">Courtesy points for delayed delivery experience.</textarea>
+        </div>
+        <div class="preview-box green">
+          <div class="preview-title green">Add Summary</div>
+          <div class="preview-row" style="color: var(--color-success-dark);"><span class="lbl">Points to add</span><span class="val">+200 &#11088;</span></div>
+          <div class="preview-row" style="color: var(--color-success-dark);"><span class="lbl">Worth</span><span class="val">&#8377;20.00</span></div>
+          <div class="preview-row" style="color: var(--color-success-dark);"><span class="lbl">Bucket</span><span class="val">Courtesy Points</span></div>
+          <div class="preview-divider" style="border-color: #86efac;"></div>
+          <div class="preview-row total" style="color: var(--color-success-dark);"><span class="lbl">New points balance</span><span class="val">1,045 &#11088;</span></div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-ghost">Cancel</button><button class="btn btn-success">Add 200 Points</button></div>
+    </div>
+  </div>
+
+  <!-- IP2: Tier Upgrade Note -->
+  <div class="state-card">
+    <div class="state-label"><span class="num num-issue">2</span> TIER UPGRADE PREVIEW (POSITIVE)</div>
+    <div class="modal">
+      <div class="modal-header"><h3>Wallet Action</h3><button class="close-btn">&times;</button></div>
+      <div class="modal-body">
+        <div class="action-tabs"><button class="action-tab active-issue">Add</button><button class="action-tab">Remove</button><button class="action-tab">Expire</button></div>
+        <div class="customer-banner">
+          <div class="c-avatar">DT</div>
+          <div class="c-info"><div class="c-name">Dhruv Tiwari</div><div class="c-phone">+91 90440 00100</div></div>
+          <div class="c-balance-group"><div class="c-balance-val points">845 &#11088;</div><div class="c-balance-label">current points balance</div></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Points <span class="req">*</span></label>
+            <div class="amount-wrap points-input"><input class="form-input" value="500" style="font-weight: 700; font-family: var(--font-mono);"><span class="amount-suffix">points</span></div>
+            <div class="form-hint">Worth &#8377;50.00 at current rate (10:1)</div>
+          </div>
+          <div class="form-group"><label class="form-label">Expiry (days)</label><input class="form-input" value="60"></div>
+        </div>
+        <div class="preview-box green">
+          <div class="preview-title green">Add Summary</div>
+          <div class="preview-row" style="color: var(--color-success-dark);"><span class="lbl">Points</span><span class="val">+500 &#11088;</span></div>
+          <div class="preview-divider" style="border-color: #86efac;"></div>
+          <div class="preview-row total" style="color: var(--color-success-dark);"><span class="lbl">New balance</span><span class="val">1,345 &#11088;</span></div>
+        </div>
+        <div class="tier-impact safe">
+          <div class="tier-impact-icon">&#127942;</div>
+          <div class="tier-impact-text">
+            <strong>Tier upgrade possible!</strong> Adding these points will push qualifying value above Gold threshold.
+            <div class="tier-from-to">
+              <span class="tier-badge silver">Silver (1.5x)</span>
+              <span class="tier-arrow">&#8594;</span>
+              <span class="tier-badge gold">Gold (2x)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-ghost">Cancel</button><button class="btn btn-success">Add 500 Points</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     4. REMOVE CASH
+     ══════════════════════════════════════════════════════════ -->
+<div id="remove-cash" class="section-header">
+  <h2><span class="section-badge badge-remove">REMOVE</span> Remove — Cash (&#8377;)</h2>
+  <p>Remove cash from a specific bucket. Red flow. Type-to-confirm.</p>
+</div>
+
+<div class="states-grid">
+  <!-- DC1: Remove Form -->
+  <div class="state-card">
+    <div class="state-label"><span class="num num-remove">1</span> REMOVE FORM — FILLED</div>
+    <div class="modal">
+      <div class="modal-header"><h3>Wallet Action</h3><button class="close-btn">&times;</button></div>
+      <div class="modal-body">
+        <div class="action-tabs">
+          <button class="action-tab">Add</button>
+          <button class="action-tab active-remove">Remove</button>
+          <button class="action-tab">Expire</button>
+        </div>
+        <div class="customer-banner">
+          <div class="c-avatar">DT</div>
+          <div class="c-info"><div class="c-name">Dhruv Tiwari</div><div class="c-phone">+91 90440 00100</div></div>
+          <div class="c-balance-group"><div class="c-balance-val cash">&#8377;477.00</div><div class="c-balance-label">current cash balance</div></div>
+        </div>
+        <div class="form-group"><label class="form-label">Remove from bucket <span class="req">*</span></label>
+          <div class="bucket-selector">
+            <div class="bucket-option selected"><div class="bucket-radio"></div><span class="bucket-label">Store Credit</span><span class="bucket-balance cash">&#8377;169.00</span></div>
+            <div class="bucket-option"><div class="bucket-radio"></div><span class="bucket-label">Gift Card</span><span class="bucket-balance cash">&#8377;308.00</span></div>
+          </div>
+          <div class="form-hint">Only buckets with balance > 0 are shown</div>
+        </div>
+        <div class="form-group"><label class="form-label">Amount to remove (&#8377;) <span class="req">*</span></label>
+          <div class="amount-wrap"><span class="amount-prefix">&#8377;</span><input class="form-input" value="100.00"></div>
+          <div class="form-hint">Max remove: &#8377;169.00 (Store Credit balance)</div>
+        </div>
+        <div class="form-group"><label class="form-label">Reason <span class="req">*</span></label>
+          <div class="reason-pills">
+            <span class="reason-pill active-red">Incorrect</span><span class="reason-pill">Fraud/abuse</span><span class="reason-pill">Chargeback</span>
+            <span class="reason-pill">Dispute</span><span class="reason-pill">Correction</span><span class="reason-pill">Other</span>
+          </div>
+          <textarea class="form-textarea">Cash was incorrectly added for order #4521 which was already refunded via payment gateway.</textarea>
+        </div>
+        <div class="form-group"><label class="form-label">Internal Reference</label><input class="form-input" value="Shopify #4521"></div>
+        <div class="preview-box red">
+          <div class="preview-title red">Remove Summary</div>
+          <div class="preview-row" style="color: var(--color-error-dark);"><span class="lbl">Remove amount</span><span class="val">-&#8377;100.00</span></div>
+          <div class="preview-row" style="color: var(--color-error-dark);"><span class="lbl">From bucket</span><span class="val">Store Credit</span></div>
+          <div class="preview-divider" style="border-color: #fca5a5;"></div>
+          <div class="preview-row" style="color: var(--color-error-dark);"><span class="lbl">Store Credit after</span><span class="val">&#8377;169 &#8594; &#8377;69</span></div>
+          <div class="preview-row total" style="color: var(--color-error-dark);"><span class="lbl">New cash balance</span><span class="val">&#8377;377.00</span></div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-ghost">Cancel</button><button class="btn btn-danger">Remove &#8377;100</button></div>
+    </div>
+  </div>
+
+  <!-- DC2: Over-balance error -->
+  <div class="state-card">
+    <div class="state-label"><span class="num num-remove">2</span> OVER-BALANCE VALIDATION ERROR</div>
+    <div class="modal">
+      <div class="modal-header"><h3>Wallet Action</h3><button class="close-btn">&times;</button></div>
+      <div class="modal-body">
+        <div class="action-tabs"><button class="action-tab">Add</button><button class="action-tab active-remove">Remove</button><button class="action-tab">Expire</button></div>
+        <div class="customer-banner">
+          <div class="c-avatar">DT</div>
+          <div class="c-info"><div class="c-name">Dhruv Tiwari</div><div class="c-phone">+91 90440 00100</div></div>
+          <div class="c-balance-group"><div class="c-balance-val cash">&#8377;477.00</div><div class="c-balance-label">current cash balance</div></div>
+        </div>
+        <div class="form-group"><label class="form-label">Remove from bucket <span class="req">*</span></label>
+          <div class="bucket-selector">
+            <div class="bucket-option selected"><div class="bucket-radio"></div><span class="bucket-label">Store Credit</span><span class="bucket-balance cash">&#8377;169.00</span></div>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Amount to remove (&#8377;) <span class="req">*</span></label>
+          <div class="amount-wrap"><span class="amount-prefix">&#8377;</span><input class="form-input error" value="250.00"></div>
+          <div class="form-error">&#9888; Amount exceeds Store Credit balance (&#8377;169.00). Use Expire to clear the full bucket.</div>
+        </div>
+        <div class="form-group"><label class="form-label">Reason <span class="req">*</span></label>
+          <div class="reason-pills"><span class="reason-pill">Incorrect</span><span class="reason-pill">Fraud/abuse</span><span class="reason-pill">Chargeback</span><span class="reason-pill">Dispute</span><span class="reason-pill">Correction</span><span class="reason-pill">Other</span></div>
+          <textarea class="form-textarea error" placeholder="Reason is required..."></textarea>
+          <div class="form-error">&#9888; Reason is required for remove operations</div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-ghost">Cancel</button><button class="btn btn-danger" disabled>Remove</button></div>
+    </div>
+  </div>
+
+  <!-- DC3: Type-to-Confirm -->
+  <div class="state-card">
+    <div class="state-label"><span class="num num-remove">3</span> TYPE-TO-CONFIRM (DESTRUCTIVE)</div>
+    <div class="modal">
+      <div class="modal-header"><h3>Confirm Remove</h3><button class="close-btn">&times;</button></div>
+      <div class="confirm-body">
+        <div class="confirm-icon">&#9888;&#65039;</div>
+        <div class="confirm-title" style="color: var(--color-error);">Remove &#8377;100.00 from Store Credit?</div>
+        <div class="confirm-subtitle">This will remove funds from the customer's wallet. This cannot be undone — you would need to add again to reverse it.</div>
+        <div class="confirm-summary">
+          <div class="confirm-row"><span class="lbl">Customer</span><span class="val">Dhruv Tiwari</span></div>
+          <div class="confirm-row"><span class="lbl">Remove</span><span class="val" style="color: var(--color-error);">-&#8377;100.00</span></div>
+          <div class="confirm-row"><span class="lbl">From</span><span class="val">Store Credit</span></div>
+          <div class="confirm-row"><span class="lbl">Reason</span><span class="val">Incorrect</span></div>
+          <div class="confirm-row highlight"><span class="lbl">New balance</span><span class="val" style="color: var(--color-error);">&#8377;477 &#8594; &#8377;377</span></div>
+        </div>
+        <div class="type-confirm">
+          <p>Type <code>100</code> to confirm the remove amount</p>
+          <input class="form-input" placeholder="Enter amount..." value="100" style="max-width: 200px; margin: 8px auto 0;">
+        </div>
+        <div class="confirm-actions"><button class="btn btn-ghost">Go Back</button><button class="btn btn-danger">Confirm Remove</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DC4: Success -->
+  <div class="state-card">
+    <div class="state-label"><span class="num num-remove">4</span> SUCCESS</div>
+    <div class="modal">
+      <div class="modal-header"><h3>Removed</h3><button class="close-btn">&times;</button></div>
+      <div class="result-body">
+        <div class="result-icon red">&#10003;</div>
+        <div class="result-title">&#8377;100.00 removeed</div>
+        <div class="result-subtitle">Removed from Dhruv Tiwari's Store Credit bucket</div>
+        <div class="result-detail">
+          <div class="result-row"><span class="lbl">Transaction ID</span><span class="val" style="font-family: var(--font-mono); font-size: 12px;">txn_b7c2d41e</span></div>
+          <div class="result-row"><span class="lbl">Amount</span><span class="val" style="color: var(--color-error);">-&#8377;100.00</span></div>
+          <div class="result-row"><span class="lbl">Store Credit balance</span><span class="val">&#8377;69.00</span></div>
+          <div class="result-row"><span class="lbl">New cash balance</span><span class="val">&#8377;377.00</span></div>
+        </div>
+        <button class="btn btn-primary" style="width: 100%; justify-content: center;">Done</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     5. REMOVE POINTS
+     ══════════════════════════════════════════════════════════ -->
+<div id="remove-points" class="section-header">
+  <h2><span class="section-badge badge-remove">REMOVE</span> Remove — Points (&#11088;)</h2>
+  <p>Remove points from a specific bucket. Red flow. Shows tier impact preview when removal affects qualifying value.</p>
+</div>
+
+<div class="states-grid">
+  <!-- DP1: Filled with Tier Impact -->
+  <div class="state-card">
+    <div class="state-label"><span class="num num-remove">1</span> FILLED — TIER DOWNGRADE WARNING</div>
+    <div class="modal">
+      <div class="modal-header"><h3>Wallet Action</h3><button class="close-btn">&times;</button></div>
+      <div class="modal-body">
+        <div class="action-tabs"><button class="action-tab">Add</button><button class="action-tab active-remove">Remove</button><button class="action-tab">Expire</button></div>
+        <div class="customer-banner">
+          <div class="c-avatar">DT</div>
+          <div class="c-info"><div class="c-name">Dhruv Tiwari</div><div class="c-phone">+91 90440 00100</div></div>
+          <div class="c-balance-group"><div class="c-balance-val points">845 &#11088;</div><div class="c-balance-label">current points balance</div></div>
+        </div>
+        <div class="form-group"><label class="form-label">Remove from bucket <span class="req">*</span></label>
+          <div class="bucket-selector">
+            <div class="bucket-option selected"><div class="bucket-radio"></div><span class="bucket-label">Reward Points</span><span class="bucket-balance points">751 &#11088;</span></div>
+            <div class="bucket-option"><div class="bucket-radio"></div><span class="bucket-label">Referral Points</span><span class="bucket-balance points">94 &#11088;</span></div>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Points to remove <span class="req">*</span></label>
+          <div class="amount-wrap points-input"><input class="form-input" value="500" style="font-weight: 700; font-family: var(--font-mono);"><span class="amount-suffix">points</span></div>
+          <div class="form-hint">Worth &#8377;50.00 &middot; Max: 751 points (Reward Points balance)</div>
+        </div>
+        <div class="form-group"><label class="form-label">Reason <span class="req">*</span></label>
+          <div class="reason-pills"><span class="reason-pill active-red">Fraud/abuse</span><span class="reason-pill">Incorrect</span><span class="reason-pill">Chargeback</span><span class="reason-pill">Correction</span><span class="reason-pill">Other</span></div>
+          <textarea class="form-textarea">Points earned from fraudulent referral activity. Referral codes shared on coupon aggregator sites.</textarea>
+        </div>
+        <div class="preview-box red">
+          <div class="preview-title red">Remove Summary</div>
+          <div class="preview-row" style="color: var(--color-error-dark);"><span class="lbl">Remove</span><span class="val">-500 &#11088; (&#8377;50.00)</span></div>
+          <div class="preview-row" style="color: var(--color-error-dark);"><span class="lbl">From</span><span class="val">Reward Points</span></div>
+          <div class="preview-divider" style="border-color: #fca5a5;"></div>
+          <div class="preview-row total" style="color: var(--color-error-dark);"><span class="lbl">New points balance</span><span class="val">345 &#11088;</span></div>
+        </div>
+        <div class="tier-impact downgrade">
+          <div class="tier-impact-icon">&#9888;&#65039;</div>
+          <div class="tier-impact-text">
+            <strong>Tier downgrade risk.</strong> Qualifying value will drop below Gold threshold (500 pts).
+            <div class="tier-from-to">
+              <span class="tier-badge gold">Gold (2x)</span>
+              <span class="tier-arrow">&#8594;</span>
+              <span class="tier-badge silver">Silver (1.5x)</span>
+            </div>
+            <div style="font-size: 11px; color: var(--color-text-muted); margin-top: 4px;">Tier change takes effect at next evaluation cycle.</div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-ghost">Cancel</button><button class="btn btn-danger">Remove 500 Points</button></div>
+    </div>
+  </div>
+
+  <!-- DP2: No Tier Impact (safe) -->
+  <div class="state-card">
+    <div class="state-label"><span class="num num-remove">2</span> FILLED — NO TIER IMPACT (SAFE)</div>
+    <div class="modal">
+      <div class="modal-header"><h3>Wallet Action</h3><button class="close-btn">&times;</button></div>
+      <div class="modal-body">
+        <div class="action-tabs"><button class="action-tab">Add</button><button class="action-tab active-remove">Remove</button><button class="action-tab">Expire</button></div>
+        <div class="customer-banner">
+          <div class="c-avatar">DT</div>
+          <div class="c-info"><div class="c-name">Dhruv Tiwari</div><div class="c-phone">+91 90440 00100</div></div>
+          <div class="c-balance-group"><div class="c-balance-val points">845 &#11088;</div><div class="c-balance-label">current points balance</div></div>
+        </div>
+        <div class="form-group"><label class="form-label">Remove from bucket <span class="req">*</span></label>
+          <div class="bucket-selector">
+            <div class="bucket-option"><div class="bucket-radio"></div><span class="bucket-label">Reward Points</span><span class="bucket-balance points">751 &#11088;</span></div>
+            <div class="bucket-option selected"><div class="bucket-radio"></div><span class="bucket-label">Referral Points</span><span class="bucket-balance points">94 &#11088;</span></div>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Points to remove <span class="req">*</span></label>
+          <div class="amount-wrap points-input"><input class="form-input" value="50" style="font-weight: 700; font-family: var(--font-mono);"><span class="amount-suffix">points</span></div>
+          <div class="form-hint">Worth &#8377;5.00 &middot; Max: 94 points (Referral Points balance)</div>
+        </div>
+        <div class="preview-box red">
+          <div class="preview-title red">Remove Summary</div>
+          <div class="preview-row" style="color: var(--color-error-dark);"><span class="lbl">Remove</span><span class="val">-50 &#11088;</span></div>
+          <div class="preview-divider" style="border-color: #fca5a5;"></div>
+          <div class="preview-row total" style="color: var(--color-error-dark);"><span class="lbl">New balance</span><span class="val">795 &#11088;</span></div>
+        </div>
+        <div class="tier-impact safe">
+          <div class="tier-impact-icon">&#9989;</div>
+          <div class="tier-impact-text">
+            <strong>No tier impact.</strong> Customer remains at <span class="tier-badge gold" style="display: inline;">Gold (2x)</span> after this remove.
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-ghost">Cancel</button><button class="btn btn-danger">Remove 50 Points</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     6. FORCE EXPIRE — CASH
+     ══════════════════════════════════════════════════════════ -->
+<div id="expire-cash" class="section-header">
+  <h2><span class="section-badge badge-expire">EXPIRE</span> Expire — Cash (&#8377;)</h2>
+  <p>Expire all remaining balance in selected cash bucket(s). Amber flow. No amount input — expires everything. Type-to-confirm with irreversibility warning.</p>
+</div>
+
+<div class="states-grid">
+  <!-- EC1: Bucket Selection -->
+  <div class="state-card">
+    <div class="state-label"><span class="num num-expire">1</span> BUCKET SELECTION</div>
+    <div class="modal">
+      <div class="modal-header"><h3>Wallet Action</h3><button class="close-btn">&times;</button></div>
+      <div class="modal-body">
+        <div class="action-tabs"><button class="action-tab">Add</button><button class="action-tab">Remove</button><button class="action-tab active-expire">Expire</button></div>
+        <div class="customer-banner">
+          <div class="c-avatar">DT</div>
+          <div class="c-info"><div class="c-name">Dhruv Tiwari</div><div class="c-phone">+91 90440 00100</div></div>
+          <div class="c-balance-group"><div class="c-balance-val cash">&#8377;477.00</div><div class="c-balance-label">current cash balance</div></div>
+        </div>
+        <div class="warning-banner">
+          <span class="warning-banner-icon">&#9888;&#65039;</span>
+          <div class="warning-banner-text"><strong>Irreversible action.</strong> Force expiring will set the selected bucket balance(s) to zero. This cannot be undone.</div>
+        </div>
+        <div class="form-group"><label class="form-label">Select bucket(s) to expire <span class="req">*</span></label>
+          <div class="expire-bucket-list">
+            <div class="expire-bucket-card selected">
+              <div class="expire-check">&#10003;</div>
+              <div class="expire-bucket-info">
+                <div class="expire-bucket-name">Store Credit</div>
+                <div class="expire-bucket-sub">3 active entries, oldest from 15 Jan 2026</div>
+              </div>
+              <div class="expire-bucket-amount" style="color: var(--color-warning-dark);">&#8377;169.00</div>
+            </div>
+            <div class="expire-bucket-card">
+              <div class="expire-check"></div>
+              <div class="expire-bucket-info">
+                <div class="expire-bucket-name">Gift Card</div>
+                <div class="expire-bucket-sub">1 active entry, from 20 Feb 2026</div>
+              </div>
+              <div class="expire-bucket-amount" style="color: var(--color-warning-dark);">&#8377;308.00</div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Reason <span class="req">*</span></label>
+          <div class="reason-pills">
+            <span class="reason-pill active-amber">Fraud/abuse</span><span class="reason-pill">Campaign ended</span>
+            <span class="reason-pill">Policy change</span><span class="reason-pill">Account cleanup</span><span class="reason-pill">Other</span>
+          </div>
+          <textarea class="form-textarea">Customer reported as fraudulent. All store credits to be expired per fraud team directive.</textarea>
+        </div>
+        <div class="form-group"><label class="form-label">Internal Reference</label><input class="form-input" value="Fraud ticket #FR-2026-0891"></div>
+        <div class="preview-box amber">
+          <div class="preview-title amber">Expire Summary</div>
+          <div class="preview-row" style="color: var(--color-warning-dark);"><span class="lbl">Store Credit to expire</span><span class="val">&#8377;169.00 (3 entries)</span></div>
+          <div class="preview-divider" style="border-color: #fde68a;"></div>
+          <div class="preview-row total" style="color: var(--color-warning-dark);"><span class="lbl">New cash balance</span><span class="val">&#8377;308.00</span></div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-ghost">Cancel</button><button class="btn btn-warning">Expire &#8377;169 Store Credit</button></div>
+    </div>
+  </div>
+
+  <!-- EC2: Multi-bucket Selection -->
+  <div class="state-card">
+    <div class="state-label"><span class="num num-expire">2</span> MULTI-BUCKET SELECTION</div>
+    <div class="modal">
+      <div class="modal-header"><h3>Wallet Action</h3><button class="close-btn">&times;</button></div>
+      <div class="modal-body">
+        <div class="action-tabs"><button class="action-tab">Add</button><button class="action-tab">Remove</button><button class="action-tab active-expire">Expire</button></div>
+        <div class="customer-banner">
+          <div class="c-avatar">DT</div>
+          <div class="c-info"><div class="c-name">Dhruv Tiwari</div><div class="c-phone">+91 90440 00100</div></div>
+          <div class="c-balance-group"><div class="c-balance-val cash">&#8377;477.00</div><div class="c-balance-label">current cash balance</div></div>
+        </div>
+        <div class="warning-banner">
+          <span class="warning-banner-icon">&#9888;&#65039;</span>
+          <div class="warning-banner-text"><strong>Irreversible action.</strong> Force expiring will set the selected bucket balance(s) to zero.</div>
+        </div>
+        <div class="form-group"><label class="form-label">Select bucket(s) to expire <span class="req">*</span></label>
+          <div class="expire-bucket-list">
+            <div class="expire-bucket-card selected">
+              <div class="expire-check">&#10003;</div>
+              <div class="expire-bucket-info"><div class="expire-bucket-name">Store Credit</div><div class="expire-bucket-sub">3 active entries</div></div>
+              <div class="expire-bucket-amount" style="color: var(--color-warning-dark);">&#8377;169.00</div>
+            </div>
+            <div class="expire-bucket-card selected">
+              <div class="expire-check">&#10003;</div>
+              <div class="expire-bucket-info"><div class="expire-bucket-name">Gift Card</div><div class="expire-bucket-sub">1 active entry</div></div>
+              <div class="expire-bucket-amount" style="color: var(--color-warning-dark);">&#8377;308.00</div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Reason <span class="req">*</span></label>
+          <div class="reason-pills"><span class="reason-pill active-amber">Account cleanup</span><span class="reason-pill">Fraud/abuse</span><span class="reason-pill">Campaign ended</span><span class="reason-pill">Policy change</span><span class="reason-pill">Other</span></div>
+          <textarea class="form-textarea">Closing customer account per DPDP data deletion request.</textarea>
+        </div>
+        <div class="preview-box amber">
+          <div class="preview-title amber">Expire Summary</div>
+          <div class="preview-row" style="color: var(--color-warning-dark);"><span class="lbl">Store Credit</span><span class="val">&#8377;169.00</span></div>
+          <div class="preview-row" style="color: var(--color-warning-dark);"><span class="lbl">Gift Card</span><span class="val">&#8377;308.00</span></div>
+          <div class="preview-divider" style="border-color: #fde68a;"></div>
+          <div class="preview-row total" style="color: var(--color-warning-dark);"><span class="lbl">Total to expire</span><span class="val">&#8377;477.00</span></div>
+          <div class="preview-row total" style="color: var(--color-warning-dark);"><span class="lbl">New cash balance</span><span class="val">&#8377;0.00</span></div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-ghost">Cancel</button><button class="btn btn-warning">Expire All Cash (&#8377;477)</button></div>
+    </div>
+  </div>
+
+  <!-- EC3: Type-to-Confirm with Irreversibility -->
+  <div class="state-card">
+    <div class="state-label"><span class="num num-expire">3</span> TYPE-TO-CONFIRM (IRREVERSIBLE)</div>
+    <div class="modal">
+      <div class="modal-header"><h3>Confirm Expire</h3><button class="close-btn">&times;</button></div>
+      <div class="confirm-body">
+        <div class="confirm-icon">&#9203;</div>
+        <div class="confirm-title" style="color: var(--color-warning-dark);">Expire &#8377;169.00 in Store Credit?</div>
+        <div class="irreversible-warning">&#128274; This action is irreversible. The balance cannot be restored.</div>
+        <div class="confirm-summary">
+          <div class="confirm-row"><span class="lbl">Customer</span><span class="val">Dhruv Tiwari</span></div>
+          <div class="confirm-row"><span class="lbl">Bucket</span><span class="val">Store Credit</span></div>
+          <div class="confirm-row"><span class="lbl">Entries affected</span><span class="val">3 active entries</span></div>
+          <div class="confirm-row"><span class="lbl">Amount to expire</span><span class="val" style="color: var(--color-warning);">&#8377;169.00</span></div>
+          <div class="confirm-row"><span class="lbl">Reason</span><span class="val">Fraud/abuse</span></div>
+          <div class="confirm-row highlight"><span class="lbl">New cash balance</span><span class="val" style="color: var(--color-warning);">&#8377;477 &#8594; &#8377;308</span></div>
+        </div>
+        <div class="type-confirm">
+          <p>Type <code>EXPIRE</code> to confirm</p>
+          <input class="form-input" placeholder="Type EXPIRE..." value="EXPIRE" style="max-width: 200px; margin: 8px auto 0; text-transform: uppercase;">
+        </div>
+        <div class="confirm-actions"><button class="btn btn-ghost">Go Back</button><button class="btn btn-warning">Expire</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EC4: Success -->
+  <div class="state-card">
+    <div class="state-label"><span class="num num-expire">4</span> SUCCESS</div>
+    <div class="modal">
+      <div class="modal-header"><h3>Expired</h3><button class="close-btn">&times;</button></div>
+      <div class="result-body">
+        <div class="result-icon amber">&#10003;</div>
+        <div class="result-title">&#8377;169.00 expired</div>
+        <div class="result-subtitle">3 Store Credit entries force-expired for Dhruv Tiwari</div>
+        <div class="result-detail">
+          <div class="result-row"><span class="lbl">Entries expired</span><span class="val">3</span></div>
+          <div class="result-row"><span class="lbl">Amount</span><span class="val" style="color: var(--color-warning);">&#8377;169.00</span></div>
+          <div class="result-row"><span class="lbl">New cash balance</span><span class="val">&#8377;308.00</span></div>
+          <div class="result-row"><span class="lbl">Reason</span><span class="val">Fraud/abuse</span></div>
+        </div>
+        <button class="btn btn-primary" style="width: 100%; justify-content: center;">Done</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     7. FORCE EXPIRE — POINTS
+     ══════════════════════════════════════════════════════════ -->
+<div id="expire-points" class="section-header">
+  <h2><span class="section-badge badge-expire">EXPIRE</span> Expire — Points (&#11088;)</h2>
+  <p>Expire all points in selected bucket(s). Amber flow. Includes tier impact preview.</p>
+</div>
+
+<div class="states-grid">
+  <!-- EP1: Filled with Tier Impact -->
+  <div class="state-card">
+    <div class="state-label"><span class="num num-expire">1</span> FILLED — TIER DOWNGRADE WARNING</div>
+    <div class="modal">
+      <div class="modal-header"><h3>Wallet Action</h3><button class="close-btn">&times;</button></div>
+      <div class="modal-body">
+        <div class="action-tabs"><button class="action-tab">Add</button><button class="action-tab">Remove</button><button class="action-tab active-expire">Expire</button></div>
+        <div class="customer-banner">
+          <div class="c-avatar">DT</div>
+          <div class="c-info"><div class="c-name">Dhruv Tiwari</div><div class="c-phone">+91 90440 00100</div></div>
+          <div class="c-balance-group"><div class="c-balance-val points">845 &#11088;</div><div class="c-balance-label">current points balance</div></div>
+        </div>
+        <div class="warning-banner">
+          <span class="warning-banner-icon">&#9888;&#65039;</span>
+          <div class="warning-banner-text"><strong>Irreversible action.</strong> All points in selected bucket(s) will be permanently expired.</div>
+        </div>
+        <div class="form-group"><label class="form-label">Select bucket(s) to expire <span class="req">*</span></label>
+          <div class="expire-bucket-list">
+            <div class="expire-bucket-card selected">
+              <div class="expire-check">&#10003;</div>
+              <div class="expire-bucket-info"><div class="expire-bucket-name">Reward Points</div><div class="expire-bucket-sub">12 active entries, oldest from 5 Jan 2026</div></div>
+              <div class="expire-bucket-amount" style="color: var(--color-warning-dark);">751 &#11088;</div>
+            </div>
+            <div class="expire-bucket-card">
+              <div class="expire-check"></div>
+              <div class="expire-bucket-info"><div class="expire-bucket-name">Referral Points</div><div class="expire-bucket-sub">2 active entries</div></div>
+              <div class="expire-bucket-amount" style="color: var(--color-warning-dark);">94 &#11088;</div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Reason <span class="req">*</span></label>
+          <div class="reason-pills"><span class="reason-pill">Campaign ended</span><span class="reason-pill active-amber">Fraud/abuse</span><span class="reason-pill">Policy change</span><span class="reason-pill">Account cleanup</span><span class="reason-pill">Other</span></div>
+          <textarea class="form-textarea">Points earned via bot-automated purchases. Orders identified as fraudulent by risk team.</textarea>
+        </div>
+        <div class="preview-box amber">
+          <div class="preview-title amber">Expire Summary</div>
+          <div class="preview-row" style="color: var(--color-warning-dark);"><span class="lbl">Reward Points to expire</span><span class="val">751 &#11088; (&#8377;75.10)</span></div>
+          <div class="preview-row" style="color: var(--color-warning-dark);"><span class="lbl">Entries affected</span><span class="val">12</span></div>
+          <div class="preview-divider" style="border-color: #fde68a;"></div>
+          <div class="preview-row total" style="color: var(--color-warning-dark);"><span class="lbl">New points balance</span><span class="val">94 &#11088;</span></div>
+        </div>
+        <div class="tier-impact downgrade">
+          <div class="tier-impact-icon">&#9888;&#65039;</div>
+          <div class="tier-impact-text">
+            <strong>Tier downgrade.</strong> Expiring 751 reward points will drop qualifying value well below Silver threshold.
+            <div class="tier-from-to">
+              <span class="tier-badge gold">Gold (2x)</span>
+              <span class="tier-arrow">&#8594;</span>
+              <span class="tier-badge bronze">Bronze (1x)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-ghost">Cancel</button><button class="btn btn-warning">Expire 751 Points</button></div>
+    </div>
+  </div>
+
+  <!-- EP2: Type-to-Confirm -->
+  <div class="state-card">
+    <div class="state-label"><span class="num num-expire">2</span> TYPE-TO-CONFIRM + TIER WARNING</div>
+    <div class="modal">
+      <div class="modal-header"><h3>Confirm Expire</h3><button class="close-btn">&times;</button></div>
+      <div class="confirm-body">
+        <div class="confirm-icon">&#9203;</div>
+        <div class="confirm-title" style="color: var(--color-warning-dark);">Expire 751 reward points?</div>
+        <div class="irreversible-warning">&#128274; This action is irreversible. Points cannot be restored.</div>
+        <div class="confirm-summary">
+          <div class="confirm-row"><span class="lbl">Customer</span><span class="val">Dhruv Tiwari</span></div>
+          <div class="confirm-row"><span class="lbl">Bucket</span><span class="val">Reward Points</span></div>
+          <div class="confirm-row"><span class="lbl">Points to expire</span><span class="val" style="color: var(--color-warning);">751 &#11088;</span></div>
+          <div class="confirm-row"><span class="lbl">Worth</span><span class="val" style="color: var(--color-warning);">&#8377;75.10</span></div>
+          <div class="confirm-row highlight"><span class="lbl">New balance</span><span class="val" style="color: var(--color-warning);">845 &#8594; 94 &#11088;</span></div>
+        </div>
+        <div class="tier-impact downgrade" style="text-align: left; margin-bottom: 14px;">
+          <div class="tier-impact-icon">&#9888;&#65039;</div>
+          <div class="tier-impact-text">
+            <strong>Tier will change:</strong>
+            <div class="tier-from-to">
+              <span class="tier-badge gold">Gold (2x)</span>
+              <span class="tier-arrow">&#8594;</span>
+              <span class="tier-badge bronze">Bronze (1x)</span>
+            </div>
+          </div>
+        </div>
+        <div class="type-confirm">
+          <p>Type <code>EXPIRE</code> to confirm</p>
+          <input class="form-input" placeholder="Type EXPIRE..." style="max-width: 200px; margin: 8px auto 0;">
+        </div>
+        <div class="confirm-actions"><button class="btn btn-ghost">Go Back</button><button class="btn btn-warning" disabled>Expire</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     8. SHARED STATES — Loading & Error
+     ══════════════════════════════════════════════════════════ -->
+<div id="shared" class="section-header">
+  <h2><span class="section-badge badge-framework">SHARED</span> Loading &amp; Error States</h2>
+  <p>These states are shared across all three flows. Colors adapt to the active action.</p>
+</div>
+
+<div class="states-grid">
+  <!-- Loading: Issue -->
+  <div class="state-card">
+    <div class="state-label"><span class="num num-issue">L1</span> LOADING — ADD</div>
+    <div class="modal">
+      <div class="modal-header"><h3>Confirm Add</h3><button class="close-btn" style="opacity: 0.3;">&times;</button></div>
+      <div class="confirm-body">
+        <div class="confirm-icon">&#128179;</div>
+        <div class="confirm-title">Add &#8377;500.00 to Store Credit?</div>
+        <div class="confirm-summary" style="opacity: 0.5;">
+          <div class="confirm-row"><span class="lbl">Customer</span><span class="val">Dhruv Tiwari</span></div>
+          <div class="confirm-row"><span class="lbl">Amount</span><span class="val">+&#8377;500.00</span></div>
+        </div>
+        <div class="confirm-actions">
+          <button class="btn btn-ghost" disabled style="opacity: 0.5;">Go Back</button>
+          <button class="btn btn-success" disabled style="opacity: 0.8;"><span class="spinner"></span> Processing...</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading: Remove -->
+  <div class="state-card">
+    <div class="state-label"><span class="num num-remove">L2</span> LOADING — REMOVE</div>
+    <div class="modal">
+      <div class="modal-header"><h3>Confirm Remove</h3><button class="close-btn" style="opacity: 0.3;">&times;</button></div>
+      <div class="confirm-body">
+        <div class="confirm-icon">&#9888;&#65039;</div>
+        <div class="confirm-title" style="color: var(--color-error);">Remove &#8377;100.00?</div>
+        <div class="confirm-summary" style="opacity: 0.5;">
+          <div class="confirm-row"><span class="lbl">Customer</span><span class="val">Dhruv Tiwari</span></div>
+          <div class="confirm-row"><span class="lbl">Remove</span><span class="val">-&#8377;100.00</span></div>
+        </div>
+        <div class="confirm-actions">
+          <button class="btn btn-ghost" disabled style="opacity: 0.5;">Go Back</button>
+          <button class="btn btn-danger" disabled style="opacity: 0.8;"><span class="spinner"></span> Processing...</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error: Issue -->
+  <div class="state-card">
+    <div class="state-label"><span class="num num-issue">E1</span> API ERROR — ADD (FORM PRESERVED)</div>
+    <div class="modal">
+      <div class="modal-header"><h3>Wallet Action</h3><button class="close-btn">&times;</button></div>
+      <div class="modal-body">
+        <div class="action-tabs"><button class="action-tab active-issue">Add</button><button class="action-tab">Remove</button><button class="action-tab">Expire</button></div>
+        <div class="error-banner">
+          <span class="error-banner-icon">&#9888;</span>
+          <div>
+            <div class="error-banner-text" style="font-weight: 700; margin-bottom: 2px;">Failed to add</div>
+            <div class="error-banner-text">Server error: wallet service unavailable. Please try again.</div>
+          </div>
+        </div>
+        <div class="customer-banner">
+          <div class="c-avatar">DT</div>
+          <div class="c-info"><div class="c-name">Dhruv Tiwari</div><div class="c-phone">+91 90440 00100</div></div>
+          <div class="c-balance-group"><div class="c-balance-val cash">&#8377;477.00</div><div class="c-balance-label">current cash balance</div></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Amount</label><div class="amount-wrap"><span class="amount-prefix">&#8377;</span><input class="form-input" value="500.00"></div></div>
+          <div class="form-group"><label class="form-label">Expiry</label><input class="form-input" value="90"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Reason</label>
+          <div class="reason-pills"><span class="reason-pill active">Refund</span></div>
+          <textarea class="form-textarea">Customer returned defective item.</textarea>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-ghost">Cancel</button><button class="btn btn-success">Retry — Add &#8377;500</button></div>
+    </div>
+  </div>
+
+  <!-- Error: Expire (concurrent modification) -->
+  <div class="state-card">
+    <div class="state-label"><span class="num num-expire">E2</span> ERROR — BALANCE CHANGED (STALE)</div>
+    <div class="modal">
+      <div class="modal-header"><h3>Wallet Action</h3><button class="close-btn">&times;</button></div>
+      <div class="modal-body">
+        <div class="action-tabs"><button class="action-tab">Add</button><button class="action-tab">Remove</button><button class="action-tab active-expire">Expire</button></div>
+        <div class="error-banner">
+          <span class="error-banner-icon">&#9888;</span>
+          <div>
+            <div class="error-banner-text" style="font-weight: 700; margin-bottom: 2px;">Balance has changed</div>
+            <div class="error-banner-text">The customer's Store Credit balance was modified since you opened this form (&#8377;169 &#8594; &#8377;119). The form has been refreshed with current data.</div>
+          </div>
+        </div>
+        <div class="customer-banner">
+          <div class="c-avatar">DT</div>
+          <div class="c-info"><div class="c-name">Dhruv Tiwari</div><div class="c-phone">+91 90440 00100</div></div>
+          <div class="c-balance-group"><div class="c-balance-val cash">&#8377;427.00</div><div class="c-balance-label">current cash balance (updated)</div></div>
+        </div>
+        <div class="form-group"><label class="form-label">Select bucket(s) to expire</label>
+          <div class="expire-bucket-list">
+            <div class="expire-bucket-card selected">
+              <div class="expire-check">&#10003;</div>
+              <div class="expire-bucket-info"><div class="expire-bucket-name">Store Credit</div><div class="expire-bucket-sub">2 active entries (was 3)</div></div>
+              <div class="expire-bucket-amount" style="color: var(--color-warning-dark);">&#8377;119.00</div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Reason</label>
+          <div class="reason-pills"><span class="reason-pill active-amber">Fraud/abuse</span></div>
+          <textarea class="form-textarea">Customer reported as fraudulent.</textarea>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-ghost">Cancel</button><button class="btn btn-warning">Expire &#8377;119 Store Credit</button></div>
+    </div>
+  </div>
+
+  <!-- Large amount warning -->
+  <div class="state-card">
+    <div class="state-label"><span class="num num-issue">W1</span> HIGH-VALUE CREDIT WARNING</div>
+    <div class="modal">
+      <div class="modal-header"><h3>Wallet Action</h3><button class="close-btn">&times;</button></div>
+      <div class="modal-body">
+        <div class="action-tabs"><button class="action-tab active-issue">Add</button><button class="action-tab">Remove</button><button class="action-tab">Expire</button></div>
+        <div class="warning-banner">
+          <span class="warning-banner-icon">&#9888;&#65039;</span>
+          <div class="warning-banner-text"><strong>High-value amount.</strong> &#8377;10,000 exceeds the typical range for this merchant. Please double-check.</div>
+        </div>
+        <div class="customer-banner">
+          <div class="c-avatar">DT</div>
+          <div class="c-info"><div class="c-name">Dhruv Tiwari</div><div class="c-phone">+91 90440 00100</div></div>
+          <div class="c-balance-group"><div class="c-balance-val cash">&#8377;477.00</div><div class="c-balance-label">current cash balance</div></div>
+        </div>
+        <div class="form-group"><label class="form-label">Amount</label>
+          <div class="amount-wrap"><span class="amount-prefix">&#8377;</span><input class="form-input" value="10,000.00" style="border-color: var(--color-warning);"></div>
+        </div>
+        <div class="preview-box amber" style="border-color: #fde68a; background: #fffbeb;">
+          <div class="preview-title amber">Add Summary</div>
+          <div class="preview-row" style="color: var(--color-warning-dark);"><span class="lbl">Amount</span><span class="val">+&#8377;10,000.00</span></div>
+          <div class="preview-divider" style="border-color: #fde68a;"></div>
+          <div class="preview-row total" style="color: var(--color-warning-dark);"><span class="lbl">New balance</span><span class="val">&#8377;10,477.00</span></div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-ghost">Cancel</button><button class="btn btn-warning">Add &#8377;10,000 Credit</button></div>
+    </div>
+  </div>
+
+  <!-- Validation: Issue -->
+  <div class="state-card">
+    <div class="state-label"><span class="num num-framework">V1</span> VALIDATION ERRORS</div>
+    <div class="modal">
+      <div class="modal-header"><h3>Wallet Action</h3><button class="close-btn">&times;</button></div>
+      <div class="modal-body">
+        <div class="action-tabs"><button class="action-tab active-issue">Add</button><button class="action-tab">Remove</button><button class="action-tab">Expire</button></div>
+        <div class="customer-banner">
+          <div class="c-avatar">DT</div>
+          <div class="c-info"><div class="c-name">Dhruv Tiwari</div></div>
+          <div class="c-balance-group"><div class="c-balance-val cash">&#8377;477.00</div><div class="c-balance-label">current cash</div></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Amount <span class="req">*</span></label>
+            <div class="amount-wrap"><span class="amount-prefix">&#8377;</span><input class="form-input error" value="-50"></div>
+            <div class="form-error">&#9888; Amount must be greater than 0</div>
+          </div>
+          <div class="form-group"><label class="form-label">Expiry (days)</label>
+            <input class="form-input error" value="0">
+            <div class="form-error">&#9888; Must be at least 1 day</div>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Reason <span class="req">*</span></label>
+          <div class="reason-pills"><span class="reason-pill">Refund</span><span class="reason-pill">Goodwill</span></div>
+          <textarea class="form-textarea error" placeholder="Required..."></textarea>
+          <div class="form-error">&#9888; Reason is required</div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-ghost">Cancel</button><button class="btn btn-success" disabled>Add</button></div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align: center; padding: 24px 0 48px; font-size: 12px; color: var(--color-text-muted);">
+  Batua Wallet Actions Design System &mdash; 3 Flows &times; 2 Units &mdash; March 2026
+</div>
+
+</div>
+</body>
+</html>

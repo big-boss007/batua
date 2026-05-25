@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Referral Code Auto-Creation UAT Report</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f3f4f6;
+    color: #1f2937;
+    line-height: 1.6;
+    padding: 2rem;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  h1 { font-size: 1.75rem; font-weight: 700; color: #111827; }
+  h2 { font-size: 1.35rem; font-weight: 600; color: #111827; margin-bottom: 1rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem; }
+
+  .header {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .header-meta { font-size: 0.875rem; color: #6b7280; }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .summary-item {
+    background: #fff;
+    border-radius: 10px;
+    padding: 1.25rem;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .summary-item .value { font-size: 2rem; font-weight: 700; line-height: 1.2; }
+  .summary-item .label { font-size: 0.75rem; color: #6b7280; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.25rem; }
+  .summary-item.pass .value { color: #059669; }
+  .summary-item.fail .value { color: #dc2626; }
+  .summary-item.bug .value { color: #d97706; }
+  .summary-item.total .value { color: #2563eb; }
+  .summary-item.skip .value { color: #6b7280; }
+
+  .section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  .test-case {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .test-case.pass { border-left: 4px solid #059669; }
+  .test-case.fail { border-left: 4px solid #dc2626; }
+  .test-case.bug { border-left: 4px solid #d97706; }
+  .test-case.skip { border-left: 4px solid #6b7280; }
+
+  .test-case h3 { display: flex; align-items: center; gap: 0.75rem; }
+
+  .badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .badge-pass { background: #d1fae5; color: #065f46; }
+  .badge-fail { background: #fee2e2; color: #991b1b; }
+  .badge-bug { background: #fef3c7; color: #92400e; }
+  .badge-skip { background: #f3f4f6; color: #4b5563; }
+
+  .severity {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    margin-left: 0.5rem;
+  }
+  .severity-high { background: #fee2e2; color: #991b1b; }
+  .severity-medium { background: #fef3c7; color: #92400e; }
+  .severity-low { background: #f3f4f6; color: #4b5563; }
+
+  .test-id {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+    background: #f3f4f6;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-family: monospace;
+  }
+
+  .steps { margin: 0.75rem 0; padding-left: 1.5rem; }
+  .steps li { margin-bottom: 0.25rem; font-size: 0.9rem; }
+
+  .screenshot-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+  .screenshot-grid img {
+    width: 100%;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+    cursor: pointer;
+  }
+  .screenshot-grid img:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  .screenshot-caption {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+    text-align: center;
+  }
+
+  .notes {
+    background: #f9fafb;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    margin-top: 0.75rem;
+  }
+  .notes strong { color: #374151; }
+
+  .bug-detail {
+    background: #fffbeb;
+    border: 1px solid #fcd34d;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    margin-top: 0.75rem;
+  }
+  .bug-detail p { margin-bottom: 0.25rem; }
+
+  .bug-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    margin-top: 1rem;
+  }
+  .bug-table th {
+    text-align: left;
+    padding: 0.6rem 0.8rem;
+    background: #f9fafb;
+    border-bottom: 2px solid #e5e7eb;
+    font-weight: 600;
+  }
+  .bug-table td {
+    padding: 0.6rem 0.8rem;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: top;
+  }
+
+  .env-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+  .env-table td {
+    padding: 0.4rem 0.8rem;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .env-table td:first-child {
+    font-weight: 600;
+    color: #374151;
+    width: 200px;
+  }
+
+  .data-check {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+    margin-top: 0.75rem;
+    font-family: monospace;
+  }
+
+  @media print {
+    body { background: #fff; padding: 1rem; }
+    .section, .header, .summary-item { box-shadow: none; border: 1px solid #e5e7eb; }
+    .test-case { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div>
+      <h1>Referral Code Auto-Creation UAT Report</h1>
+      <p class="header-meta">Batua Project &mdash; 26 March 2026 &mdash; Merchant: Sherwani Studio (<code>sherwanistudio</code>)</p>
+    </div>
+    <div class="header-meta">
+      Generated by Claude Code UAT Agent
+    </div>
+  </div>
+
+  <!-- SUMMARY GRID -->
+  <div class="summary-grid">
+    <div class="summary-item total"><span class="value">10</span><span class="label">Total Tests</span></div>
+    <div class="summary-item pass"><span class="value">9</span><span class="label">Passed</span></div>
+    <div class="summary-item fail"><span class="value">0</span><span class="label">Failed</span></div>
+    <div class="summary-item bug"><span class="value">1</span><span class="label">Bugs</span></div>
+    <div class="summary-item skip"><span class="value">0</span><span class="label">Skipped</span></div>
+  </div>
+
+  <!-- BUG SUMMARY TABLE -->
+  <div class="section">
+    <h2>Bug Summary</h2>
+    <table class="bug-table">
+      <thead><tr><th>ID</th><th>Severity</th><th>Status</th><th>Description</th><th>Root Cause</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="test-id">#10</span></td>
+          <td><span class="severity severity-medium">MEDIUM</span></td>
+          <td>FIXED</td>
+          <td>Serde rename_all missing on CodeCreationTrigger enum &mdash; backend could not deserialize <code>"on_first_purchase"</code> from frontend</td>
+          <td>The <code>#[serde(rename_all = "snake_case")]</code> attribute was initially missing from the enum definition, causing deserialization failure on PUT requests</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- STAKEHOLDER: MERCHANT ADMIN -->
+  <div class="section">
+    <h2>Stakeholder: Merchant Admin</h2>
+
+    <!-- Test #1 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#1</span> Dashboard shows trigger in status bar <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Navigate to /admin/referrals</li>
+        <li>Verify status bar shows "Codes: on registration" text</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="referral-auto-create-uat/01-dashboard-status-bar.png" alt="Dashboard in dark mode showing trigger in status bar">
+          <p class="screenshot-caption">Dashboard dark mode &mdash; status bar shows "Codes: on registration"</p>
+        </div>
+        <div>
+          <img src="referral-auto-create-uat/06-dashboard-light-mode.png" alt="Dashboard in light mode showing trigger in status bar">
+          <p class="screenshot-caption">Dashboard light mode &mdash; status bar shows "Codes: on registration"</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Status bar correctly displays "Active &mdash; Referrer: 100 pts &middot; Referee: 50 pts &middot; Codes: on registration". Visible in both dark and light modes.
+      </div>
+    </div>
+
+    <!-- Test #2 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#2</span> Edit form shows trigger radio buttons <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Click "Edit Program"</li>
+        <li>Scroll to trigger section</li>
+        <li>Verify two radio options present with descriptions</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="referral-auto-create-uat/02-edit-on-registration-selected.png" alt="Edit form with On registration radio selected">
+          <p class="screenshot-caption">Edit form dark mode &mdash; "On registration" pre-selected with "Default" badge</p>
+        </div>
+        <div>
+          <img src="referral-auto-create-uat/07-edit-light-mode.png" alt="Edit form in light mode">
+          <p class="screenshot-caption">Edit form light mode &mdash; trigger section with radio buttons</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> "On registration" pre-selected (matches DB), "Default" badge visible. "On first purchase" option available. Both radio options have descriptive text underneath.
+      </div>
+    </div>
+
+    <!-- Test #3 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#3</span> Tradeoff advice &mdash; "On registration" selected <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>With "On registration" selected, verify blue advice box appears</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="referral-auto-create-uat/03-edit-trigger-advice-registration.png" alt="Blue advice box for On registration">
+          <p class="screenshot-caption">Blue advice box &mdash; "Maximises referral reach"</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Shows "Maximises referral reach &mdash; Every new customer gets a code immediately..." with blue background. Dark mode styling correct.
+      </div>
+    </div>
+
+    <!-- Test #4 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#4</span> Tradeoff advice &mdash; "On first purchase" selected <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Click "On first purchase" radio</li>
+        <li>Verify amber advice box appears</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="referral-auto-create-uat/04-edit-trigger-advice-first-purchase.png" alt="Amber advice box for On first purchase">
+          <p class="screenshot-caption">Amber advice box &mdash; "Only active buyers get codes"</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Shows "Only active buyers get codes &mdash; Codes are created after a customer's first order..." with amber/yellow background. Advice changes reactively when switching radio selection.
+      </div>
+    </div>
+
+    <!-- Test #5 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#5</span> Save trigger setting persists <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Select "On first purchase"</li>
+        <li>Click Save Changes</li>
+        <li>Verify status bar updates and DB persists</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="referral-auto-create-uat/05-dashboard-on-first-purchase.png" alt="Dashboard after save showing on first purchase">
+          <p class="screenshot-caption">Dashboard after save &mdash; status bar shows "Codes: on first purchase"</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Status bar immediately shows "Codes: on first purchase". DB query confirms: <code>SELECT code_creation_trigger FROM referral_programs &rarr; 'on_first_purchase'</code>. Toast message "Referral program saved" appears.
+      </div>
+    </div>
+
+    <!-- Test #6 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#6</span> Edit pre-fills saved trigger <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>After saving "on first purchase", click Edit Program again</li>
+        <li>Verify radio pre-fills correctly with "On first purchase" selected</li>
+      </ol>
+      <div class="notes">
+        <strong>Notes:</strong> Re-tested &mdash; opens with "On first purchase" selected, matching the saved DB value. No screenshot needed (same UI as #2 with different selection).
+      </div>
+    </div>
+
+    <!-- Test #7 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#7</span> Light mode rendering <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Switch to light mode</li>
+        <li>Verify trigger section and advice box render correctly</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="referral-auto-create-uat/06-dashboard-light-mode.png" alt="Dashboard in light mode">
+          <p class="screenshot-caption">Dashboard light mode &mdash; status bar and layout</p>
+        </div>
+        <div>
+          <img src="referral-auto-create-uat/07-edit-light-mode.png" alt="Edit form in light mode">
+          <p class="screenshot-caption">Edit form light mode &mdash; trigger section with advice box</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Radio buttons, advice box, and status bar all render cleanly in light mode. Blue advice box has proper contrast.
+      </div>
+    </div>
+
+    <!-- Test #8 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#8</span> Dark mode rendering <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Switch to dark mode</li>
+        <li>Verify all trigger UI elements render correctly</li>
+      </ol>
+      <div class="screenshot-grid">
+        <div>
+          <img src="referral-auto-create-uat/01-dashboard-status-bar.png" alt="Dashboard dark mode">
+          <p class="screenshot-caption">Dashboard dark mode &mdash; status bar visible</p>
+        </div>
+        <div>
+          <img src="referral-auto-create-uat/03-edit-trigger-advice-registration.png" alt="Edit form dark mode with blue advice">
+          <p class="screenshot-caption">Edit form dark mode &mdash; blue advice box</p>
+        </div>
+      </div>
+      <div class="notes">
+        <strong>Notes:</strong> Radio buttons visible with proper borders, advice boxes have dark mode variants (blue becomes dark-blue, amber becomes dark-amber). Text remains readable. Screenshots 01-05 all demonstrate dark mode rendering.
+      </div>
+    </div>
+
+    <!-- Test #9 -->
+    <div class="test-case pass">
+      <h3><span class="test-id">#9</span> Console and network check <span class="badge badge-pass">PASS</span></h3>
+      <ol class="steps">
+        <li>Check console and network throughout all interactions</li>
+      </ol>
+      <div class="notes">
+        <strong>Notes:</strong> Only error: favicon.png 404 (cosmetic). All API calls (GET/PUT /referrals/programs) return 200. The response includes <code>code_creation_trigger</code> field correctly.
+      </div>
+    </div>
+
+    <!-- Test #10 -->
+    <div class="test-case bug">
+      <h3><span class="test-id">#10</span> Serde rename_all missing on CodeCreationTrigger enum <span class="badge badge-bug">BUG</span> <span class="severity severity-medium">MEDIUM</span></h3>
+      <ol class="steps">
+        <li>During implementation, attempted to save "on_first_purchase" from the frontend</li>
+        <li>Backend returned deserialization error</li>
+        <li>Identified missing <code>#[serde(rename_all = "snake_case")]</code> attribute</li>
+        <li>Fixed by adding the serde attribute alongside the sqlx one</li>
+        <li>Verified save works correctly after fix</li>
+      </ol>
+      <div class="bug-detail">
+        <p><strong>Expected:</strong> Backend should deserialize <code>"on_first_purchase"</code> from the frontend JSON payload</p>
+        <p><strong>Actual:</strong> Deserialization failed because the enum variants were not being renamed to snake_case by serde</p>
+        <p><strong>Root cause:</strong> The <code>#[serde(rename_all = "snake_case")]</code> attribute was initially missing from the <code>CodeCreationTrigger</code> enum definition, while the sqlx attribute was present</p>
+        <p><strong>Severity:</strong> MEDIUM &mdash; would have blocked the feature entirely</p>
+        <p><strong>Status:</strong> FIXED during implementation</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- DATA INTEGRITY SECTION -->
+  <div class="section">
+    <h2>Data Integrity Checks</h2>
+
+    <div class="test-case pass">
+      <h3><span class="test-id">DI-1</span> Trigger value matches DB <span class="badge badge-pass">PASS</span></h3>
+      <div class="data-check">
+        DB query: SELECT code_creation_trigger FROM referral_programs WHERE merchant_id = 'b0000000-...-050'<br>
+        Before save: on_registration<br>
+        After save: on_first_purchase<br>
+        UI matches DB in both cases.<br>
+        Result: MATCH
+      </div>
+    </div>
+
+    <div class="test-case pass">
+      <h3><span class="test-id">DI-2</span> Default migration value correct <span class="badge badge-pass">PASS</span></h3>
+      <div class="data-check">
+        Migration: ALTER TABLE referral_programs ADD COLUMN code_creation_trigger TEXT NOT NULL DEFAULT 'on_registration'<br>
+        All existing merchants got on_registration as default from the migration.<br>
+        Verified: SELECT code_creation_trigger FROM referral_programs &rarr; all rows show 'on_registration' before any edits.<br>
+        Result: MATCH
+      </div>
+    </div>
+  </div>
+
+  <!-- ENVIRONMENT SECTION -->
+  <div class="section">
+    <h2>Test Environment</h2>
+    <table class="env-table">
+      <tr><td>Date</td><td>2026-03-26 19:20</td></tr>
+      <tr><td>Backend URL</td><td>http://localhost:3000</td></tr>
+      <tr><td>Frontend URL</td><td>http://localhost:5174</td></tr>
+      <tr><td>Database</td><td>batua (local PostgreSQL)</td></tr>
+      <tr><td>Merchant</td><td>Sherwani Studio (ID: b0000000-0000-0000-0000-000000000050, slug: sherwanistudio)</td></tr>
+      <tr><td>Browser</td><td>Chromium (Playwright)</td></tr>
+      <tr><td>Total Screenshots</td><td>7</td></tr>
+      <tr><td>Git Branch</td><td>release</td></tr>
+    </table>
+  </div>
+
+</div>
+</body>
+</html>

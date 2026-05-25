@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Batua — Product Walkthrough</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface-2: #1a1a26;
+    --text: #e4e4ed;
+    --muted: #8888a0;
+    --border: #2a2a3a;
+    --primary: #7c6aff;
+    --primary-dim: rgba(124,106,255,0.15);
+    --success: #34d399;
+    --success-dim: rgba(52,211,153,0.15);
+    --warning: #fbbf24;
+    --warning-dim: rgba(251,191,36,0.15);
+    --error: #fb7185;
+    --error-dim: rgba(251,113,133,0.15);
+    --info: #60a5fa;
+    --info-dim: rgba(96,165,250,0.15);
+    --accent: #a78bfa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.6;
+  }
+
+  /* ===== Slide system ===== */
+  .slide {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 80px 120px;
+    position: relative;
+    border-bottom: 1px solid var(--border);
+  }
+  .slide-narrow { max-width: 1100px; margin: 0 auto; width: 100%; }
+  .slide-number {
+    position: absolute;
+    top: 32px;
+    right: 40px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+  .slide-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 20px;
+  }
+  .tag-primary { background: var(--primary-dim); color: var(--primary); }
+  .tag-success { background: var(--success-dim); color: var(--success); }
+  .tag-warning { background: var(--warning-dim); color: var(--warning); }
+  .tag-error { background: var(--error-dim); color: var(--error); }
+  .tag-info { background: var(--info-dim); color: var(--info); }
+
+  h1 { font-size: 52px; font-weight: 800; line-height: 1.1; letter-spacing: -1px; }
+  h2 { font-size: 36px; font-weight: 700; line-height: 1.2; letter-spacing: -0.5px; }
+  h3 { font-size: 22px; font-weight: 700; line-height: 1.3; }
+  h4 { font-size: 16px; font-weight: 600; }
+  .subtitle { font-size: 20px; color: var(--muted); margin-top: 12px; max-width: 700px; }
+  .description { font-size: 15px; color: var(--muted); margin-top: 8px; line-height: 1.7; }
+
+  /* Grid layouts */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; }
+  .flex-col { display: flex; flex-direction: column; }
+  .gap-sm { gap: 8px; }
+  .gap-md { gap: 16px; }
+  .gap-lg { gap: 24px; }
+  .gap-xl { gap: 40px; }
+  .mt-lg { margin-top: 40px; }
+  .mt-md { margin-top: 24px; }
+  .mt-sm { margin-top: 12px; }
+
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+  }
+  .card-sm { padding: 20px; }
+  .card-title { font-size: 14px; font-weight: 700; margin-bottom: 10px; }
+  .card-body { font-size: 13px; color: var(--muted); line-height: 1.7; }
+
+  /* Feature cards */
+  .feature-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: border-color 0.2s;
+  }
+  .feature-card:hover { border-color: var(--primary); }
+  .feature-icon { font-size: 28px; margin-bottom: 4px; }
+  .feature-name { font-size: 16px; font-weight: 700; }
+  .feature-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .feature-detail { font-size: 12px; color: var(--muted); line-height: 1.6; margin-top: 4px; padding-top: 8px; border-top: 1px solid var(--border); }
+
+  /* Metric style */
+  .metric { display: flex; flex-direction: column; gap: 4px; }
+  .metric-value { font-size: 32px; font-weight: 800; }
+  .metric-label { font-size: 13px; color: var(--muted); font-weight: 500; }
+  .metric-sm .metric-value { font-size: 22px; }
+
+  /* Pills/badges */
+  .pill {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 999px;
+  }
+  .pill-primary { background: var(--primary-dim); color: var(--primary); }
+  .pill-success { background: var(--success-dim); color: var(--success); }
+  .pill-warning { background: var(--warning-dim); color: var(--warning); }
+  .pill-error { background: var(--error-dim); color: var(--error); }
+  .pill-info { background: var(--info-dim); color: var(--info); }
+
+  /* Table mockups */
+  .mock-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .mock-table th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-2);
+  }
+  .mock-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+  .mock-table tr:last-child td { border-bottom: none; }
+
+  /* Sidebar mockup */
+  .sidebar-mockup {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 0;
+    width: 220px;
+    flex-shrink: 0;
+  }
+  .sidebar-mockup .nav-item {
+    padding: 8px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .sidebar-mockup .nav-item.active { color: var(--text); border-left: 3px solid var(--primary); background: var(--surface-2); }
+  .sidebar-mockup .brand { font-size: 18px; font-weight: 800; color: var(--text); padding: 0 20px 16px; }
+
+  /* Flow diagram */
+  .flow-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .flow-step {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+  }
+  .flow-arrow { color: var(--muted); font-size: 18px; }
+
+  /* TOC */
+  .toc-list { list-style: none; display: flex; flex-direction: column; gap: 6px; margin-top: 24px; }
+  .toc-list li { font-size: 16px; font-weight: 500; }
+  .toc-list a { color: var(--text); text-decoration: none; display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); transition: color 0.15s; }
+  .toc-list a:hover { color: var(--primary); }
+  .toc-num { color: var(--primary); font-weight: 700; font-size: 14px; width: 28px; }
+
+  /* Architecture boxes */
+  .arch-box {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .arch-box.rust { border-color: #f97316; color: #f97316; background: rgba(249,115,22,0.08); }
+  .arch-box.svelte { border-color: #ff3e00; color: #ff3e00; background: rgba(255,62,0,0.08); }
+  .arch-box.pg { border-color: #336791; color: #60a5fa; background: rgba(51,103,145,0.08); }
+  .arch-box.redis { border-color: #dc382d; color: #fb7185; background: rgba(220,56,45,0.08); }
+
+  /* Enum list */
+  .enum-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .enum-item {
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    padding: 4px 12px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--accent);
+  }
+
+  /* Highlight box */
+  .highlight-box {
+    background: var(--primary-dim);
+    border: 1px solid rgba(124,106,255,0.3);
+    border-radius: 12px;
+    padding: 20px 28px;
+  }
+  .highlight-box h4 { color: var(--primary); margin-bottom: 6px; }
+  .highlight-box p { font-size: 14px; color: var(--text); }
+
+  @media (max-width: 900px) {
+    .slide { padding: 40px 24px; }
+    h1 { font-size: 36px; }
+    h2 { font-size: 28px; }
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- SLIDE 1: Title -->
+<!-- ============================================================ -->
+<div class="slide" id="title">
+  <div class="slide-narrow">
+    <span class="slide-tag tag-primary">Internal Product Walkthrough</span>
+    <h1>Batua</h1>
+    <h1 style="color: var(--primary);">Breeze Retention Suite</h1>
+    <p class="subtitle">
+      Full-stack wallet, loyalty, gift cards, referrals, campaigns &amp; memberships
+      platform for Indian Shopify D2C merchants.
+    </p>
+    <div class="grid-4 mt-lg">
+      <div class="metric metric-sm">
+        <span class="metric-value" style="color: var(--primary);">3</span>
+        <span class="metric-label">Interfaces</span>
+      </div>
+      <div class="metric metric-sm">
+        <span class="metric-value" style="color: var(--success);">14</span>
+        <span class="metric-label">Backend Services</span>
+      </div>
+      <div class="metric metric-sm">
+        <span class="metric-value" style="color: var(--warning);">12</span>
+        <span class="metric-label">Frontend Modules</span>
+      </div>
+      <div class="metric metric-sm">
+        <span class="metric-value" style="color: var(--info);">50</span>
+        <span class="metric-label">Seed Merchants</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 2: Table of Contents -->
+<!-- ============================================================ -->
+<div class="slide" id="toc">
+  <div class="slide-narrow">
+    <span class="slide-number">02</span>
+    <h2>What We'll Cover</h2>
+    <div class="grid-2 mt-md">
+      <ul class="toc-list">
+        <li><a href="#architecture"><span class="toc-num">01</span> Architecture &amp; Stack</a></li>
+        <li><a href="#three-interfaces"><span class="toc-num">02</span> Three Interfaces</a></li>
+        <li><a href="#overview"><span class="toc-num">03</span> Dashboard Overview</a></li>
+        <li><a href="#wallet"><span class="toc-num">04</span> Wallet &amp; Policies</a></li>
+        <li><a href="#earn-rules"><span class="toc-num">05</span> Earn Rules</a></li>
+        <li><a href="#loyalty"><span class="toc-num">06</span> Loyalty Tiers</a></li>
+        <li><a href="#memberships"><span class="toc-num">07</span> Memberships</a></li>
+      </ul>
+      <ul class="toc-list">
+        <li><a href="#campaigns"><span class="toc-num">08</span> Campaigns</a></li>
+        <li><a href="#transactions"><span class="toc-num">09</span> Transactions</a></li>
+        <li><a href="#customers"><span class="toc-num">10</span> Customers</a></li>
+        <li><a href="#gift-cards"><span class="toc-num">11</span> Gift Cards</a></li>
+        <li><a href="#referrals"><span class="toc-num">12</span> Referrals &amp; Influencers</a></li>
+        <li><a href="#notifications"><span class="toc-num">13</span> Notifications</a></li>
+        <li><a href="#settings"><span class="toc-num">14</span> Settings</a></li>
+        <li><a href="#storefront"><span class="toc-num">15</span> Customer Storefront</a></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 3: Architecture -->
+<!-- ============================================================ -->
+<div class="slide" id="architecture">
+  <div class="slide-narrow">
+    <span class="slide-number">03</span>
+    <span class="slide-tag tag-info">Architecture</span>
+    <h2>Stack &amp; Service Architecture</h2>
+    <p class="subtitle">Rust/Axum backend, SvelteKit frontend, PostgreSQL + Redis.</p>
+
+    <div class="grid-4 mt-lg">
+      <div class="arch-box rust">Rust / Axum<br><small>Backend :3000</small></div>
+      <div class="arch-box svelte">SvelteKit 5<br><small>Frontend :5174</small></div>
+      <div class="arch-box pg">PostgreSQL<br><small>Primary + Reader</small></div>
+      <div class="arch-box redis">Redis<br><small>Cache / Sessions</small></div>
+    </div>
+
+    <h3 class="mt-lg">14 Backend Services</h3>
+    <div class="enum-grid mt-sm">
+      <span class="enum-item">admin</span>
+      <span class="enum-item">campaigns</span>
+      <span class="enum-item">cod</span>
+      <span class="enum-item">earn</span>
+      <span class="enum-item">events</span>
+      <span class="enum-item">gift_cards</span>
+      <span class="enum-item">identity</span>
+      <span class="enum-item">ledger</span>
+      <span class="enum-item">loyalty</span>
+      <span class="enum-item">notifications</span>
+      <span class="enum-item">redemption</span>
+      <span class="enum-item">referrals</span>
+      <span class="enum-item">rules</span>
+      <span class="enum-item">wallets</span>
+    </div>
+
+    <h3 class="mt-lg">Core Enums (Database-Level Type Safety)</h3>
+    <div class="grid-2 mt-sm gap-md">
+      <div>
+        <h4 style="color: var(--accent);">Bucket Types</h4>
+        <div class="enum-grid mt-sm">
+          <span class="enum-item">earned_credit</span>
+          <span class="enum-item">cod_pending</span>
+          <span class="enum-item">gift_card</span>
+          <span class="enum-item">customer_funded</span>
+          <span class="enum-item">referral_reward</span>
+          <span class="enum-item">goodwill_credit</span>
+          <span class="enum-item">membership_benefit</span>
+          <span class="enum-item">refund_credit</span>
+        </div>
+      </div>
+      <div>
+        <h4 style="color: var(--accent);">Movement Types</h4>
+        <div class="enum-grid mt-sm">
+          <span class="enum-item">in</span>
+          <span class="enum-item">out</span>
+          <span class="enum-item">held</span>
+          <span class="enum-item">across</span>
+        </div>
+        <h4 style="color: var(--accent); margin-top: 16px;">Credit States</h4>
+        <div class="enum-grid mt-sm">
+          <span class="enum-item">active</span>
+          <span class="enum-item">expired</span>
+          <span class="enum-item">redeemed</span>
+          <span class="enum-item">reversed</span>
+          <span class="enum-item">cancelled</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 4: Three Interfaces -->
+<!-- ============================================================ -->
+<div class="slide" id="three-interfaces">
+  <div class="slide-narrow">
+    <span class="slide-number">04</span>
+    <span class="slide-tag tag-primary">Interfaces</span>
+    <h2>Three Interfaces</h2>
+    <p class="subtitle">Each audience gets a purpose-built UI.</p>
+
+    <div class="grid-3 mt-lg">
+      <div class="feature-card">
+        <div class="feature-icon">🏪</div>
+        <div class="feature-name">/admin/*</div>
+        <div class="feature-desc">Merchant Admin — the primary interface. Merchants manage their wallet program, loyalty tiers, gift cards, referrals, campaigns, and settings.</div>
+        <div class="feature-detail">
+          14 pages: Overview, Wallet Policies, Earn Rules, Tiers, Memberships, Campaigns, Transactions, Customers, Gift Cards, Referral Program, Influencers, Notifications, Settings
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🛡️</div>
+        <div class="feature-name">/platform/*</div>
+        <div class="feature-desc">Super-Admin — Breeze internal team. Manage merchants, geo policies, system defaults, and system-level dashboards across all merchants.</div>
+        <div class="feature-detail">
+          4 sections: Merchants, Geo Policies, System Dashboard, Defaults
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">👤</div>
+        <div class="feature-name">/s/{slug}</div>
+        <div class="feature-desc">Customer Storefront — end-customer facing. Customers enter their phone number to view balance, tier, transactions, referral code, and membership status.</div>
+        <div class="feature-detail">
+          Phone login, Balance card, Tier badge, Transaction history, Referral sharing, Membership status
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 5: Dashboard Overview -->
+<!-- ============================================================ -->
+<div class="slide" id="overview">
+  <div class="slide-narrow">
+    <span class="slide-number">05</span>
+    <span class="slide-tag tag-success">Merchant Admin</span>
+    <h2>Dashboard Overview</h2>
+    <p class="subtitle">Landing page after merchant selection. Provides a quick pulse on the wallet program.</p>
+
+    <div class="grid-3 mt-lg">
+      <div class="card card-sm">
+        <div class="metric metric-sm">
+          <span class="metric-value">842</span>
+          <span class="metric-label">Active Customers</span>
+        </div>
+      </div>
+      <div class="card card-sm">
+        <div class="metric metric-sm">
+          <span class="metric-value" style="color: var(--success);">4,96,672 🏆</span>
+          <span class="metric-label">Active Points (~ ₹1,24,168)</span>
+        </div>
+      </div>
+      <div class="card card-sm">
+        <div class="metric metric-sm">
+          <span class="metric-value">18,030 🏆</span>
+          <span class="metric-label">Total Redeemed (~ ₹4,507)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-3 mt-md">
+      <div class="card card-sm">
+        <div class="metric metric-sm">
+          <span class="metric-value">4,96,672 🏆</span>
+          <span class="metric-label">Total Earned</span>
+        </div>
+      </div>
+      <div class="card card-sm">
+        <div class="metric metric-sm">
+          <span class="metric-value" style="color: var(--warning);">5,160 🏆</span>
+          <span class="metric-label">COD Pending</span>
+        </div>
+      </div>
+      <div class="card card-sm">
+        <div class="metric metric-sm">
+          <span class="metric-value">24</span>
+          <span class="metric-label">Redemptions</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="highlight-box mt-lg">
+      <h4>Quick Actions</h4>
+      <p>Create Rule, View Transactions, View Customers, View Storefront — one-click navigation to common tasks.</p>
+    </div>
+
+    <div class="card mt-md">
+      <div class="card-title">Key Details</div>
+      <div class="card-body">
+        Data source: <code>GET /admin/merchants/{id}/dashboard</code><br>
+        Returns: active_customers, total_wallets, total_earned, total_redeemed, total_cod_pending, active_credits, total_ledger_entries, redemption_count<br>
+        Points are displayed using merchant's custom icon (🏆, ★, 🪙, 💎, etc.) and conversion rate.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 6: Wallet & Policies -->
+<!-- ============================================================ -->
+<div class="slide" id="wallet">
+  <div class="slide-narrow">
+    <span class="slide-number">06</span>
+    <span class="slide-tag tag-primary">Wallet</span>
+    <h2>Wallet &amp; Policies</h2>
+    <p class="subtitle">Configure the points currency and per-bucket redemption/earn rules.</p>
+
+    <div class="grid-2 mt-lg gap-lg">
+      <div class="flex-col gap-lg">
+        <div class="card">
+          <div class="card-title">Points Configuration</div>
+          <div class="card-body">
+            <strong>Points Name</strong> — e.g. "Stars", "Coins", "Gems"<br>
+            <strong>Icon</strong> — e.g. ★, 🪙, 💎, pts<br>
+            <strong>Value per Point (₹)</strong> — conversion rate (e.g. 0.25 = 4 pts = ₹1)<br><br>
+            Live preview panel shows the computed ratio. Saved per merchant.
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Active Earn Rates</div>
+          <div class="card-body">
+            Auto-populated from active reward rules. Shows examples like:<br>
+            "On a ₹1,000 order → customer earns 100 ★ worth ₹25 · expires in 90 days"
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Global Bucket Policies</div>
+        <div class="card-body">
+          One policy per bucket type per merchant. Each controls:<br><br>
+          <strong>Redemption side:</strong><br>
+          - Min redemption amount<br>
+          - Step size (redeem in multiples of X)<br>
+          - Max per order (% or fixed ₹)<br>
+          - Stackable with discounts toggle<br><br>
+          <strong>Earn side:</strong><br>
+          - Default conversion rate<br>
+          - Default expiry days<br><br>
+          <strong>Movement:</strong><br>
+          - Is transferable<br>
+          - Excluded payment methods (e.g. COD)<br>
+          - Excluded collections
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 7: Earn Rules -->
+<!-- ============================================================ -->
+<div class="slide" id="earn-rules">
+  <div class="slide-narrow">
+    <span class="slide-number">07</span>
+    <span class="slide-tag tag-success">Loyalty</span>
+    <h2>Earn Rules</h2>
+    <p class="subtitle">Configure how customers earn and burn points. Rule engine with event-based triggers.</p>
+
+    <div class="grid-2 mt-lg gap-lg">
+      <div class="flex-col gap-md">
+        <div class="card">
+          <div class="card-title">Rule List View</div>
+          <div class="card-body">
+            Each rule shows: name, type badge (reward), event type, version, active/inactive status, and performance stats (entries, total value, unique customers).<br><br>
+            Actions: Create new, Edit (opens modal), Activate/Deactivate toggle.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Rule Form (Modal)</div>
+          <div class="card-body">
+            Fields: Name, Rule Type, Event Type (order_placed, etc.)<br><br>
+            <strong>Action config:</strong><br>
+            - Calculation: percentage or fixed<br>
+            - Value (% or fixed amount)<br>
+            - Max amount cap<br>
+            - Expiry days<br>
+            - Target bucket type
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">How Earn Works (Backend Flow)</div>
+        <div class="card-body">
+          <div class="flow-row" style="flex-wrap: wrap; gap: 8px;">
+            <div class="flow-step">Shopify Event</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-step">Event Service</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-step">Rule Engine</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-step">Earn Service</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-step">Ledger Entry</div>
+          </div>
+          <br>
+          <strong>Rule matching:</strong> Active rules for the merchant are evaluated against the event. The rule config determines the earn amount, bucket, and expiry.<br><br>
+          <strong>Performance tracking:</strong> Each rule tracks total_entries, total_value, unique_customers — displayed on the rules list.<br><br>
+          <strong>Versioning:</strong> Rules are versioned. Each update increments the version and creates a rule_snapshot for audit.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 8: Loyalty Tiers -->
+<!-- ============================================================ -->
+<div class="slide" id="loyalty">
+  <div class="slide-narrow">
+    <span class="slide-number">08</span>
+    <span class="slide-tag tag-success">Loyalty</span>
+    <h2>Loyalty Tiers</h2>
+    <p class="subtitle">Tiered loyalty programs with automated customer evaluation and distribution tracking.</p>
+
+    <div class="grid-2 mt-lg gap-lg">
+      <div class="flex-col gap-md">
+        <div class="card">
+          <div class="card-title">Tier Wizard</div>
+          <div class="card-body">
+            Guided setup for new loyalty programs. Two modes:<br><br>
+            <strong>Fresh:</strong> Creates program + initial tiers<br>
+            <strong>Reconfigure:</strong> Modifies existing program<br><br>
+            Configures: Program name, Evaluation criteria (spend / order_count / points), Evaluation period (lifetime or last N days)
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Tier Management</div>
+          <div class="card-body">
+            Each tier has: Name, Rank (ordering), Threshold (qualification point), Earn Rate Multiplier (e.g. 2x for Gold), Benefits (JSON).<br><br>
+            Actions: Add Tier, Edit inline, Delete with confirmation. Visual TierBadge component shows rank-based styling.
+          </div>
+        </div>
+      </div>
+      <div class="flex-col gap-md">
+        <div class="card">
+          <div class="card-title">Program Summary</div>
+          <div class="card-body">
+            3-column grid showing: Program Name, Evaluation Criteria (Total Spend / Order Count / Points Earned), Evaluation Period (Lifetime / Last N days).
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Evaluate Tiers</div>
+          <div class="card-body">
+            One-click action that re-evaluates all customers against tier thresholds. Shows result: "Evaluated 842 customers".<br><br>
+            Updates the <strong>Tier Distribution Chart</strong> — visual breakdown of how many customers fall into each tier.
+          </div>
+        </div>
+        <div class="highlight-box">
+          <h4>Customer Tier Table</h4>
+          <p>Database: <code>customer_tiers</code> — tracks merchant_id, customer_id, tier_id, evaluated_value, assigned_at. Updated on evaluation or manual override.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 9: Memberships -->
+<!-- ============================================================ -->
+<div class="slide" id="memberships">
+  <div class="slide-narrow">
+    <span class="slide-number">09</span>
+    <span class="slide-tag tag-warning">Loyalty</span>
+    <h2>Memberships</h2>
+    <p class="subtitle">Paid or assigned tier access with expiry. Supplements organic loyalty tiers.</p>
+
+    <div class="grid-2 mt-lg gap-lg">
+      <div class="card">
+        <div class="card-title">Subscribers Tab</div>
+        <div class="card-body">
+          Table of all membership holders. Filterable by:<br>
+          - Tier name (Bronze, Silver, Gold, Platinum)<br>
+          - Status (Active, Expiring Soon, Cancelled, Expired)<br>
+          - Search (name, phone)<br>
+          - Pagination<br><br>
+          Each row shows: Customer name/phone, Tier badge with color, Multiplier, Expiry date, Status pill, Days remaining.<br><br>
+          <strong>Click a row</strong> → Detail modal with full membership status and actions.
+        </div>
+      </div>
+      <div class="flex-col gap-md">
+        <div class="card">
+          <div class="card-title">Membership Actions (Detail Modal)</div>
+          <div class="card-body">
+            <strong>Upgrade:</strong> Move customer to a higher tier immediately<br>
+            <strong>Extend:</strong> Add N days to expiry (default 365)<br>
+            <strong>Renew:</strong> Reset expiry to 1 year from now<br>
+            <strong>Cancel:</strong> Deactivate with confirmation<br><br>
+            Each action calls a dedicated API endpoint and refreshes the subscriber list.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Assign Membership Tab</div>
+          <div class="card-body">
+            Lookup customer by phone → shows current tier, wallet balance, existing membership if any.<br><br>
+            Select target tier, set duration → assigns membership. Shows confirmation with previous vs new tier.<br><br>
+            Membership overrides organic tier if its multiplier is higher.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 10: Campaigns -->
+<!-- ============================================================ -->
+<div class="slide" id="campaigns">
+  <div class="slide-narrow">
+    <span class="slide-number">10</span>
+    <span class="slide-tag tag-warning">Loyalty</span>
+    <h2>Campaigns</h2>
+    <p class="subtitle">Time-bound multiplier campaigns with festive templates and stacking configuration.</p>
+
+    <div class="grid-2 mt-lg gap-lg">
+      <div class="flex-col gap-md">
+        <div class="card">
+          <div class="card-title">Campaign Creation</div>
+          <div class="card-body">
+            Two creation paths:<br><br>
+            <strong>1. Festive Templates:</strong> Pre-built campaigns for Indian festivals (Diwali, Holi, Eid, etc.) with pre-configured multipliers and date ranges. Select template → customize → launch.<br><br>
+            <strong>2. Custom Campaign:</strong> Full control over name, multiplier, start/end dates, target rules. Created via CampaignForm modal.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Active Campaign Banner</div>
+          <div class="card-body">
+            When a campaign is live, an EarnFormulaBanner shows at the top — displays the current earn formula with the campaign multiplier applied.<br><br>
+            Example: "Base rule: 10% → Campaign 2x → Effective: 20% earn rate"
+          </div>
+        </div>
+      </div>
+      <div class="flex-col gap-md">
+        <div class="card">
+          <div class="card-title">Campaign List</div>
+          <div class="card-body">
+            Table showing all campaigns: Name, Status (active/upcoming/ended), Multiplier, Date range. Click for detail modal.<br><br>
+            Actions: View detail (CampaignDetailModal), Deactivate running campaigns.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Stacking Configuration</div>
+          <div class="card-body">
+            Global settings modal (StackingConfigModal):<br><br>
+            <strong>Stacking Mode:</strong> multiplicative (multipliers compound) or additive<br>
+            <strong>Max Campaign Multiplier:</strong> safety cap (e.g. 10x)<br><br>
+            Prevents runaway point issuance when multiple campaigns overlap.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 11: Transactions -->
+<!-- ============================================================ -->
+<div class="slide" id="transactions">
+  <div class="slide-narrow">
+    <span class="slide-number">11</span>
+    <span class="slide-tag tag-info">Operations</span>
+    <h2>Transactions</h2>
+    <p class="subtitle">Full ledger view with filtering, search, and detailed entry inspection.</p>
+
+    <div class="card mt-lg" style="overflow: hidden;">
+      <table class="mock-table">
+        <thead>
+          <tr>
+            <th>Customer</th>
+            <th>Bucket</th>
+            <th>Movement</th>
+            <th>Points / Cash</th>
+            <th>₹ Value</th>
+            <th>State</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Priya Sharma (+91 98765...)</td>
+            <td>Earned Credit</td>
+            <td><span class="pill pill-success">In</span></td>
+            <td>400 🏆</td>
+            <td>₹100.00</td>
+            <td><span class="pill pill-success">Completed</span></td>
+            <td>25 Mar, 2:30 PM</td>
+          </tr>
+          <tr>
+            <td>Rahul Mehta (+91 87654...)</td>
+            <td>COD Pending</td>
+            <td><span class="pill pill-warning">Held</span></td>
+            <td>₹890.00</td>
+            <td>₹890.00</td>
+            <td><span class="pill pill-warning">Pending</span></td>
+            <td>25 Mar, 1:15 PM</td>
+          </tr>
+          <tr>
+            <td>Anita Roy (+91 76543...)</td>
+            <td>Referral Reward</td>
+            <td><span class="pill pill-success">In</span></td>
+            <td>200 🏆</td>
+            <td>₹50.00</td>
+            <td><span class="pill pill-success">Active</span></td>
+            <td>24 Mar, 6:45 PM</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid-2 mt-lg gap-lg">
+      <div class="card">
+        <div class="card-title">Filters</div>
+        <div class="card-body">
+          <strong>Search:</strong> By customer name or phone (debounced 400ms)<br>
+          <strong>Bucket Type:</strong> earned_credit, cod_pending, gift_card, customer_funded, referral_reward, goodwill_credit, membership_benefit, refund_credit<br>
+          <strong>Movement:</strong> In, Out, Held, Across<br>
+          <strong>Pagination:</strong> 25 per page
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Entry Detail (Click Row)</div>
+        <div class="card-body">
+          Slide-out panel showing full entry details:<br>
+          - Entry ID, Wallet ID<br>
+          - Bucket type, Movement type<br>
+          - Earning unit &amp; currency equivalent<br>
+          - Conversion rate, State<br>
+          - Actor type &amp; reference<br>
+          - Expiry date, Created/Updated timestamps<br>
+          - Cause trace (order ID, rule ID, etc.)
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 12: Customers -->
+<!-- ============================================================ -->
+<div class="slide" id="customers">
+  <div class="slide-narrow">
+    <span class="slide-number">12</span>
+    <span class="slide-tag tag-info">Operations</span>
+    <h2>Customers</h2>
+    <p class="subtitle">Browse, search, and drill into customer details with full wallet visibility.</p>
+
+    <div class="grid-2 mt-lg gap-lg">
+      <div class="card">
+        <div class="card-title">Customer List</div>
+        <div class="card-body">
+          Paginated table showing: Name, Phone, Email, Join Date.<br><br>
+          <strong>Search:</strong> Debounced search by name or phone across all merchant customers.<br>
+          <strong>Pagination:</strong> 25 per page with server-side filtering.<br><br>
+          Click any row to open the customer detail panel.
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Customer Detail Panel</div>
+        <div class="card-body">
+          Comprehensive customer view powered by <code>CustomerDetail</code> component:<br><br>
+          - <strong>Profile:</strong> Name, phone, email, birthday<br>
+          - <strong>Wallet Balance:</strong> Spendable balance, bucket-wise breakdown<br>
+          - <strong>Current Tier:</strong> Loyalty tier with multiplier<br>
+          - <strong>Membership:</strong> Active membership status, expiry<br>
+          - <strong>Order Stats:</strong> Total orders, lifetime spend, average order value<br>
+          - <strong>Recent Transactions:</strong> Last N ledger entries<br>
+          - <strong>Referral Code:</strong> If customer has one
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 13: Gift Cards -->
+<!-- ============================================================ -->
+<div class="slide" id="gift-cards">
+  <div class="slide-narrow">
+    <span class="slide-number">13</span>
+    <span class="slide-tag tag-warning">Gift Cards</span>
+    <h2>Gift Cards</h2>
+    <p class="subtitle">Issue, track, and manage gift cards with single and bulk issuance.</p>
+
+    <div class="grid-3 mt-lg">
+      <div class="card card-sm">
+        <div class="metric metric-sm">
+          <span class="metric-value">1,250</span>
+          <span class="metric-label">Total Issued</span>
+        </div>
+      </div>
+      <div class="card card-sm">
+        <div class="metric metric-sm">
+          <span class="metric-value" style="color: var(--success);">₹3,42,500</span>
+          <span class="metric-label">Outstanding Value</span>
+        </div>
+      </div>
+      <div class="card card-sm">
+        <div class="metric metric-sm">
+          <span class="metric-value">842 / 156 / 252</span>
+          <span class="metric-label">Active / Claimed / Expired</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-3 mt-lg gap-md">
+      <div class="card">
+        <div class="card-title">All Cards Tab</div>
+        <div class="card-body">
+          Table: masked code (****-****-****-XXXX), amount, balance, status pill (Active/Claimed/Expired/Inactive), created date.<br><br>
+          Click row → GiftCardDetail panel with full info and claim history.
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Issue Card Tab</div>
+        <div class="card-body">
+          Form: Enter amount, optional expiry date.<br><br>
+          Shows confirmation dialog before issuing. On success shows GiftCardConfirmation with the generated code and a copy button.
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Bulk Issue Tab</div>
+        <div class="card-body">
+          Form: Amount per card, quantity, optional expiry.<br><br>
+          Issues multiple cards at once. Results shown in a summary view with all generated codes.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 14: Referrals & Influencers -->
+<!-- ============================================================ -->
+<div class="slide" id="referrals">
+  <div class="slide-narrow">
+    <span class="slide-number">14</span>
+    <span class="slide-tag tag-success">Referrals</span>
+    <h2>Referrals &amp; Influencers</h2>
+    <p class="subtitle">Two-sided referral rewards with influencer/creator mode and fraud detection.</p>
+
+    <div class="grid-2 mt-lg gap-lg">
+      <div class="flex-col gap-md">
+        <div class="card">
+          <div class="card-title">Referral Program Setup</div>
+          <div class="card-body">
+            Three-step wizard: Set Rewards → Configure → Share.<br><br>
+            <strong>Config:</strong><br>
+            - Referrer reward amount (points)<br>
+            - Referee reward amount (points)<br>
+            - Max referrals per customer (optional cap)<br>
+            - Active/Paused toggle<br><br>
+            One program per merchant. Edit Program button for reconfiguration.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Dashboard View</div>
+          <div class="card-body">
+            Status banner: Active/Paused — Referrer: X pts · Referee: Y pts<br><br>
+            Stats grid: Total Codes, Total Referrals, Conversions, Conversion Rate<br><br>
+            Referral Codes table: Code, Customer ID, Vanity flag, Creator flag, Total Referrals, Conversions, Status<br><br>
+            Recent Conversions table: Referrer → Referee, Order ID, Suspicious flag, Fraud signals, Date
+          </div>
+        </div>
+      </div>
+      <div class="flex-col gap-md">
+        <div class="card">
+          <div class="card-title">Influencers Page</div>
+          <div class="card-body">
+            Filtered view of creator-flagged referral codes only.<br><br>
+            Stats: Total Influencers count, Total Conversions from creators.<br><br>
+            <strong>Add Influencer Modal:</strong><br>
+            - Enter mobile number (resolves customer via identity service)<br>
+            - Set vanity code (e.g. "PRIYA10")<br>
+            - Set commission rate (%)<br><br>
+            Each influencer card shows: code, total referrals, conversions, commission rate, active status.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Anti-Fraud Signals</div>
+          <div class="card-body">
+            Each conversion tracks:<br>
+            - <code>referee_ip</code> — IP address<br>
+            - <code>referee_device_fingerprint</code><br>
+            - <code>is_suspicious</code> flag<br>
+            - <code>fraud_signals</code> JSON array (e.g. ["same_ip", "rapid_signup"])<br><br>
+            Suspicious conversions are highlighted in the admin UI.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 15: Notifications -->
+<!-- ============================================================ -->
+<div class="slide" id="notifications">
+  <div class="slide-narrow">
+    <span class="slide-number">15</span>
+    <span class="slide-tag tag-info">Notifications</span>
+    <h2>Notifications</h2>
+    <p class="subtitle">Template-based notification management with delivery logs.</p>
+
+    <div class="grid-2 mt-lg gap-lg">
+      <div class="card">
+        <div class="card-title">Templates Tab</div>
+        <div class="card-body">
+          List of notification templates per merchant. Each template has:<br>
+          - Channel (SMS, Email, WhatsApp, Push)<br>
+          - Event trigger (order_placed, points_earned, etc.)<br>
+          - Subject &amp; body with template variables<br>
+          - Active/Inactive toggle<br><br>
+          Click to edit via NotificationTemplateEditor — inline editing with save/cancel.
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Logs Tab</div>
+        <div class="card-body">
+          Table of sent notifications:<br>
+          - Channel<br>
+          - Status (sent, failed, pending)<br>
+          - Timestamp<br><br>
+          Paginated, 50 per page. Useful for debugging delivery issues.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 16: Settings -->
+<!-- ============================================================ -->
+<div class="slide" id="settings">
+  <div class="slide-narrow">
+    <span class="slide-number">16</span>
+    <span class="slide-tag tag-primary">Settings</span>
+    <h2>Settings</h2>
+    <p class="subtitle">Merchant profile, integrations, and notification configuration in one place.</p>
+
+    <div class="grid-3 mt-lg gap-md">
+      <div class="card">
+        <div class="card-title">My Store Tab</div>
+        <div class="card-body">
+          Edit merchant profile:<br>
+          - Store name<br>
+          - Domain<br>
+          - Storefront slug<br><br>
+          Shows storefront URL preview: <code>/s/{slug}</code><br><br>
+          Save updates the merchant record.
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Connectors Tab</div>
+        <div class="card-body">
+          Integration endpoints for external services:<br><br>
+          <strong>Connector types:</strong><br>
+          - Shopify webhooks<br>
+          - SMS gateway (MSG91, Twilio)<br>
+          - Email (SendGrid, SES)<br>
+          - WhatsApp Business<br><br>
+          Each connector: name, type, config JSON, active status. Create via ConnectorForm.
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Notifications Tab</div>
+        <div class="card-body">
+          Same template editor as the Notifications page but scoped to the Settings context.<br><br>
+          Allows managing templates alongside connector setup for a complete notification pipeline view.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 17: Customer Storefront -->
+<!-- ============================================================ -->
+<div class="slide" id="storefront">
+  <div class="slide-narrow">
+    <span class="slide-number">17</span>
+    <span class="slide-tag tag-success">Storefront</span>
+    <h2>Customer Storefront</h2>
+    <p class="subtitle">Customer-facing rewards page at <code>/s/{slug}</code>. Phone-based login, no passwords.</p>
+
+    <div class="grid-2 mt-lg gap-lg">
+      <div class="flex-col gap-md">
+        <div class="card">
+          <div class="card-title">Phone Entry</div>
+          <div class="card-body">
+            Customer enters phone number → normalized to E.164 → stored in local storage for return visits.<br><br>
+            Looks up customer via identity service → loads wallet, balance, tier, referral code, membership status in parallel.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Balance Card</div>
+          <div class="card-body">
+            Shows spendable balance in merchant's points currency + ₹ equivalent.<br><br>
+            "Lifetime Saved" calculation: sum of all In/Released entries' currency equivalents.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Tier Card</div>
+          <div class="card-body">
+            Shows effective tier — the higher of organic loyalty tier and membership tier. If membership has higher multiplier, it takes precedence.<br><br>
+            Displays: tier name, earn rate multiplier, and membership expiry days if applicable.
+          </div>
+        </div>
+      </div>
+      <div class="flex-col gap-md">
+        <div class="card">
+          <div class="card-title">Transaction List</div>
+          <div class="card-body">
+            Last 10 transactions with running balance computation. Each entry shows: description, bucket type, movement, amount, date, running total.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Referral Card</div>
+          <div class="card-body">
+            If merchant has an active referral program and customer has a code: shows the code with share functionality.<br><br>
+            Displays: referrer reward, referee reward amounts. Shareable link for social/WhatsApp.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Profile Bar</div>
+          <div class="card-body">
+            Customer name at top + "Change Phone" to switch accounts.<br><br>
+            <strong>Design note:</strong> Storefront uses hardcoded hex colors (#1a1d27, #2a2d3a, #4ade80) — intentional for the card-style dark theme, not CSS variables.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 18: Data Model Summary -->
+<!-- ============================================================ -->
+<div class="slide" id="data-model">
+  <div class="slide-narrow">
+    <span class="slide-number">18</span>
+    <span class="slide-tag tag-primary">Data Model</span>
+    <h2>Database Schema Overview</h2>
+    <p class="subtitle">27 migrations, key tables and relationships.</p>
+
+    <div class="grid-3 mt-lg gap-md">
+      <div class="card card-sm">
+        <div class="card-title" style="color: var(--primary);">Core</div>
+        <div class="card-body" style="font-family: monospace; font-size: 12px; line-height: 2;">
+          geo_policies<br>
+          merchants<br>
+          customers<br>
+          customer_order_stats<br>
+          wallets<br>
+          ledger_entries
+        </div>
+      </div>
+      <div class="card card-sm">
+        <div class="card-title" style="color: var(--success);">Loyalty &amp; Rules</div>
+        <div class="card-body" style="font-family: monospace; font-size: 12px; line-height: 2;">
+          rules + rule_snapshots<br>
+          campaigns + campaign_snapshots<br>
+          loyalty_programs<br>
+          loyalty_tiers<br>
+          customer_tiers<br>
+          customer_memberships
+        </div>
+      </div>
+      <div class="card card-sm">
+        <div class="card-title" style="color: var(--warning);">Features</div>
+        <div class="card-body" style="font-family: monospace; font-size: 12px; line-height: 2;">
+          wallet_policies<br>
+          redemption_requests<br>
+          gift_cards<br>
+          referral_programs<br>
+          referral_codes<br>
+          referral_conversions<br>
+          cod_orders
+        </div>
+      </div>
+      <div class="card card-sm">
+        <div class="card-title" style="color: var(--info);">Notifications</div>
+        <div class="card-body" style="font-family: monospace; font-size: 12px; line-height: 2;">
+          connectors<br>
+          notification_templates<br>
+          notification_logs
+        </div>
+      </div>
+      <div class="card card-sm">
+        <div class="card-title" style="color: var(--accent);">Engagement</div>
+        <div class="card-body" style="font-family: monospace; font-size: 12px; line-height: 2;">
+          milestone_configs<br>
+          milestone_achievements<br>
+          streak_configs<br>
+          streak_achievements<br>
+          spin_wheel_configs<br>
+          spin_wheel_segments<br>
+          spin_results
+        </div>
+      </div>
+      <div class="card card-sm">
+        <div class="card-title" style="color: var(--error);">Advanced</div>
+        <div class="card-body" style="font-family: monospace; font-size: 12px; line-height: 2;">
+          coalitions<br>
+          coalition_members<br>
+          coalition_transfers<br>
+          newsletter_signups<br>
+          events<br>
+          merchant_slugs
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 19: Feature Matrix -->
+<!-- ============================================================ -->
+<div class="slide" id="feature-matrix">
+  <div class="slide-narrow">
+    <span class="slide-number">19</span>
+    <span class="slide-tag tag-primary">Summary</span>
+    <h2>Feature Matrix</h2>
+    <p class="subtitle">Everything Batua ships today across admin, storefront, and backend.</p>
+
+    <div class="card mt-lg" style="overflow: hidden;">
+      <table class="mock-table">
+        <thead>
+          <tr><th>Feature</th><th>Admin UI</th><th>Storefront</th><th>Backend API</th><th>Key Tables</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Wallet &amp; Points</strong></td><td>Overview + Policies page</td><td>Balance card</td><td>wallets, ledger</td><td>wallets, ledger_entries, wallet_policies</td></tr>
+          <tr><td><strong>Earn Rules</strong></td><td>Rule CRUD + performance</td><td>--</td><td>rules, earn</td><td>rules, rule_snapshots</td></tr>
+          <tr><td><strong>Loyalty Tiers</strong></td><td>Wizard + tier CRUD + evaluate</td><td>Tier card</td><td>loyalty</td><td>loyalty_programs, loyalty_tiers, customer_tiers</td></tr>
+          <tr><td><strong>Memberships</strong></td><td>Subscribers + assign + actions</td><td>Status in tier card</td><td>loyalty</td><td>customer_memberships</td></tr>
+          <tr><td><strong>Campaigns</strong></td><td>Templates + CRUD + stacking</td><td>--</td><td>campaigns</td><td>campaigns, campaign_snapshots</td></tr>
+          <tr><td><strong>Transactions</strong></td><td>Filterable ledger + detail</td><td>Last 10 entries</td><td>admin, ledger</td><td>ledger_entries</td></tr>
+          <tr><td><strong>Customers</strong></td><td>Search + detail panel</td><td>--</td><td>admin, identity</td><td>customers, customer_order_stats</td></tr>
+          <tr><td><strong>Gift Cards</strong></td><td>Issue/Bulk + stats + table</td><td>--</td><td>gift_cards</td><td>gift_cards</td></tr>
+          <tr><td><strong>Referrals</strong></td><td>Program + codes + conversions</td><td>Referral card + share</td><td>referrals</td><td>referral_programs, referral_codes, referral_conversions</td></tr>
+          <tr><td><strong>Influencers</strong></td><td>Creator codes + commission</td><td>--</td><td>referrals</td><td>referral_codes (is_creator)</td></tr>
+          <tr><td><strong>COD</strong></td><td>Stats in overview</td><td>--</td><td>cod</td><td>cod_orders</td></tr>
+          <tr><td><strong>Notifications</strong></td><td>Templates + logs</td><td>--</td><td>notifications</td><td>notification_templates, notification_logs</td></tr>
+          <tr><td><strong>Settings</strong></td><td>Store + Connectors + Notifs</td><td>--</td><td>admin</td><td>merchants, connectors</td></tr>
+          <tr><td><strong>Milestones</strong></td><td>--</td><td>--</td><td>earn</td><td>milestone_configs, milestone_achievements</td></tr>
+          <tr><td><strong>Streaks</strong></td><td>--</td><td>--</td><td>earn</td><td>streak_configs, streak_achievements</td></tr>
+          <tr><td><strong>Spin Wheel</strong></td><td>--</td><td>--</td><td>earn</td><td>spin_wheel_configs, spin_wheel_segments, spin_results</td></tr>
+          <tr><td><strong>Coalitions</strong></td><td>--</td><td>--</td><td>admin</td><td>coalitions, coalition_members, coalition_transfers</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 20: End -->
+<!-- ============================================================ -->
+<div class="slide" id="end" style="text-align: center;">
+  <div class="slide-narrow" style="align-items: center;">
+    <h1>Batua</h1>
+    <p class="subtitle" style="text-align: center; max-width: 500px; margin: 12px auto 0;">
+      Wallet. Loyalty. Gift Cards. Referrals. Campaigns. Memberships.
+    </p>
+    <div class="grid-3 mt-lg" style="max-width: 600px; margin-left: auto; margin-right: auto;">
+      <div class="card card-sm" style="text-align: center;">
+        <div class="card-title">Backend</div>
+        <div class="card-body">Rust + Axum<br>:3000</div>
+      </div>
+      <div class="card card-sm" style="text-align: center;">
+        <div class="card-title">Frontend</div>
+        <div class="card-body">SvelteKit 5<br>:5174</div>
+      </div>
+      <div class="card card-sm" style="text-align: center;">
+        <div class="card-title">Database</div>
+        <div class="card-body">PostgreSQL<br>+ Redis</div>
+      </div>
+    </div>
+    <p style="margin-top: 40px; font-size: 14px; color: var(--muted);">
+      March 2026 &middot; Internal Product Walkthrough
+    </p>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memberships — Remove Nested Tabs</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f3f4f6;
+    color: #1f2937;
+    padding: 40px;
+  }
+  h1 { text-align: center; font-size: 22px; margin-bottom: 6px; }
+  .subtitle { text-align: center; color: #6b7280; font-size: 13px; margin-bottom: 48px; }
+  .container { max-width: 800px; margin: 0 auto; }
+  .label-tag {
+    display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; padding: 3px 10px; border-radius: 4px; margin-bottom: 8px;
+  }
+  .label-tag.a { background: #dbeafe; color: #1d4ed8; }
+  .label-tag.b { background: #fae8ff; color: #a21caf; }
+  .label-tag.before { background: #fef2f2; color: #dc2626; }
+  .design-title { font-size: 16px; font-weight: 700; color: #111827; margin-bottom: 3px; }
+  .design-desc { font-size: 12px; color: #6b7280; margin-bottom: 16px; line-height: 1.5; }
+  .spacer { height: 56px; }
+
+  /* Shared */
+  .page-desc { font-size: 13px; color: #9ca3af; margin-bottom: 16px; }
+  .btn {
+    height: 34px; padding: 0 14px; border-radius: 8px;
+    font-size: 12px; font-weight: 600; cursor: pointer; border: none; white-space: nowrap;
+  }
+  .btn-primary { background: #6366f1; color: #fff; }
+  .btn-ghost { background: none; color: #6b7280; border: 1px solid #d1d5db; }
+  input, select {
+    height: 36px; border: 1px solid #d1d5db; border-radius: 8px;
+    padding: 0 10px; font-size: 13px; color: #1f2937; outline: none;
+  }
+  input:focus { border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99,102,241,0.12); }
+  label { font-size: 11px; font-weight: 600; color: #374151; display: block; margin-bottom: 3px; }
+
+  /* Tabs (outer only) */
+  .tabs {
+    display: flex; border-bottom: 2px solid #e5e7eb; margin-bottom: 16px;
+  }
+  .tab {
+    padding: 8px 16px; font-size: 13px; font-weight: 500; color: #6b7280;
+    border: none; background: none; border-bottom: 2px solid transparent; margin-bottom: -2px; cursor: pointer;
+  }
+  .tab.active { color: #6366f1; font-weight: 600; border-bottom-color: #6366f1; }
+
+  /* Nested tabs (before) */
+  .sub-tabs {
+    display: flex; gap: 0; border-bottom: 1px solid #e5e7eb; margin-bottom: 14px;
+  }
+  .sub-tab {
+    padding: 6px 14px; font-size: 12px; font-weight: 500; color: #6b7280;
+    border: none; background: none; border-bottom: 2px solid transparent; margin-bottom: -1px; cursor: pointer;
+  }
+  .sub-tab.active { color: #6366f1; font-weight: 600; border-bottom-color: #6366f1; }
+
+  /* Table */
+  table {
+    width: 100%; border-collapse: collapse; font-size: 12px;
+    background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden;
+  }
+  th {
+    text-align: left; padding: 8px 12px; font-weight: 600; color: #6b7280;
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px;
+    background: #f9fafb; border-bottom: 1px solid #e5e7eb;
+  }
+  td { padding: 8px 12px; border-bottom: 1px solid #f1f5f9; color: #374155; }
+  tr:last-child td { border-bottom: none; }
+  .pill {
+    display: inline-block; padding: 2px 8px; border-radius: 100px;
+    font-size: 10px; font-weight: 600;
+  }
+  .pill-green { background: #dcfce7; color: #166534; }
+  .pill-gold { background: #fef9c3; color: #854d0e; }
+  .badge-cancel {
+    font-size: 10px; color: #ef4444; border: 1px solid #fca5a5; background: none;
+    padding: 2px 8px; border-radius: 6px; cursor: pointer;
+  }
+
+  /* Card wrapper */
+  .card {
+    background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden;
+  }
+
+  /* ═══ OPTION A: Button + Modal/Inline ═══ */
+  .a-header-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 12px;
+  }
+  .a-count { font-size: 12px; color: #9ca3af; }
+  .a-inline-form {
+    background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px;
+    padding: 16px; margin-bottom: 16px;
+    display: flex; gap: 12px; align-items: flex-end;
+  }
+  .a-field { display: flex; flex-direction: column; }
+  .a-field.wide { flex: 2; }
+  .a-field.medium { flex: 1; }
+  .a-close-form {
+    font-size: 11px; color: #6b7280; cursor: pointer; background: none; border: none;
+    text-decoration: underline; margin-left: auto;
+  }
+  .a-form-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 10px;
+  }
+  .a-form-title { font-size: 13px; font-weight: 600; color: #1f2937; }
+
+  /* ═══ OPTION B: Inline top row ═══ */
+  .b-table-head-row {
+    display: flex; gap: 10px; align-items: flex-end;
+    padding: 12px; background: #faf5ff; border-bottom: 1px solid #e9d5ff;
+  }
+  .b-field { display: flex; flex-direction: column; }
+  .b-field.grow { flex: 1; }
+  .b-field label { font-size: 10px; }
+  .b-field input, .b-field select { height: 32px; font-size: 12px; }
+  .b-btn-sm { height: 32px; padding: 0 12px; font-size: 11px; }
+</style>
+</head>
+<body>
+
+<h1>Memberships — Remove Nested Tabs</h1>
+<p class="subtitle">Two options to eliminate the "tabs inside tabs" problem</p>
+
+<div class="container">
+
+  <!-- ═══ BEFORE ═══ -->
+  <span class="label-tag before">Before — Current</span>
+  <div class="design-title">Nested Tabs</div>
+  <div class="design-desc">
+    Outer tabs: Program & Tiers | <strong>Memberships</strong> | Reward Rules | Campaigns.<br>
+    Inner tabs: <strong>Subscribers | Assign Membership</strong> — 2 levels of tab navigation.
+  </div>
+
+  <div class="tabs">
+    <button class="tab">Program & Tiers</button>
+    <button class="tab active">Memberships</button>
+    <button class="tab">Reward Rules</button>
+    <button class="tab">Campaigns</button>
+  </div>
+  <p class="page-desc">Assign loyalty tiers to customers with a 1-year expiry</p>
+  <div class="sub-tabs">
+    <button class="sub-tab active">Subscribers</button>
+    <button class="sub-tab">Assign Membership</button>
+  </div>
+  <table>
+    <thead><tr><th>Customer</th><th>Tier</th><th>Status</th><th>Started</th><th>Expires</th><th></th></tr></thead>
+    <tbody>
+      <tr><td>Archana Menon</td><td><span class="pill pill-gold">Gold</span></td><td><span class="pill pill-green">Active</span></td><td>22 Jan 2026</td><td>22 Jan 2027</td><td><button class="badge-cancel">Cancel</button></td></tr>
+      <tr><td>Radhika Chatterjee</td><td><span class="pill pill-gold">Gold</span></td><td><span class="pill pill-green">Active</span></td><td>22 Jan 2026</td><td>22 Jan 2027</td><td><button class="badge-cancel">Cancel</button></td></tr>
+      <tr><td>Kriti Mehta</td><td><span class="pill pill-gold">Gold</span></td><td><span class="pill pill-green">Active</span></td><td>22 Jan 2026</td><td>22 Jan 2027</td><td><button class="badge-cancel">Cancel</button></td></tr>
+    </tbody>
+  </table>
+
+  <div class="spacer"></div>
+
+  <!-- ═══ OPTION A: Button reveals inline form ═══ -->
+  <span class="label-tag a">Option A</span>
+  <div class="design-title">Button + Inline Form</div>
+  <div class="design-desc">
+    "Assign Membership" button above the table. Clicking it reveals an inline form that collapses after assignment.
+    Same pattern as "Add Tier" in Program & Tiers tab. No nested tabs.
+  </div>
+
+  <div class="tabs">
+    <button class="tab">Program & Tiers</button>
+    <button class="tab active">Memberships</button>
+    <button class="tab">Reward Rules</button>
+    <button class="tab">Campaigns</button>
+  </div>
+  <p class="page-desc">Assign loyalty tiers to customers with a 1-year expiry</p>
+
+  <div class="a-header-bar">
+    <span class="a-count">5 memberships</span>
+    <button class="btn btn-primary">+ Assign Membership</button>
+  </div>
+
+  <!-- Inline form (shown when button clicked) -->
+  <div class="a-inline-form">
+    <div style="flex: 1;">
+      <div class="a-form-header">
+        <span class="a-form-title">Assign a Membership</span>
+        <button class="a-close-form">close</button>
+      </div>
+      <div style="display: flex; gap: 10px; align-items: flex-end;">
+        <div class="a-field wide">
+          <label>Phone Number</label>
+          <input type="text" placeholder="10-digit phone" style="width: 100%;">
+        </div>
+        <button class="btn btn-ghost" style="height: 36px;">Look Up</button>
+        <div class="a-field medium">
+          <label>Assign Tier</label>
+          <select style="width: 100%;">
+            <option>Gold</option>
+            <option>Silver</option>
+            <option>Platinum</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" style="height: 36px;">Assign</button>
+      </div>
+    </div>
+  </div>
+
+  <table>
+    <thead><tr><th>Customer</th><th>Tier</th><th>Status</th><th>Started</th><th>Expires</th><th></th></tr></thead>
+    <tbody>
+      <tr><td>Archana Menon</td><td><span class="pill pill-gold">Gold</span></td><td><span class="pill pill-green">Active</span></td><td>22 Jan 2026</td><td>22 Jan 2027</td><td><button class="badge-cancel">Cancel</button></td></tr>
+      <tr><td>Radhika Chatterjee</td><td><span class="pill pill-gold">Gold</span></td><td><span class="pill pill-green">Active</span></td><td>22 Jan 2026</td><td>22 Jan 2027</td><td><button class="badge-cancel">Cancel</button></td></tr>
+      <tr><td>Kriti Mehta</td><td><span class="pill pill-gold">Gold</span></td><td><span class="pill pill-green">Active</span></td><td>22 Jan 2026</td><td>22 Jan 2027</td><td><button class="badge-cancel">Cancel</button></td></tr>
+    </tbody>
+  </table>
+
+  <div class="spacer"></div>
+
+  <!-- ═══ OPTION B: Integrated top row ═══ -->
+  <span class="label-tag b">Option B</span>
+  <div class="design-title">Table Header Action Row</div>
+  <div class="design-desc">
+    Assign form is always visible as a tinted row at the top of the table.
+    Phone input + tier dropdown + assign button — all inline. No button click needed, always ready.
+  </div>
+
+  <div class="tabs">
+    <button class="tab">Program & Tiers</button>
+    <button class="tab active">Memberships</button>
+    <button class="tab">Reward Rules</button>
+    <button class="tab">Campaigns</button>
+  </div>
+  <p class="page-desc">Assign loyalty tiers to customers with a 1-year expiry</p>
+
+  <div style="display: flex; justify-content: flex-end; margin-bottom: 8px;">
+    <span class="a-count">5 memberships</span>
+  </div>
+
+  <div class="card">
+    <div class="b-table-head-row">
+      <div class="b-field grow">
+        <label>Phone Number</label>
+        <input type="text" placeholder="10-digit phone" style="width: 100%;">
+      </div>
+      <div class="b-field">
+        <label>Tier</label>
+        <select>
+          <option>Gold</option>
+          <option>Silver</option>
+          <option>Platinum</option>
+        </select>
+      </div>
+      <button class="btn btn-primary b-btn-sm">Look Up & Assign</button>
+    </div>
+    <table style="border: none; border-radius: 0;">
+      <thead><tr><th>Customer</th><th>Tier</th><th>Status</th><th>Started</th><th>Expires</th><th></th></tr></thead>
+      <tbody>
+        <tr><td>Archana Menon</td><td><span class="pill pill-gold">Gold</span></td><td><span class="pill pill-green">Active</span></td><td>22 Jan 2026</td><td>22 Jan 2027</td><td><button class="badge-cancel">Cancel</button></td></tr>
+        <tr><td>Radhika Chatterjee</td><td><span class="pill pill-gold">Gold</span></td><td><span class="pill pill-green">Active</span></td><td>22 Jan 2026</td><td>22 Jan 2027</td><td><button class="badge-cancel">Cancel</button></td></tr>
+        <tr><td>Kriti Mehta</td><td><span class="pill pill-gold">Gold</span></td><td><span class="pill pill-green">Active</span></td><td>22 Jan 2026</td><td>22 Jan 2027</td><td><button class="badge-cancel">Cancel</button></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+</body>
+</html>

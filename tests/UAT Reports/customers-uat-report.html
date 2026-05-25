@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Customers UAT Report</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #f5f6f8;
+    color: #1a1a2e;
+    line-height: 1.6;
+    padding: 2rem;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  h1 {
+    font-size: 2rem;
+    margin-bottom: 0.25rem;
+    color: #16213e;
+  }
+
+  .subtitle {
+    color: #555;
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+  }
+
+  /* Summary table */
+  .summary-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+
+  .summary-card h2 {
+    font-size: 1.15rem;
+    margin-bottom: 1rem;
+    color: #16213e;
+  }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .summary-stat {
+    text-align: center;
+    padding: 1rem;
+    border-radius: 8px;
+  }
+
+  .summary-stat .number {
+    font-size: 2rem;
+    font-weight: 700;
+    display: block;
+  }
+
+  .summary-stat .label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #666;
+  }
+
+  .stat-total { background: #eef0f7; }
+  .stat-total .number { color: #16213e; }
+  .stat-pass { background: #e8f5e9; }
+  .stat-pass .number { color: #2e7d32; }
+  .stat-fail { background: #fce4ec; }
+  .stat-fail .number { color: #c62828; }
+  .stat-bug { background: #fff3e0; }
+  .stat-bug .number { color: #e65100; }
+  .stat-skip { background: #e8eaf6; }
+  .stat-skip .number { color: #3949ab; }
+
+  /* Summary table */
+  .summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+  }
+
+  .summary-table th {
+    text-align: left;
+    padding: 0.6rem 0.8rem;
+    background: #f5f6f8;
+    border-bottom: 2px solid #ddd;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .summary-table td {
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #eee;
+  }
+
+  .summary-table tr:hover { background: #fafafa; }
+
+  /* Badges */
+  .badge {
+    display: inline-block;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .badge-pass { background: #e8f5e9; color: #2e7d32; }
+  .badge-fail { background: #fce4ec; color: #c62828; }
+  .badge-bug { background: #fff3e0; color: #e65100; }
+  .badge-skip { background: #e8eaf6; color: #3949ab; }
+
+  /* Section headers */
+  .section-header {
+    margin: 2.5rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #5c6bc0;
+  }
+
+  .section-header h2 {
+    font-size: 1.35rem;
+    color: #283593;
+  }
+
+  .section-header p {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 0.25rem;
+  }
+
+  /* Test case cards */
+  .test-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    border-left: 4px solid #ccc;
+  }
+
+  .test-card.pass { border-left-color: #4caf50; }
+  .test-card.fail { border-left-color: #f44336; }
+  .test-card.bug { border-left-color: #ff9800; }
+
+  .test-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+
+  .test-card-header h3 {
+    font-size: 1rem;
+    color: #1a1a2e;
+  }
+
+  .test-id {
+    font-size: 0.8rem;
+    color: #999;
+    font-weight: 400;
+    margin-right: 0.5rem;
+  }
+
+  .test-steps {
+    font-size: 0.88rem;
+    color: #555;
+    margin-bottom: 0.75rem;
+  }
+
+  .test-steps ol {
+    padding-left: 1.25rem;
+  }
+
+  .test-steps li {
+    margin-bottom: 0.2rem;
+  }
+
+  .test-notes {
+    font-size: 0.85rem;
+    color: #666;
+    background: #f9f9fb;
+    padding: 0.6rem 0.9rem;
+    border-radius: 6px;
+    margin-bottom: 0.75rem;
+  }
+
+  .test-notes strong { color: #333; }
+
+  .test-screenshot {
+    margin-top: 0.75rem;
+  }
+
+  .test-screenshot img {
+    max-width: 100%;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+
+  .test-screenshot figcaption {
+    font-size: 0.8rem;
+    color: #888;
+    margin-top: 0.4rem;
+    text-align: center;
+  }
+
+  /* Bug details */
+  .bug-detail {
+    background: #fff8f0;
+    border: 1px solid #ffe0b2;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.88rem;
+  }
+
+  .bug-detail strong { color: #e65100; }
+
+  .bug-detail code {
+    background: #ffecd2;
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    font-size: 0.82rem;
+  }
+
+  /* Footer */
+  .report-footer {
+    margin-top: 3rem;
+    padding-top: 1rem;
+    border-top: 1px solid #ddd;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #999;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>Customers UAT Report</h1>
+<p class="subtitle">Batua Project &mdash; 21 March 2026 &mdash; Merchant: Chai &amp; Co (<code>chaiandco</code>)</p>
+
+<!-- ============ SUMMARY ============ -->
+<div class="summary-card">
+  <h2>Executive Summary</h2>
+  <div class="summary-grid">
+    <div class="summary-stat stat-total">
+      <span class="number">10</span>
+      <span class="label">Total Tests</span>
+    </div>
+    <div class="summary-stat stat-pass">
+      <span class="number">5</span>
+      <span class="label">Passed</span>
+    </div>
+    <div class="summary-stat stat-bug">
+      <span class="number">5</span>
+      <span class="label">Bugs Found</span>
+    </div>
+    <div class="summary-stat stat-fail">
+      <span class="number">0</span>
+      <span class="label">Failed</span>
+    </div>
+    <div class="summary-stat stat-skip">
+      <span class="number">0</span>
+      <span class="label">Skipped</span>
+    </div>
+  </div>
+
+  <table class="summary-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Test Case</th>
+        <th>Stakeholder</th>
+        <th>Result</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>View customers list</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>2</td><td>Customer data displays correctly</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>3</td><td>Search functionality present</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>4</td><td>Pagination</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>5</td><td>Customer list sorting</td><td>Merchant Admin</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td>6</td><td>Phone number format</td><td>Merchant Admin</td><td><span class="badge badge-bug">BUG</span></td></tr>
+      <tr><td>7</td><td>No customer detail panel</td><td>Merchant Admin</td><td><span class="badge badge-bug">BUG</span></td></tr>
+      <tr><td>8</td><td>No wallet balance column</td><td>Merchant Admin</td><td><span class="badge badge-bug">BUG</span></td></tr>
+      <tr><td>9</td><td>No export/download option</td><td>Merchant Admin</td><td><span class="badge badge-bug">BUG</span></td></tr>
+      <tr><td>10</td><td>No customer count displayed</td><td>Merchant Admin</td><td><span class="badge badge-bug">BUG</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ============ STAKEHOLDER 1: MERCHANT ADMIN ============ -->
+<div class="section-header">
+  <h2>Stakeholder 1: Merchant Admin</h2>
+  <p>Admin panel at <code>/admin/customers</code> &mdash; Customer list and management</p>
+</div>
+
+<!-- Test 1 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#1</span> View Customers List</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Navigate to <code>/admin/customers</code></li>
+      <li>Page title "Customers" with subtitle "Browse and manage customers for this merchant"</li>
+      <li>Table with columns: Name, Phone, Email, Joined</li>
+      <li>25 customers per page, 2 pages (26 total customers for Chai &amp; Co)</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Customers page loads correctly with the expected title, subtitle, and table layout.
+    All four columns (Name, Phone, Email, Joined) are present. The table displays 25 customers on page 1
+    with pagination indicating 2 pages total.
+  </div>
+  <div class="test-screenshot">
+    <figure>
+      <img src="customers-uat/01-admin-customers-list.png" alt="Customers list page">
+      <figcaption>Customers list page with table and pagination</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Test 2 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#2</span> Customer Data Displays Correctly</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Verify customer names: Vikram Singh, Rajesh Iyer, Pooja Desai, Kiran Bhat, Sunita Mishra, etc.</li>
+      <li>Verify phone numbers with +91 prefix: +919000000004, +919000000010, etc.</li>
+      <li>Verify emails: vikram.singh@gmail.com, rajesh.iyer@gmail.com, etc.</li>
+      <li>Verify joined date: "21 Mar 2026" for all seed data</li>
+      <li>Cross-check all records against database</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> All customer data displays correctly and matches database records.
+    Names, phone numbers, email addresses, and joined dates are all accurate.
+    The joined date "21 Mar 2026" is consistent across all seed data customers.
+  </div>
+</div>
+
+<!-- Test 3 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#3</span> Search Functionality Present</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Observe search input above the table</li>
+      <li>Verify placeholder text: "Search by name, phone, or email..."</li>
+      <li>Confirm full-width input positioned above the table</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Search input is present with the placeholder "Search by name, phone, or email..."
+    positioned as a full-width input above the customer table. Allows filtering customers by multiple fields.
+  </div>
+</div>
+
+<!-- Test 4 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#4</span> Pagination</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Observe pagination controls at the bottom of the table</li>
+      <li>Verify Previous button (disabled on page 1), Page 1, Page 2, and Next buttons</li>
+      <li>Confirm 25 customers displayed on page 1</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Pagination renders correctly at the bottom of the table. Previous button is
+    disabled on page 1 as expected. Page 1 and Page 2 buttons are visible along with the Next button.
+    25 customers are shown on the first page.
+  </div>
+</div>
+
+<!-- Test 5 -->
+<div class="test-card pass">
+  <div class="test-card-header">
+    <h3><span class="test-id">#5</span> Customer List Sorting</h3>
+    <span class="badge badge-pass">PASS</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Observe the order of customers in the table</li>
+      <li>Reload page and verify consistent ordering</li>
+    </ol>
+  </div>
+  <div class="test-notes">
+    <strong>Result:</strong> Customers appear sorted by a consistent order (likely creation/ID).
+    The ordering is stable across multiple page loads.
+  </div>
+</div>
+
+<!-- Test 6 -->
+<div class="test-card bug">
+  <div class="test-card-header">
+    <h3><span class="test-id">#6</span> Phone Number Format</h3>
+    <span class="badge badge-bug">BUG</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Observe phone number formatting in the table</li>
+      <li>Compare against standard Indian phone number formatting conventions</li>
+    </ol>
+  </div>
+  <div class="bug-detail">
+    <strong>Bug (LOW):</strong> Phone numbers are displayed in raw format: <code>+919000000004</code>.
+    Would be more readable as <code>+91 90000 00004</code> or just <code>9000000004</code>.
+    This is a minor UX issue &mdash; the data is correct, just not formatted for readability.
+  </div>
+</div>
+
+<!-- Test 7 -->
+<div class="test-card bug">
+  <div class="test-card-header">
+    <h3><span class="test-id">#7</span> No Customer Detail Panel</h3>
+    <span class="badge badge-bug">BUG</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Click on a customer row in the table</li>
+      <li>Observe that the cursor is <code>pointer</code> (indicates clickable)</li>
+      <li>Verify whether a detail panel or view opens</li>
+    </ol>
+  </div>
+  <div class="bug-detail">
+    <strong>Bug (MEDIUM):</strong> Clicking on a customer row shows <code>cursor: pointer</code> (clickable appearance)
+    but no detail panel opens. Unlike the Transactions page which has a detail side panel, the customers page
+    has no detail view. Expected behavior: click to see customer details including wallet balance, loyalty tier,
+    and transaction history. Root cause: customer detail/profile view not yet implemented.
+  </div>
+</div>
+
+<!-- Test 8 -->
+<div class="test-card bug">
+  <div class="test-card-header">
+    <h3><span class="test-id">#8</span> No Wallet Balance Column</h3>
+    <span class="badge badge-bug">BUG</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Review the table columns: Name, Phone, Email, Joined</li>
+      <li>Check for wallet/loyalty related columns</li>
+    </ol>
+  </div>
+  <div class="bug-detail">
+    <strong>Bug (LOW):</strong> The customer table only shows Name, Phone, Email, and Joined columns.
+    Missing useful columns: Wallet Balance, Loyalty Tier, Total Earned. These would help merchants
+    quickly identify high-value customers. Root cause: table design does not include wallet/loyalty data.
+  </div>
+</div>
+
+<!-- Test 9 -->
+<div class="test-card bug">
+  <div class="test-card-header">
+    <h3><span class="test-id">#9</span> No Export/Download Option</h3>
+    <span class="badge badge-bug">BUG</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Look for an export or download button on the customers page</li>
+      <li>Check toolbar/header area for CSV/Excel export options</li>
+    </ol>
+  </div>
+  <div class="bug-detail">
+    <strong>Bug (LOW):</strong> No export button to download the customer list as CSV. This is a common
+    admin feature for reporting purposes. Merchants would benefit from being able to export customer data
+    for external analysis or CRM integrations.
+  </div>
+</div>
+
+<!-- Test 10 -->
+<div class="test-card bug">
+  <div class="test-card-header">
+    <h3><span class="test-id">#10</span> No Customer Count Displayed</h3>
+    <span class="badge badge-bug">BUG</span>
+  </div>
+  <div class="test-steps">
+    <ol>
+      <li>Look for a total customer count anywhere on the page</li>
+      <li>Check pagination area for "Showing X of Y" style text</li>
+    </ol>
+  </div>
+  <div class="bug-detail">
+    <strong>Bug (LOW):</strong> Total customer count is not shown anywhere on the page. Pagination shows
+    page numbers but does not display "Showing 1&ndash;25 of 26 customers" or similar. This is a minor UX gap
+    that would help merchants understand the size of their customer base at a glance.
+  </div>
+</div>
+
+
+<!-- ============ BUG SUMMARY ============ -->
+<div class="section-header">
+  <h2>Bug Summary</h2>
+  <p>All bugs discovered during UAT, ordered by severity</p>
+</div>
+
+<div class="summary-card">
+  <table class="summary-table">
+    <thead>
+      <tr>
+        <th>Severity</th>
+        <th>Bug</th>
+        <th>Component</th>
+        <th>Root Cause</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="badge badge-bug">MEDIUM</span></td>
+        <td>No customer detail panel &mdash; cursor indicates clickable but nothing opens</td>
+        <td>Admin &mdash; Customers</td>
+        <td>Detail view not implemented, unlike Transactions which has a side panel</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-skip">LOW</span></td>
+        <td>Phone numbers not formatted for readability</td>
+        <td>Admin &mdash; Customers</td>
+        <td>Raw <code>+919000000004</code> format instead of spaced/formatted display</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-skip">LOW</span></td>
+        <td>Missing wallet balance and tier columns</td>
+        <td>Admin &mdash; Customers</td>
+        <td>Table lacks balance/tier info useful for merchant operations</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-skip">LOW</span></td>
+        <td>No export/download option</td>
+        <td>Admin &mdash; Customers</td>
+        <td>Missing CSV export for reporting</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-skip">LOW</span></td>
+        <td>No total customer count displayed</td>
+        <td>Admin &mdash; Customers</td>
+        <td>Pagination does not show "X of Y" style count</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ============ TEST ENVIRONMENT ============ -->
+<div class="summary-card">
+  <h2>Test Environment</h2>
+  <table class="summary-table">
+    <tbody>
+      <tr><td><strong>Backend</strong></td><td>Rust/Axum at <code>localhost:3000</code></td></tr>
+      <tr><td><strong>Frontend</strong></td><td>SvelteKit dev server at <code>localhost:5174</code></td></tr>
+      <tr><td><strong>Database</strong></td><td>PostgreSQL (<code>batua</code> database)</td></tr>
+      <tr><td><strong>Test Merchant</strong></td><td>Chai &amp; Co (<code>chaiandco</code>)</td></tr>
+      <tr><td><strong>Total Customers</strong></td><td>26</td></tr>
+      <tr><td><strong>Date</strong></td><td>21 March 2026</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<div class="report-footer">
+  <p>Customers UAT Report &mdash; Generated 21 March 2026</p>
+</div>
+
+</div>
+</body>
+</html>

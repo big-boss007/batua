@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Points Configuration — 3 Layout Options</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f0f1f3; color: #1a1a2e; font-size: 14px; line-height: 1.6;
+    padding: 40px 24px;
+  }
+  h1 { text-align: center; font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+  .page-sub { text-align: center; font-size: 13px; color: #6b7280; margin-bottom: 48px; }
+
+  .option { margin-bottom: 56px; max-width: 780px; margin-left: auto; margin-right: auto; }
+  .option-label {
+    display: inline-block; padding: 8px 18px; border-radius: 20px;
+    font-size: 12px; font-weight: 600; letter-spacing: 0.5px; margin-bottom: 8px;
+  }
+  .ol-a { background: #dcfce7; color: #166534; }
+  .ol-b { background: #dbeafe; color: #1e40af; }
+  .ol-c { background: #fefce8; color: #854d0e; }
+  .option-desc { font-size: 13px; color: #6b7280; margin-bottom: 16px; }
+
+  /* Shared */
+  .frame {
+    background: #fff; border-radius: 12px; border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06); overflow: hidden;
+  }
+  .sec-hdr {
+    font-size: 11px; font-weight: 600; color: #6b7280; text-transform: uppercase;
+    letter-spacing: 0.8px; padding: 20px 24px 0;
+  }
+  .body { padding: 20px 24px; }
+  .form-label { font-size: 13px; color: #6b7280; font-weight: 500; margin-bottom: 4px; }
+  .form-input {
+    background: #f8f9fa; border: 1px solid #e5e7eb; border-radius: 8px;
+    padding: 10px 14px; font-size: 14px; color: #1a1a2e; width: 100%;
+  }
+  .form-hint { font-size: 11px; color: #6b7280; margin-top: 4px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .form-field { display: flex; flex-direction: column; gap: 4px; }
+  .preview-box {
+    padding: 12px 16px; background: #f0fdf4; border: 1px solid #bbf7d0;
+    border-radius: 8px; font-size: 13px;
+  }
+  .preview-pts { color: #10b981; font-weight: 600; }
+  .preview-sub { font-size: 11px; color: #6b7280; }
+  .save-btn {
+    background: #7c6aff; border: none; border-radius: 8px; padding: 10px 24px;
+    color: #fff; font-size: 13px; font-weight: 600;
+  }
+  .inline { display: flex; align-items: center; gap: 8px; }
+  .suffix { font-size: 13px; color: #6b7280; font-weight: 500; }
+</style>
+</head>
+<body>
+
+<h1>Points Configuration — Layout Options</h1>
+<p class="page-sub">3 options to harmonise the fields. Currently: 2×2 grid with mismatched preview box.</p>
+
+<!-- ==================== OPTION A ==================== -->
+<div class="option">
+  <div class="option-label ol-a">Option A — Compact 3-Column Row</div>
+  <div class="option-desc">All 3 inputs on one row. Conversion preview below as a single line. Tightest layout, no wasted space.</div>
+
+  <div class="frame">
+    <div class="sec-hdr">Points Configuration</div>
+    <div class="body">
+      <div class="form-row-3" style="margin-bottom: 14px;">
+        <div class="form-field">
+          <div class="form-label">Points Name</div>
+          <div class="form-input">Stars</div>
+        </div>
+        <div class="form-field">
+          <div class="form-label">Icon</div>
+          <div class="form-input">★</div>
+        </div>
+        <div class="form-field">
+          <div class="form-label">₹ per Point</div>
+          <div class="inline">
+            <div class="form-input" style="width: 100px;">0.25</div>
+          </div>
+          <div class="form-hint">4 Stars = ₹1</div>
+        </div>
+      </div>
+      <div class="preview-box">
+        <span class="preview-pts">100 ★</span> = ₹25 · <span class="preview-pts">500 ★</span> = ₹125 · <span class="preview-pts">1,000 ★</span> = ₹250
+      </div>
+      <div style="margin-top: 14px;">
+        <button class="save-btn">Save Configuration</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== OPTION B ==================== -->
+<div class="option">
+  <div class="option-label ol-b">Option B — Inline with Live Preview Sentence</div>
+  <div class="option-desc">Fields arranged as a readable sentence: "[Name] [Icon] worth ₹[Rate] each". Preview is the sentence itself. Most natural to read.</div>
+
+  <div class="frame">
+    <div class="sec-hdr">Points Configuration</div>
+    <div class="body">
+      <div style="display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; margin-bottom: 16px;">
+        <div class="form-field" style="flex: 0 0 160px;">
+          <div class="form-label">Customers earn</div>
+          <div class="form-input">Stars</div>
+        </div>
+        <div class="form-field" style="flex: 0 0 80px;">
+          <div class="form-label">shown as</div>
+          <div class="form-input">★</div>
+        </div>
+        <div class="form-field" style="flex: 0 0 120px;">
+          <div class="form-label">each worth</div>
+          <div class="inline">
+            <span class="suffix">₹</span>
+            <div class="form-input" style="width: 80px;">0.25</div>
+          </div>
+        </div>
+      </div>
+      <div class="preview-box" style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 20px;">★</span>
+        <div>
+          <div>1 Star = ₹0.25 → <strong>4 Stars = ₹1</strong></div>
+          <div class="preview-sub">100 ★ = ₹25 · 500 ★ = ₹125 · 1,000 ★ = ₹250</div>
+        </div>
+      </div>
+      <div style="margin-top: 14px;">
+        <button class="save-btn">Save Configuration</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== OPTION C ==================== -->
+<div class="option">
+  <div class="option-label ol-c">Option C — Card with Visual Identity</div>
+  <div class="option-desc">Large icon + name as a "brand preview" card on the left, config fields on the right. Makes it feel like designing the brand identity.</div>
+
+  <div class="frame">
+    <div class="sec-hdr">Points Configuration</div>
+    <div class="body">
+      <div style="display: grid; grid-template-columns: 200px 1fr; gap: 24px;">
+        <!-- Left: brand preview -->
+        <div style="background: linear-gradient(135deg, #f0fdf4, #ecfdf5); border: 1px solid #bbf7d0; border-radius: 12px; padding: 24px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;">
+          <div style="font-size: 40px; line-height: 1;">★</div>
+          <div style="font-size: 20px; font-weight: 700; color: #1a1a2e;">Stars</div>
+          <div style="font-size: 12px; color: #6b7280;">1 ★ = ₹0.25</div>
+          <div style="font-size: 11px; color: #10b981; font-weight: 600; margin-top: 4px;">4 ★ = ₹1</div>
+        </div>
+        <!-- Right: fields -->
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          <div class="form-row">
+            <div class="form-field">
+              <div class="form-label">Points Name</div>
+              <div class="form-input">Stars</div>
+            </div>
+            <div class="form-field">
+              <div class="form-label">Icon</div>
+              <div class="form-input">★</div>
+            </div>
+          </div>
+          <div class="form-field">
+            <div class="form-label">₹ Value per Point</div>
+            <div class="inline">
+              <div class="form-input" style="width: 120px;">0.25</div>
+              <span class="suffix">₹ per point</span>
+            </div>
+            <div class="form-hint">100 ★ = ₹25 · 500 ★ = ₹125 · 1,000 ★ = ₹250</div>
+          </div>
+          <div>
+            <button class="save-btn">Save Configuration</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Comparison -->
+<div style="max-width: 700px; margin: 0 auto;">
+  <table style="width: 100%; border-collapse: collapse; font-size: 12px; color: #6b7280;">
+    <thead>
+      <tr style="border-bottom: 1px solid #e5e7eb;">
+        <th style="text-align: left; padding: 8px 10px; color: #1a1a2e;"></th>
+        <th style="text-align: center; padding: 8px; color: #166534;">A — Compact</th>
+        <th style="text-align: center; padding: 8px; color: #1e40af;">B — Sentence</th>
+        <th style="text-align: center; padding: 8px; color: #854d0e;">C — Brand Card</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom: 1px solid #f3f4f6;"><td style="padding: 6px 10px;">Vertical space</td><td style="text-align: center; color: #166534; font-weight: 600;">Least</td><td style="text-align: center;">Medium</td><td style="text-align: center;">Most</td></tr>
+      <tr style="border-bottom: 1px solid #f3f4f6;"><td style="padding: 6px 10px;">Readability</td><td style="text-align: center;">Good</td><td style="text-align: center; color: #1e40af; font-weight: 600;">Best</td><td style="text-align: center;">Good</td></tr>
+      <tr style="border-bottom: 1px solid #f3f4f6;"><td style="padding: 6px 10px;">Visual impact</td><td style="text-align: center;">Minimal</td><td style="text-align: center;">Moderate</td><td style="text-align: center; color: #854d0e; font-weight: 600;">Strongest</td></tr>
+      <tr style="border-bottom: 1px solid #f3f4f6;"><td style="padding: 6px 10px;">Admin consistency</td><td style="text-align: center; color: #166534; font-weight: 600;">Best match</td><td style="text-align: center;">Unique</td><td style="text-align: center;">Unique</td></tr>
+      <tr><td style="padding: 6px 10px;">Best for</td><td style="text-align: center;">Dense admin</td><td style="text-align: center;">Onboarding</td><td style="text-align: center;">Brand-conscious</td></tr>
+    </tbody>
+  </table>
+</div>
+
+</body>
+</html>

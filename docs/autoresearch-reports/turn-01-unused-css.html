@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Autoresearch Turn 1 — Unused CSS Selectors</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: #f5f5f7; color: #1a1a2e; padding: 40px 20px; }
+  .container { max-width: 800px; margin: 0 auto; }
+
+  .header { margin-bottom: 32px; }
+  .turn-badge { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #7c6aff; margin-bottom: 6px; }
+  h1 { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: #6b7280; }
+
+  .metric-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 32px; }
+  .metric-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 20px; text-align: center; }
+  .metric-label { font-size: 11px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+  .metric-value { font-size: 32px; font-weight: 800; }
+  .metric-value.before { color: #ef4444; }
+  .metric-value.after { color: #10b981; }
+  .metric-value.delta { color: #7c6aff; }
+  .metric-sub { font-size: 12px; color: #6b7280; margin-top: 4px; }
+
+  .progress-section { margin-bottom: 32px; }
+  .progress-bar-wrap { background: #e5e7eb; border-radius: 8px; height: 12px; overflow: hidden; margin-top: 8px; }
+  .progress-bar { height: 100%; border-radius: 8px; transition: width 0.3s ease; }
+  .progress-bar.before { background: #fca5a5; width: 100%; }
+  .progress-bar.after { background: #10b981; }
+  .progress-label { font-size: 12px; color: #6b7280; display: flex; justify-content: space-between; margin-top: 4px; }
+
+  .changes { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 24px; margin-bottom: 32px; }
+  .changes h2 { font-size: 15px; font-weight: 600; margin-bottom: 16px; }
+  .change-table { width: 100%; border-collapse: collapse; }
+  .change-table th { font-size: 11px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.04em; text-align: left; padding: 6px 8px; border-bottom: 1px solid #e5e7eb; }
+  .change-table td { font-size: 13px; padding: 8px; border-bottom: 1px solid #f3f4f6; }
+  .change-table td:first-child { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; color: #374151; }
+  .removed-selector { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 11px; background: #fee2e2; color: #991b1b; padding: 1px 6px; border-radius: 4px; margin: 1px 3px 1px 0; display: inline-block; }
+
+  .verdict { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 20px; display: flex; align-items: center; gap: 12px; }
+  .verdict-icon { font-size: 24px; }
+  .verdict-text { font-size: 14px; font-weight: 600; color: #166534; }
+  .verdict-sub { font-size: 12px; color: #15803d; margin-top: 2px; font-weight: 400; }
+
+  .footer { margin-top: 32px; font-size: 11px; color: #9ca3af; text-align: center; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+  <div class="turn-badge">Autoresearch &middot; Turn 1 of N</div>
+  <h1>Remove Unused CSS Selectors</h1>
+  <p class="subtitle">Deleted 19 dead CSS rules across 10 Svelte files. Zero behavior change, pure cleanup.</p>
+</div>
+
+<div class="metric-cards">
+  <div class="metric-card">
+    <div class="metric-label">Before</div>
+    <div class="metric-value before">89</div>
+    <div class="metric-sub">warnings</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-label">After</div>
+    <div class="metric-value after">70</div>
+    <div class="metric-sub">warnings</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-label">Reduced</div>
+    <div class="metric-value delta">-19</div>
+    <div class="metric-sub">21% improvement</div>
+  </div>
+</div>
+
+<div class="progress-section">
+  <div style="font-size: 13px; font-weight: 600; margin-bottom: 4px;">Warning Reduction Progress</div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar after" style="width: 21%;"></div>
+  </div>
+  <div class="progress-label">
+    <span>19 fixed</span>
+    <span>70 remaining</span>
+  </div>
+</div>
+
+<div class="changes">
+  <h2>Changes Made</h2>
+  <table class="change-table">
+    <thead><tr><th>File</th><th>Selectors Removed</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>TierWizard.svelte</td>
+        <td><span class="removed-selector">.btn-row</span><span class="removed-selector">.inline-form-action</span><span class="removed-selector">.inline-form-row</span></td>
+      </tr>
+      <tr>
+        <td>RuleForm.svelte</td>
+        <td><span class="removed-selector">.field-input</span><span class="removed-selector">.field-input:focus</span><span class="removed-selector">.field-error</span><span class="removed-selector">.inline-input</span></td>
+      </tr>
+      <tr>
+        <td>CampaignForm.svelte</td>
+        <td><span class="removed-selector">.field-input</span><span class="removed-selector">.field-input:focus</span><span class="removed-selector">.field-error</span><span class="removed-selector">.multiplier-field</span></td>
+      </tr>
+      <tr>
+        <td>CampaignDetailModal.svelte</td>
+        <td><span class="removed-selector">.deactivate-btn</span></td>
+      </tr>
+      <tr>
+        <td>StackingConfigModal.svelte</td>
+        <td><span class="removed-selector">.cap-input</span></td>
+      </tr>
+      <tr>
+        <td>WalletPoliciesList.svelte</td>
+        <td><span class="removed-selector">.list-title</span></td>
+      </tr>
+      <tr>
+        <td>TransactionCard.svelte</td>
+        <td><span class="removed-selector">.tx-item + .tx-item</span></td>
+      </tr>
+      <tr>
+        <td>memberships/+page.svelte</td>
+        <td><span class="removed-selector">.confirm-text.info</span><span class="removed-selector">.extend-preview.blue</span></td>
+      </tr>
+      <tr>
+        <td>settings/+page.svelte</td>
+        <td><span class="removed-selector">.info-url-row</span></td>
+      </tr>
+      <tr>
+        <td>transactions/+page.svelte</td>
+        <td><span class="removed-selector">.list-panel</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="verdict">
+  <span class="verdict-icon">&#10003;</span>
+  <div>
+    <div class="verdict-text">KEEP &mdash; 19 warnings eliminated</div>
+    <div class="verdict-sub">Zero css_unused_selector warnings remain. Build passes. No behavior change.</div>
+  </div>
+</div>
+
+<div class="footer">
+  Autoresearch &middot; Metric: svelte-check warnings &middot; Direction: down &middot; 17 Apr 2026
+</div>
+
+</div>
+</body>
+</html>

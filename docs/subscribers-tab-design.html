@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subscribers Tab — Design</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f1f3; color: #1a1a2e; }
+
+  .design-wrapper { max-width: 1000px; margin: 0 auto; padding: 40px 24px 80px; }
+  .design-title { text-align: center; font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .design-desc { text-align: center; color: #6b7280; font-size: 13px; margin-bottom: 32px; }
+
+  .state-nav {
+    display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;
+    margin-bottom: 32px; position: sticky; top: 0; background: #f0f1f3; padding: 12px 0; z-index: 10;
+  }
+  .state-tab {
+    padding: 7px 14px; border-radius: 8px; font-size: 12px; font-weight: 500;
+    cursor: pointer; border: 1px solid #d1d5db; background: white; color: #6b7280;
+  }
+  .state-tab.active { background: #6366f1; color: white; border-color: #6366f1; }
+  .state-tab:hover:not(.active) { background: #f3f4f6; }
+
+  .state-view { display: none; }
+  .state-view.active { display: block; }
+
+  /* ── App chrome (simulating the real page) ── */
+  .app-chrome { background: white; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; }
+  .app-inner { padding: 0; }
+
+  /* ── Table ── */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    text-align: left; padding: 10px 16px; font-size: 11px; font-weight: 600;
+    color: #6b7280; text-transform: uppercase; letter-spacing: 0.04em;
+    border-bottom: 1px solid #e5e7eb; background: #f9fafb;
+  }
+  td { padding: 14px 16px; border-bottom: 1px solid #f3f4f6; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr { cursor: pointer; transition: background 0.1s; }
+  tbody tr:hover td { background: #fafbfc; }
+
+  .cell-customer { display: flex; flex-direction: column; gap: 1px; }
+  .cell-name { font-weight: 500; color: #1a1a2e; }
+  .cell-phone { font-size: 11px; color: #9ca3af; }
+
+  .tier-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+  .t-bronze { background: #fef3c7; color: #92400e; }
+  .t-silver { background: #f3f4f6; color: #374151; }
+  .t-gold { background: #fef9c3; color: #854d0e; }
+  .t-plat { background: #ede9fe; color: #5b21b6; }
+
+  .status-pill { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+  .s-active { background: #d1fae5; color: #065f46; }
+  .s-expiring { background: #fef3c7; color: #92400e; }
+  .s-cancelled { background: #fee2e2; color: #991b1b; }
+  .s-expired { background: #f3f4f6; color: #6b7280; }
+
+  .cell-date { font-size: 12px; color: #374151; }
+  .cell-sub { font-size: 11px; color: #9ca3af; }
+  .cell-sub.warn { color: #f59e0b; font-weight: 500; }
+
+  .mult-badge { font-size: 11px; font-weight: 600; color: #6b7280; font-family: 'SF Mono', monospace; }
+
+  /* ── Filters ── */
+  .filters-bar { display: flex; gap: 10px; align-items: center; padding: 16px; border-bottom: 1px solid #e5e7eb; }
+  .filter-input {
+    flex: 1; max-width: 260px; padding: 8px 12px; border: 1px solid #d1d5db;
+    border-radius: 7px; font-size: 13px; color: #1a1a2e; outline: none;
+  }
+  .filter-input:focus { border-color: #6366f1; }
+  .filter-input::placeholder { color: #c4c9d1; }
+  .filter-select {
+    padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 7px;
+    font-size: 13px; color: #1a1a2e; background: white; outline: none;
+  }
+  .filter-count { font-size: 12px; color: #9ca3af; margin-left: auto; }
+
+  /* ── Pagination ── */
+  .pagination { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #6b7280; }
+  .page-btns { display: flex; gap: 4px; }
+  .page-btn {
+    width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+    border: 1px solid #d1d5db; border-radius: 6px; background: white; cursor: pointer; font-size: 12px; color: #374151;
+  }
+  .page-btn.active { background: #6366f1; color: white; border-color: #6366f1; }
+  .page-btn:hover:not(.active) { background: #f3f4f6; }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+    display: flex; align-items: center; justify-content: center; z-index: 400;
+  }
+  .modal-panel {
+    background: white; border-radius: 12px; width: 520px; max-width: 90vw;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15); display: flex; flex-direction: column;
+  }
+  .modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 20px; border-bottom: 1px solid #e5e7eb;
+  }
+  .modal-title { font-size: 16px; font-weight: 600; color: #1a1a2e; }
+  .modal-close {
+    background: none; border: none; font-size: 20px; color: #9ca3af;
+    cursor: pointer; padding: 2px 6px; border-radius: 4px; line-height: 1;
+  }
+  .modal-close:hover { color: #374151; background: #f3f4f6; }
+  .modal-body { padding: 20px; }
+  .modal-footer {
+    display: flex; justify-content: flex-end; gap: 10px;
+    padding: 14px 20px; border-top: 1px solid #e5e7eb;
+  }
+
+  /* ── Detail modal content ── */
+  .detail-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .detail-customer { display: flex; flex-direction: column; gap: 2px; }
+  .detail-name { font-size: 16px; font-weight: 600; }
+  .detail-phone { font-size: 12px; color: #9ca3af; }
+
+  .detail-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+    padding: 16px; background: #f9fafb; border-radius: 8px; margin-bottom: 20px;
+  }
+  .detail-field { display: flex; flex-direction: column; gap: 2px; }
+  .detail-label { font-size: 11px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.04em; }
+  .detail-value { font-size: 14px; font-weight: 500; color: #1a1a2e; }
+
+  .detail-progress { margin-bottom: 20px; }
+  .detail-progress-label { font-size: 12px; color: #6b7280; margin-bottom: 6px; display: flex; justify-content: space-between; }
+  .detail-progress-bar { height: 6px; border-radius: 3px; background: #e5e7eb; overflow: hidden; }
+  .detail-progress-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+  .detail-progress-fill.green { background: #22c55e; }
+  .detail-progress-fill.amber { background: #f59e0b; }
+  .detail-progress-fill.red { background: #ef4444; }
+
+  .detail-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .action-btn {
+    padding: 8px 16px; border-radius: 7px; font-size: 13px; font-weight: 500;
+    cursor: pointer; border: 1px solid; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .action-upgrade { background: white; color: #6366f1; border-color: #c7d2fe; }
+  .action-upgrade:hover { background: #f5f3ff; }
+  .action-extend { background: white; color: #22c55e; border-color: #bbf7d0; }
+  .action-extend:hover { background: #f0fdf4; }
+  .action-cancel { background: white; color: #ef4444; border-color: #fecaca; }
+  .action-cancel:hover { background: #fef2f2; }
+
+  /* ── Empty state ── */
+  .empty-state {
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    padding: 48px 16px; color: #9ca3af; font-size: 14px;
+  }
+  .empty-icon { font-size: 36px; }
+  .link-btn { background: none; border: none; color: #6366f1; font-size: 14px; font-weight: 500; cursor: pointer; padding: 6px 12px; border-radius: 6px; }
+  .link-btn:hover { background: #f5f3ff; }
+
+  /* ── Cancelled modal variant ── */
+  .detail-cancelled-banner {
+    padding: 10px 14px; background: #fef2f2; border: 1px solid #fecaca;
+    border-radius: 8px; margin-bottom: 20px; font-size: 12px; color: #991b1b;
+  }
+
+  /* ── Annotation ── */
+  .annotation { font-size: 11px; color: #9ca3af; background: #fafbfc; border: 1px dashed #d1d5db; border-radius: 6px; padding: 8px 12px; margin-bottom: 16px; }
+  .annotation strong { color: #6b7280; }
+</style>
+</head>
+<body>
+
+<div class="design-wrapper">
+  <h1 class="design-title">Subscribers Tab — Design</h1>
+  <p class="design-desc">Table with filters, row click detail modal, and all status states</p>
+
+  <div class="state-nav">
+    <button class="state-tab active" onclick="show('table')">Table View</button>
+    <button class="state-tab" onclick="show('modal-active')">Modal: Active</button>
+    <button class="state-tab" onclick="show('modal-expiring')">Modal: Expiring</button>
+    <button class="state-tab" onclick="show('modal-cancelled')">Modal: Cancelled</button>
+    <button class="state-tab" onclick="show('empty')">Empty State</button>
+  </div>
+
+  <!-- ═══════════════════ TABLE VIEW ═══════════════════ -->
+  <div class="state-view active" id="table">
+    <div class="annotation"><strong>Subscribers table</strong> — search by name/phone, filter by tier and status, click any row to open detail modal.</div>
+
+    <div class="app-chrome">
+      <div class="filters-bar">
+        <input class="filter-input" placeholder="Search by name or phone..." />
+        <select class="filter-select">
+          <option>All Tiers</option>
+          <option>Bronze</option>
+          <option>Silver</option>
+          <option>Gold</option>
+          <option>Platinum</option>
+        </select>
+        <select class="filter-select">
+          <option>All Status</option>
+          <option>Active</option>
+          <option>Expiring Soon</option>
+          <option>Cancelled</option>
+          <option>Expired</option>
+        </select>
+        <span class="filter-count">Showing 1–10 of 47</span>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Customer</th>
+            <th>Tier</th>
+            <th>Multiplier</th>
+            <th>Status</th>
+            <th>Started</th>
+            <th>Expires</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr onclick="show('modal-active')">
+            <td>
+              <div class="cell-customer">
+                <span class="cell-name">Krish Gupta</span>
+                <span class="cell-phone">+91 90180 00100</span>
+              </div>
+            </td>
+            <td><span class="tier-badge t-gold">Gold</span></td>
+            <td><span class="mult-badge">1.5x</span></td>
+            <td><span class="status-pill s-active">Active</span></td>
+            <td><span class="cell-date">24 Mar 2026</span></td>
+            <td>
+              <span class="cell-date">24 Mar 2027</span>
+              <div class="cell-sub">in 365 days</div>
+            </td>
+          </tr>
+          <tr onclick="show('modal-expiring')">
+            <td>
+              <div class="cell-customer">
+                <span class="cell-name">Lakshya Deshpande</span>
+                <span class="cell-phone">+91 90180 00099</span>
+              </div>
+            </td>
+            <td><span class="tier-badge t-silver">Silver</span></td>
+            <td><span class="mult-badge">1.25x</span></td>
+            <td><span class="status-pill s-expiring">Expiring Soon</span></td>
+            <td><span class="cell-date">02 Apr 2025</span></td>
+            <td>
+              <span class="cell-date cell-sub warn">02 Apr 2026</span>
+              <div class="cell-sub warn">in 9 days</div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div class="cell-customer">
+                <span class="cell-name">Rohan Bhat</span>
+                <span class="cell-phone">+91 90180 00098</span>
+              </div>
+            </td>
+            <td><span class="tier-badge t-bronze">Bronze</span></td>
+            <td><span class="mult-badge">1x</span></td>
+            <td><span class="status-pill s-active">Active</span></td>
+            <td><span class="cell-date">10 Jan 2026</span></td>
+            <td>
+              <span class="cell-date">10 Jan 2027</span>
+              <div class="cell-sub">in 292 days</div>
+            </td>
+          </tr>
+          <tr onclick="show('modal-cancelled')">
+            <td>
+              <div class="cell-customer">
+                <span class="cell-name">Riya Dubey</span>
+                <span class="cell-phone">+91 90180 00097</span>
+              </div>
+            </td>
+            <td><span class="tier-badge t-silver">Silver</span></td>
+            <td><span class="mult-badge">1.25x</span></td>
+            <td><span class="status-pill s-cancelled">Cancelled</span></td>
+            <td><span class="cell-date">09 Jan 2026</span></td>
+            <td>
+              <span class="cell-date" style="text-decoration: line-through; color: #9ca3af;">09 Jan 2027</span>
+              <div class="cell-sub">cancelled 18 Mar</div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div class="cell-customer">
+                <span class="cell-name">Aadhya Srivastava</span>
+                <span class="cell-phone">+91 90180 00096</span>
+              </div>
+            </td>
+            <td><span class="tier-badge t-plat">Platinum</span></td>
+            <td><span class="mult-badge">2x</span></td>
+            <td><span class="status-pill s-active">Active</span></td>
+            <td><span class="cell-date">08 Jan 2026</span></td>
+            <td>
+              <span class="cell-date">08 Jan 2027</span>
+              <div class="cell-sub">in 290 days</div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div class="cell-customer">
+                <span class="cell-name">Diya Chopra</span>
+                <span class="cell-phone">+91 90180 00095</span>
+              </div>
+            </td>
+            <td><span class="tier-badge t-gold">Gold</span></td>
+            <td><span class="mult-badge">1.5x</span></td>
+            <td><span class="status-pill s-expired">Expired</span></td>
+            <td><span class="cell-date">07 Jan 2025</span></td>
+            <td>
+              <span class="cell-date" style="color: #9ca3af;">07 Jan 2026</span>
+              <div class="cell-sub">expired 77 days ago</div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="pagination">
+        <span>Showing 1–6 of 47 memberships</span>
+        <div class="page-btns">
+          <button class="page-btn">‹</button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn">2</button>
+          <button class="page-btn">3</button>
+          <button class="page-btn">…</button>
+          <button class="page-btn">5</button>
+          <button class="page-btn">›</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ MODAL: ACTIVE ═══════════════════ -->
+  <div class="state-view" id="modal-active">
+    <div class="annotation"><strong>Active membership</strong> — full details with time remaining progress bar. Actions: Upgrade, Extend, Cancel.</div>
+
+    <div style="position: relative; min-height: 500px;">
+      <div class="modal-overlay" style="position: absolute; border-radius: 12px;">
+        <div class="modal-panel" onclick="event.stopPropagation()">
+          <div class="modal-header">
+            <span class="modal-title">Membership Details</span>
+            <button class="modal-close" onclick="show('table')">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="detail-header">
+              <div class="detail-customer">
+                <span class="detail-name">Krish Gupta</span>
+                <span class="detail-phone">+91 90180 00100</span>
+              </div>
+              <span class="status-pill s-active">Active</span>
+            </div>
+
+            <div class="detail-grid">
+              <div class="detail-field">
+                <span class="detail-label">Tier</span>
+                <span class="detail-value"><span class="tier-badge t-gold">Gold</span></span>
+              </div>
+              <div class="detail-field">
+                <span class="detail-label">Multiplier</span>
+                <span class="detail-value" style="font-family: 'SF Mono', monospace;">1.5x</span>
+              </div>
+              <div class="detail-field">
+                <span class="detail-label">Started</span>
+                <span class="detail-value">24 Mar 2026</span>
+              </div>
+              <div class="detail-field">
+                <span class="detail-label">Expires</span>
+                <span class="detail-value">24 Mar 2027</span>
+              </div>
+              <div class="detail-field">
+                <span class="detail-label">Renewed</span>
+                <span class="detail-value">0 times</span>
+              </div>
+              <div class="detail-field">
+                <span class="detail-label">Membership ID</span>
+                <span class="detail-value" style="font-size: 11px; font-family: 'SF Mono', monospace; color: #9ca3af;">c0018000...</span>
+              </div>
+            </div>
+
+            <div class="detail-progress">
+              <div class="detail-progress-label">
+                <span>Time remaining</span>
+                <span style="font-weight: 500;">365 days left</span>
+              </div>
+              <div class="detail-progress-bar">
+                <div class="detail-progress-fill green" style="width: 100%;"></div>
+              </div>
+            </div>
+
+            <div class="detail-actions">
+              <button class="action-btn action-upgrade">⬆ Upgrade Tier</button>
+              <button class="action-btn action-extend">+ Extend</button>
+              <button class="action-btn action-cancel">Cancel Membership</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ MODAL: EXPIRING SOON ═══════════════════ -->
+  <div class="state-view" id="modal-expiring">
+    <div class="annotation"><strong>Expiring soon</strong> — amber progress bar, prominent Renew action.</div>
+
+    <div style="position: relative; min-height: 500px;">
+      <div class="modal-overlay" style="position: absolute; border-radius: 12px;">
+        <div class="modal-panel" onclick="event.stopPropagation()">
+          <div class="modal-header">
+            <span class="modal-title">Membership Details</span>
+            <button class="modal-close" onclick="show('table')">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="detail-header">
+              <div class="detail-customer">
+                <span class="detail-name">Lakshya Deshpande</span>
+                <span class="detail-phone">+91 90180 00099</span>
+              </div>
+              <span class="status-pill s-expiring">Expiring Soon</span>
+            </div>
+
+            <div style="padding: 10px 14px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; margin-bottom: 20px; font-size: 12px; color: #92400e;">
+              <strong>Expires in 9 days.</strong> Renew to keep this customer at Silver with 1.25x earn rate.
+            </div>
+
+            <div class="detail-grid">
+              <div class="detail-field">
+                <span class="detail-label">Tier</span>
+                <span class="detail-value"><span class="tier-badge t-silver">Silver</span></span>
+              </div>
+              <div class="detail-field">
+                <span class="detail-label">Multiplier</span>
+                <span class="detail-value" style="font-family: 'SF Mono', monospace;">1.25x</span>
+              </div>
+              <div class="detail-field">
+                <span class="detail-label">Started</span>
+                <span class="detail-value">02 Apr 2025</span>
+              </div>
+              <div class="detail-field">
+                <span class="detail-label">Expires</span>
+                <span class="detail-value" style="color: #f59e0b; font-weight: 600;">02 Apr 2026</span>
+              </div>
+              <div class="detail-field">
+                <span class="detail-label">Renewed</span>
+                <span class="detail-value">1 time</span>
+              </div>
+              <div class="detail-field">
+                <span class="detail-label">Earned Tier (fallback)</span>
+                <span class="detail-value"><span class="tier-badge t-bronze" style="font-size: 10px;">Bronze</span></span>
+              </div>
+            </div>
+
+            <div class="detail-progress">
+              <div class="detail-progress-label">
+                <span>Time remaining</span>
+                <span style="font-weight: 500; color: #f59e0b;">9 days left</span>
+              </div>
+              <div class="detail-progress-bar">
+                <div class="detail-progress-fill amber" style="width: 2.5%;"></div>
+              </div>
+            </div>
+
+            <div class="detail-actions">
+              <button class="action-btn action-extend" style="background: #22c55e; color: white; border-color: #22c55e; font-weight: 600;">↻ Renew for 1 Year</button>
+              <button class="action-btn action-upgrade">⬆ Upgrade Tier</button>
+              <button class="action-btn action-cancel">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ MODAL: CANCELLED ═══════════════════ -->
+  <div class="state-view" id="modal-cancelled">
+    <div class="annotation"><strong>Cancelled membership</strong> — shows cancellation date, option to re-assign.</div>
+
+    <div style="position: relative; min-height: 500px;">
+      <div class="modal-overlay" style="position: absolute; border-radius: 12px;">
+        <div class="modal-panel" onclick="event.stopPropagation()">
+          <div class="modal-header">
+            <span class="modal-title">Membership Details</span>
+            <button class="modal-close" onclick="show('table')">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="detail-header">
+              <div class="detail-customer">
+                <span class="detail-name">Riya Dubey</span>
+                <span class="detail-phone">+91 90180 00097</span>
+              </div>
+              <span class="status-pill s-cancelled">Cancelled</span>
+            </div>
+
+            <div class="detail-cancelled-banner">
+              Membership was cancelled on <strong>18 Mar 2026</strong>. The customer has fallen back to their earned tier.
+            </div>
+
+            <div class="detail-grid">
+              <div class="detail-field">
+                <span class="detail-label">Tier (was)</span>
+                <span class="detail-value" style="text-decoration: line-through; color: #9ca3af;"><span class="tier-badge t-silver" style="opacity: 0.5;">Silver</span></span>
+              </div>
+              <div class="detail-field">
+                <span class="detail-label">Current Earned Tier</span>
+                <span class="detail-value"><span class="tier-badge t-bronze">Bronze</span></span>
+              </div>
+              <div class="detail-field">
+                <span class="detail-label">Started</span>
+                <span class="detail-value">09 Jan 2026</span>
+              </div>
+              <div class="detail-field">
+                <span class="detail-label">Cancelled</span>
+                <span class="detail-value" style="color: #ef4444;">18 Mar 2026</span>
+              </div>
+              <div class="detail-field">
+                <span class="detail-label">Was set to expire</span>
+                <span class="detail-value" style="text-decoration: line-through; color: #9ca3af;">09 Jan 2027</span>
+              </div>
+              <div class="detail-field">
+                <span class="detail-label">Membership ID</span>
+                <span class="detail-value" style="font-size: 11px; font-family: 'SF Mono', monospace; color: #9ca3af;">a7b42c91...</span>
+              </div>
+            </div>
+
+            <div class="detail-actions">
+              <button class="action-btn action-upgrade" style="border-color: #6366f1;">↻ Re-assign Membership</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ EMPTY STATE ═══════════════════ -->
+  <div class="state-view" id="empty">
+    <div class="annotation"><strong>Empty state</strong> — no memberships assigned yet.</div>
+
+    <div class="app-chrome">
+      <div class="empty-state">
+        <div class="empty-icon">👥</div>
+        <p>No memberships assigned yet.</p>
+        <button class="link-btn">Assign a membership →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function show(id) {
+    document.querySelectorAll('.state-view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.state-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    const map = ['table','modal-active','modal-expiring','modal-cancelled','empty'];
+    const tabs = document.querySelectorAll('.state-tab');
+    const idx = map.indexOf(id);
+    if (idx >= 0 && tabs[idx]) tabs[idx].classList.add('active');
+  }
+</script>
+
+</body>
+</html>

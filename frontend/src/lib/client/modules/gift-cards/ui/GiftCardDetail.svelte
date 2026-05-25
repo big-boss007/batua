@@ -9,6 +9,7 @@
   let codeRevealed = $state(false);
   let codeCopied = $state(false);
   let maskTimer: ReturnType<typeof setTimeout> | null = null;
+  // svelte-ignore state_referenced_locally
   let prevCardId = $state(card.id);
 
   let _resetOnCardChange = $derived.by(() => {

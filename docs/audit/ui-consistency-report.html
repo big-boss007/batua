@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Batua Admin — UI Consistency Audit Report</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f8fafc;
+    color: #1e293b;
+    line-height: 1.6;
+  }
+
+  .report-header {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: #fff;
+    padding: 48px 40px;
+    text-align: center;
+  }
+  .report-header h1 { font-size: 32px; font-weight: 800; margin-bottom: 8px; }
+  .report-header p { font-size: 16px; opacity: 0.85; }
+  .report-header .date { font-size: 13px; opacity: 0.6; margin-top: 12px; }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 40px 24px; }
+
+  /* Summary bar */
+  .summary-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+  .summary-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+  }
+  .summary-num { font-size: 36px; font-weight: 800; color: #ef4444; }
+  .summary-num.warn { color: #f59e0b; }
+  .summary-num.info { color: #6366f1; }
+  .summary-label { font-size: 12px; color: #64748b; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* Sections */
+  .section {
+    margin-bottom: 56px;
+  }
+  .section-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: #6366f1;
+    color: #fff;
+    border-radius: 50%;
+    font-size: 13px;
+    font-weight: 700;
+    margin-right: 10px;
+  }
+  .section h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+  }
+  .section-desc {
+    font-size: 14px;
+    color: #64748b;
+    margin-bottom: 20px;
+  }
+
+  /* Severity tags */
+  .severity {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-left: 10px;
+    vertical-align: middle;
+  }
+  .severity.high { background: #fef2f2; color: #dc2626; }
+  .severity.medium { background: #fffbeb; color: #d97706; }
+  .severity.low { background: #f0fdf4; color: #16a34a; }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-bottom: 16px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  th {
+    text-align: left;
+    padding: 10px 14px;
+    font-weight: 600;
+    color: #64748b;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+  }
+  tr:last-child td { border-bottom: none; }
+  td code {
+    font-size: 11px;
+    background: #f1f5f9;
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: #6366f1;
+  }
+
+  /* Issue callout */
+  .issue {
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-top: 12px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .issue.problem { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+  .issue.note { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+  .issue-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+  /* Screenshot comparisons */
+  .screenshots {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 16px;
+  }
+  .screenshots.three-col {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+  .screenshots.single {
+    grid-template-columns: 1fr;
+    max-width: 600px;
+  }
+  .screenshot-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .screenshot-card img {
+    width: 100%;
+    display: block;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .screenshot-label {
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .screenshot-label .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+  }
+  .dot.red { background: #ef4444; }
+  .dot.amber { background: #f59e0b; }
+  .dot.green { background: #22c55e; }
+
+  /* Priority list */
+  .priority-list {
+    counter-reset: priority;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .priority-item {
+    counter-increment: priority;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 18px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+  }
+  .priority-item::before {
+    content: counter(priority);
+    width: 24px;
+    height: 24px;
+    background: #6366f1;
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .priority-text {
+    font-size: 14px;
+    color: #1e293b;
+  }
+  .priority-text strong { color: #0f172a; }
+  .priority-detail {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 2px;
+  }
+</style>
+</head>
+<body>
+
+<div class="report-header">
+  <h1>Batua Admin — UI Consistency Audit</h1>
+  <p>Comprehensive review of design inconsistencies across all merchant admin pages</p>
+  <div class="date">Generated 24 March 2026 — 12 pages, 16 screenshots</div>
+</div>
+
+<div class="container">
+
+  <!-- Summary -->
+  <div class="summary-bar">
+    <div class="summary-card">
+      <div class="summary-num">10</div>
+      <div class="summary-label">Issue Categories</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-num warn">4</div>
+      <div class="summary-label">Table Styles</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-num warn">3</div>
+      <div class="summary-label">Modal Patterns</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-num info">12</div>
+      <div class="summary-label">Pages Audited</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- 1. PAGE HEADERS -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="section">
+    <h2><span class="section-num">1</span> Page Headers <span class="severity high">High</span></h2>
+    <p class="section-desc">Title + subtitle pattern is inconsistent — half the pages have subtitles, half don't.</p>
+
+    <table>
+      <thead>
+        <tr><th>Page</th><th>Has Subtitle?</th><th>Subtitle Text</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Dashboard (Wallet)</td><td>Yes</td><td>"Overview of your wallet program"</td></tr>
+        <tr><td>Loyalty</td><td>Yes</td><td>"Manage your loyalty program, tiers..."</td></tr>
+        <tr><td>Transactions</td><td>Yes</td><td>"View merchant-wide transaction feed..."</td></tr>
+        <tr><td>Customers</td><td>Yes</td><td>"Browse and manage customers..."</td></tr>
+        <tr><td><strong>Gift Cards</strong></td><td><strong>No</strong></td><td>—</td></tr>
+        <tr><td><strong>Referrals</strong></td><td><strong>No</strong></td><td>—</td></tr>
+        <tr><td><strong>Analytics</strong></td><td><strong>No</strong></td><td>—</td></tr>
+        <tr><td><strong>Notifications</strong></td><td><strong>No</strong></td><td>—</td></tr>
+        <tr><td><strong>Settings</strong></td><td><strong>No</strong></td><td>—</td></tr>
+      </tbody>
+    </table>
+
+    <div class="screenshots">
+      <div class="screenshot-card">
+        <img src="07-customers.png" alt="Customers - has subtitle">
+        <div class="screenshot-label"><span class="dot green"></span> Customers — has subtitle</div>
+      </div>
+      <div class="screenshot-card">
+        <img src="09-referrals.png" alt="Referrals - no subtitle">
+        <div class="screenshot-label"><span class="dot red"></span> Referrals — no subtitle, jumps straight to form</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- 2. TABLES -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="section">
+    <h2><span class="section-num">2</span> Data Tables & Lists <span class="severity high">High</span></h2>
+    <p class="section-desc">4 completely different patterns for displaying lists of items. No consistent "list of items" component.</p>
+
+    <table>
+      <thead>
+        <tr><th>Page</th><th>Pattern</th><th>Header Row?</th><th>Pagination?</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Customers</td><td>Component <code>Table</code></td><td>Gray bg, uppercase</td><td>Yes</td></tr>
+        <tr><td>Transactions</td><td>Component <code>Table</code></td><td>Gray bg, uppercase</td><td>Yes</td></tr>
+        <tr><td>Memberships</td><td>Component <code>Table</code></td><td>Gray bg, uppercase</td><td>No</td></tr>
+        <tr><td>Gift Cards</td><td>Component <code>Table</code></td><td>Gray bg, uppercase</td><td>No</td></tr>
+        <tr><td><strong>Reward Rules</strong></td><td><strong>Custom button rows</strong></td><td>No header</td><td>No</td></tr>
+        <tr><td><strong>Loyalty Tiers</strong></td><td><strong>Custom badge rows</strong></td><td>No header</td><td>No</td></tr>
+        <tr><td><strong>Campaigns</strong></td><td><strong>Horizontal cards</strong></td><td>No header</td><td>No</td></tr>
+        <tr><td><strong>Wallet Policies</strong></td><td><strong>Accordion rows</strong></td><td>No header</td><td>No</td></tr>
+      </tbody>
+    </table>
+
+    <div class="screenshots">
+      <div class="screenshot-card">
+        <img src="06-transactions.png" alt="Transactions table">
+        <div class="screenshot-label"><span class="dot green"></span> Transactions — standard Table component</div>
+      </div>
+      <div class="screenshot-card">
+        <img src="04-loyalty-rules.png" alt="Rules list">
+        <div class="screenshot-label"><span class="dot red"></span> Reward Rules — custom button rows, no header</div>
+      </div>
+    </div>
+    <div class="screenshots" style="margin-top: 12px;">
+      <div class="screenshot-card">
+        <img src="05-loyalty-campaigns.png" alt="Campaigns">
+        <div class="screenshot-label"><span class="dot red"></span> Campaigns — horizontal cards, completely different</div>
+      </div>
+      <div class="screenshot-card">
+        <img src="13-settings-policies.png" alt="Wallet Policies">
+        <div class="screenshot-label"><span class="dot amber"></span> Wallet Policies — accordion expand pattern</div>
+      </div>
+    </div>
+
+    <div class="issue problem">
+      <span class="issue-icon">!!!</span>
+      <span>A merchant navigating from Customers (clean table) to Rules (custom rows) to Campaigns (cards) experiences 3 different interaction models for "list of items". This increases cognitive load.</span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- 3. MODALS -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="section">
+    <h2><span class="section-num">3</span> Modals & Popups <span class="severity high">High</span></h2>
+    <p class="section-desc">3 different modal designs — header styles, close button positions, and widths all vary.</p>
+
+    <table>
+      <thead>
+        <tr><th>Modal</th><th>Header Border?</th><th>Width</th><th>Close Button</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Customer Detail</td><td>No</td><td>~500px</td><td><code>&times;</code> top-right</td></tr>
+        <tr><td>Transaction Detail</td><td>No</td><td>~450px</td><td><code>&times;</code> top-right</td></tr>
+        <tr><td><strong>Rule Form</strong></td><td><strong>Yes — border below header</strong></td><td>620px</td><td><code>&times;</code> top-right</td></tr>
+        <tr><td><strong>Campaign Form</strong></td><td><strong>No header at all</strong></td><td>Auto</td><td>None visible</td></tr>
+      </tbody>
+    </table>
+
+    <div class="screenshots">
+      <div class="screenshot-card">
+        <img src="14-customer-detail-modal.png" alt="Customer detail">
+        <div class="screenshot-label"><span class="dot amber"></span> Customer Detail — no header border, card-style sections</div>
+      </div>
+      <div class="screenshot-card">
+        <img src="15-transaction-detail-panel.png" alt="Transaction detail">
+        <div class="screenshot-label"><span class="dot amber"></span> Transaction Detail — label/value rows, different layout</div>
+      </div>
+    </div>
+    <div class="screenshots single" style="margin-top: 12px;">
+      <div class="screenshot-card">
+        <img src="16-rule-form-modal.png" alt="Rule form modal">
+        <div class="screenshot-label"><span class="dot red"></span> Rule Form — has header border, sectioned form, different style</div>
+      </div>
+    </div>
+
+    <div class="issue problem">
+      <span class="issue-icon">!!!</span>
+      <span>Customer Detail uses card sections with emoji headers. Transaction Detail uses flat label/value rows. Rule Form uses bordered sections. Three completely different information display patterns inside modals.</span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- 4. STAT CARDS -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="section">
+    <h2><span class="section-num">4</span> Stat Cards <span class="severity medium">Medium</span></h2>
+    <p class="section-desc">Dashboard, Gift Cards, and Analytics all show summary stats but use different visual treatments.</p>
+
+    <div class="screenshots three-col">
+      <div class="screenshot-card">
+        <img src="01-dashboard.png" alt="Dashboard stats">
+        <div class="screenshot-label"><span class="dot red"></span> Dashboard — colored values (green/orange)</div>
+      </div>
+      <div class="screenshot-card">
+        <img src="08-gift-cards.png" alt="Gift card stats">
+        <div class="screenshot-label"><span class="dot amber"></span> Gift Cards — black values, compact</div>
+      </div>
+      <div class="screenshot-card">
+        <img src="10-analytics.png" alt="Analytics stats">
+        <div class="screenshot-label"><span class="dot red"></span> Analytics — left-border accents, tinted backgrounds</div>
+      </div>
+    </div>
+
+    <div class="issue note">
+      <span class="issue-icon">!</span>
+      <span>Three different visual languages for the same "summary number cards" pattern. Dashboard uses colored text, Gift Cards uses plain black, Analytics uses left-border color accents with tinted backgrounds.</span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- 5. FORM LAYOUTS -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="section">
+    <h2><span class="section-num">5</span> Form Layouts <span class="severity medium">Medium</span></h2>
+    <p class="section-desc">Forms are inconsistent in containment (card vs bare), label weight, field width, and button placement.</p>
+
+    <table>
+      <thead>
+        <tr><th>Form</th><th>Container</th><th>Label Weight</th><th>Button Position</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Settings — My Store</td><td>Split 2-column card</td><td>Regular</td><td>Left-aligned</td></tr>
+        <tr><td>Settings — Points Config</td><td>Card with sidebar preview</td><td>Semibold</td><td>Right-aligned</td></tr>
+        <tr><td>Settings — Wallet Policy</td><td>Card with footer</td><td>Semibold</td><td>Right-aligned footer</td></tr>
+        <tr><td><strong>Referrals — Program</strong></td><td><strong>No card — bare form</strong></td><td>Regular</td><td>Left-aligned</td></tr>
+        <tr><td>Loyalty — Wizard</td><td>Card with header/footer</td><td>Medium</td><td>Right-aligned footer</td></tr>
+        <tr><td>Gift Cards — Bulk Issue</td><td>Card with header/footer</td><td>Semibold</td><td>Right-aligned footer</td></tr>
+      </tbody>
+    </table>
+
+    <div class="screenshots">
+      <div class="screenshot-card">
+        <img src="12-settings-store.png" alt="Settings form">
+        <div class="screenshot-label"><span class="dot amber"></span> Settings — split card, button left</div>
+      </div>
+      <div class="screenshot-card">
+        <img src="09-referrals.png" alt="Referrals form">
+        <div class="screenshot-label"><span class="dot red"></span> Referrals — bare form, no container card</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- 6. SECTION HEADERS -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="section">
+    <h2><span class="section-num">6</span> Section Headers <span class="severity low">Low</span></h2>
+    <p class="section-desc">Two different styles for section dividers within pages.</p>
+
+    <table>
+      <thead>
+        <tr><th>Style</th><th>Appearance</th><th>Used In</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>flat-section-hdr</code></td><td>11px, uppercase, gray, bottom border</td><td>Settings (Points Config, Bucket Policies, Earn Rates)</td></tr>
+        <tr><td><code>section-title</code></td><td>16px, semibold, no border</td><td>Loyalty (Tiers), Campaigns, Analytics</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- 7. NESTED TABS -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="section">
+    <h2><span class="section-num">7</span> Nested Tabs <span class="severity medium">Medium</span></h2>
+    <p class="section-desc">Memberships tab has tabs-within-tabs (Subscribers / Assign Membership), creating confusing UX hierarchy.</p>
+
+    <div class="screenshots single">
+      <div class="screenshot-card">
+        <img src="03-loyalty-memberships.png" alt="Nested tabs">
+        <div class="screenshot-label"><span class="dot red"></span> Memberships — tabs inside a tab (2 levels of tab navigation)</div>
+      </div>
+    </div>
+
+    <div class="issue problem">
+      <span class="issue-icon">!!!</span>
+      <span>The outer "Memberships" tab contains inner "Subscribers | Assign Membership" tabs. This is the only page with nested tabs — merchants may not realize they're in a sub-tab. Consider using a button/toggle or inline form instead.</span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- 8. CONTENT WIDTH -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="section">
+    <h2><span class="section-num">8</span> Content Width <span class="severity medium">Medium</span></h2>
+    <p class="section-desc">No consistent max-width strategy — pages range from 500px to full viewport width.</p>
+
+    <table>
+      <thead>
+        <tr><th>Page</th><th>Max Width</th><th>Note</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Dashboard</td><td>~1000px</td><td>Explicit max-width</td></tr>
+        <tr><td>Loyalty</td><td>1100px</td><td>Explicit max-width</td></tr>
+        <tr><td><strong>Transactions</strong></td><td><strong>Full width</strong></td><td>No constraint — stretches on wide screens</td></tr>
+        <tr><td><strong>Customers</strong></td><td><strong>Full width</strong></td><td>No constraint</td></tr>
+        <tr><td>Gift Cards</td><td>~1100px</td><td>Implicit</td></tr>
+        <tr><td><strong>Referrals</strong></td><td><strong>~500px</strong></td><td>Very narrow — just a small form</td></tr>
+        <tr><td>Analytics</td><td>~600px</td><td>Narrow cards</td></tr>
+        <tr><td>Notifications</td><td>1200px</td><td>Split layout</td></tr>
+        <tr><td>Settings</td><td>720px</td><td>Constrained</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- 9. EMPTY STATES -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="section">
+    <h2><span class="section-num">9</span> Empty States <span class="severity low">Low</span></h2>
+    <p class="section-desc">Some empty states have action links, some don't. No consistent pattern.</p>
+
+    <table>
+      <thead>
+        <tr><th>Page</th><th>Empty State Text</th><th>Has Action?</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Rules</td><td>"No rules configured yet..."</td><td>No</td></tr>
+        <tr><td>Memberships</td><td>"No memberships assigned yet."</td><td><strong>Yes</strong> — "Assign a membership" link</td></tr>
+        <tr><td>Wallet Policies</td><td>"No wallet policies configured."</td><td>No</td></tr>
+        <tr><td>Settings Notifications</td><td>"No notification templates configured."</td><td>No</td></tr>
+        <tr><td>Active Earn Rates</td><td>"No active earn rules."</td><td><strong>Yes</strong> — "Configure rules" link</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- 10. SPECIFIC BUGS -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="section">
+    <h2><span class="section-num">10</span> Specific Issues <span class="severity high">High</span></h2>
+    <p class="section-desc">Individual bugs and inconsistencies found during the audit.</p>
+
+    <table>
+      <thead>
+        <tr><th>#</th><th>Issue</th><th>Location</th><th>Severity</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>Phone numbers still show raw <code>+919002000095</code> format</td><td>Memberships table</td><td><span class="severity high">High</span></td></tr>
+        <tr><td>2</td><td>Notifications tab still exists in Settings — duplicate of standalone page</td><td>Settings page</td><td><span class="severity medium">Medium</span></td></tr>
+        <tr><td>3</td><td>Rule list rows are full-row buttons; Tier list uses separate icon buttons — inconsistent interaction model</td><td>Loyalty tabs</td><td><span class="severity medium">Medium</span></td></tr>
+        <tr><td>4</td><td>Campaign cards use horizontal 2-column layout while everything else uses vertical lists</td><td>Campaigns tab</td><td><span class="severity low">Low</span></td></tr>
+        <tr><td>5</td><td>Dashboard page title says "Wallet" — confusing, it's a dashboard overview</td><td>Dashboard</td><td><span class="severity medium">Medium</span></td></tr>
+      </tbody>
+    </table>
+
+    <div class="screenshots">
+      <div class="screenshot-card">
+        <img src="03-loyalty-memberships.png" alt="Phone format issue">
+        <div class="screenshot-label"><span class="dot red"></span> Memberships — raw phone format +919002000095</div>
+      </div>
+      <div class="screenshot-card">
+        <img src="01-dashboard.png" alt="Dashboard title">
+        <div class="screenshot-label"><span class="dot amber"></span> Dashboard — title says "Wallet" instead of "Dashboard"</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- PRIORITY FIXES -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="section">
+    <h2><span class="section-num">P</span> Priority Fixes</h2>
+    <p class="section-desc">Ordered by impact on merchant experience.</p>
+
+    <ol class="priority-list">
+      <li class="priority-item">
+        <div>
+          <div class="priority-text"><strong>Standardize data lists</strong> — pick one pattern (Table component) for all tabular data; use card lists only for non-tabular content like campaign templates</div>
+          <div class="priority-detail">Affects: Rules, Tiers, Campaigns, Wallet Policies</div>
+        </div>
+      </li>
+      <li class="priority-item">
+        <div>
+          <div class="priority-text"><strong>Standardize modals</strong> — one modal component with consistent header border, close button, width, and information layout</div>
+          <div class="priority-detail">Affects: Customer Detail, Transaction Detail, Rule Form, Campaign Form</div>
+        </div>
+      </li>
+      <li class="priority-item">
+        <div>
+          <div class="priority-text"><strong>Standardize page headers</strong> — every page should have title + subtitle describing the page purpose</div>
+          <div class="priority-detail">Affects: Gift Cards, Referrals, Analytics, Notifications, Settings</div>
+        </div>
+      </li>
+      <li class="priority-item">
+        <div>
+          <div class="priority-text"><strong>Standardize content width</strong> — global <code>max-width: 1100px</code> on all page content</div>
+          <div class="priority-detail">Affects: Transactions (full width), Customers (full width), Referrals (too narrow)</div>
+        </div>
+      </li>
+      <li class="priority-item">
+        <div>
+          <div class="priority-text"><strong>Standardize form layout</strong> — forms always in cards, labels always semibold, buttons always right-aligned in footer</div>
+          <div class="priority-detail">Affects: Referrals (bare form), Settings My Store (left-aligned button)</div>
+        </div>
+      </li>
+      <li class="priority-item">
+        <div>
+          <div class="priority-text"><strong>Standardize stat cards</strong> — one visual pattern for summary number cards across Dashboard, Gift Cards, and Analytics</div>
+          <div class="priority-detail">Affects: 3 pages with 3 different stat card styles</div>
+        </div>
+      </li>
+      <li class="priority-item">
+        <div>
+          <div class="priority-text"><strong>Remove nested tabs</strong> in Memberships — replace with button toggle or inline form</div>
+          <div class="priority-detail">Affects: Memberships tab UX</div>
+        </div>
+      </li>
+      <li class="priority-item">
+        <div>
+          <div class="priority-text"><strong>Fix phone formatting</strong> in Memberships table and <strong>remove duplicate Notifications tab</strong> from Settings</div>
+          <div class="priority-detail">Quick fixes — low effort, high polish</div>
+        </div>
+      </li>
+    </ol>
+  </div>
+
+</div>
+
+</body>
+</html>
