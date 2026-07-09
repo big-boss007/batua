@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Custom per-tier — Design A vs Design B</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #f0f1f5;
+    --surface: #ffffff;
+    --surface-2: #f0f1f3;
+    --text: #1a1a2e;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --primary: #7c6aff;
+    --primary-hover: #6b5ce7;
+    --success: #10b981;
+    --error: #ef4444;
+    --warning: #f59e0b;
+    --info: #3b82f6;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+
+  .intro { background: #1a1a2e; color: #fff; padding: 40px 32px; text-align: center; }
+  .intro h1 { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+  .intro p { color: rgba(255,255,255,0.7); max-width: 760px; margin: 0 auto; font-size: 14px; line-height: 1.6; }
+
+  .screen-label {
+    position: sticky; top: 0; z-index: 10;
+    background: #fef3c7; color: #78350f;
+    border-top: 1px solid #f59e0b; border-bottom: 1px solid #f59e0b;
+    padding: 12px 32px; font-size: 12px; font-weight: 600; letter-spacing: 0.4px;
+  }
+  .screen-label .tag { background: #f59e0b; color: #fff; padding: 2px 8px; border-radius: 4px; margin-right: 10px; font-weight: 700; }
+  .screen-label .approach { font-weight: 400; color: #78350f; opacity: 0.85; }
+
+  .frame { padding: 32px; }
+  .container {
+    max-width: 900px; margin: 0 auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+  }
+
+  .ctx-bar {
+    background: color-mix(in srgb, var(--info) 6%, transparent);
+    border: 1px solid color-mix(in srgb, var(--info) 20%, transparent);
+    border-radius: 6px;
+    padding: 10px 14px; font-size: 12px; color: var(--muted);
+    margin-bottom: 20px;
+    display: flex; justify-content: space-between;
+  }
+  .ctx-bar strong { color: var(--text); }
+
+  .mode-section-title { font-size: 14px; font-weight: 600; }
+  .mode-section-desc { font-size: 12px; color: var(--muted); margin-top: 2px; margin-bottom: 14px; }
+  .mode-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .mode-pill {
+    padding: 6px 14px;
+    border: 1px solid var(--border); border-radius: 6px;
+    font-size: 13px; font-weight: 600;
+    background: var(--surface); color: var(--text);
+    cursor: pointer;
+  }
+  .mode-pill.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+  .mode-consequence {
+    border-radius: 6px;
+    padding: 10px 14px; margin-bottom: 16px;
+    font-size: 12px; line-height: 1.5;
+    display: flex; align-items: flex-start; gap: 8px;
+    background: color-mix(in srgb, var(--info) 6%, transparent);
+    border-left: 3px solid var(--info);
+  }
+  .mode-consequence strong { color: var(--text); }
+  .mode-consequence a { color: var(--primary); text-decoration: none; }
+
+  /* Tier pills */
+  .tier-pill { display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .tier-bronze { background: #f5e6d3; color: #8b5e3c; }
+  .tier-silver { background: #e8e8e8; color: #555555; }
+  .tier-gold { background: #fdf3d7; color: #92742e; }
+  .tier-platinum { background: #e8eaf6; color: #3949ab; }
+  .tier-diamond { background: #b9f2ff; color: #036c8d; }
+  .mult { font-weight: 700; font-family: 'SF Mono', monospace; color: var(--primary); }
+
+  /* Buttons */
+  .btn { padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid transparent; font-family: inherit; }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-secondary { background: var(--surface); color: var(--text); border-color: var(--border); }
+  .btn-ghost { background: transparent; color: var(--primary); }
+  .btn-sm { padding: 4px 10px; font-size: 12px; }
+
+  /* Tier table */
+  .tier-table {
+    width: 100%; border-collapse: collapse; font-size: 13px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .tier-table th { padding: 10px 14px; text-align: left; background: var(--surface-2); color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+  .tier-table th.cap-col { background: color-mix(in srgb, var(--primary) 8%, transparent); color: var(--primary); }
+  .tier-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .tier-table tr:last-child td { border-bottom: none; }
+
+  /* Sub-mode toggle inside Custom per-tier */
+  .sub-mode-bar {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 16px; padding: 10px 14px;
+    background: var(--surface-2); border-radius: 8px;
+  }
+  .sub-mode-label { font-size: 12px; color: var(--muted); }
+  .sub-mode-segment { display: inline-flex; background: var(--surface); border-radius: 6px; padding: 2px; border: 1px solid var(--border); }
+  .sub-mode-segment > div { padding: 5px 12px; border-radius: 4px; font-size: 12px; font-weight: 600; color: var(--muted); cursor: pointer; }
+  .sub-mode-segment > div.active { background: var(--primary); color: #fff; }
+
+  /* ===== Design A — per-tier inputs ===== */
+  .a-input {
+    width: 110px; padding: 7px 10px;
+    border: 1px solid var(--border); border-radius: 6px;
+    font-size: 13px; font-family: inherit;
+    background: var(--surface);
+  }
+  .a-input::placeholder { color: var(--muted); font-style: italic; }
+  .a-input.custom { border-color: var(--primary); font-weight: 600; color: var(--primary); }
+  .a-hint { font-size: 10px; color: var(--muted); margin-top: 4px; display: flex; align-items: center; gap: 6px; }
+  .a-hint a { color: var(--primary); text-decoration: none; }
+  .a-hint .badge {
+    font-size: 9px; font-weight: 700; padding: 1px 5px;
+    border-radius: 3px; text-transform: uppercase; letter-spacing: 0.3px;
+    background: color-mix(in srgb, var(--primary) 14%, transparent); color: var(--primary);
+  }
+
+  /* ===== Design B — single base input ===== */
+  .b-base-card {
+    background: color-mix(in srgb, var(--primary) 4%, transparent);
+    border: 1px solid color-mix(in srgb, var(--primary) 24%, transparent);
+    border-radius: 8px;
+    padding: 18px 20px;
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 20px;
+    flex-wrap: wrap;
+  }
+  .b-base-label {
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .b-base-label .title { font-size: 14px; font-weight: 600; }
+  .b-base-label .desc { font-size: 12px; color: var(--muted); }
+  .b-base-input-wrap { display: flex; align-items: center; gap: 6px; }
+  .b-base-input {
+    width: 130px; padding: 10px 14px;
+    border: 2px solid var(--primary); border-radius: 6px;
+    font-size: 18px; font-weight: 700; font-family: 'SF Mono', monospace;
+    color: var(--primary); background: var(--surface);
+    text-align: right;
+  }
+  .b-base-prefix { font-size: 14px; color: var(--muted); font-weight: 600; }
+  .b-base-clear { font-size: 11px; color: var(--primary); text-decoration: none; }
+
+  .b-cap-display {
+    display: inline-flex; flex-direction: column; gap: 2px;
+  }
+  .b-cap-value {
+    font-family: 'SF Mono', monospace;
+    font-size: 14px; font-weight: 700;
+    color: var(--text);
+    padding: 6px 10px;
+    background: var(--surface-2);
+    border: 1px dashed var(--border);
+    border-radius: 6px;
+    min-width: 110px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .b-cap-value .lock { color: var(--muted); font-size: 11px; }
+  .b-formula { font-size: 10px; color: var(--muted); font-family: 'SF Mono', monospace; margin-top: 2px; }
+  .b-formula .accent { color: var(--primary); font-weight: 600; }
+
+  /* Save bar */
+  .save-bar {
+    display: flex; justify-content: flex-end; gap: 8px;
+    margin-top: 16px; padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Note */
+  .note { background: #eef2ff; border-left: 3px solid var(--primary); color: #4338ca; padding: 12px 16px; border-radius: 4px; font-size: 12px; margin: 16px auto 0; line-height: 1.5; max-width: 900px; }
+  .note strong { color: #312e81; }
+</style>
+</head>
+<body>
+
+<div class="intro">
+  <h1>Custom per-tier — Design A vs Design B</h1>
+  <p>
+    Two sub-designs of the <strong>Custom per-tier</strong> mode. Same end-state, two different inputs.
+    A: type one cap per tier. B: type one base cap; the system multiplies it across tiers using each tier's multiplier.
+  </p>
+</div>
+
+<!-- ====================================================================== -->
+<!-- DESIGN A — per-tier inputs                                              -->
+<!-- ====================================================================== -->
+<div class="screen-label">
+  <span class="tag">A</span>Per-tier inputs
+  <span class="approach">— one input per tier. Empty = rule's max applies as hard cap. Filled = that tier's hard ceiling. Maximum control, more typing.</span>
+</div>
+<div class="frame">
+<div class="container">
+  <div class="ctx-bar">
+    <span><strong>Sherwani Rewards</strong> · 5 tiers · 2 active rules</span>
+    <span>Mode: <strong>Custom per-tier</strong></span>
+  </div>
+
+  <div class="mode-section-title">Multiplier behavior</div>
+  <div class="mode-section-desc">How tier, campaign &amp; membership multipliers interact with rule caps.</div>
+  <div class="mode-pills">
+    <div class="mode-pill">Hard cap</div>
+    <div class="mode-pill">Soft cap</div>
+    <div class="mode-pill active">Custom per-tier</div>
+  </div>
+
+  <div class="sub-mode-bar">
+    <span class="sub-mode-label">Enter caps as:</span>
+    <div class="sub-mode-segment">
+      <div class="active">One per tier</div>
+      <div>One base &times; multiplier</div>
+    </div>
+    <span class="sub-mode-label" style="margin-left:auto; font-size:11px;">Tune each tier individually.</span>
+  </div>
+
+  <table class="tier-table">
+    <thead>
+      <tr>
+        <th>Tier</th><th>Threshold</th><th>Multiplier</th>
+        <th class="cap-col">Max per order</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="tier-pill tier-bronze">Bronze</span></td>
+        <td>₹0+</td><td class="mult">1×</td>
+        <td>
+          <input class="a-input" placeholder="No override" />
+          <div class="a-hint">rule's max applies as a hard cap</div>
+        </td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td>
+      </tr>
+      <tr>
+        <td><span class="tier-pill tier-silver">Silver</span></td>
+        <td>₹5,000+</td><td class="mult">1.5×</td>
+        <td>
+          <input class="a-input" placeholder="No override" />
+          <div class="a-hint">rule's max applies as a hard cap</div>
+        </td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td>
+      </tr>
+      <tr>
+        <td><span class="tier-pill tier-gold">Gold</span></td>
+        <td>₹15,000+</td><td class="mult">2×</td>
+        <td>
+          <input class="a-input custom" value="750" />
+          <div class="a-hint"><span class="badge">Custom</span> caps Gold customers at ₹750 · <a href="#">↻ clear</a></div>
+        </td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td>
+      </tr>
+      <tr>
+        <td><span class="tier-pill tier-platinum">Platinum</span></td>
+        <td>₹50,000+</td><td class="mult">3×</td>
+        <td>
+          <input class="a-input" placeholder="No override" />
+          <div class="a-hint">rule's max applies as a hard cap</div>
+        </td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td>
+      </tr>
+      <tr>
+        <td><span class="tier-pill tier-diamond">Diamond</span></td>
+        <td>₹1,00,000+</td><td class="mult">5×</td>
+        <td>
+          <input class="a-input custom" value="1,500" />
+          <div class="a-hint"><span class="badge">Custom</span> caps Diamond customers at ₹1,500 · <a href="#">↻ clear</a></div>
+        </td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="save-bar">
+    <button class="btn btn-secondary">Discard changes</button>
+    <button class="btn btn-primary">Save per-tier caps</button>
+  </div>
+</div>
+</div>
+<div class="note">
+  <strong>What the merchant does:</strong> types a ₹ value only on the tiers they want to bound. Different ceilings per tier — Gold capped at ₹750, Diamond at ₹1,500, others fall through to rule's hard cap. Best when caps don't follow a clean formula.
+</div>
+
+<!-- ====================================================================== -->
+<!-- DESIGN B — single base, multiplier-scaled                               -->
+<!-- ====================================================================== -->
+<div class="screen-label">
+  <span class="tag">B</span>One base, multiplier-scaled
+  <span class="approach">— single input "Custom base cap". Per-tier values auto-compute as base × each tier's multiplier. One field to manage, ladder shape locked to multiplier ratios.</span>
+</div>
+<div class="frame">
+<div class="container">
+  <div class="ctx-bar">
+    <span><strong>Sherwani Rewards</strong> · 5 tiers · 2 active rules</span>
+    <span>Mode: <strong>Custom per-tier</strong></span>
+  </div>
+
+  <div class="mode-section-title">Multiplier behavior</div>
+  <div class="mode-section-desc">How tier, campaign &amp; membership multipliers interact with rule caps.</div>
+  <div class="mode-pills">
+    <div class="mode-pill">Hard cap</div>
+    <div class="mode-pill">Soft cap</div>
+    <div class="mode-pill active">Custom per-tier</div>
+  </div>
+
+  <div class="sub-mode-bar">
+    <span class="sub-mode-label">Enter caps as:</span>
+    <div class="sub-mode-segment">
+      <div>One per tier</div>
+      <div class="active">One base &times; multiplier</div>
+    </div>
+    <span class="sub-mode-label" style="margin-left:auto; font-size:11px;">Type one base; all tiers scale automatically.</span>
+  </div>
+
+  <div class="b-base-card">
+    <div class="b-base-label">
+      <div class="title">Custom base cap</div>
+      <div class="desc">Each tier's per-order ceiling = base × tier multiplier. Updates the table below instantly.</div>
+    </div>
+    <div class="b-base-input-wrap">
+      <span class="b-base-prefix">₹</span>
+      <input class="b-base-input" value="500" />
+    </div>
+    <a href="#" class="b-base-clear">↻ Use rule's max (₹450)</a>
+  </div>
+
+  <div class="mode-consequence">
+    <span>📐</span>
+    <span>
+      A Gold customer (2×) earns at most <strong>₹1,000</strong>. A Diamond (5×) earns at most <strong>₹2,500</strong>. Bumping the base to ₹600 would shift the whole ladder up proportionally.
+    </span>
+  </div>
+
+  <table class="tier-table">
+    <thead>
+      <tr>
+        <th>Tier</th><th>Threshold</th><th>Multiplier</th>
+        <th class="cap-col">Effective max per order</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="tier-pill tier-bronze">Bronze</span></td>
+        <td>₹0+</td><td class="mult">1×</td>
+        <td>
+          <div class="b-cap-display">
+            <div class="b-cap-value"><span class="lock">🔒</span> ₹500</div>
+            <div class="b-formula"><span class="accent">₹500</span> × 1×</div>
+          </div>
+        </td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td>
+      </tr>
+      <tr>
+        <td><span class="tier-pill tier-silver">Silver</span></td>
+        <td>₹5,000+</td><td class="mult">1.5×</td>
+        <td>
+          <div class="b-cap-display">
+            <div class="b-cap-value"><span class="lock">🔒</span> ₹750</div>
+            <div class="b-formula"><span class="accent">₹500</span> × 1.5×</div>
+          </div>
+        </td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td>
+      </tr>
+      <tr>
+        <td><span class="tier-pill tier-gold">Gold</span></td>
+        <td>₹15,000+</td><td class="mult">2×</td>
+        <td>
+          <div class="b-cap-display">
+            <div class="b-cap-value"><span class="lock">🔒</span> ₹1,000</div>
+            <div class="b-formula"><span class="accent">₹500</span> × 2×</div>
+          </div>
+        </td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td>
+      </tr>
+      <tr>
+        <td><span class="tier-pill tier-platinum">Platinum</span></td>
+        <td>₹50,000+</td><td class="mult">3×</td>
+        <td>
+          <div class="b-cap-display">
+            <div class="b-cap-value"><span class="lock">🔒</span> ₹1,500</div>
+            <div class="b-formula"><span class="accent">₹500</span> × 3×</div>
+          </div>
+        </td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td>
+      </tr>
+      <tr>
+        <td><span class="tier-pill tier-diamond">Diamond</span></td>
+        <td>₹1,00,000+</td><td class="mult">5×</td>
+        <td>
+          <div class="b-cap-display">
+            <div class="b-cap-value"><span class="lock">🔒</span> ₹2,500</div>
+            <div class="b-formula"><span class="accent">₹500</span> × 5×</div>
+          </div>
+        </td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="save-bar">
+    <button class="btn btn-secondary">Discard changes</button>
+    <button class="btn btn-primary">Save base cap</button>
+  </div>
+</div>
+</div>
+<div class="note">
+  <strong>What the merchant does:</strong> types <em>one</em> ₹ value. The per-tier ceilings are auto-computed. Best when the merchant thinks of the cap as "scaled by tier" — keeps the ladder proportional to multipliers and removes the chance of inconsistent per-tier numbers. Trade-off: the merchant can't break the symmetry — e.g., they can't cap Bronze tight while leaving Diamond loose without going back to Design A.
+</div>
+
+<!-- ====================================================================== -->
+<!-- Compare                                                                  -->
+<!-- ====================================================================== -->
+<div style="background:#1a1a2e;color:#fff;padding:32px;">
+  <h2 style="font-size:18px;margin-bottom:16px; text-align: center;">A vs B at a glance</h2>
+  <div style="max-width: 900px; margin: 0 auto;">
+  <table style="width:100%; font-size: 13px; color: rgba(255,255,255,0.85); border-collapse: collapse;">
+    <thead><tr style="border-bottom: 1px solid rgba(255,255,255,0.2);"><th style="text-align:left; padding: 8px;">Aspect</th><th style="text-align:left;">A — Per-tier inputs</th><th style="text-align:left;">B — One base × multiplier</th></tr></thead>
+    <tbody>
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);"><td style="padding: 8px;">Inputs the merchant types</td><td>Up to 5 (one per tier)</td><td>1 (base cap only)</td></tr>
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);"><td style="padding: 8px;">Flexibility</td><td>Any per-tier value</td><td>Locked to multiplier ratios</td></tr>
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);"><td style="padding: 8px;">Can break symmetry?</td><td>Yes — Bronze tight, Diamond loose, etc.</td><td>No — all tiers move together</td></tr>
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);"><td style="padding: 8px;">Reacts to multiplier change</td><td>No — ₹ values are frozen</td><td>Yes — per-tier ₹ updates automatically</td></tr>
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);"><td style="padding: 8px;">Best for</td><td>Fine-grained CFO controls; tiers with non-formulaic caps</td><td>Consistent, formula-driven ladders; merchants who think in tier ratios</td></tr>
+      <tr><td style="padding: 8px;">Data model</td><td><code>loyalty_tiers.max_amount_override NUMERIC NULL</code> per tier</td><td><code>loyalty_programs.custom_base_cap NUMERIC NULL</code> (single field)</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<div class="intro" style="padding:32px;">
+  <p style="font-size:13px;">
+    Both sit under <strong>Custom per-tier</strong>, switched via the small segmented toggle ("One per tier" / "One base × multiplier") above the table. The merchant picks the entry style that matches how they think; the runtime semantics (hard cap on the resolved value) are identical.
+  </p>
+</div>
+
+</body>
+</html>

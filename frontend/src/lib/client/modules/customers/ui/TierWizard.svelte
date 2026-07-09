@@ -75,9 +75,9 @@
   let editingIndex = $state<number | null>(null);
 
   const criteriaItems = [
-    { id: 'spend', label: 'Total Spend' },
-    { id: 'order_count', label: 'Order Count' },
-    { id: 'points', label: 'Points Earned' }
+    { id: 'spend', label: 'Total spend' },
+    { id: 'order_count', label: 'Order count' },
+    { id: 'points', label: 'Points earned' }
   ];
 
   const periodItems = [
@@ -96,7 +96,9 @@
   ];
 
   let activeTiers = $derived(wizardTiers.filter((t) => t._status !== 'removed'));
-  let sortedActiveTiers = $derived(sortTiersByRank(activeTiers as Array<LoyaltyTier>) as unknown as Array<WizardTier>);
+  let sortedActiveTiers = $derived(
+    sortTiersByRank(activeTiers as Array<LoyaltyTier>) as unknown as Array<WizardTier>
+  );
   let canProceedStep1 = $derived(programName.trim().length > 0);
   let canProceedStep2 = $derived(activeTiers.length >= 2);
 
@@ -154,9 +156,7 @@
   }
 
   function findWizardIndex(tier: WizardTier): number {
-    return wizardTiers.findIndex(
-      (wt) => (wt.id !== null && wt.id === tier.id) || wt === tier
-    );
+    return wizardTiers.findIndex((wt) => (wt.id !== null && wt.id === tier.id) || wt === tier);
   }
 
   function removeTier(tier: WizardTier) {
@@ -165,7 +165,9 @@
     if (wizardTiers[index]._status === 'new') {
       wizardTiers = wizardTiers.filter((_, i) => i !== index);
     } else {
-      wizardTiers = wizardTiers.map((t, i) => (i === index ? { ...t, _status: 'removed' as const } : t));
+      wizardTiers = wizardTiers.map((t, i) =>
+        i === index ? { ...t, _status: 'removed' as const } : t
+      );
     }
   }
 
@@ -239,7 +241,9 @@
           diffs.push(`threshold ${t._original.threshold} → ${t.threshold}`);
         if (t.rank !== t._original.rank) diffs.push(`rank ${t._original.rank} → ${t.rank}`);
         if (t.earn_rate_multiplier !== t._original.earn_rate_multiplier)
-          diffs.push(`multiplier ${t._original.earn_rate_multiplier}x → ${t.earn_rate_multiplier}x`);
+          diffs.push(
+            `multiplier ${t._original.earn_rate_multiplier}x → ${t.earn_rate_multiplier}x`
+          );
         if (diffs.length > 0) {
           changes.push({ type: 'edit', description: `${t._original.name}: ${diffs.join(', ')}` });
         }
@@ -341,7 +345,10 @@
 
 <div class="wizard">
   {#if mode === 'reconfigure'}
-    <Banner text="Reconfigure mode: Your current settings are pre-filled. No changes are saved until you confirm on the final step." classes="info-banner amber" />
+    <Banner
+      text="Reconfigure mode: Your current settings are pre-filled. No changes are saved until you confirm on the final step."
+      classes="info-banner amber"
+    />
   {/if}
 
   <!-- STEP 1: Program -->
@@ -349,7 +356,9 @@
     <div class="card">
       <div class="card-header">
         <div class="card-header-left">
-          <h2 class="card-title">{mode === 'fresh' ? 'Set Up Your Tiers' : 'Update Tier Settings'}</h2>
+          <h2 class="card-title">
+            {mode === 'fresh' ? 'Set Up Your Tiers' : 'Update Tier Settings'}
+          </h2>
           <p class="card-sub-inline">Configure how customers qualify for tiers</p>
         </div>
         <div class="step-pills">
@@ -363,7 +372,7 @@
         <div class="form-group">
           <Input
             value={programName}
-            label="Tier Program Name"
+            label="Tier program name"
             placeholder="e.g. Rewards Club"
             onInput={(val) => {
               programName = val;
@@ -373,7 +382,7 @@
 
         <div class="form-grid-2col">
           <div class="form-group">
-            <span class="field-label">Evaluation Criteria</span>
+            <span class="field-label">Evaluation criteria</span>
             <Select
               items={criteriaItems}
               value={[evaluationCriteria]}
@@ -385,7 +394,7 @@
           </div>
 
           <div class="form-group">
-            <span class="field-label">Evaluation Period</span>
+            <span class="field-label">Evaluation period</span>
             <Select
               items={periodItems}
               value={[evaluationPeriodDays]}
@@ -419,7 +428,7 @@
     <div class="card">
       <div class="card-header">
         <div class="card-header-left">
-          <h2 class="card-title">{mode === 'fresh' ? 'Add Tiers' : 'Edit Tiers'}</h2>
+          <h2 class="card-title">{mode === 'fresh' ? 'Add Tiers' : 'Edit tiers'}</h2>
           <p class="card-sub-inline">
             {mode === 'fresh'
               ? 'Quick-add from presets or create custom tiers. Need at least 2.'
@@ -433,141 +442,225 @@
         </div>
       </div>
       <div class="card-body">
-
-      <span class="field-label" style="margin-bottom: 8px; display: block;">Quick-add a preset</span>
-      <div class="presets-grid">
-        {#each presets as preset}
-          {@const used = isPresetUsed(preset.name)}
-          <button
-            class="preset-card"
-            class:added={used}
-            disabled={used}
-            onclick={() => addPreset(preset)}
-          >
-            <span class="preset-icon">{preset.icon}</span>
-            <span class="preset-name">{preset.name}</span>
-            <span class="preset-detail">
-              {#if used}
-                <s>Threshold: {preset.threshold.toLocaleString('en-IN')} &middot; {preset.multiplier}x</s>
-              {:else}
-                Threshold: {preset.threshold.toLocaleString('en-IN')} &middot; {preset.multiplier}x
-              {/if}
-            </span>
-            {#if used}
-              <span class="preset-added-label">{mode === 'reconfigure' ? 'Exists' : 'Added'}</span>
-            {/if}
-          </button>
-        {/each}
-      </div>
-
-      <div class="or-divider"><span>or add custom</span></div>
-
-      {#if editingIndex !== null}
-        <div class="inline-form">
-          <div class="if-name">
-            <span class="field-label">Tier Name</span>
-            <Input value={customName} placeholder="e.g. Diamond" onInput={(val) => { customName = val; }} />
-          </div>
-          <div class="if-group">
-            <div>
-              <span class="field-label">Rank</span>
-              <Input value={customRank} dataType="number" onInput={(val) => { customRank = val; }} />
-            </div>
-            <div>
-              <span class="field-label">Threshold</span>
-              <Input value={customThreshold} dataType="number" onInput={(val) => { customThreshold = val; }} />
-            </div>
-          </div>
-          <div class="if-mult">
-            <span class="field-label">Multiplier</span>
-            <Input value={customMultiplier} dataType="number" onInput={(val) => { customMultiplier = val; }} />
-          </div>
-          <div class="if-btn">
-            <Button text="Save" classes="btn-primary btn-sm" onclick={saveEditTier} />
-            <Button text="Cancel" classes="btn-ghost btn-sm" onclick={cancelEdit} />
-          </div>
-        </div>
-      {:else}
-        <div class="inline-form">
-          <div class="if-name">
-            <span class="field-label">Tier Name</span>
-            <Input value={customName} placeholder="e.g. Diamond" onInput={(val) => { customName = val; }} />
-          </div>
-          <div class="if-group">
-            <div>
-              <span class="field-label">Rank</span>
-              <Input value={customRank} dataType="number" placeholder={String(nextRank())} onInput={(val) => { customRank = val; }} />
-            </div>
-            <div>
-              <span class="field-label">Threshold</span>
-              <Input value={customThreshold} dataType="number" placeholder="0" onInput={(val) => { customThreshold = val; }} />
-            </div>
-          </div>
-          <div class="if-mult">
-            <span class="field-label">Multiplier</span>
-            <Input value={customMultiplier} dataType="number" onInput={(val) => { customMultiplier = val; }} />
-          </div>
-          <div class="if-btn">
-            <Button text="+ Add" classes="btn-primary btn-sm" onclick={addCustomTier} disabled={customName.trim().length === 0} />
-          </div>
-        </div>
-      {/if}
-
-      {#if activeTiers.length > 0}
-        <span class="field-label tier-list-label">Your tiers ({activeTiers.length} {activeTiers.length === 1 ? 'tier' : 'tiers'})</span>
-        <div class="wt-list">
-          {#each sortedActiveTiers as t (t.id ?? t.name + t.rank)}
-            <div
-              class="wt-item"
-              class:wt-modified={t._status === 'modified'}
-              class:wt-new={t._status === 'new'}
+        <span class="field-label" style="margin-bottom: 8px; display: block;"
+          >Quick-add a preset</span
+        >
+        <div class="presets-grid">
+          {#each presets as preset}
+            {@const used = isPresetUsed(preset.name)}
+            <button
+              class="preset-card"
+              class:added={used}
+              disabled={used}
+              onclick={() => addPreset(preset)}
             >
-              <div class="wt-left">
-                <span class="wt-rank" class:wt-rank-new={t._status === 'new'}>{t.rank}</span>
-                <span class="wt-name">{t.name}</span>
-                {#if t._status === 'modified'}
-                  <span class="change-badge modified">Modified</span>
-                {:else if t._status === 'new'}
-                  <span class="change-badge new">New</span>
+              <span class="preset-icon">{preset.icon}</span>
+              <span class="preset-name">{preset.name}</span>
+              <span class="preset-detail">
+                {#if used}
+                  <s
+                    >Threshold: {preset.threshold.toLocaleString('en-IN')} &middot; {preset.multiplier}x</s
+                  >
+                {:else}
+                  Threshold: {preset.threshold.toLocaleString('en-IN')} &middot; {preset.multiplier}x
                 {/if}
-              </div>
-              <div class="wt-right">
-                <div class="wt-stat">
-                  <span class="wt-stat-label">Threshold</span>
-                  <span class="wt-stat-val">
-                    {#if t._status === 'modified' && t._original !== null && t.threshold !== t._original.threshold}
-                      <span class="old-val">{t._original.threshold.toLocaleString('en-IN')}</span>
-                      {t.threshold.toLocaleString('en-IN')}
-                    {:else}
-                      {t.threshold.toLocaleString('en-IN')}
-                    {/if}
-                  </span>
-                </div>
-                <div class="wt-stat">
-                  <span class="wt-stat-label">Multiplier</span>
-                  <span class="wt-stat-val">
-                    {#if t._status === 'modified' && t._original !== null && t.earn_rate_multiplier !== t._original.earn_rate_multiplier}
-                      <span class="old-val">{t._original.earn_rate_multiplier}x</span>
-                      {t.earn_rate_multiplier}x
-                    {:else}
-                      {t.earn_rate_multiplier}x
-                    {/if}
-                  </span>
-                </div>
-                <div class="wt-actions">
-                  <button class="icon-btn" title="Edit" onclick={() => startEditTier(t)}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
-                  </button>
-                  <button class="icon-btn icon-btn-danger" title="Remove" onclick={() => removeTier(t)}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-                  </button>
-                </div>
-              </div>
-            </div>
+              </span>
+              {#if used}
+                <span class="preset-added-label">{mode === 'reconfigure' ? 'Exists' : 'Added'}</span
+                >
+              {/if}
+            </button>
           {/each}
         </div>
-      {/if}
 
+        <div class="or-divider"><span>or add custom</span></div>
+
+        {#if editingIndex !== null}
+          <div class="inline-form">
+            <div class="if-name">
+              <span class="field-label">Tier name</span>
+              <Input
+                value={customName}
+                placeholder="e.g. Diamond"
+                onInput={(val) => {
+                  customName = val;
+                }}
+              />
+            </div>
+            <div class="if-group">
+              <div>
+                <span class="field-label">Rank</span>
+                <Input
+                  value={customRank}
+                  dataType="number"
+                  onInput={(val) => {
+                    customRank = val;
+                  }}
+                />
+              </div>
+              <div>
+                <span class="field-label">Threshold</span>
+                <Input
+                  value={customThreshold}
+                  dataType="number"
+                  onInput={(val) => {
+                    customThreshold = val;
+                  }}
+                />
+              </div>
+            </div>
+            <div class="if-mult">
+              <span class="field-label">Multiplier</span>
+              <Input
+                value={customMultiplier}
+                dataType="number"
+                onInput={(val) => {
+                  customMultiplier = val;
+                }}
+              />
+            </div>
+            <div class="if-btn">
+              <Button text="Save" classes="btn-primary btn-sm" onclick={saveEditTier} />
+              <Button text="Cancel" classes="btn-ghost btn-sm" onclick={cancelEdit} />
+            </div>
+          </div>
+        {:else}
+          <div class="inline-form">
+            <div class="if-name">
+              <span class="field-label">Tier name</span>
+              <Input
+                value={customName}
+                placeholder="e.g. Diamond"
+                onInput={(val) => {
+                  customName = val;
+                }}
+              />
+            </div>
+            <div class="if-group">
+              <div>
+                <span class="field-label">Rank</span>
+                <Input
+                  value={customRank}
+                  dataType="number"
+                  placeholder={String(nextRank())}
+                  onInput={(val) => {
+                    customRank = val;
+                  }}
+                />
+              </div>
+              <div>
+                <span class="field-label">Threshold</span>
+                <Input
+                  value={customThreshold}
+                  dataType="number"
+                  placeholder="0"
+                  onInput={(val) => {
+                    customThreshold = val;
+                  }}
+                />
+              </div>
+            </div>
+            <div class="if-mult">
+              <span class="field-label">Multiplier</span>
+              <Input
+                value={customMultiplier}
+                dataType="number"
+                onInput={(val) => {
+                  customMultiplier = val;
+                }}
+              />
+            </div>
+            <div class="if-btn">
+              <Button
+                text="+ Add"
+                classes="btn-primary btn-sm"
+                onclick={addCustomTier}
+                disabled={customName.trim().length === 0}
+              />
+            </div>
+          </div>
+        {/if}
+
+        {#if activeTiers.length > 0}
+          <span class="field-label tier-list-label"
+            >Your tiers ({activeTiers.length} {activeTiers.length === 1 ? 'tier' : 'tiers'})</span
+          >
+          <div class="wt-list">
+            {#each sortedActiveTiers as t (t.id ?? t.name + t.rank)}
+              <div
+                class="wt-item"
+                class:wt-modified={t._status === 'modified'}
+                class:wt-new={t._status === 'new'}
+              >
+                <div class="wt-left">
+                  <span class="wt-rank" class:wt-rank-new={t._status === 'new'}>{t.rank}</span>
+                  <span class="wt-name">{t.name}</span>
+                  {#if t._status === 'modified'}
+                    <span class="change-badge modified">Modified</span>
+                  {:else if t._status === 'new'}
+                    <span class="change-badge new">New</span>
+                  {/if}
+                </div>
+                <div class="wt-right">
+                  <div class="wt-stat">
+                    <span class="wt-stat-label">Threshold</span>
+                    <span class="wt-stat-val">
+                      {#if t._status === 'modified' && t._original !== null && t.threshold !== t._original.threshold}
+                        <span class="old-val">{t._original.threshold.toLocaleString('en-IN')}</span>
+                        {t.threshold.toLocaleString('en-IN')}
+                      {:else}
+                        {t.threshold.toLocaleString('en-IN')}
+                      {/if}
+                    </span>
+                  </div>
+                  <div class="wt-stat">
+                    <span class="wt-stat-label">Multiplier</span>
+                    <span class="wt-stat-val">
+                      {#if t._status === 'modified' && t._original !== null && t.earn_rate_multiplier !== t._original.earn_rate_multiplier}
+                        <span class="old-val">{t._original.earn_rate_multiplier}x</span>
+                        {t.earn_rate_multiplier}x
+                      {:else}
+                        {t.earn_rate_multiplier}x
+                      {/if}
+                    </span>
+                  </div>
+                  <div class="wt-actions">
+                    <button class="icon-btn" title="Edit" onclick={() => startEditTier(t)}>
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        ><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path
+                          d="m15 5 4 4"
+                        /></svg
+                      >
+                    </button>
+                    <button
+                      class="icon-btn icon-btn-danger"
+                      title="Remove"
+                      onclick={() => removeTier(t)}
+                    >
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        ><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path
+                          d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"
+                        /></svg
+                      >
+                    </button>
+                  </div>
+                </div>
+              </div>
+            {/each}
+          </div>
+        {/if}
       </div>
       <div class="card-footer">
         <Button text="← Back" classes="btn-ghost" onclick={() => (step = 1)} />
@@ -586,7 +679,7 @@
     <div class="card">
       <div class="card-header">
         <div class="card-header-left">
-          <h2 class="card-title">{mode === 'fresh' ? 'Review & Activate' : 'Review Changes'}</h2>
+          <h2 class="card-title">{mode === 'fresh' ? 'Review & Activate' : 'Review changes'}</h2>
           <p class="card-sub-inline">
             {mode === 'fresh'
               ? 'Review your tier configuration before activating'
@@ -600,89 +693,100 @@
         </div>
       </div>
       <div class="card-body">
+        {#if mode === 'reconfigure' && changes.length > 0}
+          <div class="review-section">
+            <h3 class="review-heading">Changes summary</h3>
+            <div class="diff-box">
+              {#each changes as change}
+                <div class="diff-row">
+                  <span
+                    class="diff-icon"
+                    class:diff-add={change.type === 'add'}
+                    class:diff-edit={change.type === 'edit'}
+                    class:diff-del={change.type === 'remove'}
+                  >
+                    {#if change.type === 'add'}+{:else if change.type === 'edit'}&cir;{:else}&times;{/if}
+                  </span>
+                  <span>{change.description}</span>
+                </div>
+              {/each}
+            </div>
+          </div>
+        {/if}
 
-      {#if mode === 'reconfigure' && changes.length > 0}
         <div class="review-section">
-          <h3 class="review-heading">Changes Summary</h3>
-          <div class="diff-box">
-            {#each changes as change}
-              <div class="diff-row">
-                <span class="diff-icon" class:diff-add={change.type === 'add'} class:diff-edit={change.type === 'edit'} class:diff-del={change.type === 'remove'}>
-                  {#if change.type === 'add'}+{:else if change.type === 'edit'}&cir;{:else}&times;{/if}
-                </span>
-                <span>{change.description}</span>
+          <h3 class="review-heading">Settings</h3>
+          <div class="review-grid">
+            <div>
+              <span class="review-label">Tier program name</span>
+              <span class="review-value">{programName}</span>
+            </div>
+            <div>
+              <span class="review-label">Evaluation criteria</span>
+              <span class="review-value">{getCriteriaLabel(evaluationCriteria)}</span>
+            </div>
+            <div>
+              <span class="review-label">Evaluation period</span>
+              <span class="review-value">{getPeriodLabel(evaluationPeriodDays)}</span>
+            </div>
+            <div>
+              <span class="review-label">Status</span>
+              <span class="review-value review-active">Active</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="review-section">
+          <h3 class="review-heading">
+            {mode === 'fresh' ? 'Tiers' : 'Final Tier Structure'} ({activeTiers.length})
+          </h3>
+          <div class="review-tier-stack">
+            {#each sortedActiveTiers as t}
+              <div
+                class="review-tier"
+                class:review-tier-modified={t._status === 'modified'}
+                class:review-tier-new={t._status === 'new'}
+              >
+                <span class="review-badge">{t.name}</span>
+                <div class="review-tier-info">
+                  <span class="review-tier-detail">
+                    Threshold: <strong>
+                      {#if t._status === 'modified' && t._original !== null && t.threshold !== t._original.threshold}
+                        <span class="old-val">{t._original.threshold.toLocaleString('en-IN')}</span>
+                      {/if}
+                      {t.threshold.toLocaleString('en-IN')}
+                    </strong>
+                  </span>
+                  <span class="review-tier-detail">
+                    Multiplier: <strong>{t.earn_rate_multiplier}x</strong>
+                  </span>
+                </div>
+                {#if t._status === 'modified'}
+                  <span class="change-badge modified">Modified</span>
+                {:else if t._status === 'new'}
+                  <span class="change-badge new">New</span>
+                {/if}
               </div>
             {/each}
           </div>
         </div>
-      {/if}
 
-      <div class="review-section">
-        <h3 class="review-heading">Settings</h3>
-        <div class="review-grid">
-          <div>
-            <span class="review-label">Tier Program Name</span>
-            <span class="review-value">{programName}</span>
-          </div>
-          <div>
-            <span class="review-label">Evaluation Criteria</span>
-            <span class="review-value">{getCriteriaLabel(evaluationCriteria)}</span>
-          </div>
-          <div>
-            <span class="review-label">Evaluation Period</span>
-            <span class="review-value">{getPeriodLabel(evaluationPeriodDays)}</span>
-          </div>
-          <div>
-            <span class="review-label">Status</span>
-            <span class="review-value review-active">Active</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="review-section">
-        <h3 class="review-heading">{mode === 'fresh' ? 'Tiers' : 'Final Tier Structure'} ({activeTiers.length})</h3>
-        <div class="review-tier-stack">
-          {#each sortedActiveTiers as t}
-            <div
-              class="review-tier"
-              class:review-tier-modified={t._status === 'modified'}
-              class:review-tier-new={t._status === 'new'}
-            >
-              <span class="review-badge">{t.name}</span>
-              <div class="review-tier-info">
-                <span class="review-tier-detail">
-                  Threshold: <strong>
-                    {#if t._status === 'modified' && t._original !== null && t.threshold !== t._original.threshold}
-                      <span class="old-val">{t._original.threshold.toLocaleString('en-IN')}</span>
-                    {/if}
-                    {t.threshold.toLocaleString('en-IN')}
-                  </strong>
-                </span>
-                <span class="review-tier-detail">
-                  Multiplier: <strong>{t.earn_rate_multiplier}x</strong>
-                </span>
-              </div>
-              {#if t._status === 'modified'}
-                <span class="change-badge modified">Modified</span>
-              {:else if t._status === 'new'}
-                <span class="change-badge new">New</span>
-              {/if}
-            </div>
-          {/each}
-        </div>
-      </div>
-
-      {#if mode === 'fresh'}
-        <Banner text='What happens next: Your tiers will be created and activated. Customers will be evaluated against these tiers when you run "Evaluate Tiers".' classes="info-banner green" />
-      {:else}
-        <Banner text='Note: Existing customers will keep their current tier until the next evaluation. Run "Evaluate Tiers" after saving to reassign customers based on the new thresholds.' classes="info-banner amber" />
-      {/if}
-
+        {#if mode === 'fresh'}
+          <Banner
+            text="What happens next: Your tiers will be created and activated. Customers will be evaluated against these tiers when you run &quot;Evaluate Tiers&quot;."
+            classes="info-banner green"
+          />
+        {:else}
+          <Banner
+            text="Note: Existing customers will keep their current tier until the next evaluation. Run &quot;Evaluate Tiers&quot; after saving to reassign customers based on the new thresholds."
+            classes="info-banner amber"
+          />
+        {/if}
       </div>
       <div class="card-footer">
         <Button text="← Back to Tiers" classes="btn-ghost" onclick={() => (step = 2)} />
         <Button
-          text={saving ? 'Saving...' : mode === 'fresh' ? 'Activate Tiers' : 'Save Changes'}
+          text={saving ? 'Saving...' : mode === 'fresh' ? 'Activate Tiers' : 'Save changes'}
           classes={mode === 'fresh' ? 'btn-success' : 'btn-primary'}
           disabled={saving}
           onclick={handleSave}
@@ -703,9 +807,9 @@
 
   .card {
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     overflow: hidden;
+    box-shadow: var(--shadow-card);
   }
 
   .card-header {
@@ -800,15 +904,15 @@
   }
 
   :global(.info-banner.green) {
-    background: #f0fdf4;
-    border: 1px solid #bbf7d0;
-    color: #166534;
+    background: var(--green-100);
+    border: 1px solid var(--green-100);
+    color: var(--green-700);
   }
 
   :global(.info-banner.amber) {
-    background: #fffbeb;
-    border: 1px solid #fde68a;
-    color: #92400e;
+    background: var(--yellow-100);
+    border: 1px solid var(--yellow-100);
+    color: var(--yellow-700);
   }
 
   /* Presets */
@@ -834,8 +938,8 @@
   }
 
   .preset-card:hover:not(.added) {
-    border-color: var(--color-primary, #6366f1);
-    background: var(--color-primary-bg, #f5f3ff);
+    border-color: var(--color-primary, var(--purple-500));
+    background: var(--color-primary-bg, color-mix(in srgb, var(--purple-500) 7%, #fff));
   }
 
   .preset-card.added {
@@ -845,7 +949,7 @@
   }
 
   .preset-icon {
-    font-size: 24px;
+    font-size: var(--font-size-2xl);
   }
 
   .preset-name {
@@ -894,8 +998,8 @@
     align-items: flex-end;
     padding: var(--space-4);
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
   }
 
   .inline-form > * {
@@ -962,13 +1066,13 @@
   }
 
   .wt-item.wt-modified {
-    border-color: #fbbf24;
-    background: #fffbeb;
+    border-color: var(--yellow-500);
+    background: var(--yellow-100);
   }
 
   .wt-item.wt-new {
-    border-color: #86efac;
-    background: #f0fdf4;
+    border-color: var(--green-100);
+    background: var(--green-100);
   }
 
   .wt-left {
@@ -981,7 +1085,7 @@
     width: 26px;
     height: 26px;
     border-radius: 50%;
-    background: var(--color-primary, #6366f1);
+    background: var(--color-primary, var(--purple-500));
     color: white;
     display: flex;
     align-items: center;
@@ -991,7 +1095,7 @@
   }
 
   .wt-rank.wt-rank-new {
-    background: var(--color-success, #22c55e);
+    background: var(--color-success, var(--green-500));
   }
 
   .wt-name {
@@ -1063,13 +1167,13 @@
   }
 
   .change-badge.modified {
-    background: #fef3c7;
-    color: #92400e;
+    background: var(--yellow-100);
+    color: var(--yellow-700);
   }
 
   .change-badge.new {
-    background: #d1fae5;
-    color: #065f46;
+    background: var(--green-100);
+    color: var(--green-700);
   }
 
   .old-val {
@@ -1150,16 +1254,16 @@
   }
 
   .review-tier.review-tier-modified {
-    background: #fffbeb;
+    background: var(--yellow-100);
   }
 
   .review-tier.review-tier-new {
-    background: #f0fdf4;
+    background: var(--green-100);
   }
 
   .review-badge {
     padding: 3px 10px;
-    border-radius: 16px;
+    border-radius: var(--radius-pill);
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-semibold);
     background: var(--color-surface-hover);
@@ -1214,7 +1318,7 @@
   }
 
   .diff-edit {
-    color: #f59e0b;
+    color: var(--yellow-500);
   }
 
   .diff-del {

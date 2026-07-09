@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Breeze Retention Suite — Feature Guide</title>
+<style>
+  @page {
+    size: A4;
+    margin: 22mm 18mm 22mm 18mm;
+    @top-right { content: "Breeze Retention Suite — Feature Guide"; font-family: 'Inter', sans-serif; font-size: 9pt; color: #6b7280; }
+    @bottom-right { content: counter(page) " / " counter(pages); font-family: 'Inter', sans-serif; font-size: 9pt; color: #6b7280; }
+    @bottom-left { content: "Confidential · For training and prospect distribution"; font-family: 'Inter', sans-serif; font-size: 9pt; color: #6b7280; }
+  }
+
+  @page :first { margin: 0; @top-right { content: ""; } @bottom-right { content: ""; } @bottom-left { content: ""; } }
+  @page toc { @top-right { content: "Table of contents"; } }
+
+  :root {
+    --primary: #7c6aff;
+    --primary-dark: #6b5ce7;
+    --text: #1a1a2e;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --surface: #f8f9fa;
+    --surface-2: #f0f1f3;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --info: #3b82f6;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: var(--text); font-size: 10.5pt; line-height: 1.55; }
+
+  /* Cover page */
+  .cover {
+    page: cover;
+    page-break-after: always;
+    height: 297mm; margin: 0; padding: 32mm 28mm;
+    background: linear-gradient(160deg, #1a1a2e 0%, #2d2459 50%, #7c6aff 100%);
+    color: #fff;
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .cover-top .eyebrow { font-size: 11pt; color: rgba(255,255,255,0.7); letter-spacing: 3px; text-transform: uppercase; font-weight: 600; margin-bottom: 6mm; }
+  .cover-top h1 { font-size: 44pt; font-weight: 800; line-height: 1.05; letter-spacing: -0.5pt; margin-bottom: 4mm; }
+  .cover-top .sub { font-size: 14pt; color: rgba(255,255,255,0.85); line-height: 1.5; max-width: 130mm; }
+  .cover-pills { display: flex; flex-wrap: wrap; gap: 8pt; margin-top: 12mm; }
+  .cover-pills .pill { background: rgba(255,255,255,0.12); padding: 4pt 10pt; border-radius: 99pt; font-size: 10pt; font-weight: 500; color: rgba(255,255,255,0.9); border: 1px solid rgba(255,255,255,0.15); }
+  .cover-bottom { font-size: 9pt; color: rgba(255,255,255,0.6); display: flex; justify-content: space-between; }
+  .cover-bottom .left strong { color: #fff; font-weight: 600; }
+
+  /* Front matter & sections */
+  .foreword { page-break-after: always; padding: 6mm 0; }
+  .toc-page { page: toc; page-break-after: always; padding: 6mm 0; }
+  h1.part-title {
+    font-size: 24pt; font-weight: 800; color: var(--text);
+    border-bottom: 3pt solid var(--primary);
+    padding-bottom: 4mm; margin-bottom: 8mm; line-height: 1.1;
+  }
+  h1.part-title .part-num { color: var(--primary); margin-right: 8pt; }
+  h2 { font-size: 14pt; font-weight: 700; color: var(--text); margin-top: 8mm; margin-bottom: 3mm; }
+  h3 { font-size: 12pt; font-weight: 600; color: var(--text); margin-top: 5mm; margin-bottom: 2mm; }
+  h4 { font-size: 10.5pt; font-weight: 600; color: var(--text); margin-top: 3mm; margin-bottom: 1mm; }
+  p { margin-bottom: 3mm; }
+  ul, ol { margin-bottom: 3mm; padding-left: 5mm; }
+  li { margin-bottom: 1.2mm; }
+  strong { color: var(--text); font-weight: 600; }
+  em { color: var(--muted); }
+  code { font-family: 'SF Mono', 'Menlo', monospace; font-size: 9.5pt; background: var(--surface-2); padding: 0.5pt 4pt; border-radius: 2pt; }
+
+  /* Page break controls */
+  .part { page-break-before: always; }
+  .no-break { page-break-inside: avoid; }
+  .keep-together { page-break-inside: avoid; }
+
+  /* Eyebrow + tagline for parts */
+  .eyebrow-row { display: flex; align-items: center; gap: 6mm; margin-bottom: 2mm; }
+  .eyebrow-label { font-size: 9pt; color: var(--primary); letter-spacing: 2pt; text-transform: uppercase; font-weight: 600; }
+  .tagline { font-size: 11pt; color: var(--muted); margin-bottom: 6mm; font-style: italic; }
+
+  /* Callout boxes */
+  .callout { padding: 4mm 5mm; border-radius: 3pt; margin: 4mm 0; font-size: 10pt; line-height: 1.55; page-break-inside: avoid; }
+  .callout.ok    { background: #ecfdf5; border-left: 3pt solid var(--success); }
+  .callout.warn  { background: #fffbeb; border-left: 3pt solid var(--warning); }
+  .callout.info  { background: #eef2ff; border-left: 3pt solid var(--primary); }
+  .callout.note  { background: var(--surface-2); border-left: 3pt solid var(--muted); }
+  .callout strong { display: block; margin-bottom: 1mm; }
+
+  /* Feature blocks */
+  .feature-block { margin-bottom: 6mm; page-break-inside: avoid; }
+  .feature-block .ft-title { font-size: 11pt; font-weight: 700; color: var(--primary); margin-bottom: 1mm; }
+  .feature-block .ft-desc { font-size: 10pt; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; margin: 4mm 0; font-size: 9.5pt; page-break-inside: avoid; }
+  th { background: var(--surface-2); padding: 2.5mm 3mm; text-align: left; font-weight: 600; font-size: 9pt; text-transform: uppercase; letter-spacing: 0.3pt; color: var(--muted); border-bottom: 1pt solid var(--border); }
+  td { padding: 2.5mm 3mm; border-bottom: 0.5pt solid var(--border); vertical-align: top; }
+  table tr:last-child td { border-bottom: none; }
+
+  /* Stats / KPI cards */
+  .stat-row { display: flex; gap: 4mm; margin: 4mm 0; }
+  .stat-card {
+    flex: 1; padding: 4mm 5mm;
+    background: var(--surface);
+    border-radius: 3pt; border: 0.5pt solid var(--border);
+  }
+  .stat-card .val { font-size: 18pt; font-weight: 800; color: var(--primary); line-height: 1; }
+  .stat-card .lbl { font-size: 8.5pt; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5pt; margin-top: 2mm; }
+
+  /* Pill list */
+  .pill-list { display: flex; gap: 4pt; flex-wrap: wrap; margin: 2mm 0 4mm; }
+  .pill-list .pill { background: var(--surface-2); padding: 1.5pt 7pt; border-radius: 99pt; font-size: 9pt; color: var(--text); font-weight: 500; }
+
+  /* TOC */
+  .toc-section { margin-bottom: 5mm; }
+  .toc-section h3 { font-size: 11pt; font-weight: 600; color: var(--primary); margin-bottom: 1mm; }
+  .toc-row { display: flex; justify-content: space-between; padding: 1mm 0; font-size: 10pt; border-bottom: 0.25pt dotted var(--border); }
+  .toc-row .name { color: var(--text); }
+  .toc-row .pg { color: var(--muted); font-variant-numeric: tabular-nums; }
+
+  /* Glossary */
+  .glossary-row { display: grid; grid-template-columns: 45mm 1fr; gap: 4mm; padding: 2.5mm 0; border-bottom: 0.5pt dotted var(--border); }
+  .glossary-row .term { font-weight: 600; color: var(--text); font-size: 10pt; }
+  .glossary-row .def { font-size: 9.5pt; color: var(--text); }
+
+  /* Quote / pull */
+  blockquote { border-left: 3pt solid var(--primary); padding: 3mm 5mm; margin: 4mm 0; background: var(--surface-2); font-style: italic; font-size: 10.5pt; color: var(--text); page-break-inside: avoid; }
+</style>
+</head>
+<body>
+
+<!-- ============== COVER ============== -->
+<div class="cover">
+  <div class="cover-top">
+    <div class="eyebrow">Breeze Retention Suite</div>
+    <h1>Wallet · Loyalty · Gift Cards<br>Referrals · Campaigns · Memberships</h1>
+    <div class="sub">The complete retention platform for Indian Shopify D2C brands. COD-ready. WhatsApp-first. Festive-native.</div>
+    <div class="cover-pills">
+      <span class="pill">Wallet</span>
+      <span class="pill">Loyalty</span>
+      <span class="pill">Gift Cards</span>
+      <span class="pill">Referrals</span>
+      <span class="pill">Campaigns</span>
+      <span class="pill">Memberships</span>
+    </div>
+  </div>
+  <div class="cover-bottom">
+    <div class="left"><strong>Feature guide</strong> · Edition 2026.05 · For training and prospect distribution</div>
+    <div>Confidential</div>
+  </div>
+</div>
+
+<!-- ============== FOREWORD ============== -->
+<div class="foreword">
+  <h1 class="part-title">About this guide</h1>
+  <p>This guide is written for two audiences:</p>
+  <ul>
+    <li><strong>Internal team members</strong> — sales, success, support, and partners learning the platform end-to-end.</li>
+    <li><strong>Prospective merchants</strong> — decision-makers evaluating Breeze against alternatives, and operations leads who'll run it day-to-day.</li>
+  </ul>
+  <p>It covers what Breeze does, how each product fits together, the architectural commitments underneath, and how Breeze compares to the global and Indian competitive landscape. Each section is self-contained, so it doubles as reference material once you've read it through once.</p>
+
+  <div class="callout info">
+    <strong>How to use this document</strong>
+    Internal users: read Parts I–XIII top-to-bottom for full coverage, then keep Part XIV and the Appendices as quick-reference. Prospective merchants: Part I sets context, Parts II–VII deep-dive each product, Part XII positions us against alternatives, Part XIII outlines onboarding.
+  </div>
+
+  <p style="margin-top: 6mm; font-size: 9.5pt; color: var(--muted);">All examples in this guide use a sample merchant called "Sherwani Studio" to make the mechanics concrete. Any numbers (e.g. ₹450 caps, 5× multipliers) are configurable per merchant.</p>
+</div>
+
+<!-- ============== TABLE OF CONTENTS ============== -->
+<div class="toc-page">
+  <h1 class="part-title">Table of contents</h1>
+
+  <div class="toc-section">
+    <h3>I. Understanding Breeze</h3>
+    <div class="toc-row"><span class="name">The retention problem in Indian D2C</span><span class="pg">4</span></div>
+    <div class="toc-row"><span class="name">The all-in-one proposition</span><span class="pg">5</span></div>
+    <div class="toc-row"><span class="name">Six products, one platform — at a glance</span><span class="pg">6</span></div>
+  </div>
+
+  <div class="toc-section">
+    <h3>The six product pillars</h3>
+    <div class="toc-row"><span class="name">II. Wallet</span><span class="pg">7</span></div>
+    <div class="toc-row"><span class="name">III. Loyalty</span><span class="pg">10</span></div>
+    <div class="toc-row"><span class="name">IV. Gift Cards</span><span class="pg">14</span></div>
+    <div class="toc-row"><span class="name">V. Referrals</span><span class="pg">16</span></div>
+    <div class="toc-row"><span class="name">VI. Campaigns</span><span class="pg">18</span></div>
+    <div class="toc-row"><span class="name">VII. Memberships</span><span class="pg">20</span></div>
+  </div>
+
+  <div class="toc-section">
+    <h3>The surrounding platform</h3>
+    <div class="toc-row"><span class="name">VIII. Customer-facing surfaces</span><span class="pg">22</span></div>
+    <div class="toc-row"><span class="name">IX. Merchant operations</span><span class="pg">24</span></div>
+    <div class="toc-row"><span class="name">X. Built on — trust &amp; audit</span><span class="pg">27</span></div>
+    <div class="toc-row"><span class="name">XI. India-first by design</span><span class="pg">29</span></div>
+  </div>
+
+  <div class="toc-section">
+    <h3>Context</h3>
+    <div class="toc-row"><span class="name">XII. How Breeze compares</span><span class="pg">31</span></div>
+    <div class="toc-row"><span class="name">XIII. Getting started</span><span class="pg">33</span></div>
+    <div class="toc-row"><span class="name">XIV. For internal teams</span><span class="pg">35</span></div>
+  </div>
+
+  <div class="toc-section">
+    <h3>Appendices</h3>
+    <div class="toc-row"><span class="name">A. Glossary</span><span class="pg">37</span></div>
+    <div class="toc-row"><span class="name">B. Quick-reference card</span><span class="pg">39</span></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PART I — UNDERSTANDING BREEZE                                  -->
+<!-- ============================================================ -->
+<div class="part">
+  <h1 class="part-title"><span class="part-num">I.</span>Understanding Breeze</h1>
+
+  <h2>The retention problem in Indian D2C</h2>
+  <p>The average Indian Shopify D2C brand spends ₹250–500 to acquire a customer who never comes back. Repeat-purchase rates sit at 15–25% versus a global benchmark of 35–40%. More than half of every cohort is gone after the first transaction.</p>
+
+  <p>Three forces compound the problem:</p>
+  <div class="stat-row">
+    <div class="stat-card"><div class="val">60–65%</div><div class="lbl">of orders are COD</div></div>
+    <div class="stat-card"><div class="val">25–40%</div><div class="lbl">COD return rate</div></div>
+    <div class="stat-card"><div class="val">85%</div><div class="lbl">WhatsApp open rate</div></div>
+  </div>
+  <p>COD is structurally hostile to loyalty: you can't give instant credit on an order that may never deliver. Existing loyalty tools either ignore COD (Smile.io, Yotpo, LoyaltyLion) or treat it badly (instant credit, manual reversals when RTO happens). Brands using these tools simply turn loyalty off for COD orders — losing rewards on 60%+ of their volume.</p>
+
+  <p>Communication is the second crack. Email opens average 18% in India; WhatsApp opens average 85%. Loyalty tools that send email notifications send to a channel customers don't read.</p>
+
+  <p>The third is tool sprawl. A merchant who wants wallet + loyalty + gift cards + referrals stitches together Smile.io + Rise.ai + ReferralCandy + Flits, paying ~₹17,000/month combined, none India-aware, none talking to each other.</p>
+
+  <h2>The all-in-one proposition</h2>
+  <p>Breeze is one platform that covers the entire retention surface a D2C merchant needs, built India-first:</p>
+
+  <ul>
+    <li><strong>One wallet</strong> for every form of store value — cashback, refunds, gift card balance, referral rewards.</li>
+    <li><strong>One ledger</strong> with append-only audit trail, the same shape as a bank's books.</li>
+    <li><strong>One platform</strong> for six products that share data, rules, and customer context.</li>
+    <li><strong>One India-first toolkit</strong> — COD-aware crediting, WhatsApp delivery, UPI top-up, festive-native campaigns.</li>
+  </ul>
+
+  <p>The structural advantage is greenfield design. Incumbents bolted features together over 8–10 years; their data models reflect build order, not domain truth. Breeze is built in 2026 with the full domain known.</p>
+
+  <h2>Six products, one platform — at a glance</h2>
+  <table>
+    <thead><tr><th>Product</th><th>What it does</th><th>Why it matters</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Wallet</strong></td><td>Holds every form of store value a customer earns</td><td>The single balance customers come back for</td></tr>
+      <tr><td><strong>Loyalty</strong></td><td>Points, VIP tiers, milestones, streaks, birthday, profile, spin wheel</td><td>Mechanics that turn buyers into regulars</td></tr>
+      <tr><td><strong>Gift Cards</strong></td><td>Digital gift cards customers can send and redeem</td><td>A new acquisition + retention channel</td></tr>
+      <tr><td><strong>Referrals</strong></td><td>Two-sided referrals with vanity codes, creator mode, anti-fraud</td><td>Word-of-mouth as a systematic growth channel</td></tr>
+      <tr><td><strong>Campaigns</strong></td><td>Time-boxed multiplier boosts for festive moments</td><td>Diwali and big sales without rewriting rules</td></tr>
+      <tr><td><strong>Memberships</strong></td><td>Paid tiers with premium earning perks (Amazon Prime model)</td><td>Recurring revenue + deeper loyalty lock-in</td></tr>
+    </tbody>
+  </table>
+
+  <blockquote>"Your customers buy once and disappear. Breeze brings them back."</blockquote>
+</div>
+
+<!-- ============================================================ -->
+<!-- PART II — WALLET                                              -->
+<!-- ============================================================ -->
+<div class="part">
+  <h1 class="part-title"><span class="part-num">II.</span>Wallet</h1>
+  <div class="eyebrow-row"><span class="eyebrow-label">Pillar 1</span></div>
+  <div class="tagline">Store credit and cashback that brings customers back.</div>
+
+  <p>The Batua wallet is the heart of the platform. Every credit a customer earns from any source — cashback, refunds, gift cards, referral rewards, birthday bonuses, goodwill — lives in one balance the customer spends at Shopify checkout.</p>
+
+  <h2>Multi-bucket architecture</h2>
+  <p>A single customer wallet contains <em>multiple buckets</em>. Each bucket represents a category of credit with its own rules:</p>
+
+  <table>
+    <thead><tr><th>Bucket</th><th>Source</th><th>Typical rules</th></tr></thead>
+    <tbody>
+      <tr><td><code>EarnedCredit</code></td><td>Cashback from purchases, bonuses, streaks, milestones</td><td>Expires after 90–365 days; spendable up to % of order</td></tr>
+      <tr><td><code>CodPending</code></td><td>Cashback on COD orders, held until delivery</td><td>Released or cancelled by logistics webhook</td></tr>
+      <tr><td><code>GiftCard</code></td><td>Gift card balance after claim</td><td>Often no expiry; full or partial redemption</td></tr>
+      <tr><td><code>ReferralReward</code></td><td>Rewards earned for referring customers</td><td>Separate expiry; restricted to certain orders</td></tr>
+      <tr><td><code>GoodwillCredit</code></td><td>Manual credits from customer service</td><td>Reason attribution; per-actor audit trail</td></tr>
+      <tr><td><code>MembershipBenefit</code></td><td>Bonuses tied to a paid membership</td><td>Linked to membership state</td></tr>
+      <tr><td><code>CustomerFunded</code></td><td>Customer's own top-up via UPI</td><td>No expiry; like a prepaid balance</td></tr>
+      <tr><td><code>RefundCredit</code></td><td>Refunds returned as store credit</td><td>Similar to Rise.ai's signature flow</td></tr>
+    </tbody>
+  </table>
+
+  <p>Each bucket type has independently configurable redemption policies set at the merchant level — minimum redemption, max per order, expiry, whether it stacks with discounts, and excluded payment methods. The customer sees one balance; the merchant has fine-grained control underneath.</p>
+
+  <h2>COD-safe credits</h2>
+  <p>This is Breeze's signature India-feature. Other tools give instant credit on order placement. In India, 25–40% of COD orders are returned. Breeze holds COD-earned credit until delivery is confirmed:</p>
+
+  <ol>
+    <li>Customer places a COD order. Breeze creates a <em>Held</em> ledger entry in the <code>CodPending</code> bucket.</li>
+    <li>The customer sees the pending credit on their wallet, but it's not yet spendable.</li>
+    <li>When the logistics provider's webhook fires <code>order.delivered</code>, Breeze atomically moves the credit out of <code>CodPending</code> and into <code>EarnedCredit</code> — fully spendable, customer notified by WhatsApp.</li>
+    <li>If the order is returned (RTO), the held credit is voided. No manual reversal, no awkward customer support conversation.</li>
+  </ol>
+
+  <div class="callout ok">
+    <strong>Why it matters</strong>
+    Merchants using competitor tools either skip COD orders entirely (losing rewards on 60%+ of volume) or pay out fraudulent / returned credit and absorb the loss. Breeze gives them the rewards mechanic on COD without the financial risk.
+  </div>
+
+  <h2>COD-to-prepaid conversion</h2>
+  <p>Wallet cashback creates an incentive Indian merchants have wanted for years: "Pay via UPI instead of COD, get ₹75 instant credit." Typical results: 8–12% of COD orders switch to prepaid — saving ₹150–300 per order in logistics costs (RTO, COD handling fees, address verification, cash collection). Unlike one-time checkout discounts (GoKwik, Razorpay Magic), wallet cashback creates long-term stickiness — the customer comes back to spend that credit.</p>
+
+  <h2>Displayed vs spendable balance</h2>
+  <p>Customers see two numbers on their storefront wallet:</p>
+  <ul>
+    <li><strong>Spendable</strong> — what they can apply at checkout right now. Sum of all non-held buckets.</li>
+    <li><strong>Pending</strong> — what's held against COD orders, labelled with how many orders are awaiting delivery.</li>
+  </ul>
+  <p>Showing both builds trust without enabling spend the merchant hasn't earned yet.</p>
+
+  <h2>WhatsApp-first notifications</h2>
+  <p>Every wallet movement that matters to the customer triggers a WhatsApp message: earn, release, redeem, expiry warning, RTO cancellation. WhatsApp's 85% open rate makes it the only channel where rewards messages get noticed. Breeze integrates with Indian WhatsApp Business API providers (Interakt, WATI) via a connector framework — swap vendors without changing templates.</p>
+
+  <h2>UPI top-up</h2>
+  <p>Customers can fund their own wallet via UPI for a discount — "Add ₹500, get ₹525 credit." Useful for prepaid programs and pre-festive sale runs. Goes into the <code>CustomerFunded</code> bucket, never expires.</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- PART III — LOYALTY                                            -->
+<!-- ============================================================ -->
+<div class="part">
+  <h1 class="part-title"><span class="part-num">III.</span>Loyalty</h1>
+  <div class="eyebrow-row"><span class="eyebrow-label">Pillar 2</span></div>
+  <div class="tagline">Points, tiers, and the engagement mechanics that turn buyers into regulars.</div>
+
+  <p>Breeze's loyalty engine is a configurable rule system, not a fixed program. Merchants compose the program from primitives: earn rules, VIP tiers, milestones, streaks, scheduled bonuses, and gamification events.</p>
+
+  <h2>Earn rules</h2>
+  <p>The most fundamental primitive. An earn rule says: <em>"when [event] happens with [conditions], award [reward]"</em>. Examples:</p>
+  <ul>
+    <li>"5% cashback on every prepaid order ≥ ₹500, max ₹200 per order, expires in 90 days"</li>
+    <li>"₹100 bonus on the customer's first order"</li>
+    <li>"3% cashback on COD orders, released after delivery"</li>
+  </ul>
+  <p>Rules are configured visually in the admin. Conditions can match payment method, order amount, collections, customer tags, and first-order status. Calculations support percentage of order or fixed amount. Each rule has its own cap (max per order) and expiry.</p>
+
+  <h2>VIP tiers</h2>
+  <p>Customers climb tiers based on spend (rolling, lifetime, or order count). Each tier carries an <em>earn-rate multiplier</em> applied to all subsequent rewards.</p>
+
+  <table>
+    <thead><tr><th>Example tier</th><th>Threshold</th><th>Multiplier</th></tr></thead>
+    <tbody>
+      <tr><td>Bronze</td><td>₹0+</td><td>1×</td></tr>
+      <tr><td>Silver</td><td>₹2,000+ rolling 365-day spend</td><td>1.25×</td></tr>
+      <tr><td>Gold</td><td>₹5,000+</td><td>1.5×</td></tr>
+      <tr><td>Platinum</td><td>₹15,000+</td><td>2×</td></tr>
+    </tbody>
+  </table>
+
+  <p>Tier names, thresholds, and multipliers are fully merchant-configurable. The evaluation window and criterion (spend vs. order count) are program-level settings. Customers auto-promote and auto-demote as their spend crosses thresholds.</p>
+
+  <div class="callout info">
+    <strong>India context</strong>
+    Indian shoppers expect tiers — inspired by Tata Neu, Flipkart Plus, Zomato Gold. Breeze brings the mechanic to D2C brands at SMB pricing.
+  </div>
+
+  <h2>Milestones</h2>
+  <p>One-time bonuses awarded when a customer crosses a lifetime threshold:</p>
+  <ul>
+    <li>3rd order → ₹50 bonus</li>
+    <li>₹5,000 lifetime spend → ₹150 bonus</li>
+    <li>10th order → ₹500 bonus</li>
+  </ul>
+  <p>Checked automatically after every purchase. Each milestone fires once per customer.</p>
+
+  <h2>Streaks</h2>
+  <p>Reward consistent purchasing in a rolling window:</p>
+  <ul>
+    <li>"3 orders in 30 days → ₹75"</li>
+    <li>"5 orders in 60 days → ₹150"</li>
+  </ul>
+  <p>Each streak achievement is one-per-customer-per-window. When the window resets, the customer can earn it again. Streaks reward consistency rather than spend size — useful for high-frequency low-AOV categories (snacks, beauty, beverages).</p>
+
+  <h2>Birthday bonus</h2>
+  <p>Automatic credit on the customer's birthday, once per year. Configured globally (e.g. ₹100). Fires at a scheduled job, sends a WhatsApp ("Happy birthday Priya! ₹100 added to your wallet"), idempotent so re-runs don't double-credit.</p>
+
+  <h2>Profile completion</h2>
+  <p>One-time credit when the customer fills in name, email, and birthday. Default ₹30. Gives merchants better customer data; gives customers a clear "free money" incentive. Tracked field-by-field, fires only when all three are populated.</p>
+
+  <h2>Newsletter signup</h2>
+  <p>Idempotent reward for first newsletter subscription. Different from the profile completion flow — fires the first time a customer opts into marketing communications.</p>
+
+  <h2>Spin-the-wheel</h2>
+  <p>Gamified post-purchase reward. Merchant configures a wheel with weighted segments and a daily spin limit. Customer spins after every order (up to the limit), winning a random reward into their wallet. Per-customer daily-limit prevents abuse; weighted probability per segment ensures the merchant's economics work out.</p>
+
+  <h2>Multiplier stacking</h2>
+  <p>When a customer is in a tier, possibly also a member, and a campaign is running, multipliers compound:</p>
+
+  <ul>
+    <li><strong>Tier multiplier</strong> — from the customer's current VIP tier</li>
+    <li><strong>Membership multiplier</strong> — from a paid membership (if any). Breeze takes the <em>max</em> of tier and membership, not the product, to avoid runaway boosts.</li>
+    <li><strong>Campaign multiplier</strong> — from any active campaign matching the rule. Applied on top of the tier/membership max.</li>
+  </ul>
+
+  <p>Effective rate is shown on the customer-facing storefront before they buy: "You'll earn 4.5× rewards on this order — your Gold status + the Diwali bonus."</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- PART IV — GIFT CARDS                                          -->
+<!-- ============================================================ -->
+<div class="part">
+  <h1 class="part-title"><span class="part-num">IV.</span>Gift Cards</h1>
+  <div class="eyebrow-row"><span class="eyebrow-label">Pillar 3</span></div>
+  <div class="tagline">Digital gift cards customers can send and redeem.</div>
+
+  <p>Gift cards open a category Shopify's native feature doesn't cover well: shareable, claimable, partial-redemption-capable digital gift cards that integrate with the rest of the wallet.</p>
+
+  <h2>Digital gift card issuance</h2>
+  <p>Merchants issue gift cards from the admin or via the API. Each card has a unique bearer code (alphanumeric, 12–16 characters), an amount, an optional expiry, and an optional recipient name/message. The card is delivered via email or WhatsApp.</p>
+
+  <h2>Bearer instrument model</h2>
+  <p>A gift card isn't tied to a customer until claimed. Priya can buy a ₹500 card and send the code to her friend; the friend pastes the code into a public claim page (no account required to view), then claims it into their own wallet. The balance moves from the card to the recipient's <code>GiftCard</code> bucket atomically — the same code can't be claimed twice.</p>
+
+  <h2>Bulk issuance for festive season</h2>
+  <p>Merchants upload a CSV during Diwali / Rakhi / corporate gifting — 500 gift cards generated with unique codes, ready to distribute. Re-upload the same file? Idempotency keys prevent duplicates. Each card has its own ledger trail.</p>
+
+  <h2>Partial redemption</h2>
+  <p>₹500 card. Customer spends ₹200 at checkout. ₹300 remains in their wallet. They come back for it. Most gift card systems force full-or-nothing; partial creates a strong return motive.</p>
+
+  <h2>Public balance check</h2>
+  <p>The storefront has a dedicated <code>/s/{slug}/gift-cards/check</code> page where anyone can paste a gift card code and see the remaining balance + expiry. No account required, no friction, no support ticket.</p>
+
+  <div class="callout ok">
+    <strong>Why it matters</strong>
+    Digital gift cards are growing 20–30% annually in India — personal and corporate gifting. Brands without a proper gift card system miss the entire gifting acquisition channel.
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PART V — REFERRALS                                            -->
+<!-- ============================================================ -->
+<div class="part">
+  <h1 class="part-title"><span class="part-num">V.</span>Referrals</h1>
+  <div class="eyebrow-row"><span class="eyebrow-label">Pillar 4</span></div>
+  <div class="tagline">Two-sided referrals that turn customers into a growth channel.</div>
+
+  <p>Word of mouth is the #1 discovery channel for Indian consumers. Breeze makes it systematic.</p>
+
+  <h2>Auto-generated referral codes</h2>
+  <p>Every customer gets a referral code automatically. Trigger is configurable per merchant — on registration or on first purchase. Codes derive from the customer's name when available (e.g., <code>PRIYA10</code>) or are randomly generated (<code>REF8F3A2B</code>).</p>
+
+  <h2>Vanity codes</h2>
+  <p>Codes customers actually want to share. <code>PRIYA10</code>. <code>VIKRAM20</code>. <code>KARTHIK</code>. Not <code>ref_8f3a2b_2026</code>. The system reserves customer-name-derived codes by default and falls back to random if collisions occur.</p>
+
+  <h2>Creator / influencer mode</h2>
+  <p>For brand ambassadors and content creators, the system supports:</p>
+  <ul>
+    <li>Custom vanity codes (the creator picks)</li>
+    <li>Tiered commissions per creator</li>
+    <li>Conversion tracking — which creator drove which sale</li>
+    <li>Higher rewards for referee compared to standard customer referrals</li>
+    <li>Public landing pages branded to the creator</li>
+  </ul>
+  <p>A dedicated <code>/admin/influencers</code> page lets the team manage creator codes independently from regular customer referrals.</p>
+
+  <h2>Anti-fraud signals</h2>
+  <p>Referral programs attract abuse. Breeze tracks five fraud signals on every conversion:</p>
+  <ul>
+    <li>Same IP as the referrer? Flag.</li>
+    <li>Same device fingerprint? Flag.</li>
+    <li>Velocity unusual (10+ referrals in an hour)? Flag.</li>
+    <li>Self-referral attempt? Blocked.</li>
+    <li>Referee has a wallet at the merchant already? Flag.</li>
+  </ul>
+  <p>Flagged conversions go to a review queue; the merchant decides whether to honor. Hard-blocked attempts never get logged as conversions.</p>
+
+  <h2>Branded referral landing pages</h2>
+  <p>Friends land on <code>yourstore.com/refer/PRIYA10</code> — a full branded page, not a query parameter on the homepage. "Hi! You've been invited by Priya. Get ₹25 off your first order with code PRIYA10." Customer can screenshot it and share with conviction. Conversion uplift versus a query-param link is 2–3×.</p>
+
+  <h2>Give-get rewards</h2>
+  <p>Both sides get rewarded when the referee completes their first purchase. Referrer's reward goes to their <code>ReferralReward</code> bucket; referee's reward applies at the next checkout. Amounts are configurable per program.</p>
+
+  <h2>No platform commission</h2>
+  <p>Unlike referral-only tools (ReferralCandy, Friendbuy) that take 1.5–3.5% of referral revenue, Breeze doesn't take a cut. The rewards are entirely yours to design.</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- PART VI — CAMPAIGNS                                           -->
+<!-- ============================================================ -->
+<div class="part">
+  <h1 class="part-title"><span class="part-num">VI.</span>Campaigns</h1>
+  <div class="eyebrow-row"><span class="eyebrow-label">Pillar 5</span></div>
+  <div class="tagline">Time-boxed boosts for the festive season and big moments.</div>
+
+  <p>Campaigns layer a multiplier on top of one or more existing earn rules for a defined time window. They are the cleanest way to run "double rewards weekend" or "3× cashback during Diwali" without rewriting any rule.</p>
+
+  <h2>Multiplier campaigns</h2>
+  <p>A campaign specifies:</p>
+  <ul>
+    <li><strong>Base rule</strong> — which earn rule(s) it applies to</li>
+    <li><strong>Multiplier</strong> — 1.5×, 2×, 3×, or any value</li>
+    <li><strong>Start and end dates</strong> — scheduled, can run weeks ahead</li>
+    <li><strong>Optional cap override</strong> — campaign-specific max if you want to lift caps during the window</li>
+  </ul>
+  <p>During the window, any matching earn event sees its reward scaled by the multiplier. Outside the window, normal rules apply.</p>
+
+  <h2>Festive templates</h2>
+  <p>Pre-built campaign templates for Indian festivals:</p>
+  <div class="pill-list">
+    <span class="pill">Diwali</span>
+    <span class="pill">Rakhi</span>
+    <span class="pill">Holi</span>
+    <span class="pill">Eid</span>
+    <span class="pill">Onam</span>
+    <span class="pill">Pongal</span>
+    <span class="pill">Independence Day</span>
+    <span class="pill">Republic Day</span>
+    <span class="pill">New Year</span>
+    <span class="pill">Valentine's Day</span>
+    <span class="pill">Mother's Day</span>
+    <span class="pill">Father's Day</span>
+  </div>
+  <p>Each template comes with sensible defaults — duration, multiplier, suggested copy. Merchants tweak and ship in under 5 minutes.</p>
+
+  <h2>Campaign calendar</h2>
+  <p>A unified view of all scheduled campaigns by month — past, active, upcoming. Avoid accidentally stacking three multipliers on one weekend.</p>
+
+  <h2>Performance tracking</h2>
+  <p>Per-campaign metrics: total orders attributed, unique customers participating, extra rewards issued, marginal revenue lift. Tells the merchant whether the campaign earned its cost.</p>
+
+  <h2>Stacking with tiers and memberships</h2>
+  <p>Campaign multipliers stack on top of tier and membership multipliers. A Gold customer (1.5×) who is also a member (2×) earns at 2× (max of tier and membership). On Diwali, a 3× campaign multiplies that — effective rate 6×. The customer-facing storefront shows the resolved rate before checkout.</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- PART VII — MEMBERSHIPS                                        -->
+<!-- ============================================================ -->
+<div class="part">
+  <h1 class="part-title"><span class="part-num">VII.</span>Memberships</h1>
+  <div class="eyebrow-row"><span class="eyebrow-label">Pillar 6</span></div>
+  <div class="tagline">The Amazon Prime model. For your store.</div>
+
+  <p>Paid memberships give your best customers VIP treatment — and give you predictable, recurring revenue.</p>
+
+  <h2>Paid tier model</h2>
+  <p>Merchants offer one or more membership plans — typically monthly and annual. Each plan carries premium benefits:</p>
+  <ul>
+    <li>Boosted earn-rate (e.g., 2× cashback on every order)</li>
+    <li>Free shipping</li>
+    <li>Early access to launches</li>
+    <li>Exclusive collections</li>
+    <li>Priority support</li>
+  </ul>
+
+  <h2>Earn-boost stacking</h2>
+  <p>The member's earn-rate multiplier applies on top of their tier. If they're Gold (1.5×) AND a member with a 2× boost, they earn at 2× (max wins). Layer in a Diwali campaign at 3× and the effective rate is 6×. The customer sees this on the storefront: <em>"You earn 6× rewards on this order."</em></p>
+
+  <h2>Self-serve upgrade, extend, renew</h2>
+  <p>Members manage their plan from their account. They can:</p>
+  <ul>
+    <li>Upgrade from monthly to annual mid-cycle</li>
+    <li>Extend by a custom number of months</li>
+    <li>Renew early (before expiry)</li>
+    <li>Cancel future renewals</li>
+  </ul>
+  <p>No support tickets for plan changes. The wallet, balance, and benefits update instantly when the plan does.</p>
+
+  <h2>Auto-renewal reminders</h2>
+  <p>WhatsApp nudges fire at 7 days, 1 day, and on expiry. Members renewing close to expiry convert at 65%+ — higher than any other lifecycle moment.</p>
+
+  <h2>Tied to your loyalty tiers</h2>
+  <p>Members can be granted instant tier status — pay for Gold instead of grinding to it. The customer's effective multiplier is always the better of earned tier and membership tier. No worse off, often better.</p>
+
+  <div class="callout ok">
+    <strong>Why it matters</strong>
+    Members have already committed money to your brand. They <em>will</em> come back to get their money's worth. Typical member spends 3–4× more than non-members.
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PART VIII — CUSTOMER-FACING SURFACES                          -->
+<!-- ============================================================ -->
+<div class="part">
+  <h1 class="part-title"><span class="part-num">VIII.</span>Customer-facing surfaces</h1>
+  <div class="eyebrow-row"><span class="eyebrow-label">Surrounding platform</span></div>
+  <div class="tagline">A rewards homepage. Not a widget.</div>
+
+  <p>Smile.io, Yotpo, LoyaltyLion — they give merchants a popup in the corner. Breeze gives every customer their own page at the merchant's domain. Branded. Full-width. Theirs.</p>
+
+  <h2>The branded storefront</h2>
+  <p>Every merchant gets a customer-facing storefront at <code>yourstore.com/rewards</code> (path configurable). It loads with the merchant's branding — header, fonts, colors, copy — and shows:</p>
+  <ul>
+    <li>The customer's spendable and pending wallet balance, segmented by bucket</li>
+    <li>Recent earning activity with provenance ("+₹150 cashback on Order #3401, releases on delivery")</li>
+    <li>Active campaign multipliers and their end dates</li>
+    <li>The customer's current tier, multiplier, and next-tier threshold</li>
+    <li>Available gift card balance</li>
+    <li>Their personal referral code with share buttons (WhatsApp, copy link)</li>
+  </ul>
+  <p>Mobile-first; works inside the Shopify customer account or as a standalone page.</p>
+
+  <h2>WhatsApp lifecycle messages</h2>
+  <p>Every customer touchpoint that matters fires a WhatsApp message. Templates are merchant-editable per event:</p>
+
+  <table>
+    <thead><tr><th>Event</th><th>Default copy</th></tr></thead>
+    <tbody>
+      <tr><td><code>order_earned</code></td><td>"₹150 cashback on your order — balance now ₹540"</td></tr>
+      <tr><td><code>cod_credit_held</code></td><td>"₹150 cashback on its way — confirms after delivery"</td></tr>
+      <tr><td><code>cod_credit_released</code></td><td>"₹150 cashback is now spendable in your wallet 🎉"</td></tr>
+      <tr><td><code>cod_credit_cancelled</code></td><td>"Your order was returned — pending credit removed"</td></tr>
+      <tr><td><code>birthday_bonus</code></td><td>"Happy birthday Priya! ₹100 added to your wallet"</td></tr>
+      <tr><td><code>tier_promoted</code></td><td>"You're now Gold — 1.5× rewards on every order"</td></tr>
+      <tr><td><code>milestone_achieved</code></td><td>"10 orders! Here's ₹500 to celebrate."</td></tr>
+      <tr><td><code>membership_renewal</code></td><td>"Your membership expires in 7 days — renew with one tap"</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Public gift-card balance check</h2>
+  <p><code>yourstore.com/gift-cards/check</code> — recipients verify balance without an account. Paste code → see balance + expiry. Shareable link, zero friction, zero support tickets.</p>
+
+  <h2>Branded referral landing pages</h2>
+  <p><code>yourstore.com/refer/PRIYA10</code> — friends land on a page Priya can actually screenshot and share. Big "Shop Now," merchant branding, no ugly query strings. Conversion uplift vs. a query-param link: 2–3×.</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- PART IX — MERCHANT OPERATIONS                                 -->
+<!-- ============================================================ -->
+<div class="part">
+  <h1 class="part-title"><span class="part-num">IX.</span>Merchant operations</h1>
+  <div class="eyebrow-row"><span class="eyebrow-label">Surrounding platform</span></div>
+  <div class="tagline">Built for the people who run loyalty, not just the customers.</div>
+
+  <p>Loyalty fails when the merchant team can't operate it. Every screen, every button, every export is built for the human running the store.</p>
+
+  <h2>Wallet policies</h2>
+  <p>Per credit type (bucket), the merchant configures redemption rules:</p>
+  <ul>
+    <li><strong>Minimum redemption</strong> — must redeem at least ₹X per transaction</li>
+    <li><strong>Step size</strong> — must redeem in multiples of ₹X</li>
+    <li><strong>Max per order (%)</strong> — can't pay more than X% of an order from this bucket</li>
+    <li><strong>Max per order (₹)</strong> — fixed rupee cap per order</li>
+    <li><strong>Stackable with discount codes?</strong> — yes/no toggle</li>
+    <li><strong>Default expiry days</strong> — if a rule doesn't specify, use this</li>
+    <li><strong>Excluded payment methods</strong> — can't use this bucket on COD orders, for example</li>
+  </ul>
+  <p>The CFO sets the guardrails once; customers see clean rules at checkout.</p>
+
+  <h2>Manual &amp; bulk credit</h2>
+  <p>Operational tools for the team:</p>
+  <ul>
+    <li><strong>Manual credit</strong> — credit a single customer for a service recovery, with a reason field for audit.</li>
+    <li><strong>Bulk credit</strong> — upload a CSV of customer IDs and an amount; credit 500 customers in one go (e.g. apology for a Diwali shipping delay).</li>
+  </ul>
+  <p>Every entry is logged, reasoned, and attributed to the team member who issued it.</p>
+
+  <h2>Debit &amp; force-expire</h2>
+  <p>Mistakes happen. Tools for cleanup:</p>
+  <ul>
+    <li><strong>Admin debit</strong> — claw back a wrongly-issued credit. Reason required.</li>
+    <li><strong>Force expire</strong> — expire a stale balance ahead of schedule.</li>
+  </ul>
+  <p>Every reversal lands in the same append-only ledger — auditable, never silent.</p>
+
+  <h2>Notification template editor</h2>
+  <p>The actual WhatsApp / SMS / email copy is yours to edit per event. Tone, language, emoji. Hindi, Tamil, Gujarati — go. Variables like <code>{{customer_name}}</code>, <code>{{amount}}</code>, <code>{{order_id}}</code>, <code>{{wallet_balance}}</code> are available across templates. A "send test to me" button lets the team verify changes before going live.</p>
+
+  <h2>Custom points naming</h2>
+  <p>Brand your points: "Drapes Dollars," "Henna Hearts," "Chai Coins." Set the icon, the name, and the conversion rate to rupees. Your vocabulary, everywhere customers see their balance — including the WhatsApp messages and the storefront.</p>
+
+  <h2>Transactions ledger</h2>
+  <p>Every movement on every wallet, filterable by customer, bucket, source rule, campaign, date range. Exportable to CSV. Your finance team gets the truth in one screen — no spreadsheets, no Shopify exports stitched together.</p>
+
+  <h2>Customer detail page</h2>
+  <p>For any customer, the team can see:</p>
+  <ul>
+    <li>Wallet balance broken down by bucket</li>
+    <li>Current tier and membership status</li>
+    <li>Order history</li>
+    <li>Loyalty events (earns, redemptions, milestones)</li>
+    <li>Referrals received and sent</li>
+    <li>One-click actions: credit, debit, expire, change tier, assign membership</li>
+  </ul>
+</div>
+
+<!-- ============================================================ -->
+<!-- PART X — BUILT ON                                              -->
+<!-- ============================================================ -->
+<div class="part">
+  <h1 class="part-title"><span class="part-num">X.</span>Built on — trust &amp; audit</h1>
+  <div class="eyebrow-row"><span class="eyebrow-label">Surrounding platform</span></div>
+  <div class="tagline">Built like a bank. Priced like a SaaS.</div>
+
+  <p>Loyalty programs are real liability — points are a number on your balance sheet (under Ind AS 115 / IFRS 15). The system that mints them had better be one you'd trust your auditor with.</p>
+
+  <h2>Append-only double-entry ledger</h2>
+  <p>Every credit, debit, COD release, and expiry is an immutable entry. Nothing is overwritten. Nothing is silently corrected. The ledger is the source of truth — your auditor will recognize the shape immediately.</p>
+
+  <h2>Idempotency on every action</h2>
+  <p>Re-process the same Shopify webhook 100 times. The customer earns the bonus once. Every operation that touches the wallet carries an idempotency key — duplicates are physically impossible.</p>
+
+  <h2>Event ingestion state machine</h2>
+  <p>Shopify webhooks land in a state machine: <code>Received → Processing → Processed</code> (or <code>Failed</code>). Nothing is silently dropped, nothing is silently retried. Operations sees the truth on a dashboard, not in customer complaints.</p>
+
+  <h2>Full attribution on every change</h2>
+  <p>Every credit attributes to a rule, a campaign, a manual issuance, or a system event — and the human who triggered it. Customer asks "where did this ₹150 come from?" — one query, one answer.</p>
+
+  <h2>The eight foundational truths</h2>
+  <p>The architectural commitments we never break:</p>
+  <ol>
+    <li>The ledger is append-only — entries are immutable; corrections are new entries.</li>
+    <li>Idempotency is structural — every operation has a stable key; duplicate keys are blocked at the storage layer.</li>
+    <li>Value is not fungible across buckets — earned credit ≠ gift card balance ≠ refund credit; conversion rules are explicit.</li>
+    <li>Held credit is held — pending COD credit is a real ledger state, not a placeholder.</li>
+    <li>Movements have direction — every entry is In, Out, or Held; balance is the algebraic sum.</li>
+    <li>Identity is by phone first — Indian customers identify primarily by phone; email is secondary.</li>
+    <li>Rules are snapshotted at evaluation — a rule edit doesn't retroactively change historical earnings.</li>
+    <li>Events fire from real triggers — every reward has an event source we can point at.</li>
+  </ol>
+
+  <p>These weren't bolted on as we built. They were the architectural decisions before the first feature shipped.</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- PART XI — INDIA-FIRST                                          -->
+<!-- ============================================================ -->
+<div class="part">
+  <h1 class="part-title"><span class="part-num">XI.</span>India-first by design</h1>
+  <div class="eyebrow-row"><span class="eyebrow-label">Surrounding platform</span></div>
+  <div class="tagline">Not adapted to India. Built for India.</div>
+
+  <h2>COD-aware mechanics</h2>
+  <p>The held-credit model covered in Part II isn't an afterthought — it's the platform's signature feature. COD is 60%+ of Indian D2C volume; treating it as a second-class case (the way every global loyalty platform does) means giving up most of the program's reach.</p>
+
+  <h2>WhatsApp as the primary channel</h2>
+  <p>Global tools default to email. India defaults to WhatsApp. Open rates: 85% vs 18%. Breeze treats WhatsApp as the primary notification channel; email is a secondary fallback. The connector framework supports multiple Indian WhatsApp BSPs (Interakt, WATI) — swap providers without changing templates or losing history.</p>
+
+  <h2>Festive-native campaigns</h2>
+  <p>Diwali, Rakhi, Holi, Eid, Onam, Pongal — every major Indian festival has a campaign template with sensible defaults. Brands ship festive promotions in minutes, not days. Global tools treat festivals as "create a custom campaign yourself, good luck."</p>
+
+  <h2>UPI integration</h2>
+  <p>Customers can fund their wallet via UPI — Breeze accepts deposits through standard UPI flows and credits the customer's <code>CustomerFunded</code> bucket. Useful for prepaid program design and pre-festive sale runs ("Add ₹500, get ₹525 credit").</p>
+
+  <h2>RTO analytics</h2>
+  <p>COD-aware design needs RTO awareness. Breeze tracks per-merchant RTO rates and shows the financial impact: "Your COD rate is 65%; your COD-to-prepaid conversion is 12%; that saved ₹2.4L in logistics last month."</p>
+
+  <h2>Multi-lingual notification templates</h2>
+  <p>Notification templates support Hindi, Tamil, Gujarati, Bengali, Marathi, and English out of the box. Brands targeting Tier-2/Tier-3 cities pick the language per template; can also segment by customer language preference.</p>
+
+  <h2>INR-first pricing &amp; accounting</h2>
+  <p>The wallet's currency is INR. Pricing is in INR. Bookkeeping integrations target Tally and Zoho. No conversion confusion, no FX baked into the customer's view.</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- PART XII — HOW BREEZE COMPARES                                 -->
+<!-- ============================================================ -->
+<div class="part">
+  <h1 class="part-title"><span class="part-num">XII.</span>How Breeze compares</h1>
+  <div class="eyebrow-row"><span class="eyebrow-label">Context</span></div>
+  <div class="tagline">No single competitor covers what Breeze covers.</div>
+
+  <p>The Indian D2C retention market splits into three tiers of competitors. Breeze occupies a niche none fully cover.</p>
+
+  <h2>Versus global Shopify loyalty apps</h2>
+  <table>
+    <thead><tr><th></th><th>Smile.io</th><th>Yotpo</th><th>LoyaltyLion</th><th>Rise.ai</th><th><strong>Breeze</strong></strong></th></tr></thead>
+    <tbody>
+      <tr><td>Points / Tiers</td><td>✓</td><td>✓</td><td>✓</td><td>—</td><td>✓</td></tr>
+      <tr><td>Wallet / Store credit</td><td>—</td><td>Limited</td><td>—</td><td>✓</td><td>✓</td></tr>
+      <tr><td>Gift Cards</td><td>—</td><td>—</td><td>—</td><td>✓ (best)</td><td>✓</td></tr>
+      <tr><td>Referrals</td><td>✓</td><td>✓</td><td>✓</td><td>Basic</td><td>✓</td></tr>
+      <tr><td>Campaigns</td><td>—</td><td>via SMS</td><td>—</td><td>—</td><td>✓</td></tr>
+      <tr><td>Memberships</td><td>—</td><td>—</td><td>—</td><td>Basic</td><td>✓</td></tr>
+      <tr><td>COD-aware</td><td>—</td><td>—</td><td>—</td><td>—</td><td>✓</td></tr>
+      <tr><td>WhatsApp-first</td><td>—</td><td>—</td><td>—</td><td>—</td><td>✓</td></tr>
+      <tr><td>India INR pricing</td><td>—</td><td>—</td><td>—</td><td>—</td><td>✓</td></tr>
+    </tbody>
+  </table>
+
+  <p>Smile.io is the global leader (~100K merchants, $49–999/mo USD pricing). Yotpo is the mid-market Shopify Plus player. LoyaltyLion is the high-end customizable option (₹40K+/mo). Rise.ai owns the gift-card category. None do COD, none do WhatsApp, all are USD-priced and India-blind.</p>
+
+  <h2>Versus enterprise loyalty platforms</h2>
+  <p>Capillary, Antavo, Talon.One, Zinrelo. $30K–50K+/year minimum. API-first, customizable, but require dedicated integration engineering. Wrong segment for D2C SMBs. Strong on financial control (budgets, liability reporting) — Breeze borrows those primitives at SMB pricing.</p>
+
+  <h2>Versus Indian players</h2>
+  <ul>
+    <li><strong>GoKwik</strong> — Indian COD specialist. ML-based RTO scoring, one-click checkout, "KwikRewards" expanding into rewards space. Strong on checkout; just entering loyalty. Most direct threat on the COD-rewards angle.</li>
+    <li><strong>Flits</strong> — India-origin Shopify wallet app. Strong wallet feature, no loyalty / referrals / campaigns / memberships. Limited scope.</li>
+    <li><strong>WebEngage / MoEngage / CleverTap</strong> — Indian engagement platforms. They send messages; Breeze runs loyalty. Different layers; potential integration partners.</li>
+    <li><strong>Razorpay Magic Checkout</strong> — checkout-time discounts and rewards. Payments-first; loyalty is secondary.</li>
+  </ul>
+
+  <h2>Breeze's competitive moat</h2>
+  <ol>
+    <li><strong>All-in-one for India</strong> — wallet + loyalty + gift cards + referrals + campaigns + memberships in one platform. No competitor offers all six.</li>
+    <li><strong>COD-aware loyalty</strong> — held credit until delivery; the only loyalty platform with this primitive built-in.</li>
+    <li><strong>Customer storefront</strong> — a branded rewards page at the merchant's domain. Smile/Yotpo/LoyaltyLion only have widgets.</li>
+    <li><strong>India-first architecture</strong> — built for INR, Indian merchants, Indian consumer behaviour from day one.</li>
+  </ol>
+</div>
+
+<!-- ============================================================ -->
+<!-- PART XIII — GETTING STARTED                                    -->
+<!-- ============================================================ -->
+<div class="part">
+  <h1 class="part-title"><span class="part-num">XIII.</span>Getting started</h1>
+  <div class="eyebrow-row"><span class="eyebrow-label">Context</span></div>
+  <div class="tagline">Five minutes from install to first reward rule.</div>
+
+  <h2>Onboarding flow</h2>
+  <p>The setup wizard walks merchants through six steps:</p>
+
+  <ol>
+    <li><strong>Welcome</strong> — confirm the merchant and Shopify connection.</li>
+    <li><strong>Rewards</strong> — set the prepaid cashback rate (%), minimum order amount, max cashback per order. Optionally enable COD rewards at a different rate.</li>
+    <li><strong>Wallet policy</strong> — minimum redemption, max % of order, whether credits stack with discount codes.</li>
+    <li><strong>Loyalty tiers</strong> — opt into a default Bronze/Silver/Gold/Platinum ladder, or skip.</li>
+    <li><strong>Referrals</strong> — opt into a two-sided referral program with default rewards, or skip.</li>
+    <li><strong>Done</strong> — summary of everything created, links to the dashboard and the storefront.</li>
+  </ol>
+
+  <p>The wizard's defaults are conservative and sensible for a typical Indian D2C brand. Everything is editable post-onboarding.</p>
+
+  <h2>What gets set up by default</h2>
+  <ul>
+    <li>One "Prepaid Order Cashback" rule and (if enabled) one "COD Order Cashback" rule</li>
+    <li>One wallet policy on the <code>EarnedCredit</code> bucket</li>
+    <li>(Optional) loyalty program with 4-tier ladder</li>
+    <li>(Optional) referral program with give-get rewards</li>
+    <li>Default notification templates for all customer-facing events</li>
+    <li>The customer storefront at <code>yourstore.com/rewards</code></li>
+  </ul>
+
+  <h2>Common adjustments after launch</h2>
+  <ul>
+    <li>Customize the WhatsApp template copy to match brand voice</li>
+    <li>Add festive campaigns scheduled for upcoming Indian festivals</li>
+    <li>Tune wallet policies per bucket (especially expiry days)</li>
+    <li>Configure VIP tier thresholds based on actual customer spend distribution</li>
+    <li>Enable memberships once you have a paying customer base</li>
+    <li>Set up logistics provider webhooks for COD release</li>
+  </ul>
+
+  <h2>Re-entering the wizard</h2>
+  <p>After onboarding, merchants can revisit the wizard in <strong>preview mode</strong> at <code>/admin/setup?preview=1</code> — walks through the same screens read-only, pre-filled with current configuration. Useful for support, training, and audit.</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- PART XIV — FOR INTERNAL TEAMS                                  -->
+<!-- ============================================================ -->
+<div class="part">
+  <h1 class="part-title"><span class="part-num">XIV.</span>For internal teams</h1>
+  <div class="eyebrow-row"><span class="eyebrow-label">Operational reference</span></div>
+  <div class="tagline">Quick reference for sales, success, and support.</div>
+
+  <h2>Where features live in the admin</h2>
+  <table>
+    <thead><tr><th>Feature</th><th>Admin location</th></tr></thead>
+    <tbody>
+      <tr><td>Earn rules</td><td>Loyalty → Earn Rules</td></tr>
+      <tr><td>VIP tiers</td><td>Loyalty → VIP Tiers</td></tr>
+      <tr><td>Memberships</td><td>Loyalty → Memberships</td></tr>
+      <tr><td>Campaigns</td><td>Loyalty → Campaigns</td></tr>
+      <tr><td>Wallet policies</td><td>Wallet → Policies</td></tr>
+      <tr><td>Gift cards</td><td>Gift Cards (top-level)</td></tr>
+      <tr><td>Referral program</td><td>Referrals → Referral Program</td></tr>
+      <tr><td>Influencer codes</td><td>Referrals → Influencers</td></tr>
+      <tr><td>Notification templates</td><td>Settings → Notifications</td></tr>
+      <tr><td>Store details &amp; slug</td><td>Settings → My Store</td></tr>
+      <tr><td>Connectors (WhatsApp, logistics)</td><td>Settings → Connectors</td></tr>
+      <tr><td>Customer ledger</td><td>Customers → [Customer] → Ledger</td></tr>
+      <tr><td>Transactions log</td><td>Transactions (top-level)</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Common merchant questions</h2>
+
+  <h4>Q: Why didn't my customer get points on their order?</h4>
+  <p>Check, in order: (1) Is the rule active? (2) Do the order conditions match (payment method, min amount, etc.)? (3) Is it a COD order? COD rewards are <em>held</em>, not denied — they release after delivery webhook fires. (4) Did the event ingestion fail? Check the Events log under Transactions.</p>
+
+  <h4>Q: Customer paid via UPI but earned the COD cashback rate.</h4>
+  <p>Shopify's payment_method field. If it's coming through as "cash on delivery," it'll match the COD rule. Check the order's payment_gateway_names in the event payload. If Shopify is mis-tagging, the merchant needs to fix it in Shopify checkout settings.</p>
+
+  <h4>Q: How do I refund a customer's cashback if they returned the order?</h4>
+  <p>For COD orders: the logistics RTO webhook automatically voids the held credit. No action needed. For prepaid orders: use the Customer detail page → "Debit" action. Reason field required for audit.</p>
+
+  <h4>Q: Can I run multiple campaigns at the same time?</h4>
+  <p>Yes. If two campaigns match the same rule, multipliers don't compound — the higher multiplier wins. If they target different rules, both apply.</p>
+
+  <h4>Q: What happens when a tier's threshold is changed?</h4>
+  <p>Customers are re-evaluated at the next reward event. A customer who was Gold under the old threshold may drop to Silver if their spend no longer qualifies. The change isn't retroactive — past earnings are locked in.</p>
+
+  <h4>Q: How is liability tracked?</h4>
+  <p>The transactions ledger gives the running total of outstanding credit per bucket. Total liability = sum across buckets minus any pending COD (which is contingent until delivery).</p>
+
+  <h2>Quick-reference operational tips</h2>
+  <ul>
+    <li>Always check the Events log before assuming a bug. Most "missing credit" issues are event ingestion problems (Shopify webhook didn't fire, event was rejected, etc.).</li>
+    <li>For high-priority support cases, the Customer detail page + the audit trail on each ledger entry is your fastest path to root cause.</li>
+    <li>When onboarding a new merchant, run them through the preview wizard so they understand what's set up — then point them at /admin/loyalty to tune tier thresholds based on their actual customer data.</li>
+    <li>For festive launches: set up campaigns 1–2 weeks ahead so notifications can fire announcement messages before the campaign starts.</li>
+    <li>Use bulk-credit (NOT manual credit per customer) when crediting more than 5 customers at once. Better audit trail.</li>
+  </ul>
+</div>
+
+<!-- ============================================================ -->
+<!-- APPENDIX A — GLOSSARY                                          -->
+<!-- ============================================================ -->
+<div class="part">
+  <h1 class="part-title">Appendix A — Glossary</h1>
+
+  <div class="glossary-row"><div class="term">Bucket</div><div class="def">A category of credit within a wallet. Each bucket has its own rules. Examples: EarnedCredit, CodPending, GiftCard.</div></div>
+  <div class="glossary-row"><div class="term">Cap (max_amount)</div><div class="def">The maximum reward a single rule will pay per order. Set on each earn rule.</div></div>
+  <div class="glossary-row"><div class="term">Cap mode</div><div class="def">How a rule's cap interacts with multipliers. Hard (cap is absolute), Soft (multipliers exceed cap), or Custom per-tier.</div></div>
+  <div class="glossary-row"><div class="term">Connector</div><div class="def">A merchant-configured integration with an external service (WhatsApp BSP, logistics provider, etc.).</div></div>
+  <div class="glossary-row"><div class="term">COD pending</div><div class="def">Credit held after a COD order is placed, awaiting delivery confirmation.</div></div>
+  <div class="glossary-row"><div class="term">Earn rule</div><div class="def">A configuration that defines when and how much a customer earns. Has conditions, calculation, and action.</div></div>
+  <div class="glossary-row"><div class="term">Effective multiplier</div><div class="def">The combined multiplier applied to a reward, computed from tier × campaign × max(loyalty, membership).</div></div>
+  <div class="glossary-row"><div class="term">Held entry</div><div class="def">A ledger entry that exists but isn't yet spendable. Used for COD pending credits.</div></div>
+  <div class="glossary-row"><div class="term">Idempotency key</div><div class="def">A stable identifier on every operation that prevents duplicate processing.</div></div>
+  <div class="glossary-row"><div class="term">Ledger entry</div><div class="def">An immutable record of a wallet movement. Append-only.</div></div>
+  <div class="glossary-row"><div class="term">Multiplier</div><div class="def">A factor applied to a base reward. Comes from VIP tier, membership, or campaign.</div></div>
+  <div class="glossary-row"><div class="term">RTO</div><div class="def">Return to Origin. A COD order that was placed but not accepted at delivery.</div></div>
+  <div class="glossary-row"><div class="term">Rule snapshot</div><div class="def">A frozen copy of a rule at the moment it fired, so subsequent rule edits don't change historical reward attribution.</div></div>
+  <div class="glossary-row"><div class="term">Tier</div><div class="def">A status level a customer achieves through spend or order count. Carries an earn-rate multiplier.</div></div>
+  <div class="glossary-row"><div class="term">VIP tier multiplier</div><div class="def">The earn-rate multiplier tied to a tier. Bronze 1×, Silver 1.25×, etc.</div></div>
+  <div class="glossary-row"><div class="term">Wallet policy</div><div class="def">Per-bucket redemption rules: minimum redemption, max per order, expiry, stackability.</div></div>
+</div>
+
+<!-- ============================================================ -->
+<!-- APPENDIX B — QUICK REFERENCE                                   -->
+<!-- ============================================================ -->
+<div class="part">
+  <h1 class="part-title">Appendix B — Quick-reference card</h1>
+
+  <h2>Core URLs</h2>
+  <table>
+    <thead><tr><th>Surface</th><th>URL</th></tr></thead>
+    <tbody>
+      <tr><td>Merchant admin</td><td><code>yourstore.com/admin</code> (or breeze-admin if hosted)</td></tr>
+      <tr><td>Customer storefront</td><td><code>yourstore.com/rewards</code></td></tr>
+      <tr><td>Public gift-card balance check</td><td><code>yourstore.com/gift-cards/check</code></td></tr>
+      <tr><td>Referral landing page</td><td><code>yourstore.com/refer/[code]</code></td></tr>
+      <tr><td>Setup wizard preview</td><td><code>/admin/setup?preview=1</code></td></tr>
+    </tbody>
+  </table>
+
+  <h2>Bucket types reference</h2>
+  <table>
+    <thead><tr><th>Bucket</th><th>Default expiry</th><th>Typical use</th></tr></thead>
+    <tbody>
+      <tr><td>EarnedCredit</td><td>90–365 days</td><td>Standard cashback</td></tr>
+      <tr><td>CodPending</td><td>n/a (released or voided)</td><td>COD-pending cashback</td></tr>
+      <tr><td>GiftCard</td><td>None (or 12 mo)</td><td>Gift card balance</td></tr>
+      <tr><td>ReferralReward</td><td>90 days</td><td>Referral payouts</td></tr>
+      <tr><td>GoodwillCredit</td><td>None</td><td>Service recovery</td></tr>
+      <tr><td>MembershipBenefit</td><td>Tied to membership</td><td>Member-only bonuses</td></tr>
+      <tr><td>CustomerFunded</td><td>None</td><td>UPI top-up balance</td></tr>
+      <tr><td>RefundCredit</td><td>None</td><td>Refund-as-credit</td></tr>
+    </tbody>
+  </table>
+
+  <h2>The eight foundational truths (recap)</h2>
+  <ol>
+    <li>The ledger is append-only.</li>
+    <li>Idempotency is structural.</li>
+    <li>Value is not fungible across buckets.</li>
+    <li>Held credit is held.</li>
+    <li>Movements have direction.</li>
+    <li>Identity is by phone first.</li>
+    <li>Rules are snapshotted at evaluation.</li>
+    <li>Events fire from real triggers.</li>
+  </ol>
+
+  <h2>Notification events (recap)</h2>
+  <div class="pill-list">
+    <span class="pill">order_earned</span>
+    <span class="pill">cod_credit_held</span>
+    <span class="pill">cod_credit_released</span>
+    <span class="pill">cod_credit_cancelled</span>
+    <span class="pill">birthday_bonus</span>
+    <span class="pill">profile_completion</span>
+    <span class="pill">newsletter_signup</span>
+    <span class="pill">tier_promoted</span>
+    <span class="pill">tier_demoted</span>
+    <span class="pill">milestone_achieved</span>
+    <span class="pill">streak_achieved</span>
+    <span class="pill">spin_won</span>
+    <span class="pill">referral_received</span>
+    <span class="pill">referral_converted</span>
+    <span class="pill">gift_card_received</span>
+    <span class="pill">gift_card_claimed</span>
+    <span class="pill">membership_renewal_7d</span>
+    <span class="pill">membership_renewal_1d</span>
+    <span class="pill">membership_expired</span>
+  </div>
+
+  <div class="callout note" style="margin-top: 8mm;">
+    <strong>End of guide</strong>
+    Questions, corrections, or updates: contact the Breeze platform team. This guide is versioned monthly; check the edition footer for the current revision.
+  </div>
+</div>
+
+</body>
+</html>

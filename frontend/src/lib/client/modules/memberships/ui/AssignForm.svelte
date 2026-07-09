@@ -72,9 +72,7 @@
       customer.currentTierRank > 0 &&
       selectedTier.rank === customer.currentTierRank
   );
-  let isFirstAssignment = $derived(
-    customer !== null && customer.currentTierRank === 0
-  );
+  let isFirstAssignment = $derived(customer !== null && customer.currentTierRank === 0);
 
   let multiplierDiff = $derived(
     selectedTier !== null && customer !== null
@@ -89,9 +87,7 @@
     }))
   );
 
-  let canAssign = $derived(
-    customer !== null && selectedTier !== null && !isSameTier
-  );
+  let canAssign = $derived(customer !== null && selectedTier !== null && !isSameTier);
 
   let actionLabel = $derived(
     isFirstAssignment
@@ -100,7 +96,7 @@
         ? `Upgrade to ${selectedTier?.name ?? ''}`
         : isDowngrade
           ? `Downgrade to ${selectedTier?.name ?? ''}`
-          : 'Assign Membership'
+          : 'Assign membership'
   );
 
   function handleLookup() {
@@ -135,7 +131,7 @@
   {#if result !== null && customer !== null}
     <div class="success-card">
       <div class="success-icon">✅</div>
-      <div class="success-title">Membership Assigned</div>
+      <div class="success-title">Membership assigned</div>
       <div class="success-sub">
         {customer.name} has been {result.previousTierName !== null ? 'upgraded' : 'assigned'} to {result.tierName}
       </div>
@@ -168,11 +164,11 @@
       </div>
 
       <div class="success-actions">
-        <Button text="Assign Another" classes="btn-secondary" onclick={handleAssignAnother} />
+        <Button text="Assign another" classes="btn-secondary" onclick={handleAssignAnother} />
       </div>
     </div>
 
-  <!-- SAVING STATE -->
+    <!-- SAVING STATE -->
   {:else if loading}
     <div class="loading-state">
       {#if customer !== null}
@@ -189,19 +185,21 @@
       </div>
     </div>
 
-  <!-- MAIN FORM -->
+    <!-- MAIN FORM -->
   {:else}
-    <div class="form-title">Assign Membership</div>
+    <div class="form-title">Assign membership</div>
     <div class="form-sub">Look up a customer by phone to assign a loyalty tier</div>
 
     <!-- Phone lookup -->
     <div class="form-field">
-      <span class="form-label">Customer Phone</span>
+      <span class="form-label">Customer phone</span>
       <div class="phone-row">
         <Input
           value={phone}
           placeholder="+91 9876543210"
-          onInput={(val) => { phone = val; }}
+          onInput={(val) => {
+            phone = val;
+          }}
         />
         {#if customer !== null}
           <Button text="Clear" classes="btn-ghost btn-sm" onclick={handleAssignAnother} />
@@ -243,7 +241,7 @@
         <div class="preview-name">{customer.name}</div>
         <div class="preview-meta">
           {#if customer.walletBalance !== null}
-            <span class="preview-item">💳 Wallet: {formatBalance(customer.walletBalance)}</span>
+            <span class="preview-item">Wallet: {formatBalance(customer.walletBalance)}</span>
           {/if}
           <span class="preview-item">
             Current:
@@ -262,11 +260,13 @@
       <!-- Tier + expiry selection -->
       <div class="form-grid">
         <div class="form-field">
-          <span class="form-label">Assign Tier</span>
+          <span class="form-label">Assign tier</span>
           <Select
             items={tierItems}
             value={selectedTierId ? [selectedTierId] : []}
-            onchange={(vals) => { selectedTierId = vals[0] ?? ''; }}
+            onchange={(vals) => {
+              selectedTierId = vals[0] ?? '';
+            }}
             placeholder="Select tier..."
           />
         </div>
@@ -276,16 +276,21 @@
       {#if selectedTier !== null && !isSameTier}
         {#if isFirstAssignment}
           <div class="info-box">
-            <strong>First membership</strong> — This customer has no existing tier.
-            They'll start earning at the {selectedTier.name} {selectedTier.earn_rate_multiplier}x multiplier immediately.
+            <strong>First membership</strong> — This customer has no existing tier. They'll start
+            earning at the {selectedTier.name}
+            {selectedTier.earn_rate_multiplier}x multiplier immediately.
           </div>
         {:else if isUpgrade}
           <div class="compare-box upgrade">
             <div class="compare-title">⬆ Tier Upgrade</div>
             <div class="compare-row">
-              <span class="tier-badge">{customer.currentTierName} {customer.currentTierMultiplier}x</span>
+              <span class="tier-badge"
+                >{customer.currentTierName} {customer.currentTierMultiplier}x</span
+              >
               <span class="compare-arrow">→</span>
-              <span class="tier-badge">{selectedTier.name} {selectedTier.earn_rate_multiplier}x</span>
+              <span class="tier-badge"
+                >{selectedTier.name} {selectedTier.earn_rate_multiplier}x</span
+              >
               <span class="compare-benefit">+{multiplierDiff.toFixed(1)}x earn rate boost</span>
             </div>
           </div>
@@ -293,13 +298,20 @@
           <div class="compare-box downgrade">
             <div class="compare-title warn">⬇ Tier Downgrade</div>
             <div class="compare-row">
-              <span class="tier-badge">{customer.currentTierName} {customer.currentTierMultiplier}x</span>
+              <span class="tier-badge"
+                >{customer.currentTierName} {customer.currentTierMultiplier}x</span
+              >
               <span class="compare-arrow warn">→</span>
-              <span class="tier-badge">{selectedTier.name} {selectedTier.earn_rate_multiplier}x</span>
+              <span class="tier-badge"
+                >{selectedTier.name} {selectedTier.earn_rate_multiplier}x</span
+              >
               <span class="compare-loss">{multiplierDiff.toFixed(1)}x earn rate</span>
             </div>
             {#if customer.currentExpiry !== null}
-              <div class="compare-note">Current {customer.currentTierName} membership (expires {customer.currentExpiry}) will be replaced.</div>
+              <div class="compare-note">
+                Current {customer.currentTierName} membership (expires {customer.currentExpiry})
+                will be replaced.
+              </div>
             {/if}
           </div>
         {/if}
@@ -335,7 +347,14 @@
   <Modal
     size="medium"
     showOverlay={true}
-    header={{ text: isFirstAssignment ? 'Confirm Assignment' : isUpgrade ? 'Confirm Upgrade' : 'Confirm Downgrade', rightImage: MODAL_CLOSE_ICON }}
+    header={{
+      text: isFirstAssignment
+        ? 'Confirm assignment'
+        : isUpgrade
+          ? 'Confirm upgrade'
+          : 'Confirm downgrade',
+      rightImage: MODAL_CLOSE_ICON
+    }}
     onclose={() => (showConfirm = false)}
     onoverlayClick={() => (showConfirm = false)}
     onheaderRightImageClick={() => (showConfirm = false)}
@@ -361,7 +380,7 @@
       <div class="modal-footer">
         <Button text="Cancel" classes="btn-ghost" onclick={() => (showConfirm = false)} />
         <Button
-          text={isDowngrade ? 'Confirm Downgrade' : 'Confirm'}
+          text={isDowngrade ? 'Confirm downgrade' : 'Confirm'}
           classes={isDowngrade ? 'btn-danger' : 'btn-primary'}
           onclick={handleConfirm}
         />
@@ -426,13 +445,12 @@
     padding-top: var(--space-2);
   }
 
-
   /* Customer preview */
   .preview-card {
     padding: var(--space-4);
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
   }
 
   .preview-name {
@@ -488,24 +506,24 @@
   }
 
   .compare-box.upgrade {
-    background: #f0fdf4;
-    border: 1px solid #bbf7d0;
+    background: var(--green-100);
+    border: 1px solid var(--green-100);
   }
 
   .compare-box.downgrade {
-    background: #fffbeb;
-    border: 1px solid #fde68a;
+    background: var(--yellow-100);
+    border: 1px solid var(--yellow-100);
   }
 
   .compare-title {
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-semibold);
-    color: #166534;
+    color: var(--green-700);
     margin-bottom: var(--space-2);
   }
 
   .compare-title.warn {
-    color: #92400e;
+    color: var(--yellow-700);
   }
 
   .compare-row {
@@ -517,42 +535,42 @@
   }
 
   .compare-arrow {
-    color: #22c55e;
+    color: var(--green-500);
     font-weight: var(--font-weight-semibold);
   }
 
   .compare-arrow.warn {
-    color: #f59e0b;
+    color: var(--yellow-500);
   }
 
   .compare-benefit {
     font-size: var(--font-size-xs);
-    color: #22c55e;
+    color: var(--green-500);
     font-weight: var(--font-weight-medium);
     margin-left: var(--space-2);
   }
 
   .compare-loss {
     font-size: var(--font-size-xs);
-    color: #92400e;
+    color: var(--yellow-700);
     font-weight: var(--font-weight-medium);
     margin-left: var(--space-2);
   }
 
   .compare-note {
     font-size: var(--font-size-xs);
-    color: #92400e;
+    color: var(--yellow-700);
     margin-top: var(--space-2);
   }
 
   /* Info / error boxes */
   .info-box {
     padding: var(--space-3) var(--space-4);
-    background: #eff6ff;
-    border: 1px solid #bfdbfe;
+    background: var(--p-100);
+    border: 1px solid var(--p-100);
     border-radius: var(--radius-md);
     font-size: var(--font-size-sm);
-    color: #1e40af;
+    color: var(--p-700);
   }
 
   .info-box.muted {
@@ -563,13 +581,12 @@
 
   .error-box {
     padding: var(--space-3) var(--space-4);
-    background: #fef2f2;
-    border: 1px solid #fecaca;
+    background: var(--red-100);
+    border: 1px solid var(--red-100);
     border-radius: var(--radius-md);
     font-size: var(--font-size-sm);
-    color: #991b1b;
+    color: var(--red-700);
   }
-
 
   /* Success */
   .success-card {
@@ -585,7 +602,7 @@
   .success-title {
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-semibold);
-    color: #065f46;
+    color: var(--green-700);
     margin-bottom: var(--space-1);
   }
 
@@ -600,9 +617,9 @@
     text-align: left;
     padding: var(--space-4);
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
     margin-bottom: var(--space-5);
+    box-shadow: var(--shadow-card);
   }
 
   .summary-row {
@@ -633,8 +650,8 @@
     border-radius: 10px;
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-semibold);
-    background: #d1fae5;
-    color: #065f46;
+    background: var(--green-100);
+    color: var(--green-700);
   }
 
   .success-actions {
@@ -658,15 +675,24 @@
     padding: var(--space-6) 0;
   }
 
-
   .spinner-text {
     font-size: var(--font-size-sm);
     color: var(--color-text-muted);
   }
 
-  :global(.shimmer-name) { --shimmer-width: 140px; --shimmer-height: 14px; margin-bottom: 10px; }
-  :global(.shimmer-meta) { --shimmer-width: 100px; --shimmer-height: 12px; }
-  :global(.shimmer-meta-sm) { --shimmer-width: 80px; --shimmer-height: 12px; }
+  :global(.shimmer-name) {
+    --shimmer-width: 140px;
+    --shimmer-height: 14px;
+    margin-bottom: 10px;
+  }
+  :global(.shimmer-meta) {
+    --shimmer-width: 100px;
+    --shimmer-height: 12px;
+  }
+  :global(.shimmer-meta-sm) {
+    --shimmer-width: 80px;
+    --shimmer-height: 12px;
+  }
 
   /* Empty */
   .empty-prompt {

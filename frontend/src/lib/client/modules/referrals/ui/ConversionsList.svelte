@@ -19,7 +19,7 @@
           <th>Referrer</th>
           <th>Referee</th>
           <th>Order</th>
-          <th>Fraud Signals</th>
+          <th>Fraud signals</th>
           <th>Date</th>
         </tr>
       </thead>

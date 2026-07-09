@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Custom per-tier — 5 designs (no toggle)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #f0f1f5;
+    --surface: #ffffff;
+    --surface-2: #f0f1f3;
+    --text: #1a1a2e;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --primary: #7c6aff;
+    --primary-hover: #6b5ce7;
+    --success: #10b981;
+    --error: #ef4444;
+    --warning: #f59e0b;
+    --info: #3b82f6;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+
+  .intro { background: #1a1a2e; color: #fff; padding: 40px 32px; text-align: center; }
+  .intro h1 { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+  .intro p { color: rgba(255,255,255,0.7); max-width: 760px; margin: 0 auto; font-size: 14px; line-height: 1.6; }
+  .intro .legend { margin-top: 16px; font-size: 13px; color: rgba(255,255,255,0.85); }
+  .intro .legend strong { color: #fff; }
+
+  .screen-label {
+    position: sticky; top: 0; z-index: 10;
+    background: #fef3c7; color: #78350f;
+    border-top: 1px solid #f59e0b; border-bottom: 1px solid #f59e0b;
+    padding: 12px 32px; font-size: 12px; font-weight: 600; letter-spacing: 0.4px;
+  }
+  .screen-label .tag { background: #f59e0b; color: #fff; padding: 2px 8px; border-radius: 4px; margin-right: 10px; font-weight: 700; }
+  .screen-label .approach { font-weight: 400; color: #78350f; opacity: 0.85; }
+
+  .frame { padding: 32px; }
+  .container {
+    max-width: 900px; margin: 0 auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+  }
+
+  .ctx-bar {
+    background: color-mix(in srgb, var(--info) 6%, transparent);
+    border: 1px solid color-mix(in srgb, var(--info) 20%, transparent);
+    border-radius: 6px;
+    padding: 10px 14px; font-size: 12px; color: var(--muted);
+    margin-bottom: 20px;
+    display: flex; justify-content: space-between;
+  }
+  .ctx-bar strong { color: var(--text); }
+
+  .mode-section-title { font-size: 14px; font-weight: 600; }
+  .mode-section-desc { font-size: 12px; color: var(--muted); margin-top: 2px; margin-bottom: 14px; }
+  .mode-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .mode-pill {
+    padding: 6px 14px;
+    border: 1px solid var(--border); border-radius: 6px;
+    font-size: 13px; font-weight: 600;
+    background: var(--surface); color: var(--text);
+    cursor: pointer;
+  }
+  .mode-pill.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+  /* Tier pills */
+  .tier-pill { display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .tier-bronze { background: #f5e6d3; color: #8b5e3c; }
+  .tier-silver { background: #e8e8e8; color: #555555; }
+  .tier-gold { background: #fdf3d7; color: #92742e; }
+  .tier-platinum { background: #e8eaf6; color: #3949ab; }
+  .tier-diamond { background: #b9f2ff; color: #036c8d; }
+  .mult { font-weight: 700; font-family: 'SF Mono', monospace; color: var(--primary); }
+
+  /* Buttons */
+  .btn { padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid transparent; font-family: inherit; }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-secondary { background: var(--surface); color: var(--text); border-color: var(--border); }
+  .btn-ghost { background: transparent; color: var(--primary); }
+  .btn-sm { padding: 4px 10px; font-size: 12px; }
+
+  /* Tier table base */
+  .tier-table {
+    width: 100%; border-collapse: collapse; font-size: 13px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .tier-table th { padding: 10px 14px; text-align: left; background: var(--surface-2); color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+  .tier-table th.cap-col { background: color-mix(in srgb, var(--primary) 8%, transparent); color: var(--primary); }
+  .tier-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .tier-table tr:last-child td { border-bottom: none; }
+
+  .cap-input {
+    width: 110px; padding: 7px 10px;
+    border: 1px solid var(--border); border-radius: 6px;
+    font-size: 13px; font-family: inherit;
+    background: var(--surface);
+  }
+  .cap-input::placeholder { color: var(--muted); font-style: italic; }
+  .cap-input.custom { border-color: var(--primary); font-weight: 600; color: var(--primary); }
+  .cap-input.derived { color: var(--muted); background: var(--surface-2); }
+  .cap-hint { font-size: 10px; color: var(--muted); margin-top: 4px; display: flex; align-items: center; gap: 6px; }
+  .cap-hint a { color: var(--primary); text-decoration: none; }
+  .cap-hint .badge {
+    font-size: 9px; font-weight: 700; padding: 1px 5px;
+    border-radius: 3px; text-transform: uppercase; letter-spacing: 0.3px;
+  }
+  .cap-hint .badge-custom { background: color-mix(in srgb, var(--primary) 14%, transparent); color: var(--primary); }
+  .cap-hint .badge-derived { background: color-mix(in srgb, var(--info) 14%, transparent); color: var(--info); }
+  .cap-hint .badge-default { background: var(--surface-2); color: var(--muted); }
+
+  /* Save bar */
+  .save-bar { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+
+  /* Note */
+  .note { background: #eef2ff; border-left: 3px solid var(--primary); color: #4338ca; padding: 12px 16px; border-radius: 4px; font-size: 12px; margin: 16px auto 0; line-height: 1.5; max-width: 900px; }
+  .note strong { color: #312e81; }
+
+  /* ============ Design 1 — base + per-tier coexist ============ */
+  .d1-base {
+    display: flex; align-items: center; gap: 16px;
+    padding: 14px 16px;
+    background: color-mix(in srgb, var(--primary) 4%, transparent);
+    border: 1px solid color-mix(in srgb, var(--primary) 22%, transparent);
+    border-radius: 8px;
+    margin-bottom: 16px;
+  }
+  .d1-base .label { font-size: 13px; font-weight: 600; }
+  .d1-base .desc { font-size: 11px; color: var(--muted); margin-top: 1px; }
+  .d1-base input {
+    width: 120px; padding: 8px 12px;
+    border: 2px solid var(--primary); border-radius: 6px;
+    font-size: 15px; font-weight: 700; font-family: 'SF Mono', monospace;
+    color: var(--primary); background: var(--surface); text-align: right;
+  }
+  .d1-base .prefix { font-size: 14px; color: var(--muted); font-weight: 600; }
+  .d1-base a { font-size: 11px; color: var(--primary); text-decoration: none; }
+
+  /* ============ Design 2 — quick-fill action ============ */
+  .d2-action-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 14px; margin-bottom: 12px;
+    background: var(--surface-2); border-radius: 6px;
+  }
+  .d2-action-bar .left { font-size: 12px; color: var(--muted); }
+  .d2-popover {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--surface); border: 1px solid var(--primary); border-radius: 8px;
+    padding: 10px 14px;
+    box-shadow: 0 4px 12px rgba(124,106,255,0.15);
+  }
+  .d2-popover input {
+    width: 80px; padding: 5px 8px;
+    border: 1px solid var(--border); border-radius: 4px;
+    font-size: 13px; font-family: inherit;
+  }
+  .d2-popover .label { font-size: 12px; font-weight: 500; }
+
+  /* ============ Design 3 — disclosure ============ */
+  .d3-base-card {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 18px 20px;
+    background: var(--surface);
+    border: 2px solid var(--primary);
+    border-radius: 8px;
+    margin-bottom: 12px;
+  }
+  .d3-base-card .left .title { font-size: 14px; font-weight: 600; }
+  .d3-base-card .left .desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .d3-base-card input {
+    width: 130px; padding: 10px 14px;
+    border: 1px solid var(--primary); border-radius: 6px;
+    font-size: 16px; font-weight: 700; font-family: 'SF Mono', monospace;
+    color: var(--primary); background: var(--surface); text-align: right;
+  }
+  .d3-disclosure {
+    margin-top: 12px; padding: 10px 14px;
+    background: var(--surface-2); border-radius: 6px;
+    font-size: 12px; cursor: pointer;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .d3-disclosure .chev { color: var(--primary); font-weight: 700; }
+  .d3-disclosure strong { color: var(--text); }
+
+  .d3-derived-table { background: var(--surface-2); border-radius: 8px; padding: 0; margin-top: 12px; overflow: hidden; }
+  .d3-derived-row {
+    display: grid; grid-template-columns: 1fr 1fr 1.5fr 80px;
+    padding: 10px 14px; align-items: center; font-size: 13px;
+    border-bottom: 1px solid var(--border);
+  }
+  .d3-derived-row:last-child { border-bottom: none; }
+  .d3-derived-row .formula { color: var(--muted); font-size: 11px; font-family: 'SF Mono', monospace; }
+  .d3-derived-row .value { font-family: 'SF Mono', monospace; font-weight: 700; }
+  .d3-derived-row.overridden .value { color: var(--primary); }
+  .d3-derived-row input { width: 90px; padding: 5px 8px; border: 1px solid var(--primary); border-radius: 4px; font-size: 13px; font-family: inherit; font-weight: 600; color: var(--primary); }
+  .d3-override-link { font-size: 11px; color: var(--primary); text-decoration: none; }
+
+  /* ============ Design 4 — linked by default, unlink to override ============ */
+  .d4-anchor {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px; margin-bottom: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  .d4-anchor .label { font-size: 13px; font-weight: 600; }
+  .d4-anchor input {
+    width: 110px; padding: 7px 10px;
+    border: 1px solid var(--primary); border-radius: 6px;
+    font-size: 14px; font-weight: 700; font-family: 'SF Mono', monospace;
+    color: var(--primary); text-align: right;
+  }
+  .d4-anchor .icon { color: var(--primary); font-size: 18px; }
+  .d4-link-icon {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 4px;
+    cursor: pointer; font-size: 12px;
+  }
+  .d4-link-icon.linked { background: color-mix(in srgb, var(--info) 14%, transparent); color: var(--info); }
+  .d4-link-icon.unlinked { background: color-mix(in srgb, var(--primary) 14%, transparent); color: var(--primary); }
+  .d4-link-icon:hover { opacity: 0.7; }
+  .d4-value {
+    font-family: 'SF Mono', monospace; font-weight: 700; font-size: 14px;
+  }
+  .d4-value.derived { color: var(--info); }
+  .d4-value.custom { color: var(--primary); }
+  .d4-value-input { width: 100px; padding: 6px 10px; border: 1px solid var(--primary); border-radius: 6px; font-size: 13px; font-family: inherit; font-weight: 600; color: var(--primary); }
+  .d4-cap-cell { display: flex; align-items: center; gap: 8px; }
+  .d4-formula-small { font-size: 10px; color: var(--muted); font-family: 'SF Mono', monospace; margin-top: 2px; }
+
+  /* ============ Design 5 — two columns side-by-side ============ */
+  .d5-split {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+    border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
+    background: var(--surface);
+  }
+  .d5-col { padding: 20px; }
+  .d5-col.left { background: color-mix(in srgb, var(--info) 4%, transparent); border-right: 1px solid var(--border); }
+  .d5-col.right { background: var(--surface); }
+  .d5-col h3 { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .d5-col .sub { font-size: 11px; color: var(--muted); margin-bottom: 14px; }
+  .d5-base-input {
+    width: 100%; padding: 10px 14px;
+    border: 1px solid var(--primary); border-radius: 6px;
+    font-size: 16px; font-weight: 700; font-family: 'SF Mono', monospace;
+    color: var(--primary); background: var(--surface); text-align: center;
+    margin-bottom: 14px;
+  }
+  .d5-derived-list { font-size: 12px; }
+  .d5-derived-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 0; border-bottom: 1px solid var(--border);
+  }
+  .d5-derived-row:last-child { border-bottom: none; }
+  .d5-derived-row .formula { color: var(--muted); font-family: 'SF Mono', monospace; font-size: 11px; }
+  .d5-derived-row .num { font-family: 'SF Mono', monospace; font-weight: 700; }
+  .d5-derived-row.overridden .num { color: var(--muted); text-decoration: line-through; }
+  .d5-per-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+  }
+  .d5-per-row:last-child { border-bottom: none; }
+  .d5-per-row input {
+    width: 90px; padding: 6px 10px;
+    border: 1px solid var(--border); border-radius: 6px;
+    font-size: 13px; font-family: inherit;
+  }
+  .d5-per-row input.custom { border-color: var(--primary); color: var(--primary); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="intro">
+  <h1>Custom per-tier — five designs (no toggle)</h1>
+  <p>
+    Same goal: let the merchant set caps individually or via a single base × multiplier, without a mode toggle.
+    Five different design philosophies for combining the two entry methods.
+  </p>
+  <div class="legend">
+    <strong>1</strong> Mixed always-on &nbsp;·&nbsp;
+    <strong>2</strong> Quick-fill action &nbsp;·&nbsp;
+    <strong>3</strong> Stepped disclosure &nbsp;·&nbsp;
+    <strong>4</strong> Linked-by-default &nbsp;·&nbsp;
+    <strong>5</strong> Two-column side-by-side
+  </div>
+</div>
+
+<!-- ====================================================================== -->
+<!-- DESIGN 1 — Mixed (always-on hybrid)                                     -->
+<!-- ====================================================================== -->
+<div class="screen-label">
+  <span class="tag">1</span>Mixed always-on
+  <span class="approach">— a "Base cap" input lives above the tier table. Empty tier rows auto-derive from the base; type in any row to override. Both are visible; no mode flip.</span>
+</div>
+<div class="frame">
+<div class="container">
+  <div class="ctx-bar">
+    <span><strong>Sherwani Rewards</strong> · 5 tiers</span>
+    <span>Mode: <strong>Custom per-tier</strong></span>
+  </div>
+
+  <div class="mode-pills">
+    <div class="mode-pill">Hard cap</div>
+    <div class="mode-pill">Soft cap</div>
+    <div class="mode-pill active">Custom per-tier</div>
+  </div>
+
+  <div class="d1-base">
+    <div>
+      <div class="label">Base cap</div>
+      <div class="desc">Empty tier rows below use base × the tier's multiplier.</div>
+    </div>
+    <span class="prefix">₹</span>
+    <input value="500" />
+    <a href="#">↻ Clear base</a>
+  </div>
+
+  <table class="tier-table">
+    <thead><tr><th>Tier</th><th>Multiplier</th><th class="cap-col">Max per order</th><th></th></tr></thead>
+    <tbody>
+      <tr><td><span class="tier-pill tier-bronze">Bronze</span></td><td class="mult">1×</td>
+        <td><input class="cap-input derived" placeholder="₹500" />
+          <div class="cap-hint"><span class="badge badge-derived">Derived</span> from base ₹500 × 1×</div></td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      <tr><td><span class="tier-pill tier-silver">Silver</span></td><td class="mult">1.5×</td>
+        <td><input class="cap-input derived" placeholder="₹750" />
+          <div class="cap-hint"><span class="badge badge-derived">Derived</span> from base ₹500 × 1.5×</div></td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      <tr><td><span class="tier-pill tier-gold">Gold</span></td><td class="mult">2×</td>
+        <td><input class="cap-input custom" value="900" />
+          <div class="cap-hint"><span class="badge badge-custom">Custom</span> overrides base (would be ₹1,000) · <a href="#">↻ clear</a></div></td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      <tr><td><span class="tier-pill tier-platinum">Platinum</span></td><td class="mult">3×</td>
+        <td><input class="cap-input derived" placeholder="₹1,500" />
+          <div class="cap-hint"><span class="badge badge-derived">Derived</span> from base ₹500 × 3×</div></td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      <tr><td><span class="tier-pill tier-diamond">Diamond</span></td><td class="mult">5×</td>
+        <td><input class="cap-input custom" value="2,000" />
+          <div class="cap-hint"><span class="badge badge-custom">Custom</span> overrides base (would be ₹2,500) · <a href="#">↻ clear</a></div></td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+    </tbody>
+  </table>
+  <div class="save-bar"><button class="btn btn-secondary">Discard</button><button class="btn btn-primary">Save</button></div>
+</div>
+</div>
+<div class="note">
+  <strong>Mental model:</strong> base cap = default for all tiers; type in any row to override that one. Both inputs are always visible; no decision about which "mode" to use. The hint per row tells you whether the value is derived or a manual override, and what the alternative would be.
+</div>
+
+<!-- ====================================================================== -->
+<!-- DESIGN 2 — Quick-fill action                                            -->
+<!-- ====================================================================== -->
+<div class="screen-label">
+  <span class="tag">2</span>Quick-fill action
+  <span class="approach">— per-tier inputs are the primary surface. Above the table, a "✨ Fill from base × multiplier" button opens a small pop-over that bulk-fills all rows. After filling, each row is independently editable.</span>
+</div>
+<div class="frame">
+<div class="container">
+  <div class="ctx-bar">
+    <span><strong>Sherwani Rewards</strong> · 5 tiers</span>
+    <span>Mode: <strong>Custom per-tier</strong></span>
+  </div>
+
+  <div class="mode-pills">
+    <div class="mode-pill">Hard cap</div>
+    <div class="mode-pill">Soft cap</div>
+    <div class="mode-pill active">Custom per-tier</div>
+  </div>
+
+  <div class="d2-action-bar">
+    <div class="left">2 of 5 tiers customised.</div>
+    <div style="display:flex; gap: 8px;">
+      <button class="btn btn-secondary btn-sm">↻ Reset all</button>
+      <div class="d2-popover">
+        <span class="label">✨ Fill from base ×</span>
+        <span style="color:var(--muted);">₹</span>
+        <input value="500" />
+        <button class="btn btn-primary btn-sm">Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <table class="tier-table">
+    <thead><tr><th>Tier</th><th>Multiplier</th><th class="cap-col">Max per order</th><th></th></tr></thead>
+    <tbody>
+      <tr><td><span class="tier-pill tier-bronze">Bronze</span></td><td class="mult">1×</td>
+        <td><input class="cap-input" placeholder="No override" />
+          <div class="cap-hint">rule's max applies as a hard cap</div></td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      <tr><td><span class="tier-pill tier-silver">Silver</span></td><td class="mult">1.5×</td>
+        <td><input class="cap-input" placeholder="No override" />
+          <div class="cap-hint">rule's max applies as a hard cap</div></td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      <tr><td><span class="tier-pill tier-gold">Gold</span></td><td class="mult">2×</td>
+        <td><input class="cap-input custom" value="750" />
+          <div class="cap-hint"><span class="badge badge-custom">Custom</span> caps Gold customers at ₹750 · <a href="#">↻ clear</a></div></td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      <tr><td><span class="tier-pill tier-platinum">Platinum</span></td><td class="mult">3×</td>
+        <td><input class="cap-input" placeholder="No override" />
+          <div class="cap-hint">rule's max applies as a hard cap</div></td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      <tr><td><span class="tier-pill tier-diamond">Diamond</span></td><td class="mult">5×</td>
+        <td><input class="cap-input custom" value="1,500" />
+          <div class="cap-hint"><span class="badge badge-custom">Custom</span> caps Diamond customers at ₹1,500 · <a href="#">↻ clear</a></div></td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+    </tbody>
+  </table>
+  <div class="save-bar"><button class="btn btn-secondary">Discard</button><button class="btn btn-primary">Save</button></div>
+</div>
+</div>
+<div class="note">
+  <strong>Mental model:</strong> per-tier is primary, base × multiplier is a one-time bulk action ("✨ Fill"). Click "Fill", the empty (or all) rows populate with `base × multiplier`, then they live as independent ₹ values. Best when the base × multiplier flow is occasional rather than ongoing.
+</div>
+
+<!-- ====================================================================== -->
+<!-- DESIGN 3 — Stepped disclosure                                           -->
+<!-- ====================================================================== -->
+<div class="screen-label">
+  <span class="tag">3</span>Stepped disclosure
+  <span class="approach">— start simple: just a base cap input. Auto-derived table below. A "Tune individual tiers ↓" disclosure reveals per-tier inputs that override the derived value for that row.</span>
+</div>
+<div class="frame">
+<div class="container">
+  <div class="ctx-bar">
+    <span><strong>Sherwani Rewards</strong> · 5 tiers</span>
+    <span>Mode: <strong>Custom per-tier</strong></span>
+  </div>
+
+  <div class="mode-pills">
+    <div class="mode-pill">Hard cap</div>
+    <div class="mode-pill">Soft cap</div>
+    <div class="mode-pill active">Custom per-tier</div>
+  </div>
+
+  <div class="d3-base-card">
+    <div class="left">
+      <div class="title">Custom base cap</div>
+      <div class="desc">Per-tier ceilings derive as base × tier multiplier.</div>
+    </div>
+    <div style="display:flex; align-items:center; gap:6px;">
+      <span style="font-size:14px; color: var(--muted); font-weight:600;">₹</span>
+      <input value="500" />
+    </div>
+  </div>
+
+  <div class="d3-derived-table">
+    <div class="d3-derived-row"><div><span class="tier-pill tier-bronze">Bronze</span></div><div class="mult">1×</div><div><span class="value">₹500</span><span class="formula" style="margin-left:8px;">₹500 × 1×</span></div><div><a href="#" class="d3-override-link">Override</a></div></div>
+    <div class="d3-derived-row"><div><span class="tier-pill tier-silver">Silver</span></div><div class="mult">1.5×</div><div><span class="value">₹750</span><span class="formula" style="margin-left:8px;">₹500 × 1.5×</span></div><div><a href="#" class="d3-override-link">Override</a></div></div>
+    <div class="d3-derived-row overridden"><div><span class="tier-pill tier-gold">Gold</span></div><div class="mult">2×</div>
+      <div style="display:flex; align-items:center; gap:8px;"><input value="900" /><span class="formula">overrides ₹1,000</span></div>
+      <div><a href="#" class="d3-override-link">↻ reset</a></div>
+    </div>
+    <div class="d3-derived-row"><div><span class="tier-pill tier-platinum">Platinum</span></div><div class="mult">3×</div><div><span class="value">₹1,500</span><span class="formula" style="margin-left:8px;">₹500 × 3×</span></div><div><a href="#" class="d3-override-link">Override</a></div></div>
+    <div class="d3-derived-row overridden"><div><span class="tier-pill tier-diamond">Diamond</span></div><div class="mult">5×</div>
+      <div style="display:flex; align-items:center; gap:8px;"><input value="2,000" /><span class="formula">overrides ₹2,500</span></div>
+      <div><a href="#" class="d3-override-link">↻ reset</a></div>
+    </div>
+  </div>
+
+  <div class="save-bar"><button class="btn btn-secondary">Discard</button><button class="btn btn-primary">Save</button></div>
+</div>
+</div>
+<div class="note">
+  <strong>Mental model:</strong> base first (single source of truth), per-tier overrides as exceptions. Each row defaults to derived; the "Override" link in-place swaps the read-only value for an input. Cleanest when most tiers should follow the formula and only a few need exceptions.
+</div>
+
+<!-- ====================================================================== -->
+<!-- DESIGN 4 — Linked-by-default with unlink                                 -->
+<!-- ====================================================================== -->
+<div class="screen-label">
+  <span class="tag">4</span>Linked-by-default with unlink
+  <span class="approach">— a base anchor at top. Every tier starts linked (🔗) and tracks the base. Click the link icon on a row to unlink it; the row becomes independently editable.</span>
+</div>
+<div class="frame">
+<div class="container">
+  <div class="ctx-bar">
+    <span><strong>Sherwani Rewards</strong> · 5 tiers</span>
+    <span>Mode: <strong>Custom per-tier</strong></span>
+  </div>
+
+  <div class="mode-pills">
+    <div class="mode-pill">Hard cap</div>
+    <div class="mode-pill">Soft cap</div>
+    <div class="mode-pill active">Custom per-tier</div>
+  </div>
+
+  <div class="d4-anchor">
+    <span class="icon">⚓</span>
+    <div>
+      <div class="label">Anchor cap</div>
+      <div style="font-size: 11px; color: var(--muted);">Linked tiers track <code>anchor × multiplier</code>. Unlinked tiers stay fixed.</div>
+    </div>
+    <span style="margin-left:auto; font-size:14px; color: var(--muted); font-weight:600;">₹</span>
+    <input value="500" />
+    <span style="font-size:11px; color: var(--muted);">3 of 5 linked</span>
+  </div>
+
+  <table class="tier-table">
+    <thead><tr><th>Tier</th><th>Multiplier</th><th>Link</th><th class="cap-col">Max per order</th><th></th></tr></thead>
+    <tbody>
+      <tr><td><span class="tier-pill tier-bronze">Bronze</span></td><td class="mult">1×</td>
+        <td><span class="d4-link-icon linked" title="Linked — tracks anchor">🔗</span></td>
+        <td class="d4-cap-cell"><span class="d4-value derived">₹500</span><span class="d4-formula-small">⚓ × 1×</span></td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      <tr><td><span class="tier-pill tier-silver">Silver</span></td><td class="mult">1.5×</td>
+        <td><span class="d4-link-icon linked" title="Linked">🔗</span></td>
+        <td class="d4-cap-cell"><span class="d4-value derived">₹750</span><span class="d4-formula-small">⚓ × 1.5×</span></td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      <tr><td><span class="tier-pill tier-gold">Gold</span></td><td class="mult">2×</td>
+        <td><span class="d4-link-icon unlinked" title="Unlinked — independent">✏</span></td>
+        <td class="d4-cap-cell"><input class="d4-value-input" value="900" /><span class="d4-formula-small">independent</span></td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      <tr><td><span class="tier-pill tier-platinum">Platinum</span></td><td class="mult">3×</td>
+        <td><span class="d4-link-icon linked" title="Linked">🔗</span></td>
+        <td class="d4-cap-cell"><span class="d4-value derived">₹1,500</span><span class="d4-formula-small">⚓ × 3×</span></td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      <tr><td><span class="tier-pill tier-diamond">Diamond</span></td><td class="mult">5×</td>
+        <td><span class="d4-link-icon unlinked" title="Unlinked">✏</span></td>
+        <td class="d4-cap-cell"><input class="d4-value-input" value="2,000" /><span class="d4-formula-small">independent</span></td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+    </tbody>
+  </table>
+  <div class="save-bar"><button class="btn btn-secondary">Discard</button><button class="btn btn-primary">Save</button></div>
+</div>
+</div>
+<div class="note">
+  <strong>Mental model:</strong> tiers are "linked" to the anchor by default — they move together when the anchor changes. Unlinking a row converts it to an independent number. Inspired by Figma constraints, design-tool link toggles, or LibreOffice's "linked to template" pattern. Most visual, conveys the linkage with the icon.
+</div>
+
+<!-- ====================================================================== -->
+<!-- DESIGN 5 — Two columns side-by-side                                     -->
+<!-- ====================================================================== -->
+<div class="screen-label">
+  <span class="tag">5</span>Two columns side-by-side
+  <span class="approach">— left pane: base + read-only derived values. Right pane: editable per-tier inputs. Editing the right pane overrides the left for that tier. Both visible always.</span>
+</div>
+<div class="frame">
+<div class="container">
+  <div class="ctx-bar">
+    <span><strong>Sherwani Rewards</strong> · 5 tiers</span>
+    <span>Mode: <strong>Custom per-tier</strong></span>
+  </div>
+
+  <div class="mode-pills">
+    <div class="mode-pill">Hard cap</div>
+    <div class="mode-pill">Soft cap</div>
+    <div class="mode-pill active">Custom per-tier</div>
+  </div>
+
+  <div class="d5-split">
+    <div class="d5-col left">
+      <h3>① Quick set with base</h3>
+      <div class="sub">Type one base; the ladder scales by multiplier. Overrides on the right take precedence.</div>
+      <input class="d5-base-input" value="₹500" />
+      <div class="d5-derived-list">
+        <div class="d5-derived-row"><span><span class="tier-pill tier-bronze">Bronze</span> <span class="formula">× 1×</span></span><span class="num">₹500</span></div>
+        <div class="d5-derived-row"><span><span class="tier-pill tier-silver">Silver</span> <span class="formula">× 1.5×</span></span><span class="num">₹750</span></div>
+        <div class="d5-derived-row overridden"><span><span class="tier-pill tier-gold">Gold</span> <span class="formula">× 2×</span></span><span class="num">₹1,000</span></div>
+        <div class="d5-derived-row"><span><span class="tier-pill tier-platinum">Platinum</span> <span class="formula">× 3×</span></span><span class="num">₹1,500</span></div>
+        <div class="d5-derived-row overridden"><span><span class="tier-pill tier-diamond">Diamond</span> <span class="formula">× 5×</span></span><span class="num">₹2,500</span></div>
+      </div>
+    </div>
+    <div class="d5-col right">
+      <h3>② Or tune each tier</h3>
+      <div class="sub">Type a value to override the derived ladder for that tier only. Empty = use derived.</div>
+      <div style="margin-top: 50px;">
+        <div class="d5-per-row"><span><span class="tier-pill tier-bronze">Bronze</span></span><input placeholder="₹500 (derived)" /></div>
+        <div class="d5-per-row"><span><span class="tier-pill tier-silver">Silver</span></span><input placeholder="₹750 (derived)" /></div>
+        <div class="d5-per-row"><span><span class="tier-pill tier-gold">Gold</span></span><input class="custom" value="900" /></div>
+        <div class="d5-per-row"><span><span class="tier-pill tier-platinum">Platinum</span></span><input placeholder="₹1,500 (derived)" /></div>
+        <div class="d5-per-row"><span><span class="tier-pill tier-diamond">Diamond</span></span><input class="custom" value="2,000" /></div>
+      </div>
+    </div>
+  </div>
+  <div class="save-bar"><button class="btn btn-secondary">Discard</button><button class="btn btn-primary">Save</button></div>
+</div>
+</div>
+<div class="note">
+  <strong>Mental model:</strong> two side-by-side surfaces represent the two entry methods. Left pane is the "auto" ladder; right pane is the manual override. Numbered ①/② signals the order to think in (quick first, then tune). When a right-pane value overrides, the left pane shows it as struck-through to indicate the override hierarchy.
+</div>
+
+<!-- ====================================================================== -->
+<!-- Comparison                                                               -->
+<!-- ====================================================================== -->
+<div style="background:#1a1a2e;color:#fff;padding:32px;">
+  <h2 style="font-size:18px;margin-bottom:16px; text-align: center;">Comparison</h2>
+  <div style="max-width: 900px; margin: 0 auto;">
+  <table style="width:100%; font-size: 13px; color: rgba(255,255,255,0.85); border-collapse: collapse;">
+    <thead><tr style="border-bottom: 1px solid rgba(255,255,255,0.2);"><th style="text-align:left; padding: 8px;">Design</th><th style="text-align:left;">Default mental model</th><th style="text-align:left;">Best for</th><th style="text-align:left;">Engineering</th></tr></thead>
+    <tbody>
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);"><td style="padding: 8px;"><strong>1 — Mixed always-on</strong></td><td>Base sets defaults; type to override</td><td>Merchants who want both visible</td><td>Low</td></tr>
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);"><td style="padding: 8px;"><strong>2 — Quick-fill action</strong></td><td>Per-tier is real; base is a shortcut</td><td>Mostly per-tier work, occasional bulk fill</td><td>Low–medium</td></tr>
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);"><td style="padding: 8px;"><strong>3 — Stepped disclosure</strong></td><td>Base first, exceptions in-place</td><td>Merchants who mostly want the formula</td><td>Medium</td></tr>
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);"><td style="padding: 8px;"><strong>4 — Linked-by-default</strong></td><td>Tiers track the anchor unless unlinked</td><td>Visual thinkers; familiar from design tools</td><td>Medium–high</td></tr>
+      <tr><td style="padding: 8px;"><strong>5 — Two-column</strong></td><td>Two surfaces, two entry styles, both visible</td><td>Merchants who want to see both representations</td><td>Medium</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<div class="intro" style="padding:32px;">
+  <p style="font-size:13px;">
+    My picks: <strong>Design 3 (Stepped disclosure)</strong> for cleanest mental model — "base first, exceptions inline." Honourable mentions: <strong>Design 1</strong> if you want both inputs always visible, and <strong>Design 4</strong> if the visual link metaphor resonates with your merchants.
+  </p>
+</div>
+
+</body>
+</html>

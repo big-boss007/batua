@@ -87,7 +87,7 @@
   />
 
   <Button
-    text={program ? 'Update Program' : 'Create Program'}
+    text={program ? 'Update program' : 'Create program'}
     classes="btn-primary"
     disabled={isSubmitting}
     type="submit"

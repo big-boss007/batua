@@ -80,7 +80,7 @@
   }}
 >
   <div class="form-field">
-    <Input value={name} label="Merchant Name" placeholder="Acme Store" onInput={handleNameInput} />
+    <Input value={name} label="Merchant name" placeholder="Acme store" onInput={handleNameInput} />
   </div>
 
   <div class="form-field">
@@ -106,7 +106,7 @@
   </div>
 
   <div class="form-field">
-    <span class="field-label">Plan Tier</span>
+    <span class="field-label">Plan tier</span>
     <Select
       placeholder="Select plan"
       items={planItems}

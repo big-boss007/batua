@@ -72,10 +72,10 @@
 >
   {#snippet content()}
     {#if issuedCard === null}
-      <h2 class="modal-title">Confirm Gift Card</h2>
+      <h2 class="modal-title">Confirm gift card</h2>
       <p class="modal-subtitle">Review before issuing</p>
     {:else}
-      <h2 class="modal-title modal-title-success">Gift Card Issued</h2>
+      <h2 class="modal-title modal-title-success">Gift card issued</h2>
     {/if}
 
     <div class="card">
@@ -87,11 +87,19 @@
         </div>
         <div class="card-chip">
           <svg width="36" height="28" viewBox="0 0 36 28" fill="none">
-            <rect x="0.5" y="0.5" width="35" height="27" rx="3.5" stroke="#c9a84c" stroke-width="1"/>
-            <line x1="0" y1="10" x2="36" y2="10" stroke="#c9a84c" stroke-width="0.5"/>
-            <line x1="0" y1="18" x2="36" y2="18" stroke="#c9a84c" stroke-width="0.5"/>
-            <line x1="12" y1="0" x2="12" y2="28" stroke="#c9a84c" stroke-width="0.5"/>
-            <line x1="24" y1="0" x2="24" y2="28" stroke="#c9a84c" stroke-width="0.5"/>
+            <rect
+              x="0.5"
+              y="0.5"
+              width="35"
+              height="27"
+              rx="3.5"
+              stroke="#c9a84c"
+              stroke-width="1"
+            />
+            <line x1="0" y1="10" x2="36" y2="10" stroke="#c9a84c" stroke-width="0.5" />
+            <line x1="0" y1="18" x2="36" y2="18" stroke="#c9a84c" stroke-width="0.5" />
+            <line x1="12" y1="0" x2="12" y2="28" stroke="#c9a84c" stroke-width="0.5" />
+            <line x1="24" y1="0" x2="24" y2="28" stroke="#c9a84c" stroke-width="0.5" />
           </svg>
         </div>
         <div class="card-code-row">
@@ -99,16 +107,34 @@
           {#if issuedCard !== null}
             {#if !codeRevealed && !codeCopied}
               <button class="card-icon-btn" onclick={handleReveal} aria-label="Reveal code">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                  <circle cx="12" cy="12" r="3"/>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
                 </svg>
               </button>
             {:else if codeRevealed}
               <button class="card-icon-btn" onclick={handleCopy} aria-label="Copy code">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                  <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
                 </svg>
               </button>
             {:else if codeCopied}
@@ -179,7 +205,7 @@
   .card {
     width: 420px;
     height: 260px;
-    border-radius: 16px;
+    border-radius: var(--radius-pill);
     position: relative;
     overflow: hidden;
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 100%);
@@ -214,9 +240,9 @@
   }
 
   .card-brand {
-    font-size: 18px;
+    font-size: var(--font-size-lg);
     font-weight: 700;
-    color: #c9a84c;
+    color: var(--yellow-700);
     letter-spacing: 0.05em;
   }
 
@@ -242,7 +268,7 @@
 
   .card-code {
     font-family: var(--font-mono, 'Courier New', monospace);
-    font-size: 20px;
+    font-size: var(--font-size-xl);
     font-weight: 600;
     color: rgba(255, 255, 255, 0.85);
     letter-spacing: 0.12em;
@@ -258,19 +284,19 @@
     background: rgba(201, 168, 76, 0.15);
     border: 1px solid rgba(201, 168, 76, 0.3);
     border-radius: 4px;
-    color: #c9a84c;
+    color: var(--yellow-700);
     cursor: pointer;
     transition: all 0.15s ease;
   }
 
   .card-icon-btn:hover {
     background: rgba(201, 168, 76, 0.25);
-    border-color: #c9a84c;
+    border-color: var(--yellow-700);
   }
 
   .card-copied {
-    font-size: 11px;
-    color: #4ade80;
+    font-size: var(--font-size-xs);
+    color: var(--green-500);
     font-weight: 600;
     letter-spacing: 0.05em;
   }
@@ -288,9 +314,9 @@
   }
 
   .card-currency {
-    font-size: 20px;
+    font-size: var(--font-size-xl);
     font-weight: 400;
-    color: #c9a84c;
+    color: var(--yellow-700);
   }
 
   .card-value {
@@ -314,7 +340,7 @@
   }
 
   .card-expiry-date {
-    font-size: 12px;
+    font-size: var(--font-size-xs);
     color: rgba(255, 255, 255, 0.6);
     font-weight: 500;
   }
@@ -325,5 +351,4 @@
     width: 100%;
     justify-content: center;
   }
-
 </style>

@@ -35,7 +35,7 @@
 
 <div class="system-page">
   <div class="page-header">
-    <h1>System Health</h1>
+    <h1>System health</h1>
     <p class="subtitle">Operational diagnostics and processing status</p>
   </div>
 
@@ -43,19 +43,19 @@
     <h3 class="section-title">Processing</h3>
     <div class="health-grid">
       <HealthCard
-        label="Unprocessed Events"
+        label="Unprocessed events"
         value={health.unprocessed_events}
         threshold={eventThreshold(health.unprocessed_events)}
         subtitle="Events in received state"
       />
       <HealthCard
-        label="Failed Events"
+        label="Failed events"
         value={health.failed_events}
         threshold={failedThreshold(health.failed_events)}
         subtitle="Events needing attention"
       />
       <HealthCard
-        label="Pending COD Orders"
+        label="Pending COD orders"
         value={health.pending_cod_orders}
         threshold={eventThreshold(health.pending_cod_orders)}
         subtitle="Awaiting delivery signal"
@@ -64,7 +64,7 @@
   </section>
 
   <section class="health-section">
-    <h3 class="section-title">Credit Expiry</h3>
+    <h3 class="section-title">Credit expiry</h3>
     <div class="health-grid">
       <HealthCard
         label="Expiring in 7 Days"

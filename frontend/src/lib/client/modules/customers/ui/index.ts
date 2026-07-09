@@ -1,5 +1,6 @@
 export { default as CustomerSearch } from './CustomerSearch.svelte';
 export { default as CustomerDetail } from './CustomerDetail.svelte';
+export { default as WalletActionModal } from './WalletActionModal.svelte';
 export { default as TierBadge } from './TierBadge.svelte';
 export { default as TierProgress } from './TierProgress.svelte';
 export { default as LoyaltyProgramForm } from './LoyaltyProgramForm.svelte';

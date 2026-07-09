@@ -1,11 +1,15 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import { page } from '$app/stores';
   import { Button, Input, Slider, Stepper, Toggle, Pill } from '@juspay/svelte-ui-components';
   import type { StepperProperties } from '@juspay/svelte-ui-components';
   import type { Merchant } from '$lib/client/modules/admin';
   import { currentMerchant, currentMerchantId } from '$lib/client/modules/admin';
   import { createRule, fetchRules } from '$lib/client/modules/rules';
-  import type { CreateRuleRequest } from '$lib/client/modules/rules';
+  import type { CreateRuleRequest, Rule } from '$lib/client/modules/rules';
+  import { fetchWalletPolicies } from '$lib/client/modules/settings';
+  import { fetchLoyaltyProgram, fetchTiers } from '$lib/client/modules/customers';
+  import { fetchProgram as fetchReferralProgram } from '$lib/client/modules/referrals';
   import { apiCaller } from '$lib/client/modules/foundation';
   import { toastStore } from '$lib/client/modules/foundation';
 
@@ -16,10 +20,36 @@
   let alreadySetUp = $state(false);
   let checkingSetup = $state(true);
 
+  let previewMode = $derived($page.url.searchParams.get('preview') === '1');
+
+  type HydratedTier = {
+    name: string;
+    rank: number;
+    threshold: number;
+    earn_rate_multiplier: number;
+  };
+  let hydratedTiers = $state<Array<HydratedTier>>([]);
+  let hydrating = $state(false);
+
+  let rewardRuleName = $state<string | null>(null);
+  let codRuleName = $state<string | null>(null);
+  let extraRulesCount = $state(0);
+  let walletPolicyFound = $state(false);
+  let loyaltyProgramName = $state<string | null>(null);
+  let referralProgramFound = $state(false);
+
+  function tierClass(rank: number): string {
+    if (rank === 1) return 'tier-bronze';
+    if (rank === 2) return 'tier-silver';
+    if (rank === 3) return 'tier-gold';
+    return 'tier-platinum';
+  }
+
   currentMerchantId.subscribe((id) => {
     if (id !== null && id !== merchantId) {
       merchantId = id;
       checkExistingSetup(id);
+      if (previewMode) hydratePreview(id);
     } else if (id === null) {
       merchantId = null;
       checkingSetup = false;
@@ -37,6 +67,90 @@
       alreadySetUp = true;
     }
     checkingSetup = false;
+  }
+
+  async function hydratePreview(mId: string) {
+    hydrating = true;
+    const [rulesR, policiesR, programR, referralR] = await Promise.all([
+      fetchRules(mId),
+      fetchWalletPolicies(mId),
+      fetchLoyaltyProgram(mId),
+      fetchReferralProgram(mId)
+    ]);
+
+    if (rulesR.tag === 'success') {
+      const all = rulesR.data;
+      const isCod = (r: Rule): boolean =>
+        r.config.conditions.some((c) => c.field === 'payment_method' && c.value === 'cod');
+
+      const prepaid =
+        all.find((r) => r.name === 'Prepaid Order Cashback') ??
+        all.find(
+          (r) =>
+            r.rule_type === 'reward' && r.config.action.calculation === 'percentage' && !isCod(r)
+        );
+
+      if (prepaid !== undefined) {
+        prepaidPercent = prepaid.config.action.value;
+        const minCond = prepaid.config.conditions.find(
+          (c) => (c.field === 'total_amount' || c.field === 'order_amount') && c.operator === 'gte'
+        );
+        if (minCond !== undefined) minOrderAmount = String(minCond.value);
+        if (prepaid.config.action.max_amount !== null) {
+          maxCashbackPerOrder = String(prepaid.config.action.max_amount);
+        }
+        rewardRuleName = prepaid.name;
+      }
+
+      const cod = all.find((r) => r.name === 'COD Order Cashback') ?? all.find((r) => isCod(r));
+      if (cod !== undefined) {
+        enableCod = true;
+        codPercent = cod.config.action.value;
+        codRuleName = cod.name;
+      }
+
+      const captured = [prepaid?.id, cod?.id].filter((id) => id !== undefined);
+      extraRulesCount = all.filter(
+        (r) => r.rule_type === 'reward' && !captured.includes(r.id)
+      ).length;
+    }
+
+    if (policiesR.tag === 'success') {
+      const earned = policiesR.data.find(
+        (p) => p.bucket_type === 'EarnedCredit' || p.bucket_type === 'earned_credit'
+      );
+      if (earned !== undefined) {
+        if (earned.min_redemption !== null) minRedemption = String(earned.min_redemption);
+        if (earned.max_per_order_pct !== null) maxPerOrderPct = String(earned.max_per_order_pct);
+        allowWithDiscounts = earned.stackable_with_discounts;
+        walletPolicyFound = true;
+      }
+    }
+
+    if (programR.tag === 'success' && programR.data.id !== '') {
+      enableTiers = true;
+      loyaltyProgramName = programR.data.name;
+      const tiersR = await fetchTiers(programR.data.id);
+      if (tiersR.tag === 'success') {
+        hydratedTiers = tiersR.data
+          .map((t) => ({
+            name: t.name,
+            rank: t.rank,
+            threshold: t.threshold,
+            earn_rate_multiplier: t.earn_rate_multiplier
+          }))
+          .sort((a, b) => a.rank - b.rank);
+      }
+    }
+
+    if (referralR.tag === 'success' && referralR.data.id !== '') {
+      enableReferrals = true;
+      referrerReward = String(referralR.data.referrer_reward_amount);
+      refereeReward = String(referralR.data.referee_reward_amount);
+      referralProgramFound = true;
+    }
+
+    hydrating = false;
   }
 
   const steps: StepperProperties['steps'] = [
@@ -98,6 +212,10 @@
 
   async function submitRewards() {
     if (merchantId === null) return;
+    if (previewMode) {
+      goNext();
+      return;
+    }
     loading = true;
 
     const prepaidRequest: CreateRuleRequest = {
@@ -163,6 +281,10 @@
 
   async function submitPolicy() {
     if (merchantId === null) return;
+    if (previewMode) {
+      goNext();
+      return;
+    }
     loading = true;
 
     const result = await apiCaller.post(
@@ -193,6 +315,10 @@
 
   async function submitTiers() {
     if (merchantId === null) return;
+    if (previewMode) {
+      goNext();
+      return;
+    }
 
     if (!enableTiers) {
       completedSteps.tiers = false;
@@ -243,6 +369,10 @@
   }
 
   async function submitReferrals() {
+    if (previewMode) {
+      goNext();
+      return;
+    }
     if (!enableReferrals) {
       completedSteps.referrals = false;
       loading = false;
@@ -278,6 +408,11 @@
     goto('/admin');
   }
 
+  async function openPreview() {
+    if (merchantId !== null) await hydratePreview(merchantId);
+    goto('/admin/setup?preview=1');
+  }
+
   function openStorefront() {
     if (merchant !== null && merchant.slug !== null) {
       window.open(`/s/${merchant.slug}`, '_blank');
@@ -302,19 +437,31 @@
     <div class="empty-state">
       <p class="empty-text">Checking setup status...</p>
     </div>
-  {:else if alreadySetUp}
+  {:else if alreadySetUp && !previewMode}
     <div class="already-done">
       <div class="already-done-icon">&#10003;</div>
-      <h2>Setup Complete</h2>
+      <h2>Setup complete</h2>
       <p class="already-done-text">This merchant already has reward rules configured.</p>
       <div class="already-done-actions">
         <Button text="Go to Dashboard" classes="btn-primary" onclick={goToDashboard} />
+        <Button text="Preview wizard →" classes="btn-secondary" onclick={openPreview} />
       </div>
     </div>
   {:else}
     <div class="stepper-wrapper">
       <Stepper {steps} currentStepIndex={currentStep} onhandleStepClick={handleStepClick} />
     </div>
+
+    {#if previewMode}
+      <div class="preview-banner">
+        {#if hydrating}
+          Loading your current configuration…
+        {:else}
+          👁 Preview mode — reflecting <strong>{merchantName}</strong>'s current configuration.
+          Nothing will be saved.
+        {/if}
+      </div>
+    {/if}
 
     <div class="step-content">
       {#if currentStep === 0}
@@ -324,7 +471,7 @@
           <p class="welcome-subtitle">Let's set up your loyalty program in 5 minutes.</p>
           <p class="welcome-merchant">Setting up for <strong>{merchantName}</strong></p>
           <div class="step-actions">
-            <Button text="Get Started" classes="btn-primary" onclick={goNext} />
+            <Button text="Get started" classes="btn-primary" onclick={goNext} />
           </div>
         </div>
       {:else if currentStep === 1}
@@ -372,6 +519,25 @@
             </div>
           </div>
 
+          {#if previewMode}
+            <div class="config-source">
+              {#if rewardRuleName !== null}
+                ↻ Reflecting rule: <strong>{rewardRuleName}</strong>
+                {#if extraRulesCount > 0}
+                  &middot; <a href="/admin/rules" target="_blank" rel="noopener"
+                    >{extraRulesCount} other reward rule{extraRulesCount === 1 ? '' : 's'} not shown →</a
+                  >
+                {/if}
+              {:else}
+                No matching reward rule found — showing default values. View all at <a
+                  href="/admin/rules"
+                  target="_blank"
+                  rel="noopener">/admin/rules</a
+                >.
+              {/if}
+            </div>
+          {/if}
+
           <div class="form-group">
             <Toggle
               text="Also reward COD orders?"
@@ -398,6 +564,11 @@
                 />
                 <span class="slider-value">{codPercent}%</span>
               </div>
+              {#if previewMode && codRuleName !== null}
+                <div class="config-source">
+                  ↻ Reflecting rule: <strong>{codRuleName}</strong>
+                </div>
+              {/if}
             </div>
           {/if}
 
@@ -422,7 +593,7 @@
         </div>
       {:else if currentStep === 2}
         <div class="step-panel">
-          <h2 class="step-title">Set Up Wallet Policy</h2>
+          <h2 class="step-title">Set up wallet policy</h2>
           <p class="step-description">How should customers redeem their credits?</p>
 
           <div class="form-group">
@@ -457,6 +628,19 @@
             />
           </div>
 
+          {#if previewMode}
+            <div class="config-source">
+              {#if walletPolicyFound}
+                ↻ Reflecting your <strong>earned_credit</strong> wallet policy &middot;
+                <a href="/admin/wallet-policies" target="_blank" rel="noopener"
+                  >view all policies →</a
+                >
+              {:else}
+                No earned_credit policy yet — showing defaults.
+              {/if}
+            </div>
+          {/if}
+
           <div class="step-actions">
             <Button text="Back" classes="btn-secondary" onclick={goBack} />
             <Button text="Next" classes="btn-primary" showLoader={loading} onclick={submitPolicy} />
@@ -464,7 +648,7 @@
         </div>
       {:else if currentStep === 3}
         <div class="step-panel">
-          <h2 class="step-title">Loyalty Tiers</h2>
+          <h2 class="step-title">Loyalty tiers</h2>
           <p class="step-description">Want to reward your best customers with tiers?</p>
 
           <div class="form-group">
@@ -479,24 +663,38 @@
 
           {#if enableTiers}
             <div class="tiers-preset">
-              <p class="preset-label">Recommended tiers</p>
+              <p class="preset-label">
+                {previewMode && hydratedTiers.length > 0 ? 'Your tiers' : 'Recommended tiers'}
+              </p>
               <div class="tiers-list">
-                <div class="tier-item">
-                  <Pill text="Bronze" classes="tier-badge tier-bronze" />
-                  <span class="tier-detail">Rs. 0+ spend &middot; 1x rewards</span>
-                </div>
-                <div class="tier-item">
-                  <Pill text="Silver" classes="tier-badge tier-silver" />
-                  <span class="tier-detail">Rs. 2,000+ spend &middot; 1.25x rewards</span>
-                </div>
-                <div class="tier-item">
-                  <Pill text="Gold" classes="tier-badge tier-gold" />
-                  <span class="tier-detail">Rs. 5,000+ spend &middot; 1.5x rewards</span>
-                </div>
-                <div class="tier-item">
-                  <Pill text="Platinum" classes="tier-badge tier-platinum" />
-                  <span class="tier-detail">Rs. 15,000+ spend &middot; 2x rewards</span>
-                </div>
+                {#if previewMode && hydratedTiers.length > 0}
+                  {#each hydratedTiers as tier (tier.rank)}
+                    <div class="tier-item">
+                      <Pill text={tier.name} classes="tier-badge {tierClass(tier.rank)}" />
+                      <span class="tier-detail"
+                        >Rs. {tier.threshold.toLocaleString('en-IN')}+ spend &middot; {tier.earn_rate_multiplier}x
+                        rewards</span
+                      >
+                    </div>
+                  {/each}
+                {:else}
+                  <div class="tier-item">
+                    <Pill text="Bronze" classes="tier-badge tier-bronze" />
+                    <span class="tier-detail">Rs. 0+ spend &middot; 1x rewards</span>
+                  </div>
+                  <div class="tier-item">
+                    <Pill text="Silver" classes="tier-badge tier-silver" />
+                    <span class="tier-detail">Rs. 2,000+ spend &middot; 1.25x rewards</span>
+                  </div>
+                  <div class="tier-item">
+                    <Pill text="Gold" classes="tier-badge tier-gold" />
+                    <span class="tier-detail">Rs. 5,000+ spend &middot; 1.5x rewards</span>
+                  </div>
+                  <div class="tier-item">
+                    <Pill text="Platinum" classes="tier-badge tier-platinum" />
+                    <span class="tier-detail">Rs. 15,000+ spend &middot; 2x rewards</span>
+                  </div>
+                {/if}
               </div>
             </div>
           {/if}
@@ -516,7 +714,7 @@
         </div>
       {:else if currentStep === 4}
         <div class="step-panel">
-          <h2 class="step-title">Referral Program</h2>
+          <h2 class="step-title">Referral program</h2>
           <p class="step-description">Let customers refer their friends?</p>
 
           <div class="form-group">
@@ -552,6 +750,15 @@
                 />
               </div>
             </div>
+            {#if previewMode && referralProgramFound}
+              <div class="config-source">
+                ↻ Reflecting your active referral program &middot; <a
+                  href="/admin/referrals"
+                  target="_blank"
+                  rel="noopener">view full settings →</a
+                >
+              </div>
+            {/if}
           {/if}
 
           <div class="step-actions">
@@ -576,7 +783,7 @@
           </p>
 
           <div class="summary-card">
-            <h3 class="summary-heading">Setup Summary</h3>
+            <h3 class="summary-heading">Setup summary</h3>
             <ul class="summary-list">
               <li class="summary-item summary-done">
                 <span class="check">&#10003;</span>
@@ -613,7 +820,7 @@
 
           <div class="step-actions done-actions">
             <Button text="Go to Dashboard" classes="btn-primary" onclick={goToDashboard} />
-            <Button text="View Your Storefront" classes="btn-secondary" onclick={openStorefront} />
+            <Button text="View your storefront" classes="btn-secondary" onclick={openStorefront} />
           </div>
         </div>
       {/if}
@@ -645,9 +852,9 @@
     flex-direction: column;
     gap: var(--space-6);
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     padding: var(--space-8);
+    box-shadow: var(--shadow-card);
   }
 
   .welcome-panel {
@@ -788,8 +995,8 @@
     gap: var(--space-3);
     padding: var(--space-3) var(--space-4);
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
   }
 
   :global(.tier-badge) {
@@ -801,23 +1008,23 @@
   }
 
   :global(.tier-bronze) {
-    background: #f5e6d3;
+    background: var(--orange-100);
     color: #8b5e3c;
   }
 
   :global(.tier-silver) {
-    background: #e8e8e8;
-    color: #555555;
+    background: var(--g-400);
+    color: var(--g-1500);
   }
 
   :global(.tier-gold) {
-    background: #fdf3d7;
+    background: var(--yellow-100);
     color: #92742e;
   }
 
   :global(.tier-platinum) {
-    background: #e8eaf6;
-    color: #3949ab;
+    background: color-mix(in srgb, var(--purple-500) 8%, #fff);
+    color: var(--purple-500);
   }
 
   :global([data-theme='dark'] .tier-bronze) {
@@ -826,8 +1033,8 @@
   }
 
   :global([data-theme='dark'] .tier-silver) {
-    background: #2a2a2a;
-    color: #b0b0b0;
+    background: var(--g-1800);
+    color: var(--g-800);
   }
 
   :global([data-theme='dark'] .tier-gold) {
@@ -837,7 +1044,7 @@
 
   :global([data-theme='dark'] .tier-platinum) {
     background: #1a1e3d;
-    color: #7986cb;
+    color: var(--purple-500);
   }
 
   .tier-detail {
@@ -976,6 +1183,46 @@
 
   .already-done-actions {
     margin-top: var(--space-4);
+    display: flex;
+    gap: var(--space-3);
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .preview-banner {
+    background: color-mix(in srgb, var(--color-warning) 12%, transparent);
+    border: 1px solid var(--color-warning);
+    color: var(--color-warning);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    text-align: center;
+    width: 100%;
+  }
+
+  .config-source {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    padding: var(--space-2) var(--space-3);
+    background: color-mix(in srgb, var(--color-info) 6%, transparent);
+    border-left: 2px solid var(--color-info);
+    border-radius: var(--radius-sm);
+    line-height: var(--line-height-base);
+  }
+
+  .config-source strong {
+    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .config-source a {
+    color: var(--color-primary);
+    text-decoration: none;
+  }
+
+  .config-source a:hover {
+    text-decoration: underline;
   }
 
   @media (max-width: 640px) {

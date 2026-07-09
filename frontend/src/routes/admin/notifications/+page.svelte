@@ -1,7 +1,11 @@
 <script lang="ts">
   import { Tabs, Table, Pill, Button } from '@juspay/svelte-ui-components';
 
-  import type { NotificationTemplate, UpdateTemplateRequest, NotificationLog } from '$lib/client/modules/settings';
+  import type {
+    NotificationTemplate,
+    UpdateTemplateRequest,
+    NotificationLog
+  } from '$lib/client/modules/settings';
   import {
     updateTemplate,
     fetchTemplates,
@@ -103,7 +107,10 @@
                 <span class="template-item-name">{template.name}</span>
                 <div class="template-item-meta">
                   <span class="template-item-channel">{template.channel}</span>
-                  <Pill text={template.is_active ? 'Active' : 'Inactive'} classes={template.is_active ? 'pill-success' : 'pill-neutral'} />
+                  <Pill
+                    text={template.is_active ? 'Active' : 'Inactive'}
+                    classes={template.is_active ? 'pill-success' : 'pill-neutral'}
+                  />
                 </div>
               {/snippet}
             </Button>
@@ -201,11 +208,11 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
-    border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     padding: var(--space-3);
     background: var(--color-surface);
     overflow-y: auto;
+    box-shadow: var(--shadow-card);
   }
 
   :global(.template-item) {
@@ -266,9 +273,9 @@
 
   .logs-section {
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     overflow: hidden;
+    box-shadow: var(--shadow-card);
   }
 
   .channel-label {
@@ -277,5 +284,4 @@
     text-transform: uppercase;
     color: var(--color-text);
   }
-
 </style>

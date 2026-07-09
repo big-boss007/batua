@@ -2,6 +2,7 @@
   import { page } from '$app/stores';
   import { Button } from '@juspay/svelte-ui-components';
   import type { NavItem } from '$lib/client/modules/admin';
+  import Icon from '$lib/components/Icon.svelte';
 
   let {
     items,
@@ -82,7 +83,7 @@
           onclick={() => toggleParent(item)}
           title={collapsed ? item.label : null}
         >
-          <span class="nav-icon">{item.icon}</span>
+          <span class="nav-icon"><Icon name={item.icon} size={18} /></span>
           {#if !collapsed}
             <span class="nav-label">{item.label}</span>
             <span class="nav-chevron">{isExpanded(item) ? '▾' : '▸'}</span>
@@ -110,7 +111,7 @@
           class:active={isActive(item.href)}
           title={collapsed ? item.label : null}
         >
-          <span class="nav-icon">{item.icon}</span>
+          <span class="nav-icon"><Icon name={item.icon} size={18} /></span>
           {#if !collapsed}
             <span class="nav-label">{item.label}</span>
           {/if}
@@ -206,8 +207,8 @@
     gap: var(--space-3);
     padding: var(--space-2) var(--space-3);
     border-radius: var(--radius-md);
-    color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
+    color: var(--g-1800);
+    font-size: var(--font-size-base);
     font-weight: var(--font-weight-medium);
     text-decoration: none;
     white-space: nowrap;
@@ -222,8 +223,9 @@
   }
 
   .nav-item.active {
-    background: var(--color-primary);
-    color: #ffffff;
+    background: var(--p-100);
+    color: var(--p-800);
+    font-weight: var(--font-weight-semibold);
   }
 
   /* Parent nav item */
@@ -268,9 +270,9 @@
     align-items: center;
     gap: var(--space-2);
     padding: 6px var(--space-3) 6px 36px;
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-base);
     font-weight: var(--font-weight-medium);
-    color: var(--color-text-muted);
+    color: var(--g-1800);
     text-decoration: none;
     border-radius: var(--radius-md);
     position: relative;
@@ -295,9 +297,9 @@
   }
 
   .nav-child.active {
-    color: var(--color-primary);
+    color: var(--p-800);
     font-weight: var(--font-weight-semibold);
-    background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+    background: var(--p-100);
   }
 
   .nav-child.active::before {

@@ -116,10 +116,10 @@
 
   .search-results {
     list-style: none;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
     background: var(--color-surface);
     overflow: hidden;
+    box-shadow: var(--shadow-card);
   }
 
   .result-item {

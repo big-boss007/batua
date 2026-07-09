@@ -84,7 +84,7 @@
   <div class="form-row">
     <Input
       value={name}
-      label="Tier Name"
+      label="Tier name"
       placeholder="e.g. Gold"
       onInput={(val) => {
         name = val;
@@ -119,7 +119,7 @@
     <div class="form-field">
       <Input
         value={earnRateMultiplier}
-        label="Earn Rate Multiplier"
+        label="Earn rate multiplier"
         dataType="number"
         onInput={(val) => {
           earnRateMultiplier = val;
@@ -147,7 +147,7 @@
       <Button text="Cancel" classes="btn-ghost" onclick={onCancel} />
     {/if}
     <Button
-      text={isEditing ? 'Update Tier' : 'Create Tier'}
+      text={isEditing ? 'Update tier' : 'Create tier'}
       classes="btn-primary"
       disabled={!isValid || submitting}
       type="submit"
@@ -161,9 +161,9 @@
     flex-direction: column;
     gap: var(--space-5);
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     padding: var(--space-6);
+    box-shadow: var(--shadow-card);
   }
 
   .form-title {

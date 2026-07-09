@@ -1,5 +1,15 @@
 <script lang="ts">
-  import { Tabs, Shimmer, Input, Select, Pagination, Pill, Progress, Modal, Button } from '@juspay/svelte-ui-components';
+  import {
+    Tabs,
+    Shimmer,
+    Input,
+    Select,
+    Pagination,
+    Pill,
+    Progress,
+    Modal,
+    Button
+  } from '@juspay/svelte-ui-components';
   import { currentMerchantId } from '$lib/client/modules/admin';
   import {
     toastStore,
@@ -55,13 +65,15 @@
   let selectedStatus = $state<MembershipStatus | null>(null);
   let detailLoading = $state(false);
   let selectedEarnedTier = $state<string | null>(null);
-  let modalMode = $state<'default' | 'cancel-confirm' | 'upgrade' | 'extend' | 'renew-confirm'>('default');
+  let modalMode = $state<'default' | 'cancel-confirm' | 'upgrade' | 'extend' | 'renew-confirm'>(
+    'default'
+  );
   let selectedUpgradeTierId = $state('');
   let extendDays = $state(365);
   let actionLoading = $state(false);
 
   // Tabs
-  const tabItems = ['Subscribers', 'Assign Membership'];
+  const tabItems = ['Subscribers', 'Assign membership'];
   const tabIds = ['subscribers', 'assign'] as const;
   let activeTabIndex = $state(0);
   let activeTab = $derived(tabIds[activeTabIndex]);
@@ -75,13 +87,13 @@
 
   let uniqueTierNames = $derived([...new Set(subscribers.map((s) => s.tier_name))].sort());
   let tierFilterItems = $derived([
-    { id: 'all', label: 'All Tiers' },
+    { id: 'all', label: 'All tiers' },
     ...uniqueTierNames.map((t) => ({ id: t, label: t }))
   ]);
   let statusFilterItems = [
-    { id: 'all', label: 'All Status' },
+    { id: 'all', label: 'All status' },
     { id: 'active', label: 'Active' },
-    { id: 'expiring', label: 'Expiring Soon' },
+    { id: 'expiring', label: 'Expiring soon' },
     { id: 'cancelled', label: 'Cancelled' },
     { id: 'expired', label: 'Expired' }
   ];
@@ -179,12 +191,16 @@
         selectedStatus = result.data;
       }
       try {
-        const tierRes = await fetch(`http://localhost:3000/loyalty/customers/${merchantId}/${sub.customer_id}`);
+        const tierRes = await fetch(
+          `http://localhost:3000/loyalty/customers/${merchantId}/${sub.customer_id}`
+        );
         if (tierRes.ok) {
           const tierData = await tierRes.json();
           selectedEarnedTier = (tierData?.tier?.name as string) ?? null;
         }
-      } catch { /* no earned tier */ }
+      } catch {
+        /* no earned tier */
+      }
     }
     detailLoading = false;
   }
@@ -204,7 +220,11 @@
           ? { ...s, status: 'cancelled', cancelled_at: new Date().toISOString() }
           : s
       );
-      selectedMembership = { ...selectedMembership, status: 'cancelled', cancelled_at: new Date().toISOString() };
+      selectedMembership = {
+        ...selectedMembership,
+        status: 'cancelled',
+        cancelled_at: new Date().toISOString()
+      };
       toastStore.push({ message: 'Membership cancelled', level: 'success' });
     } else {
       toastStore.push({ message: 'Failed to cancel membership', level: 'error' });
@@ -307,17 +327,23 @@
     let tierExpiry: string | null = null;
 
     try {
-      const tierRes = await fetch(`http://localhost:3000/loyalty/customers/${merchantId}/${cust.id}`);
+      const tierRes = await fetch(
+        `http://localhost:3000/loyalty/customers/${merchantId}/${cust.id}`
+      );
       if (tierRes.ok) {
         const tierData = await tierRes.json();
         tierName = (tierData?.tier?.name as string) ?? null;
         tierRank = (tierData?.tier?.rank as number) ?? 0;
         tierMult = (tierData?.tier?.earn_rate_multiplier as number) ?? 1;
       }
-    } catch { /* no tier */ }
+    } catch {
+      /* no tier */
+    }
 
     try {
-      const statusRes = await fetch(`http://localhost:3000/earn/memberships/status/${merchantId}/${cust.id}`);
+      const statusRes = await fetch(
+        `http://localhost:3000/earn/memberships/status/${merchantId}/${cust.id}`
+      );
       if (statusRes.ok) {
         const statusData = await statusRes.json();
         if (statusData?.membership?.expires_at) {
@@ -329,7 +355,9 @@
           tierMult = memMult;
         }
       }
-    } catch { /* no membership status */ }
+    } catch {
+      /* no membership status */
+    }
 
     resolvedCustomer = {
       name: cust.name ?? cust.phone,
@@ -395,7 +423,13 @@
         <div class="empty-state">
           <div class="empty-icon">👥</div>
           <p>No memberships assigned yet.</p>
-          <Button text="Assign a membership →" classes="btn-ghost" onclick={() => { activeTabIndex = 1; }} />
+          <Button
+            text="Assign a membership →"
+            classes="btn-ghost"
+            onclick={() => {
+              activeTabIndex = 1;
+            }}
+          />
         </div>
       {:else}
         <div class="table-card">
@@ -403,19 +437,28 @@
             <Input
               value={searchQuery}
               placeholder="Search by name or phone..."
-              onInput={(val) => { searchQuery = val; currentPage = 1; }}
+              onInput={(val) => {
+                searchQuery = val;
+                currentPage = 1;
+              }}
               classes="filter-input"
             />
             <Select
               items={tierFilterItems}
               value={[filterTier]}
-              onchange={(vals) => { filterTier = vals[0] ?? 'all'; currentPage = 1; }}
+              onchange={(vals) => {
+                filterTier = vals[0] ?? 'all';
+                currentPage = 1;
+              }}
               classes="filter-select"
             />
             <Select
               items={statusFilterItems}
               value={[filterStatus]}
-              onchange={(vals) => { filterStatus = vals[0] ?? 'all'; currentPage = 1; }}
+              onchange={(vals) => {
+                filterStatus = vals[0] ?? 'all';
+                currentPage = 1;
+              }}
               classes="filter-select"
             />
             <span class="filter-count">
@@ -454,19 +497,45 @@
                         <span class="cell-phone">{formatPhone(sub.customer_phone)}</span>
                       </div>
                     </td>
-                    <td><Pill text={sub.tier_name} classes="tier-pill {tierColorClass(sub.tier_name)}" /></td>
-                    <td><Pill text="{sub.earn_rate_multiplier}x" classes="pill-neutral mult-pill" /></td>
+                    <td
+                      ><Pill
+                        text={sub.tier_name}
+                        classes="tier-pill {tierColorClass(sub.tier_name)}"
+                      /></td
+                    >
+                    <td
+                      ><Pill
+                        text="{sub.earn_rate_multiplier}x"
+                        classes="pill-neutral mult-pill"
+                      /></td
+                    >
                     <td>
                       <Pill
-                        text={status === 'active' ? 'Active' : status === 'expiring' ? 'Expiring Soon' : status === 'cancelled' ? 'Cancelled' : 'Expired'}
-                        classes={status === 'active' ? 'pill-success' : status === 'expiring' ? 'pill-warning' : status === 'cancelled' || status === 'expired' ? 'pill-error' : 'pill-neutral'}
+                        text={status === 'active'
+                          ? 'Active'
+                          : status === 'expiring'
+                            ? 'Expiring Soon'
+                            : status === 'cancelled'
+                              ? 'Cancelled'
+                              : 'Expired'}
+                        classes={status === 'active'
+                          ? 'pill-success'
+                          : status === 'expiring'
+                            ? 'pill-warning'
+                            : status === 'cancelled' || status === 'expired'
+                              ? 'pill-error'
+                              : 'pill-neutral'}
                       />
                     </td>
                     <td><span class="cell-date">{formatDate(sub.started_at)}</span></td>
                     <td>
                       {#if status === 'cancelled'}
-                        <span class="cell-date strikethrough muted">{formatDate(sub.expires_at)}</span>
-                        <div class="cell-sub">cancelled {sub.cancelled_at ? formatDate(sub.cancelled_at) : ''}</div>
+                        <span class="cell-date strikethrough muted"
+                          >{formatDate(sub.expires_at)}</span
+                        >
+                        <div class="cell-sub">
+                          cancelled {sub.cancelled_at ? formatDate(sub.cancelled_at) : ''}
+                        </div>
                       {:else if status === 'expired'}
                         <span class="cell-date muted">{formatDate(sub.expires_at)}</span>
                         <div class="cell-sub">expired {Math.abs(days)} days ago</div>
@@ -485,21 +554,36 @@
 
             {#if totalPages > 1}
               <div class="pagination-bar">
-                <span class="pagination-info">Showing {(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, filtered.length)} of {filtered.length} memberships</span>
-                <Pagination {totalPages} {currentPage} onchange={(p) => { currentPage = p; }} />
+                <span class="pagination-info"
+                  >Showing {(currentPage - 1) * pageSize + 1}–{Math.min(
+                    currentPage * pageSize,
+                    filtered.length
+                  )} of {filtered.length} memberships</span
+                >
+                <Pagination
+                  {totalPages}
+                  {currentPage}
+                  onchange={(p) => {
+                    currentPage = p;
+                  }}
+                />
               </div>
             {/if}
           {/if}
         </div>
       {/if}
-
     {:else if activeTab === 'assign'}
       <div class="form-container">
         <AssignForm
           {tiers}
           onLookup={handleCustomerLookup}
           onSubmit={handleAssign}
-          onReset={() => { resolvedCustomerId = null; resolvedCustomer = null; assignResult = null; formLookupError = null; }}
+          onReset={() => {
+            resolvedCustomerId = null;
+            resolvedCustomer = null;
+            assignResult = null;
+            formLookupError = null;
+          }}
           loading={formLoading}
           lookingUp={formLookingUp}
           lookupError={formLookupError}
@@ -518,202 +602,369 @@
   <Modal
     size="large"
     showOverlay={true}
-    header={{ text: 'Membership Details', rightImage: MODAL_CLOSE_ICON }}
+    header={{ text: 'Membership details', rightImage: MODAL_CLOSE_ICON }}
     onclose={closeDetail}
     onoverlayClick={closeDetail}
     onheaderRightImageClick={closeDetail}
   >
     {#snippet content()}
       {#if selectedMembership !== null}
-      {@const ms = selectedMembership}
-      {@const st = memberStatus(ms)}
-      {@const d = daysRemaining(ms.expires_at)}
-      {@const pPct = st === 'active' || st === 'expiring' ? Math.min(100, Math.max(0, (d / 365) * 100)) : 0}
-      <div class="modal-body">
-        <div class="detail-header">
-          <div class="detail-customer">
-            <span class="detail-name">{ms.customer_name ?? 'Unnamed'}</span>
-            <span class="detail-phone">{formatPhone(ms.customer_phone)}</span>
+        {@const ms = selectedMembership}
+        {@const st = memberStatus(ms)}
+        {@const d = daysRemaining(ms.expires_at)}
+        {@const pPct =
+          st === 'active' || st === 'expiring' ? Math.min(100, Math.max(0, (d / 365) * 100)) : 0}
+        <div class="modal-body">
+          <div class="detail-header">
+            <div class="detail-customer">
+              <span class="detail-name">{ms.customer_name ?? 'Unnamed'}</span>
+              <span class="detail-phone">{formatPhone(ms.customer_phone)}</span>
+            </div>
+            <Pill
+              text={st === 'active'
+                ? 'Active'
+                : st === 'expiring'
+                  ? 'Expiring Soon'
+                  : st === 'cancelled'
+                    ? 'Cancelled'
+                    : 'Expired'}
+              classes={st === 'active'
+                ? 'pill-success'
+                : st === 'expiring'
+                  ? 'pill-warning'
+                  : st === 'cancelled' || st === 'expired'
+                    ? 'pill-error'
+                    : 'pill-neutral'}
+            />
           </div>
-          <Pill
-            text={st === 'active' ? 'Active' : st === 'expiring' ? 'Expiring Soon' : st === 'cancelled' ? 'Cancelled' : 'Expired'}
-            classes={st === 'active' ? 'pill-success' : st === 'expiring' ? 'pill-warning' : st === 'cancelled' || st === 'expired' ? 'pill-error' : 'pill-neutral'}
-          />
-        </div>
 
-        {#if st === 'expiring'}
-          <div class="detail-banner amber">
-            <strong>Expires in {d} days.</strong> Renew to keep this customer at {ms.tier_name} with {ms.earn_rate_multiplier}x earn rate.
-          </div>
-        {/if}
+          {#if st === 'expiring'}
+            <div class="detail-banner amber">
+              <strong>Expires in {d} days.</strong> Renew to keep this customer at {ms.tier_name} with
+              {ms.earn_rate_multiplier}x earn rate.
+            </div>
+          {/if}
 
-        {#if st === 'cancelled'}
-          <div class="detail-banner red">
-            Membership was cancelled on <strong>{ms.cancelled_at ? formatDate(ms.cancelled_at) : 'unknown'}</strong>. The customer has fallen back to their earned tier.
-          </div>
-        {/if}
-
-        <div class="detail-grid">
           {#if st === 'cancelled'}
+            <div class="detail-banner red">
+              Membership was cancelled on <strong
+                >{ms.cancelled_at ? formatDate(ms.cancelled_at) : 'unknown'}</strong
+              >. The customer has fallen back to their earned tier.
+            </div>
+          {/if}
+
+          <div class="detail-grid">
+            {#if st === 'cancelled'}
+              <div class="detail-field">
+                <span class="detail-label">Tier (was)</span>
+                <span class="detail-value strikethrough muted"
+                  ><Pill
+                    text={ms.tier_name}
+                    classes="tier-pill {tierColorClass(ms.tier_name)} pill-faded"
+                  /></span
+                >
+              </div>
+              <div class="detail-field">
+                <span class="detail-label">Current earned tier</span>
+                <span class="detail-value">
+                  {#if selectedEarnedTier}
+                    <Pill
+                      text={selectedEarnedTier}
+                      classes="tier-pill {tierColorClass(selectedEarnedTier)}"
+                    />
+                  {:else}
+                    <span class="muted">None</span>
+                  {/if}
+                </span>
+              </div>
+            {:else}
+              <div class="detail-field">
+                <span class="detail-label">Tier</span>
+                <span class="detail-value"
+                  ><Pill
+                    text={ms.tier_name}
+                    classes="tier-pill {tierColorClass(ms.tier_name)}"
+                  /></span
+                >
+              </div>
+              <div class="detail-field">
+                <span class="detail-label">Multiplier</span>
+                <span class="detail-value mono">{ms.earn_rate_multiplier}x</span>
+              </div>
+            {/if}
             <div class="detail-field">
-              <span class="detail-label">Tier (was)</span>
-              <span class="detail-value strikethrough muted"><Pill text={ms.tier_name} classes="tier-pill {tierColorClass(ms.tier_name)} pill-faded" /></span>
+              <span class="detail-label">Started</span>
+              <span class="detail-value">{formatDate(ms.started_at)}</span>
             </div>
             <div class="detail-field">
-              <span class="detail-label">Current Earned Tier</span>
-              <span class="detail-value">
-                {#if selectedEarnedTier}
-                  <Pill text={selectedEarnedTier} classes="tier-pill {tierColorClass(selectedEarnedTier)}" />
+              <span class="detail-label">{st === 'cancelled' ? 'Cancelled' : 'Expires'}</span>
+              <span
+                class="detail-value"
+                class:warn={st === 'expiring'}
+                class:error={st === 'cancelled'}
+              >
+                {#if st === 'cancelled'}
+                  {ms.cancelled_at ? formatDate(ms.cancelled_at) : '—'}
                 {:else}
-                  <span class="muted">None</span>
+                  {formatDate(ms.expires_at)}
                 {/if}
               </span>
             </div>
-          {:else}
             <div class="detail-field">
-              <span class="detail-label">Tier</span>
-              <span class="detail-value"><Pill text={ms.tier_name} classes="tier-pill {tierColorClass(ms.tier_name)}" /></span>
+              <span class="detail-label">Renewed</span>
+              <span class="detail-value"
+                >{ms.renewed_count} {ms.renewed_count === 1 ? 'time' : 'times'}</span
+              >
             </div>
-            <div class="detail-field">
-              <span class="detail-label">Multiplier</span>
-              <span class="detail-value mono">{ms.earn_rate_multiplier}x</span>
-            </div>
-          {/if}
-          <div class="detail-field">
-            <span class="detail-label">Started</span>
-            <span class="detail-value">{formatDate(ms.started_at)}</span>
-          </div>
-          <div class="detail-field">
-            <span class="detail-label">{st === 'cancelled' ? 'Cancelled' : 'Expires'}</span>
-            <span class="detail-value" class:warn={st === 'expiring'} class:error={st === 'cancelled'}>
-              {#if st === 'cancelled'}
-                {ms.cancelled_at ? formatDate(ms.cancelled_at) : '—'}
-              {:else}
-                {formatDate(ms.expires_at)}
-              {/if}
-            </span>
-          </div>
-          <div class="detail-field">
-            <span class="detail-label">Renewed</span>
-            <span class="detail-value">{ms.renewed_count} {ms.renewed_count === 1 ? 'time' : 'times'}</span>
-          </div>
-          {#if st === 'expiring' && selectedEarnedTier}
-            <div class="detail-field">
-              <span class="detail-label">Earned Tier (fallback)</span>
-              <span class="detail-value"><Pill text={selectedEarnedTier} classes="tier-pill {tierColorClass(selectedEarnedTier)} pill-sm" /></span>
-            </div>
-          {/if}
-          {#if st === 'cancelled'}
-            <div class="detail-field">
-              <span class="detail-label">Was set to expire</span>
-              <span class="detail-value strikethrough muted">{formatDate(ms.expires_at)}</span>
-            </div>
-          {/if}
-        </div>
-
-        {#if st === 'active' || st === 'expiring'}
-          <div class="detail-progress">
-            <div class="detail-progress-label">
-              <span>Time remaining</span>
-              <span class="detail-progress-value" class:warn={st === 'expiring'}>{d} days left</span>
-            </div>
-            <Progress value={pPct} classes={st === 'active' ? 'progress-green' : st === 'expiring' ? 'progress-amber' : ''} />
-          </div>
-        {/if}
-
-        {#if detailLoading}
-          <Shimmer classes="shimmer-detail" />
-        {/if}
-
-        <div class="detail-actions" class:actions-dimmed={modalMode !== 'default'}>
-          {#if st === 'expiring'}
-            <Button text="↻ Renew for 1 Year" classes="btn-primary" onclick={() => { modalMode = 'renew-confirm'; }} />
-            <Button text="⬆ Upgrade Tier" classes="btn-secondary" onclick={() => { modalMode = 'upgrade'; selectedUpgradeTierId = ''; }} />
-            <Button text="Cancel" classes="btn-danger" onclick={() => { modalMode = 'cancel-confirm'; }} />
-          {:else if st === 'active'}
-            <Button text="⬆ Upgrade Tier" classes="btn-secondary" onclick={() => { modalMode = 'upgrade'; selectedUpgradeTierId = ''; }} />
-            <Button text="+ Extend" classes="btn-secondary" onclick={() => { modalMode = 'extend'; extendDays = 365; }} />
-            <Button text="Cancel Membership" classes="btn-danger" onclick={() => { modalMode = 'cancel-confirm'; }} />
-          {:else if st === 'cancelled'}
-            <Button text="↻ Re-assign Membership" classes="btn-primary" onclick={() => { modalMode = 'upgrade'; selectedUpgradeTierId = ''; }} />
-          {/if}
-        </div>
-
-        {#if modalMode === 'cancel-confirm'}
-          <div class="confirm-box confirm-danger">
-            <p class="confirm-text danger">Are you sure you want to cancel this membership? {ms.customer_name ?? 'This customer'} will lose their {ms.tier_name} tier ({ms.earn_rate_multiplier}x earn rate) and fall back to their earned tier. This cannot be undone.</p>
-            <div class="confirm-actions">
-              <Button text="Yes, Cancel Membership" classes="btn-danger" disabled={actionLoading} onclick={async () => { actionLoading = true; await handleCancelFromDetail(); actionLoading = false; modalMode = 'default'; }} />
-              <Button text="Keep Membership" classes="btn-ghost" onclick={() => { modalMode = 'default'; }} />
-            </div>
-          </div>
-        {/if}
-
-        {#if modalMode === 'upgrade'}
-          {@const currentTierId = ms.tier_id ?? ''}
-          {@const currentTierRank = tiers.find((t) => t.id === currentTierId)?.rank ?? 0}
-          <div class="confirm-box confirm-info">
-            <div class="tier-select-row">
-              {#each tiers as tier (tier.id)}
-                {@const isCurrent = st !== 'cancelled' && tier.id === currentTierId}
-                {@const isLower = st !== 'cancelled' && tier.rank < currentTierRank}
-                <button
-                  class="tier-option"
-                  class:selected={selectedUpgradeTierId === tier.id}
-                  class:current={isCurrent}
-                  class:disabled={isCurrent || isLower}
-                  onclick={() => { selectedUpgradeTierId = tier.id; }}
+            {#if st === 'expiring' && selectedEarnedTier}
+              <div class="detail-field">
+                <span class="detail-label">Earned Tier (fallback)</span>
+                <span class="detail-value"
+                  ><Pill
+                    text={selectedEarnedTier}
+                    classes="tier-pill {tierColorClass(selectedEarnedTier)} pill-sm"
+                  /></span
                 >
-                  <div class="tier-option-name">{tier.name}{#if isCurrent} ✓{/if}</div>
-                  <div class="tier-option-mult">{tier.earn_rate_multiplier}x</div>
-                </button>
-              {/each}
-            </div>
-            <div class="confirm-actions">
-              {#if st === 'cancelled'}
-                <Button text="Assign {tiers.find((t) => t.id === selectedUpgradeTierId)?.name ?? ''} Membership" classes="btn-primary" disabled={!selectedUpgradeTierId || actionLoading} onclick={handleReassignFromDetail} />
-              {:else}
-                <Button text="Upgrade to {tiers.find((t) => t.id === selectedUpgradeTierId)?.name ?? '...'}" classes="btn-primary" disabled={!selectedUpgradeTierId || actionLoading} onclick={handleUpgradeFromDetail} />
-              {/if}
-              <Button text="Cancel" classes="btn-ghost" onclick={() => { modalMode = 'default'; }} />
-            </div>
-          </div>
-        {/if}
-
-        {#if modalMode === 'extend'}
-          <div class="confirm-box confirm-success">
-            <div class="extend-input-row">
-              <span class="confirm-text success">Extend by</span>
-              <input
-                type="number"
-                class="extend-input"
-                min="1"
-                max="3650"
-                value={extendDays}
-                oninput={(e) => { extendDays = parseInt((e.target as HTMLInputElement).value) || 0; }}
-              />
-              <span class="confirm-text success">days</span>
-            </div>
-            {#if extendDays > 0}
-              <div class="extend-preview green">New expiry: {computeExtendedExpiry(ms.expires_at, extendDays)}</div>
+              </div>
             {/if}
-            <div class="confirm-actions">
-              <Button text="Extend Membership" classes="btn-primary" disabled={extendDays <= 0 || actionLoading} onclick={handleExtendFromDetail} />
-              <Button text="Cancel" classes="btn-ghost" onclick={() => { modalMode = 'default'; }} />
-            </div>
+            {#if st === 'cancelled'}
+              <div class="detail-field">
+                <span class="detail-label">Was set to expire</span>
+                <span class="detail-value strikethrough muted">{formatDate(ms.expires_at)}</span>
+              </div>
+            {/if}
           </div>
-        {/if}
 
-        {#if modalMode === 'renew-confirm'}
-          <div class="confirm-box confirm-success">
-            <p class="confirm-text success">Renew {ms.tier_name} membership for {ms.customer_name ?? 'this customer'}? This will extend by 1 year from today. New expiry: {computeRenewExpiry()}</p>
-            <div class="confirm-actions">
-              <Button text="Confirm Renewal" classes="btn-primary" disabled={actionLoading} onclick={handleRenewFromDetail} />
-              <Button text="Not Now" classes="btn-ghost" onclick={() => { modalMode = 'default'; }} />
+          {#if st === 'active' || st === 'expiring'}
+            <div class="detail-progress">
+              <div class="detail-progress-label">
+                <span>Time remaining</span>
+                <span class="detail-progress-value" class:warn={st === 'expiring'}
+                  >{d} days left</span
+                >
+              </div>
+              <Progress
+                value={pPct}
+                classes={st === 'active'
+                  ? 'progress-green'
+                  : st === 'expiring'
+                    ? 'progress-amber'
+                    : ''}
+              />
             </div>
+          {/if}
+
+          {#if detailLoading}
+            <Shimmer classes="shimmer-detail" />
+          {/if}
+
+          <div class="detail-actions" class:actions-dimmed={modalMode !== 'default'}>
+            {#if st === 'expiring'}
+              <Button
+                text="↻ Renew for 1 Year"
+                classes="btn-primary"
+                onclick={() => {
+                  modalMode = 'renew-confirm';
+                }}
+              />
+              <Button
+                text="⬆ Upgrade Tier"
+                classes="btn-secondary"
+                onclick={() => {
+                  modalMode = 'upgrade';
+                  selectedUpgradeTierId = '';
+                }}
+              />
+              <Button
+                text="Cancel"
+                classes="btn-danger"
+                onclick={() => {
+                  modalMode = 'cancel-confirm';
+                }}
+              />
+            {:else if st === 'active'}
+              <Button
+                text="⬆ Upgrade Tier"
+                classes="btn-secondary"
+                onclick={() => {
+                  modalMode = 'upgrade';
+                  selectedUpgradeTierId = '';
+                }}
+              />
+              <Button
+                text="+ Extend"
+                classes="btn-secondary"
+                onclick={() => {
+                  modalMode = 'extend';
+                  extendDays = 365;
+                }}
+              />
+              <Button
+                text="Cancel membership"
+                classes="btn-danger"
+                onclick={() => {
+                  modalMode = 'cancel-confirm';
+                }}
+              />
+            {:else if st === 'cancelled'}
+              <Button
+                text="↻ Re-assign Membership"
+                classes="btn-primary"
+                onclick={() => {
+                  modalMode = 'upgrade';
+                  selectedUpgradeTierId = '';
+                }}
+              />
+            {/if}
           </div>
-        {/if}
-      </div>
+
+          {#if modalMode === 'cancel-confirm'}
+            <div class="confirm-box confirm-danger">
+              <p class="confirm-text danger">
+                Are you sure you want to cancel this membership? {ms.customer_name ??
+                  'This customer'} will lose their {ms.tier_name} tier ({ms.earn_rate_multiplier}x
+                earn rate) and fall back to their earned tier. This cannot be undone.
+              </p>
+              <div class="confirm-actions">
+                <Button
+                  text="Yes, Cancel Membership"
+                  classes="btn-danger"
+                  disabled={actionLoading}
+                  onclick={async () => {
+                    actionLoading = true;
+                    await handleCancelFromDetail();
+                    actionLoading = false;
+                    modalMode = 'default';
+                  }}
+                />
+                <Button
+                  text="Keep membership"
+                  classes="btn-ghost"
+                  onclick={() => {
+                    modalMode = 'default';
+                  }}
+                />
+              </div>
+            </div>
+          {/if}
+
+          {#if modalMode === 'upgrade'}
+            {@const currentTierId = ms.tier_id ?? ''}
+            {@const currentTierRank = tiers.find((t) => t.id === currentTierId)?.rank ?? 0}
+            <div class="confirm-box confirm-info">
+              <div class="tier-select-row">
+                {#each tiers as tier (tier.id)}
+                  {@const isCurrent = st !== 'cancelled' && tier.id === currentTierId}
+                  {@const isLower = st !== 'cancelled' && tier.rank < currentTierRank}
+                  <button
+                    class="tier-option"
+                    class:selected={selectedUpgradeTierId === tier.id}
+                    class:current={isCurrent}
+                    class:disabled={isCurrent || isLower}
+                    onclick={() => {
+                      selectedUpgradeTierId = tier.id;
+                    }}
+                  >
+                    <div class="tier-option-name">
+                      {tier.name}{#if isCurrent}
+                        ✓{/if}
+                    </div>
+                    <div class="tier-option-mult">{tier.earn_rate_multiplier}x</div>
+                  </button>
+                {/each}
+              </div>
+              <div class="confirm-actions">
+                {#if st === 'cancelled'}
+                  <Button
+                    text="Assign {tiers.find((t) => t.id === selectedUpgradeTierId)?.name ??
+                      ''} Membership"
+                    classes="btn-primary"
+                    disabled={!selectedUpgradeTierId || actionLoading}
+                    onclick={handleReassignFromDetail}
+                  />
+                {:else}
+                  <Button
+                    text="Upgrade to {tiers.find((t) => t.id === selectedUpgradeTierId)?.name ??
+                      '...'}"
+                    classes="btn-primary"
+                    disabled={!selectedUpgradeTierId || actionLoading}
+                    onclick={handleUpgradeFromDetail}
+                  />
+                {/if}
+                <Button
+                  text="Cancel"
+                  classes="btn-ghost"
+                  onclick={() => {
+                    modalMode = 'default';
+                  }}
+                />
+              </div>
+            </div>
+          {/if}
+
+          {#if modalMode === 'extend'}
+            <div class="confirm-box confirm-success">
+              <div class="extend-input-row">
+                <span class="confirm-text success">Extend by</span>
+                <input
+                  type="number"
+                  class="extend-input"
+                  min="1"
+                  max="3650"
+                  value={extendDays}
+                  oninput={(e) => {
+                    extendDays = parseInt((e.target as HTMLInputElement).value) || 0;
+                  }}
+                />
+                <span class="confirm-text success">days</span>
+              </div>
+              {#if extendDays > 0}
+                <div class="extend-preview green">
+                  New expiry: {computeExtendedExpiry(ms.expires_at, extendDays)}
+                </div>
+              {/if}
+              <div class="confirm-actions">
+                <Button
+                  text="Extend membership"
+                  classes="btn-primary"
+                  disabled={extendDays <= 0 || actionLoading}
+                  onclick={handleExtendFromDetail}
+                />
+                <Button
+                  text="Cancel"
+                  classes="btn-ghost"
+                  onclick={() => {
+                    modalMode = 'default';
+                  }}
+                />
+              </div>
+            </div>
+          {/if}
+
+          {#if modalMode === 'renew-confirm'}
+            <div class="confirm-box confirm-success">
+              <p class="confirm-text success">
+                Renew {ms.tier_name} membership for {ms.customer_name ?? 'this customer'}? This will
+                extend by 1 year from today. New expiry: {computeRenewExpiry()}
+              </p>
+              <div class="confirm-actions">
+                <Button
+                  text="Confirm renewal"
+                  classes="btn-primary"
+                  disabled={actionLoading}
+                  onclick={handleRenewFromDetail}
+                />
+                <Button
+                  text="Not now"
+                  classes="btn-ghost"
+                  onclick={() => {
+                    modalMode = 'default';
+                  }}
+                />
+              </div>
+            </div>
+          {/if}
+        </div>
       {/if}
     {/snippet}
   </Modal>
@@ -727,23 +978,33 @@
     max-width: 1100px;
   }
 
-  .page-header { margin-bottom: var(--space-2); }
+  .page-header {
+    margin-bottom: var(--space-2);
+  }
   .page-title {
     font-size: var(--font-size-2xl);
     font-weight: var(--font-weight-bold);
     color: var(--color-text);
     margin-bottom: var(--space-1);
   }
-  .page-subtitle { font-size: var(--font-size-base); color: var(--color-text-muted); }
-  .tab-content { min-height: 300px; }
-  .form-container { max-width: 480px; padding-top: var(--space-4); }
+  .page-subtitle {
+    font-size: var(--font-size-base);
+    color: var(--color-text-muted);
+  }
+  .tab-content {
+    min-height: 300px;
+  }
+  .form-container {
+    max-width: 480px;
+    padding-top: var(--space-4);
+  }
 
   /* ── Table card ── */
   .table-card {
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     overflow: hidden;
+    box-shadow: var(--shadow-card);
   }
 
   .filters-bar {
@@ -754,49 +1015,127 @@
     border-bottom: 1px solid var(--color-border);
   }
 
-  :global(.filter-input) { flex: 1; max-width: 260px; }
-  :global(.filter-select) { min-width: 140px; }
+  :global(.filter-input) {
+    flex: 1;
+    max-width: 260px;
+  }
+  :global(.filter-select) {
+    min-width: 140px;
+  }
 
-  .filter-count { font-size: var(--font-size-xs); color: var(--color-text-muted); margin-left: auto; white-space: nowrap; }
+  .filter-count {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    margin-left: auto;
+    white-space: nowrap;
+  }
 
   /* ── Table ── */
-  table { width: 100%; border-collapse: collapse; font-size: var(--font-size-sm); }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-size-sm);
+  }
   th {
     text-align: left;
     padding: 10px 16px;
-    font-size: 11px;
+    font-size: var(--font-size-xs);
     font-weight: var(--font-weight-semibold);
     color: var(--color-text-muted);
     text-transform: uppercase;
     letter-spacing: 0.04em;
     border-bottom: 1px solid var(--color-border);
-    background: var(--color-surface-2, #f9fafb);
+    background: var(--color-surface-2, var(--g-100));
   }
-  td { padding: 14px 16px; border-bottom: 1px solid var(--color-border-light, #f3f4f6); vertical-align: middle; }
-  tr:last-child td { border-bottom: none; }
-  tbody tr { cursor: pointer; transition: background 0.1s; }
-  tbody tr:hover td { background: var(--color-surface-2, #fafbfc); }
+  td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--color-border-light, var(--color-surface-2));
+    vertical-align: middle;
+  }
+  tr:last-child td {
+    border-bottom: none;
+  }
+  tbody tr {
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  tbody tr:hover td {
+    background: var(--color-surface-2, var(--g-100));
+  }
 
-  .cell-customer { display: flex; flex-direction: column; gap: 1px; }
-  .cell-name { font-weight: var(--font-weight-medium); color: var(--color-text); }
-  .cell-phone { font-size: 11px; color: var(--color-text-muted); font-family: var(--font-mono); }
+  .cell-customer {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+  .cell-name {
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text);
+  }
+  .cell-phone {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+  }
 
-  :global(.tier-pill.t-bronze) { --pill-bg: #fef3c7; --pill-color: #92400e; }
-  :global(.tier-pill.t-silver) { --pill-bg: #f3f4f6; --pill-color: #374151; }
-  :global(.tier-pill.t-gold) { --pill-bg: #fef9c3; --pill-color: #854d0e; }
-  :global(.tier-pill.t-plat) { --pill-bg: #ede9fe; --pill-color: #5b21b6; }
-  :global(.tier-pill.t-default) { --pill-bg: var(--color-surface-2); --pill-color: var(--color-text); }
-  :global(.tier-pill.pill-faded) { opacity: 0.5; }
-  :global(.tier-pill.pill-sm) { font-size: 10px; }
-  :global(.mult-pill) { font-family: var(--font-mono); }
-  .cell-date { font-size: var(--font-size-xs); color: var(--color-text); }
-  .cell-sub { font-size: 11px; color: var(--color-text-muted); }
-  .cell-sub.warn, .cell-date.warn { color: #f59e0b; font-weight: var(--font-weight-medium); }
-  .strikethrough { text-decoration: line-through; }
-  .muted { color: var(--color-text-muted); }
-  .warn { color: #f59e0b; font-weight: var(--font-weight-semibold); }
-  .error { color: #ef4444; }
-  .mono { font-family: var(--font-mono); }
+  :global(.tier-pill.t-bronze) {
+    --pill-bg: var(--yellow-100);
+    --pill-color: var(--yellow-700);
+  }
+  :global(.tier-pill.t-silver) {
+    --pill-bg: var(--color-surface-2);
+    --pill-color: var(--g-1700);
+  }
+  :global(.tier-pill.t-gold) {
+    --pill-bg: var(--yellow-100);
+    --pill-color: var(--yellow-700);
+  }
+  :global(.tier-pill.t-plat) {
+    --pill-bg: color-mix(in srgb, var(--purple-500) 12%, #fff);
+    --pill-color: var(--purple-500);
+  }
+  :global(.tier-pill.t-default) {
+    --pill-bg: var(--color-surface-2);
+    --pill-color: var(--color-text);
+  }
+  :global(.tier-pill.pill-faded) {
+    opacity: 0.5;
+  }
+  :global(.tier-pill.pill-sm) {
+    font-size: 10px;
+  }
+  :global(.mult-pill) {
+    font-family: var(--font-mono);
+  }
+  .cell-date {
+    font-size: var(--font-size-xs);
+    color: var(--color-text);
+  }
+  .cell-sub {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+  }
+  .cell-sub.warn,
+  .cell-date.warn {
+    color: var(--yellow-500);
+    font-weight: var(--font-weight-medium);
+  }
+  .strikethrough {
+    text-decoration: line-through;
+  }
+  .muted {
+    color: var(--color-text-muted);
+  }
+  .warn {
+    color: var(--yellow-500);
+    font-weight: var(--font-weight-semibold);
+  }
+  .error {
+    color: var(--red-500);
+  }
+  .mono {
+    font-family: var(--font-mono);
+  }
 
   .pagination-bar {
     display: flex;
@@ -807,91 +1146,251 @@
     font-size: var(--font-size-xs);
     color: var(--color-text-muted);
   }
-  .pagination-info { font-size: var(--font-size-xs); }
+  .pagination-info {
+    font-size: var(--font-size-xs);
+  }
 
   /* ── Empty state ── */
   .empty-state {
-    display: flex; flex-direction: column; align-items: center; gap: var(--space-3);
-    padding: var(--space-12) var(--space-4); color: var(--color-text-muted); font-size: var(--font-size-base);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-12) var(--space-4);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-base);
   }
-  .empty-icon { font-size: 36px; }
+  .empty-icon {
+    font-size: 36px;
+  }
 
-  .loading { display: flex; flex-direction: column; gap: var(--space-3); padding-top: var(--space-4); }
-  :global(.shimmer-table) { --shimmer-width: 100%; --shimmer-height: 48px; --shimmer-border-radius: 8px; }
-  :global(.shimmer-detail) { --shimmer-width: 100%; --shimmer-height: 60px; --shimmer-border-radius: 8px; }
+  .loading {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding-top: var(--space-4);
+  }
+  :global(.shimmer-table) {
+    --shimmer-width: 100%;
+    --shimmer-height: 48px;
+    --shimmer-border-radius: var(--radius-md);
+  }
+  :global(.shimmer-detail) {
+    --shimmer-width: 100%;
+    --shimmer-height: 60px;
+    --shimmer-border-radius: var(--radius-md);
+  }
 
-  .modal-body { padding: var(--space-5); overflow-y: auto; flex: 1; }
+  .modal-body {
+    padding: var(--space-5);
+    overflow-y: auto;
+    flex: 1;
+  }
 
   /* ── Detail modal content ── */
   .detail-header {
-    display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-5);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-5);
   }
-  .detail-customer { display: flex; flex-direction: column; gap: 2px; }
-  .detail-name { font-size: var(--font-size-md); font-weight: var(--font-weight-semibold); color: var(--color-text); }
-  .detail-phone { font-size: var(--font-size-xs); color: var(--color-text-muted); font-family: var(--font-mono); }
+  .detail-customer {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .detail-name {
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+  }
+  .detail-phone {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+  }
 
   .detail-banner {
-    padding: 10px 14px; border-radius: var(--radius-md); margin-bottom: var(--space-5);
-    font-size: var(--font-size-xs); line-height: 1.5;
+    padding: 10px 14px;
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-5);
+    font-size: var(--font-size-xs);
+    line-height: 1.5;
   }
-  .detail-banner.amber { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
-  .detail-banner.red { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+  .detail-banner.amber {
+    background: var(--yellow-100);
+    border: 1px solid var(--yellow-100);
+    color: var(--yellow-700);
+  }
+  .detail-banner.red {
+    background: var(--red-100);
+    border: 1px solid var(--red-100);
+    color: var(--red-700);
+  }
 
   .detail-grid {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
-    padding: var(--space-4); background: var(--color-surface-2, #f9fafb);
-    border-radius: var(--radius-md); margin-bottom: var(--space-5);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    padding: var(--space-4);
+    background: var(--color-surface-2, var(--g-100));
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-5);
   }
-  .detail-field { display: flex; flex-direction: column; gap: 2px; }
-  .detail-label { font-size: 11px; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
-  .detail-value { font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); color: var(--color-text); }
+  .detail-field {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .detail-label {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .detail-value {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text);
+  }
 
-  .detail-progress { margin-bottom: var(--space-5); }
+  .detail-progress {
+    margin-bottom: var(--space-5);
+  }
   .detail-progress-label {
-    font-size: var(--font-size-xs); color: var(--color-text-muted);
-    margin-bottom: 6px; display: flex; justify-content: space-between;
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
   }
-  .detail-progress-value { font-weight: var(--font-weight-medium); color: var(--color-text); }
-  .detail-progress-value.warn { color: #f59e0b; }
-  :global(.progress-green) { --progress-fill-color: #22c55e; }
-  :global(.progress-amber) { --progress-fill-color: #f59e0b; }
+  .detail-progress-value {
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text);
+  }
+  .detail-progress-value.warn {
+    color: var(--yellow-500);
+  }
+  :global(.progress-green) {
+    --progress-fill-color: var(--green-500);
+  }
+  :global(.progress-amber) {
+    --progress-fill-color: var(--yellow-500);
+  }
 
-  .detail-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .detail-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
 
   .confirm-box {
-    margin-top: 16px; padding: 14px; border-radius: 8px;
-    border: 1px solid; display: flex; flex-direction: column; gap: 10px;
+    margin-top: 16px;
+    padding: 14px;
+    border-radius: var(--radius-md);
+    border: 1px solid;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
   }
-  .confirm-danger { border-color: #fecaca; background: #fff5f5; }
-  .confirm-success { border-color: #bbf7d0; background: #f0fdf4; }
-  .confirm-info { border-color: #c7d2fe; background: #f5f3ff; }
-  .confirm-text { font-size: 13px; line-height: 1.5; }
-  .confirm-text.danger { color: #991b1b; }
-  .confirm-text.success { color: #065f46; }
-  .confirm-actions { display: flex; gap: 8px; }
+  .confirm-danger {
+    border-color: var(--red-100);
+    background: var(--red-100);
+  }
+  .confirm-success {
+    border-color: var(--green-100);
+    background: var(--green-100);
+  }
+  .confirm-info {
+    border-color: color-mix(in srgb, var(--purple-500) 25%, #fff);
+    background: color-mix(in srgb, var(--purple-500) 7%, #fff);
+  }
+  .confirm-text {
+    font-size: var(--font-size-sm);
+    line-height: 1.5;
+  }
+  .confirm-text.danger {
+    color: var(--red-700);
+  }
+  .confirm-text.success {
+    color: var(--green-700);
+  }
+  .confirm-actions {
+    display: flex;
+    gap: 8px;
+  }
 
-  .tier-select-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .tier-select-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
   .tier-option {
-    padding: 8px 14px; border: 2px solid #e5e7eb; border-radius: 8px;
-    cursor: pointer; text-align: center; font-size: 12px; background: white;
-    transition: all 0.15s; min-width: 80px;
+    padding: 8px 14px;
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    text-align: center;
+    font-size: var(--font-size-xs);
+    background: white;
+    transition: all 0.15s;
+    min-width: 80px;
   }
-  .tier-option:hover:not(.disabled) { border-color: #c7d2fe; }
-  .tier-option.selected { border-color: #6366f1; background: #f5f3ff; }
-  .tier-option.current { border-color: #fef9c3; background: #fefce8; }
-  .tier-option.disabled { opacity: 0.4; pointer-events: none; }
-  .tier-option-name { font-weight: 600; color: #1a1a2e; }
-  .tier-option-mult { font-size: 11px; color: #6b7280; }
+  .tier-option:hover:not(.disabled) {
+    border-color: color-mix(in srgb, var(--purple-500) 25%, #fff);
+  }
+  .tier-option.selected {
+    border-color: var(--purple-500);
+    background: color-mix(in srgb, var(--purple-500) 7%, #fff);
+  }
+  .tier-option.current {
+    border-color: var(--yellow-100);
+    background: var(--yellow-100);
+  }
+  .tier-option.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+  .tier-option-name {
+    font-weight: 600;
+    color: var(--color-text);
+  }
+  .tier-option-mult {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+  }
 
-  .extend-input-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .extend-input-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 8px;
+  }
   .extend-input {
-    width: 80px; padding: 7px 10px; border: 1px solid #d1d5db; border-radius: 7px;
-    font-size: 13px; text-align: center; outline: none;
+    width: 80px;
+    padding: 7px 10px;
+    border: 1px solid var(--g-500);
+    border-radius: 7px;
+    font-size: var(--font-size-sm);
+    text-align: center;
+    outline: none;
   }
-  .extend-input:focus { border-color: #6366f1; }
+  .extend-input:focus {
+    border-color: var(--purple-500);
+  }
   .extend-preview {
-    font-size: 12px; padding: 8px 12px; border-radius: 6px; margin-bottom: 4px;
+    font-size: var(--font-size-xs);
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 4px;
   }
-  .extend-preview.green { color: #065f46; background: #ecfdf5; }
-  .actions-dimmed { opacity: 0.4; pointer-events: none; }
+  .extend-preview.green {
+    color: var(--green-700);
+    background: var(--green-100);
+  }
+  .actions-dimmed {
+    opacity: 0.4;
+    pointer-events: none;
+  }
 </style>

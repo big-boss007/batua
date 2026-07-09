@@ -91,11 +91,11 @@
     flex-direction: column;
     text-align: left;
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
     overflow: hidden;
     transition: all var(--transition-fast);
     padding: 0;
+    box-shadow: var(--shadow-card);
   }
 
   .template-card:hover {

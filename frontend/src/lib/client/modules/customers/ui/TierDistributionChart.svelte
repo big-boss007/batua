@@ -14,7 +14,7 @@
 </script>
 
 <div class="distribution-chart">
-  <h3 class="chart-title">Tier Distribution</h3>
+  <h3 class="chart-title">Tier distribution</h3>
 
   {#if distribution.length === 0}
     <p class="chart-empty">No tier distribution data available</p>
@@ -43,9 +43,9 @@
 <style>
   .distribution-chart {
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     padding: var(--space-6);
+    box-shadow: var(--shadow-card);
   }
 
   .chart-title {
@@ -108,18 +108,18 @@
   }
 
   :global(.progress-tier-0) {
-    --progress-bar-background: #6366f1;
+    --progress-bar-background: var(--purple-500);
   }
   :global(.progress-tier-1) {
-    --progress-bar-background: #f59e0b;
+    --progress-bar-background: var(--yellow-500);
   }
   :global(.progress-tier-2) {
-    --progress-bar-background: #10b981;
+    --progress-bar-background: var(--green-500);
   }
   :global(.progress-tier-3) {
-    --progress-bar-background: #ef4444;
+    --progress-bar-background: var(--red-500);
   }
   :global(.progress-tier-4) {
-    --progress-bar-background: #8b5cf6;
+    --progress-bar-background: var(--purple-500);
   }
 </style>

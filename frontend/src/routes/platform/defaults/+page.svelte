@@ -7,29 +7,29 @@
 
 <div class="defaults-page">
   <div class="page-header">
-    <h1>Platform Defaults</h1>
+    <h1>Platform defaults</h1>
     <p class="subtitle">Platform-wide default configurations inherited by all merchants</p>
   </div>
 
   <div class="placeholder-card">
     <div class="placeholder-icon">&#x2699;</div>
-    <h2>Coming Soon</h2>
+    <h2>Coming soon</h2>
     <p class="placeholder-description">
       This section will allow you to configure platform-wide defaults that all merchants inherit.
     </p>
     <div class="planned-features">
       <div class="feature-item">
-        <span class="feature-label">Default Wallet Policies</span>
+        <span class="feature-label">Default wallet policies</span>
         <span class="feature-desc">Fallback constraints for each bucket type</span>
       </div>
       <div class="feature-item">
-        <span class="feature-label">Default Notification Templates</span>
+        <span class="feature-label">Default notification templates</span>
         <span class="feature-desc"
           >System-level templates for earn, redemption, COD, tier upgrades</span
         >
       </div>
       <div class="feature-item">
-        <span class="feature-label">Default Connectors</span>
+        <span class="feature-label">Default connectors</span>
         <span class="feature-desc"
           >Fallback connector configs when merchants have none configured</span
         >

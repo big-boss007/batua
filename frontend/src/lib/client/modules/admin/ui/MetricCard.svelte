@@ -49,7 +49,9 @@
     <span class="metric-icon">{icon}</span>
   {/if}
   <div class="metric-content">
-    <span class="metric-value" style={valueColor ? `color: ${valueColor}` : ''}>{formattedValue}</span>
+    <span class="metric-value" style={valueColor ? `color: ${valueColor}` : ''}
+      >{formattedValue}</span
+    >
     {#if subText !== null}
       <span class="metric-sub" style={subColor ? `color: ${subColor}` : ''}>{subText}</span>
     {/if}
@@ -64,9 +66,8 @@
     gap: var(--space-4);
     padding: var(--space-6);
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--shadow-card);
     transition: box-shadow var(--transition-fast);
   }
 
@@ -113,8 +114,9 @@
   }
 
   .metric-value {
-    font-size: var(--font-size-2xl);
+    font-size: 28px;
     font-weight: var(--font-weight-bold);
+    letter-spacing: -0.01em;
     color: var(--color-text);
     line-height: var(--line-height-tight);
   }

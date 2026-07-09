@@ -180,9 +180,11 @@
   {#if shouldShowWizard && merchantId !== null}
     <header class="page-header">
       <div class="page-header-left">
-        <h1 class="page-title">VIP Tiers</h1>
+        <h1 class="page-title">VIP tiers</h1>
         <p class="page-subtitle">
-          {program === null ? 'Set up your VIP tiers in a few easy steps' : 'Reconfigure your VIP tiers'}
+          {program === null
+            ? 'Set up your VIP tiers in a few easy steps'
+            : 'Reconfigure your VIP tiers'}
         </p>
       </div>
     </header>
@@ -198,18 +200,14 @@
   {:else if program !== null}
     <header class="page-header">
       <div class="page-header-left">
-        <h1 class="page-title">VIP Tiers</h1>
+        <h1 class="page-title">VIP tiers</h1>
         <p class="page-subtitle">Manage your VIP tiers and customer distribution</p>
       </div>
       <div class="page-actions">
         {#if evaluateResult !== null}
           <span class="evaluate-result">{evaluateResult}</span>
         {/if}
-        <Button
-          text="Reconfigure"
-          classes="btn-ghost"
-          onclick={openReconfigure}
-        />
+        <Button text="Reconfigure" classes="btn-ghost" onclick={openReconfigure} />
         <Button
           text={evaluating ? 'Evaluating...' : 'Evaluate Tiers'}
           classes="btn-secondary"
@@ -223,11 +221,11 @@
       <section class="program-summary">
         <div class="summary-grid">
           <div class="summary-item">
-            <span class="summary-label">Tier Program</span>
+            <span class="summary-label">Tier program</span>
             <span class="summary-value">{program.name}</span>
           </div>
           <div class="summary-item">
-            <span class="summary-label">Evaluation Criteria</span>
+            <span class="summary-label">Evaluation criteria</span>
             <span class="summary-value">
               {program.evaluation_criteria === 'spend'
                 ? 'Total Spend'
@@ -239,7 +237,7 @@
             </span>
           </div>
           <div class="summary-item">
-            <span class="summary-label">Evaluation Period</span>
+            <span class="summary-label">Evaluation period</span>
             <span class="summary-value">
               {program.evaluation_period_days === null
                 ? 'Lifetime'
@@ -315,14 +313,43 @@
                           title="Edit tier"
                           onclick={() => (editingTierId = t.id)}
                         >
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            ><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path
+                              d="m15 5 4 4"
+                            /></svg
+                          >
                         </button>
                         <button
                           class="icon-btn icon-btn-danger"
                           title="Delete tier"
                           onclick={() => (deletingTierId = t.id)}
                         >
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            ><path d="M3 6h18" /><path
+                              d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"
+                            /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /><line
+                              x1="10"
+                              x2="10"
+                              y1="11"
+                              y2="17"
+                            /><line x1="14" x2="14" y1="11" y2="17" /></svg
+                          >
                         </button>
                       {/if}
                     </div>
@@ -396,9 +423,9 @@
 
   .program-summary {
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     padding: var(--space-5) var(--space-6);
+    box-shadow: var(--shadow-card);
   }
 
   .summary-grid {
@@ -447,9 +474,9 @@
     display: flex;
     flex-direction: column;
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     overflow: hidden;
+    box-shadow: var(--shadow-card);
   }
 
   .tier-row {

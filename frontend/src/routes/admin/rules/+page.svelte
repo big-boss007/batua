@@ -130,10 +130,10 @@
 <div class="rules-page">
   <header class="page-header">
     <div class="header-content">
-      <h1 class="page-title">Earn Rules</h1>
+      <h1 class="page-title">Earn rules</h1>
       <p class="page-description">Configure how customers earn and burn points</p>
     </div>
-    <Button text="+ New Rule" classes="btn-primary" onclick={handleCreate} />
+    <Button text="+ New rule" classes="btn-primary" onclick={handleCreate} />
   </header>
 
   {#if merchantId === null}
@@ -164,7 +164,10 @@
                   <Pill text={rule.rule_type} classes="pill-info" />
                   <span class="rule-event">{rule.config.event_type}</span>
                   <span class="rule-version">v{rule.version}</span>
-                  <Pill text={rule.is_active ? 'Active' : 'Inactive'} classes={rule.is_active ? 'pill-success' : 'pill-neutral'} />
+                  <Pill
+                    text={rule.is_active ? 'Active' : 'Inactive'}
+                    classes={rule.is_active ? 'pill-success' : 'pill-neutral'}
+                  />
                 </div>
               </button>
               <div class="rule-actions">
@@ -182,7 +185,13 @@
   {/if}
 
   {#if showForm}
-    <Modal header={{ text: editingRule ? 'Edit Rule' : 'New Rule', rightImage: MODAL_CLOSE_ICON }} size="fit-content" onclose={closeForm} onoverlayClick={closeForm} onheaderRightImageClick={closeForm}>
+    <Modal
+      header={{ text: editingRule ? 'Edit rule' : 'New rule', rightImage: MODAL_CLOSE_ICON }}
+      size="fit-content"
+      onclose={closeForm}
+      onoverlayClick={closeForm}
+      onheaderRightImageClick={closeForm}
+    >
       {#snippet content()}
         <RuleForm rule={editingRule} onSave={handleSave} onCancel={closeForm} />
       {/snippet}

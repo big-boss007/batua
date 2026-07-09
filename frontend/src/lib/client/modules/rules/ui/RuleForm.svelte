@@ -15,7 +15,9 @@
   } = $props();
 
   let merchant = $state<Merchant | null>(null);
-  currentMerchant.subscribe((m) => { merchant = m; });
+  currentMerchant.subscribe((m) => {
+    merchant = m;
+  });
 
   let pIcon = $derived(merchant?.points_icon ?? 'pts');
   let pRate = $derived(merchant?.points_to_currency_rate ?? 1.0);
@@ -28,9 +30,7 @@
   let eventType = $state(rule?.config.event_type ?? 'order.completed');
   // svelte-ignore state_referenced_locally
   let conditions = $state<Array<Condition>>(
-    rule?.config.conditions
-      ? rule.config.conditions.map((c) => ({ ...c }))
-      : []
+    rule?.config.conditions ? rule.config.conditions.map((c) => ({ ...c })) : []
   );
   // svelte-ignore state_referenced_locally
   let calculation = $state(rule?.config.action.calculation ?? 'percentage');
@@ -45,20 +45,20 @@
   let isValid = $derived(nameError === null && actionValue > 0);
 
   const EVENT_TYPES: Array<{ value: string; label: string }> = [
-    { value: 'order.completed', label: 'Order Completed' },
-    { value: 'review.submitted', label: 'Review Submitted' },
+    { value: 'order.completed', label: 'Order completed' },
+    { value: 'review.submitted', label: 'Review submitted' },
     { value: 'signup', label: 'Signup' },
     { value: 'referral', label: 'Referral' },
     { value: 'birthday', label: 'Birthday' }
   ];
 
   const CONDITION_FIELDS: Array<{ value: string; label: string }> = [
-    { value: 'order_amount', label: 'Order Amount' },
-    { value: 'payment_method', label: 'Payment Method' },
+    { value: 'order_amount', label: 'Order amount' },
+    { value: 'payment_method', label: 'Payment method' },
     { value: 'is_cod', label: 'Is COD' },
-    { value: 'is_first_order', label: 'First Order' },
+    { value: 'is_first_order', label: 'First order' },
     { value: 'collections', label: 'Collection' },
-    { value: 'customer_tags', label: 'Customer Tag' }
+    { value: 'customer_tags', label: 'Customer tag' }
   ];
 
   const OPERATORS: Array<{ value: string; label: string }> = [
@@ -74,7 +74,7 @@
 
   let previewText = $derived.by(() => {
     if (calculation === 'percentage') {
-      const pts = Math.round(1000 * actionValue / 100);
+      const pts = Math.round((1000 * actionValue) / 100);
       const worth = Math.round(pts * pRate);
       let text = `On a ₹1,000 order → customer earns ${pts.toLocaleString('en-IN')} ${pIcon}`;
       let sub = `worth ₹${worth}`;
@@ -146,25 +146,29 @@
     handleSubmit();
   }}
 >
-  <h2 class="form-title">{isEdit ? 'Edit Rule' : 'Create Earn Rule'}</h2>
+  <h2 class="form-title">{isEdit ? 'Edit rule' : 'Create Earn Rule'}</h2>
 
   <section class="form-section">
     <div class="field-group">
       <Input
         value={name}
-        label="Rule Name"
+        label="Rule name"
         placeholder="e.g. 10% Points Back on Orders"
-        onInput={(val) => { name = val; }}
+        onInput={(val) => {
+          name = val;
+        }}
         classes="field-input{nameError !== null && name.length > 0 ? ' field-error' : ''}"
       />
     </div>
 
     <div class="field-group">
-      <span class="field-label">Trigger Event</span>
+      <span class="field-label">Trigger event</span>
       <Select
         items={EVENT_TYPES.map((et) => ({ id: et.value, label: et.label }))}
         value={[eventType]}
-        onchange={(vals) => { eventType = vals[0] ?? ''; }}
+        onchange={(vals) => {
+          eventType = vals[0] ?? '';
+        }}
         classes="field-input"
       />
       <span class="field-hint">When should this rule fire?</span>
@@ -174,7 +178,7 @@
   <section class="form-section">
     <div class="section-header">
       <h3 class="section-title">Conditions</h3>
-      <Button text="+ Add Condition" classes="btn-ghost" onclick={addCondition} />
+      <Button text="+ Add condition" classes="btn-ghost" onclick={addCondition} />
     </div>
 
     {#if conditions.length === 0}
@@ -185,7 +189,10 @@
       <div class="condition-row">
         <div class="field-group condition-field">
           <Select
-            items={[{ id: '', label: 'Select field...' }, ...CONDITION_FIELDS.map((cf) => ({ id: cf.value, label: cf.label }))]}
+            items={[
+              { id: '', label: 'Select field...' },
+              ...CONDITION_FIELDS.map((cf) => ({ id: cf.value, label: cf.label }))
+            ]}
             value={[condition.field]}
             onchange={(vals) => updateConditionField(index, vals[0] ?? '')}
             classes="field-input"
@@ -219,9 +226,14 @@
       <div class="field-group">
         <span class="field-label">Type</span>
         <Select
-          items={[{ id: 'percentage', label: 'Percentage of order' }, { id: 'fixed', label: 'Fixed amount' }]}
+          items={[
+            { id: 'percentage', label: 'Percentage of order' },
+            { id: 'fixed', label: 'Fixed amount' }
+          ]}
           value={[calculation]}
-          onchange={(vals) => { calculation = vals[0] ?? 'percentage'; }}
+          onchange={(vals) => {
+            calculation = vals[0] ?? 'percentage';
+          }}
           classes="field-input"
         />
       </div>
@@ -232,7 +244,9 @@
         <div class="inline-field">
           <Input
             value={String(actionValue)}
-            onInput={(val) => { actionValue = Number(val) || 0; }}
+            onInput={(val) => {
+              actionValue = Number(val) || 0;
+            }}
             classes="field-input inline-input"
           />
           <span class="inline-suffix">{calculation === 'percentage' ? '%' : pIcon}</span>
@@ -245,22 +259,34 @@
         <label class="field-label" for="max-amount">Max per order</label>
         <div class="inline-field">
           <Input
-            value={calculation === 'percentage' ? (maxAmount !== null ? String(maxAmount) : '') : ''}
-            onInput={(val) => { maxAmount = val === '' ? null : Number(val); }}
+            value={calculation === 'percentage'
+              ? maxAmount !== null
+                ? String(maxAmount)
+                : ''
+              : ''}
+            onInput={(val) => {
+              maxAmount = val === '' ? null : Number(val);
+            }}
             placeholder={calculation === 'percentage' ? 'No cap' : 'N/A'}
             disable={calculation !== 'percentage'}
             classes="field-input inline-input"
           />
           <span class="inline-suffix">{pIcon}</span>
         </div>
-        <span class="field-hint">{calculation === 'percentage' ? 'Leave empty for no cap' : 'Only applies to percentage'}</span>
+        <span class="field-hint"
+          >{calculation === 'percentage'
+            ? 'Leave empty for no cap'
+            : 'Only applies to percentage'}</span
+        >
       </div>
       <div class="field-group">
         <label class="field-label" for="expiry-days">Points expire after</label>
         <div class="inline-field">
           <Input
             value={expiryDays !== null ? String(expiryDays) : ''}
-            onInput={(val) => { expiryDays = val === '' ? null : Number(val); }}
+            onInput={(val) => {
+              expiryDays = val === '' ? null : Number(val);
+            }}
             placeholder="Never"
             classes="field-input inline-input"
           />
@@ -280,7 +306,12 @@
 
   <div class="form-actions">
     <Button text="Cancel" onclick={onCancel} classes="btn-secondary" />
-    <Button text={isEdit ? 'Update Rule' : 'Create Rule'} onclick={handleSubmit} disabled={!isValid} classes="btn-primary" />
+    <Button
+      text={isEdit ? 'Update rule' : 'Create rule'}
+      onclick={handleSubmit}
+      disabled={!isValid}
+      classes="btn-primary"
+    />
   </div>
 </form>
 
@@ -304,8 +335,8 @@
     gap: var(--space-3);
     padding: var(--space-4);
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
   }
 
   .section-header {
@@ -379,7 +410,6 @@
     flex: 2;
   }
 
-
   .remove-btn {
     padding: var(--space-1) var(--space-2);
     font-size: var(--font-size-lg);
@@ -421,5 +451,4 @@
     padding-top: var(--space-4);
     border-top: 1px solid var(--color-border);
   }
-
 </style>

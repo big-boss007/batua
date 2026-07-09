@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Merchant Onboarding Wizard — Current Screens</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --color-bg: #ffffff;
+    --color-surface: #f8f9fa;
+    --color-surface-2: #f0f1f3;
+    --color-text: #1a1a2e;
+    --color-text-muted: #6b7280;
+    --color-border: #e5e7eb;
+    --color-primary: #7c6aff;
+    --color-primary-hover: #6b5ce7;
+    --color-success: #10b981;
+    --color-error: #ef4444;
+    --color-warning: #f59e0b;
+    --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+    --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-10: 40px; --space-12: 48px; --space-16: 64px;
+    --radius-md: 8px; --radius-lg: 12px; --radius-full: 9999px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: #f4f5f7; color: var(--color-text); -webkit-font-smoothing: antialiased; }
+
+  /* Intro + actor band */
+  .intro { background: #1a1a2e; color: #fff; padding: 48px 32px; text-align: center; }
+  .intro h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+  .intro p { color: rgba(255,255,255,0.7); max-width: 720px; margin: 0 auto; font-size: 14px; line-height: 1.6; }
+  .toc { max-width: 880px; margin: 24px auto 0; text-align: left; color: rgba(255,255,255,0.85); font-size: 13px; line-height: 1.7; }
+  .toc strong { color: #fff; }
+
+  /* Screen label banner */
+  .screen-label {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #fef3c7;
+    color: #78350f;
+    border-top: 1px solid #f59e0b;
+    border-bottom: 1px solid #f59e0b;
+    padding: 10px 32px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+  }
+  .screen-label .tag {
+    background: #f59e0b;
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-right: 10px;
+    font-weight: 700;
+  }
+  .screen-label .gate { background: #ef4444; }
+
+  /* Frame: simulates the admin layout content area */
+  .frame { padding: 32px; background: #f4f5f7; }
+  .wizard-page {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 16px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  /* Stepper */
+  .stepper { display: flex; align-items: center; gap: 8px; }
+  .step { display: flex; align-items: center; gap: 8px; flex: 1; }
+  .step-circle {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600;
+    background: var(--color-surface-2);
+    color: var(--color-text-muted);
+    flex-shrink: 0;
+  }
+  .step.active .step-circle { background: var(--color-primary); color: #fff; }
+  .step.done .step-circle { background: var(--color-success); color: #fff; }
+  .step-label { font-size: 12px; color: var(--color-text-muted); font-weight: 500; white-space: nowrap; }
+  .step.active .step-label { color: var(--color-primary); font-weight: 600; }
+  .step.done .step-label { color: var(--color-text); }
+  .step-line { flex: 1; height: 2px; background: var(--color-border); margin-right: 4px; }
+  .step.done + .step .step-line, .step.done .step-line { background: var(--color-success); }
+
+  /* Step panel */
+  .step-panel {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .step-panel.centered { align-items: center; text-align: center; padding: 48px 32px; }
+
+  .welcome-icon {
+    font-size: 48px; color: var(--color-primary); line-height: 1;
+  }
+  .done-icon {
+    width: 72px; height: 72px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    background: var(--color-success);
+    color: #fff;
+    font-size: 36px; font-weight: 700;
+  }
+  .h-title { font-size: 30px; font-weight: 700; line-height: 1.25; }
+  .h-subtitle { font-size: 18px; color: var(--color-text-muted); }
+  .step-title { font-size: 20px; font-weight: 700; line-height: 1.25; }
+  .step-desc { font-size: 14px; color: var(--color-text-muted); margin-top: -12px; }
+
+  /* Form */
+  .form-group { display: flex; flex-direction: column; gap: 8px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-label { font-size: 13px; font-weight: 500; color: var(--color-text-muted); }
+  .input-box {
+    padding: 10px 14px;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background: var(--color-surface);
+    font-size: 14px;
+    font-family: inherit;
+  }
+  .input-with-label > label {
+    display: block;
+    font-size: 12px;
+    color: var(--color-text-muted);
+    margin-bottom: 6px;
+  }
+  .input-with-label input { width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: 6px; font-size: 14px; font-family: inherit; }
+
+  /* Slider */
+  .slider-row { display: flex; align-items: center; gap: 16px; }
+  .slider-track { flex: 1; height: 6px; background: var(--color-surface-2); border-radius: 999px; position: relative; }
+  .slider-fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--color-primary); border-radius: 999px; }
+  .slider-knob { position: absolute; top: 50%; transform: translate(-50%, -50%); width: 18px; height: 18px; background: var(--color-primary); border-radius: 50%; border: 3px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.15); }
+  .slider-value { font-size: 18px; font-weight: 600; color: var(--color-primary); min-width: 48px; text-align: right; }
+
+  /* Toggle */
+  .toggle { display: inline-flex; align-items: center; gap: 12px; cursor: pointer; font-size: 14px; }
+  .toggle-track { width: 40px; height: 22px; background: var(--color-surface-2); border-radius: 999px; position: relative; flex-shrink: 0; }
+  .toggle-track::after { content: ''; position: absolute; left: 3px; top: 3px; width: 16px; height: 16px; background: #fff; border-radius: 50%; box-shadow: 0 1px 2px rgba(0,0,0,0.15); transition: left 0.2s; }
+  .toggle.on .toggle-track { background: var(--color-primary); }
+  .toggle.on .toggle-track::after { left: 21px; }
+
+  /* Pill */
+  .pill {
+    display: inline-flex; align-items: center;
+    font-size: 11px; font-weight: 600;
+    padding: 2px 10px; border-radius: 999px;
+    white-space: nowrap;
+  }
+  .tier-bronze { background: #f5e6d3; color: #8b5e3c; }
+  .tier-silver { background: #e8e8e8; color: #555555; }
+  .tier-gold { background: #fdf3d7; color: #92742e; }
+  .tier-platinum { background: #e8eaf6; color: #3949ab; }
+
+  /* Cards within steps */
+  .cod-section {
+    padding: 16px;
+    background: var(--color-surface-2);
+    border-radius: var(--radius-md);
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .preview-card {
+    display: flex; flex-direction: column; gap: 8px;
+    padding: 16px;
+    background: var(--color-surface-2);
+    border-radius: var(--radius-md);
+    border-left: 3px solid var(--color-primary);
+  }
+  .preview-label {
+    font-size: 12px; font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .preview-text { font-size: 16px; color: var(--color-text); }
+
+  .tiers-preset {
+    display: flex; flex-direction: column; gap: 12px;
+    padding: 16px;
+    background: var(--color-surface-2);
+    border-radius: var(--radius-md);
+  }
+  .preset-label { font-size: 13px; font-weight: 600; color: var(--color-text-muted); }
+  .tier-list { display: flex; flex-direction: column; gap: 12px; }
+  .tier-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+  }
+  .tier-detail { font-size: 13px; color: var(--color-text-muted); }
+
+  /* Summary card (Done step) */
+  .summary-card {
+    width: 100%; max-width: 480px;
+    text-align: left;
+    background: var(--color-surface-2);
+    border-radius: var(--radius-md);
+    padding: 24px;
+  }
+  .summary-heading { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+  .summary-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+  .summary-item { display: flex; align-items: flex-start; gap: 12px; font-size: 14px; line-height: 1.6; }
+  .summary-item .check { font-weight: 700; font-size: 14px; flex-shrink: 0; }
+  .summary-item.done .check { color: var(--color-success); }
+  .summary-item.skipped { color: var(--color-text-muted); }
+  .summary-item.skipped .check { color: var(--color-text-muted); }
+
+  /* Step actions */
+  .step-actions {
+    display: flex; justify-content: flex-end; gap: 12px;
+    padding-top: 16px;
+    border-top: 1px solid var(--color-border);
+  }
+  .step-actions.centered { justify-content: center; border-top: none; padding-top: 0; }
+  .btn {
+    display: inline-flex; align-items: center;
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-size: 14px; font-weight: 600;
+    cursor: pointer; border: 1px solid transparent;
+    font-family: inherit;
+  }
+  .btn-primary { background: var(--color-primary); color: #fff; }
+  .btn-primary:hover { background: var(--color-primary-hover); }
+  .btn-secondary { background: var(--color-surface); color: var(--color-text); border-color: var(--color-border); }
+
+  /* Empty + gate state */
+  .empty-state {
+    display: flex; align-items: center; justify-content: center;
+    padding: 64px;
+    background: var(--color-surface);
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-lg);
+    max-width: 640px; margin: 0 auto;
+    color: var(--color-text-muted); font-size: 14px;
+  }
+  .already-done {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 16px; padding: 48px;
+    text-align: center;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    max-width: 640px; margin: 0 auto;
+  }
+  .already-done-icon {
+    width: 64px; height: 64px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    background: var(--color-success);
+    color: #fff;
+    font-size: 32px; font-weight: 700;
+  }
+  .already-done h2 { font-size: 24px; font-weight: 700; }
+  .already-done-text { font-size: 14px; color: var(--color-text-muted); }
+
+  /* Note callout */
+  .note { background: #eef2ff; border-left: 3px solid var(--color-primary); color: #4338ca; padding: 12px 16px; border-radius: 4px; font-size: 12px; margin: 16px 32px 0; line-height: 1.5; }
+  .note strong { color: #312e81; }
+</style>
+</head>
+<body>
+
+<div class="intro">
+  <h1>Merchant Onboarding Wizard — Every Screen</h1>
+  <p>
+    The complete state space of <code>/admin/setup</code>, rendered with the project's design tokens.
+    Includes pre-wizard gate states (what an onboarded merchant currently sees) and every step + every
+    toggled sub-state.
+  </p>
+  <div class="toc">
+    <strong>PRE-WIZARD STATES</strong> &mdash; S0 No merchant · S1 Loading · <strong>S2 Already-set-up gate</strong> (what you saw)<br>
+    <strong>WIZARD STEPS</strong> &mdash; S3 Welcome · S4 Rewards (COD off) · S5 Rewards (COD on) · S6 Policy · S7 Tiers (off) · S8 Tiers (on) · S9 Referrals (off) · S10 Referrals (on) · S11 Done
+  </div>
+</div>
+
+<!-- ====================================================================== -->
+<!-- PRE-WIZARD STATES                                                       -->
+<!-- ====================================================================== -->
+
+<div class="screen-label"><span class="tag">S0</span>No merchant selected — guards the wizard before the merchant resolver picks one</div>
+<div class="frame">
+  <div class="empty-state">Select a merchant first to begin setup.</div>
+</div>
+
+<div class="screen-label"><span class="tag">S1</span>Loading — while it fetches rules to decide whether to gate</div>
+<div class="frame">
+  <div class="empty-state">Checking setup status…</div>
+</div>
+
+<div class="screen-label"><span class="tag gate">S2</span>Already-set-up gate — the dead-end an onboarded merchant currently hits at <code>/admin/setup</code></div>
+<div class="frame">
+  <div class="already-done">
+    <div class="already-done-icon">✓</div>
+    <h2>Setup Complete</h2>
+    <div class="already-done-text">This merchant already has reward rules configured.</div>
+    <button class="btn btn-primary" style="margin-top:16px;">Go to Dashboard</button>
+  </div>
+</div>
+<div class="note">
+  <strong>Problem:</strong> The gate fires when <em>any</em> reward rule exists (<code>fetchRules</code> returns &gt; 0 results). Once tripped, there is no way back into the wizard — even read-only. Proposed fix below.
+</div>
+
+<!-- ====================================================================== -->
+<!-- WIZARD STEPS                                                            -->
+<!-- ====================================================================== -->
+
+<div class="screen-label"><span class="tag">S3</span>Step 0 — Welcome</div>
+<div class="frame">
+  <div class="wizard-page">
+    <div class="stepper">
+      <div class="step active"><div class="step-circle">1</div><div class="step-label">Welcome</div></div>
+      <div class="step-line"></div>
+      <div class="step"><div class="step-circle">2</div><div class="step-label">Rewards</div></div>
+      <div class="step-line"></div>
+      <div class="step"><div class="step-circle">3</div><div class="step-label">Policy</div></div>
+      <div class="step-line"></div>
+      <div class="step"><div class="step-circle">4</div><div class="step-label">Tiers</div></div>
+      <div class="step-line"></div>
+      <div class="step"><div class="step-circle">5</div><div class="step-label">Referrals</div></div>
+      <div class="step-line"></div>
+      <div class="step"><div class="step-circle">6</div><div class="step-label">Done</div></div>
+    </div>
+
+    <div class="step-panel centered">
+      <div class="welcome-icon">★</div>
+      <div class="h-title">Welcome to Batua!</div>
+      <div class="h-subtitle">Let's set up your loyalty program in 5 minutes.</div>
+      <div style="font-size:16px;">Setting up for <strong>Sherwani Studio</strong></div>
+      <div class="step-actions centered">
+        <button class="btn btn-primary">Get Started</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="screen-label"><span class="tag">S4</span>Step 1 — Rewards (default: COD toggle off)</div>
+<div class="frame">
+  <div class="wizard-page">
+    <div class="stepper">
+      <div class="step done"><div class="step-circle">✓</div><div class="step-label">Welcome</div></div>
+      <div class="step-line"></div>
+      <div class="step active"><div class="step-circle">2</div><div class="step-label">Rewards</div></div>
+      <div class="step-line"></div>
+      <div class="step"><div class="step-circle">3</div><div class="step-label">Policy</div></div>
+      <div class="step-line"></div>
+      <div class="step"><div class="step-circle">4</div><div class="step-label">Tiers</div></div>
+      <div class="step-line"></div>
+      <div class="step"><div class="step-circle">5</div><div class="step-label">Referrals</div></div>
+      <div class="step-line"></div>
+      <div class="step"><div class="step-circle">6</div><div class="step-label">Done</div></div>
+    </div>
+
+    <div class="step-panel">
+      <div class="step-title">Create Your First Earn Rule</div>
+      <div class="step-desc">How much cashback on prepaid orders?</div>
+
+      <div class="form-group">
+        <div class="form-label">Cashback percentage</div>
+        <div class="slider-row">
+          <div class="slider-track"><div class="slider-fill" style="width:21%;"></div><div class="slider-knob" style="left:21%;"></div></div>
+          <div class="slider-value">5%</div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="input-with-label"><label>Minimum order amount</label><input value="500" /></div>
+        <div class="input-with-label"><label>Maximum cashback per order</label><input value="200" /></div>
+      </div>
+
+      <div class="form-group">
+        <div class="toggle"><div class="toggle-track"></div>Also reward COD orders?</div>
+      </div>
+
+      <div class="preview-card">
+        <div class="preview-label">Preview</div>
+        <div class="preview-text">Customers will earn <strong>Rs. 25</strong> on a <strong>Rs. 500</strong> prepaid order</div>
+      </div>
+
+      <div class="step-actions">
+        <button class="btn btn-secondary">Back</button>
+        <button class="btn btn-primary">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="note">
+  Behind the scenes this step creates <strong>one</strong> reward rule: <code>name: "Prepaid Order Cashback"</code>, <code>event_type: "order.paid"</code>, condition <code>payment_method = prepaid</code>. One slider produces exactly one rule — the "1× mental model" lives here.
+</div>
+
+<div class="screen-label"><span class="tag">S5</span>Step 1 — Rewards (COD toggle on, expanded)</div>
+<div class="frame">
+  <div class="wizard-page">
+    <div class="stepper">
+      <div class="step done"><div class="step-circle">✓</div><div class="step-label">Welcome</div></div>
+      <div class="step-line"></div>
+      <div class="step active"><div class="step-circle">2</div><div class="step-label">Rewards</div></div>
+      <div class="step-line"></div>
+      <div class="step"><div class="step-circle">3</div><div class="step-label">Policy</div></div>
+      <div class="step-line"></div>
+      <div class="step"><div class="step-circle">4</div><div class="step-label">Tiers</div></div>
+      <div class="step-line"></div>
+      <div class="step"><div class="step-circle">5</div><div class="step-label">Referrals</div></div>
+      <div class="step-line"></div>
+      <div class="step"><div class="step-circle">6</div><div class="step-label">Done</div></div>
+    </div>
+
+    <div class="step-panel">
+      <div class="step-title">Create Your First Earn Rule</div>
+      <div class="step-desc">How much cashback on prepaid orders?</div>
+
+      <div class="form-group">
+        <div class="form-label">Cashback percentage</div>
+        <div class="slider-row">
+          <div class="slider-track"><div class="slider-fill" style="width:21%;"></div><div class="slider-knob" style="left:21%;"></div></div>
+          <div class="slider-value">5%</div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="input-with-label"><label>Minimum order amount</label><input value="500" /></div>
+        <div class="input-with-label"><label>Maximum cashback per order</label><input value="200" /></div>
+      </div>
+
+      <div class="form-group">
+        <div class="toggle on"><div class="toggle-track"></div>Also reward COD orders?</div>
+      </div>
+
+      <div class="cod-section">
+        <div class="form-label">COD cashback percentage</div>
+        <div class="slider-row">
+          <div class="slider-track"><div class="slider-fill" style="width:11%;"></div><div class="slider-knob" style="left:11%;"></div></div>
+          <div class="slider-value">3%</div>
+        </div>
+      </div>
+
+      <div class="preview-card">
+        <div class="preview-label">Preview</div>
+        <div class="preview-text">Customers will earn <strong>Rs. 25</strong> on a <strong>Rs. 500</strong> prepaid order</div>
+      </div>
+
+      <div class="step-actions">
+        <button class="btn btn-secondary">Back</button>
+        <button class="btn btn-primary">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="note">
+  Now <strong>two</strong> rules get created. The COD rule has <code>event_type: "order.delivered"</code> — which is the event_type mismatch I flagged earlier. The preview only shows the prepaid calculation; COD cashback isn't surfaced.
+</div>
+
+<div class="screen-label"><span class="tag">S6</span>Step 2 — Policy</div>
+<div class="frame">
+  <div class="wizard-page">
+    <div class="stepper">
+      <div class="step done"><div class="step-circle">✓</div><div class="step-label">Welcome</div></div>
+      <div class="step-line"></div>
+      <div class="step done"><div class="step-circle">✓</div><div class="step-label">Rewards</div></div>
+      <div class="step-line"></div>
+      <div class="step active"><div class="step-circle">3</div><div class="step-label">Policy</div></div>
+      <div class="step-line"></div>
+      <div class="step"><div class="step-circle">4</div><div class="step-label">Tiers</div></div>
+      <div class="step-line"></div>
+      <div class="step"><div class="step-circle">5</div><div class="step-label">Referrals</div></div>
+      <div class="step-line"></div>
+      <div class="step"><div class="step-circle">6</div><div class="step-label">Done</div></div>
+    </div>
+
+    <div class="step-panel">
+      <div class="step-title">Set Up Wallet Policy</div>
+      <div class="step-desc">How should customers redeem their credits?</div>
+
+      <div class="input-with-label"><label>Minimum redemption amount</label><input value="10" /></div>
+      <div class="input-with-label"><label>Maximum per order (%)</label><input value="50" /></div>
+
+      <div class="form-group">
+        <div class="toggle on"><div class="toggle-track"></div>Allow redemption with discount codes</div>
+      </div>
+
+      <div class="step-actions">
+        <button class="btn btn-secondary">Back</button>
+        <button class="btn btn-primary">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="note">
+  Creates one <code>wallet_policies</code> row for <code>bucket_type='earned_credit'</code> with <code>step_size: 1</code>, <code>default_expiry_days: 365</code> hard-coded. Other buckets (GiftCard, ReferralReward, GoodwillCredit, etc.) get <em>no policy</em> from onboarding — merchant has to configure each one later under Wallet Policies.
+</div>
+
+<div class="screen-label"><span class="tag">S7</span>Step 3 — Tiers (toggle off, default)</div>
+<div class="frame">
+  <div class="wizard-page">
+    <div class="stepper">
+      <div class="step done"><div class="step-circle">✓</div><div class="step-label">Welcome</div></div>
+      <div class="step-line"></div>
+      <div class="step done"><div class="step-circle">✓</div><div class="step-label">Rewards</div></div>
+      <div class="step-line"></div>
+      <div class="step done"><div class="step-circle">✓</div><div class="step-label">Policy</div></div>
+      <div class="step-line"></div>
+      <div class="step active"><div class="step-circle">4</div><div class="step-label">Tiers</div></div>
+      <div class="step-line"></div>
+      <div class="step"><div class="step-circle">5</div><div class="step-label">Referrals</div></div>
+      <div class="step-line"></div>
+      <div class="step"><div class="step-circle">6</div><div class="step-label">Done</div></div>
+    </div>
+
+    <div class="step-panel">
+      <div class="step-title">Loyalty Tiers</div>
+      <div class="step-desc">Want to reward your best customers with tiers?</div>
+
+      <div class="form-group">
+        <div class="toggle"><div class="toggle-track"></div>Enable loyalty tiers</div>
+      </div>
+
+      <div class="step-actions">
+        <button class="btn btn-secondary">Back</button>
+        <button class="btn btn-secondary">Skip</button>
+        <button class="btn btn-primary">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="screen-label"><span class="tag">S8</span>Step 3 — Tiers (toggle on, presets revealed)</div>
+<div class="frame">
+  <div class="wizard-page">
+    <div class="stepper">
+      <div class="step done"><div class="step-circle">✓</div><div class="step-label">Welcome</div></div>
+      <div class="step-line"></div>
+      <div class="step done"><div class="step-circle">✓</div><div class="step-label">Rewards</div></div>
+      <div class="step-line"></div>
+      <div class="step done"><div class="step-circle">✓</div><div class="step-label">Policy</div></div>
+      <div class="step-line"></div>
+      <div class="step active"><div class="step-circle">4</div><div class="step-label">Tiers</div></div>
+      <div class="step-line"></div>
+      <div class="step"><div class="step-circle">5</div><div class="step-label">Referrals</div></div>
+      <div class="step-line"></div>
+      <div class="step"><div class="step-circle">6</div><div class="step-label">Done</div></div>
+    </div>
+
+    <div class="step-panel">
+      <div class="step-title">Loyalty Tiers</div>
+      <div class="step-desc">Want to reward your best customers with tiers?</div>
+
+      <div class="form-group">
+        <div class="toggle on"><div class="toggle-track"></div>Enable loyalty tiers</div>
+      </div>
+
+      <div class="tiers-preset">
+        <div class="preset-label">Recommended tiers</div>
+        <div class="tier-list">
+          <div class="tier-item"><span class="pill tier-bronze">Bronze</span><span class="tier-detail">Rs. 0+ spend · 1x rewards</span></div>
+          <div class="tier-item"><span class="pill tier-silver">Silver</span><span class="tier-detail">Rs. 2,000+ spend · 1.25x rewards</span></div>
+          <div class="tier-item"><span class="pill tier-gold">Gold</span><span class="tier-detail">Rs. 5,000+ spend · 1.5x rewards</span></div>
+          <div class="tier-item"><span class="pill tier-platinum">Platinum</span><span class="tier-detail">Rs. 15,000+ spend · 2x rewards</span></div>
+        </div>
+      </div>
+
+      <div class="step-actions">
+        <button class="btn btn-secondary">Back</button>
+        <button class="btn btn-primary">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="note">
+  Tier thresholds and multipliers are <strong>fixed in code</strong> — the merchant can't edit them in this step. The 4 tiers always come out as Bronze 0/1×, Silver 2k/1.25×, Gold 5k/1.5×, Platinum 15k/2×. To customize, they go to <code>/admin/loyalty</code> after onboarding.
+</div>
+
+<div class="screen-label"><span class="tag">S9</span>Step 4 — Referrals (toggle off, default)</div>
+<div class="frame">
+  <div class="wizard-page">
+    <div class="stepper">
+      <div class="step done"><div class="step-circle">✓</div><div class="step-label">Welcome</div></div>
+      <div class="step-line"></div>
+      <div class="step done"><div class="step-circle">✓</div><div class="step-label">Rewards</div></div>
+      <div class="step-line"></div>
+      <div class="step done"><div class="step-circle">✓</div><div class="step-label">Policy</div></div>
+      <div class="step-line"></div>
+      <div class="step done"><div class="step-circle">✓</div><div class="step-label">Tiers</div></div>
+      <div class="step-line"></div>
+      <div class="step active"><div class="step-circle">5</div><div class="step-label">Referrals</div></div>
+      <div class="step-line"></div>
+      <div class="step"><div class="step-circle">6</div><div class="step-label">Done</div></div>
+    </div>
+
+    <div class="step-panel">
+      <div class="step-title">Referral Program</div>
+      <div class="step-desc">Let customers refer their friends?</div>
+
+      <div class="form-group">
+        <div class="toggle"><div class="toggle-track"></div>Enable referral program</div>
+      </div>
+
+      <div class="step-actions">
+        <button class="btn btn-secondary">Back</button>
+        <button class="btn btn-secondary">Skip</button>
+        <button class="btn btn-primary">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="screen-label"><span class="tag">S10</span>Step 4 — Referrals (toggle on, reward inputs revealed)</div>
+<div class="frame">
+  <div class="wizard-page">
+    <div class="stepper">
+      <div class="step done"><div class="step-circle">✓</div><div class="step-label">Welcome</div></div>
+      <div class="step-line"></div>
+      <div class="step done"><div class="step-circle">✓</div><div class="step-label">Rewards</div></div>
+      <div class="step-line"></div>
+      <div class="step done"><div class="step-circle">✓</div><div class="step-label">Policy</div></div>
+      <div class="step-line"></div>
+      <div class="step done"><div class="step-circle">✓</div><div class="step-label">Tiers</div></div>
+      <div class="step-line"></div>
+      <div class="step active"><div class="step-circle">5</div><div class="step-label">Referrals</div></div>
+      <div class="step-line"></div>
+      <div class="step"><div class="step-circle">6</div><div class="step-label">Done</div></div>
+    </div>
+
+    <div class="step-panel">
+      <div class="step-title">Referral Program</div>
+      <div class="step-desc">Let customers refer their friends?</div>
+
+      <div class="form-group">
+        <div class="toggle on"><div class="toggle-track"></div>Enable referral program</div>
+      </div>
+
+      <div class="form-row">
+        <div class="input-with-label"><label>Referrer reward (Rs.)</label><input value="50" /></div>
+        <div class="input-with-label"><label>Referee reward (Rs.)</label><input value="25" /></div>
+      </div>
+
+      <div class="step-actions">
+        <button class="btn btn-secondary">Back</button>
+        <button class="btn btn-primary">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="note">
+  Referral code creation trigger isn't asked here — onboarding hard-codes <code>OnRegistration</code>. <code>max_referrals_per_customer</code> isn't asked either (sent as <code>null</code>). Both are settable later under <code>/admin/referrals</code>.
+</div>
+
+<div class="screen-label"><span class="tag">S11</span>Step 5 — Done (summary)</div>
+<div class="frame">
+  <div class="wizard-page">
+    <div class="stepper">
+      <div class="step done"><div class="step-circle">✓</div><div class="step-label">Welcome</div></div>
+      <div class="step-line"></div>
+      <div class="step done"><div class="step-circle">✓</div><div class="step-label">Rewards</div></div>
+      <div class="step-line"></div>
+      <div class="step done"><div class="step-circle">✓</div><div class="step-label">Policy</div></div>
+      <div class="step-line"></div>
+      <div class="step done"><div class="step-circle">✓</div><div class="step-label">Tiers</div></div>
+      <div class="step-line"></div>
+      <div class="step done"><div class="step-circle">✓</div><div class="step-label">Referrals</div></div>
+      <div class="step-line"></div>
+      <div class="step active"><div class="step-circle">6</div><div class="step-label">Done</div></div>
+    </div>
+
+    <div class="step-panel centered">
+      <div class="done-icon">✓</div>
+      <div class="h-title">You're all set!</div>
+      <div class="h-subtitle">Your loyalty program for <strong>Sherwani Studio</strong> is ready to go.</div>
+
+      <div class="summary-card">
+        <div class="summary-heading">Setup Summary</div>
+        <ul class="summary-list">
+          <li class="summary-item done"><span class="check">✓</span>Reward rule created (5% cashback on prepaid orders, 3% on COD)</li>
+          <li class="summary-item done"><span class="check">✓</span>Wallet policy set (min Rs. 10, max 50% per order)</li>
+          <li class="summary-item done"><span class="check">✓</span>Loyalty tiers configured (Bronze, Silver, Gold, Platinum)</li>
+          <li class="summary-item skipped"><span class="check">—</span>Referral program skipped</li>
+        </ul>
+      </div>
+
+      <div class="step-actions centered">
+        <button class="btn btn-primary">Go to Dashboard</button>
+        <button class="btn btn-secondary">View Your Storefront</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ====================================================================== -->
+<!-- DEAD ENDS / GAPS IN THE WIZARD                                          -->
+<!-- ====================================================================== -->
+
+<div style="background:#1a1a2e;color:#fff;padding:32px;">
+  <h2 style="font-size:18px;margin-bottom:12px;">What the wizard does <em>not</em> do (today)</h2>
+  <ul style="font-size:13px;line-height:1.8;color:rgba(255,255,255,0.8);padding-left:20px;max-width:880px;margin:0 auto;">
+    <li>No way to <strong>re-enter the wizard</strong> after onboarding completes — the gate (S2) is terminal.</li>
+    <li>No <strong>connector setup</strong> step (Shopify webhook, WhatsApp BSP, logistics provider for COD).</li>
+    <li>No <strong>notification templates</strong> step — merchant lands with default copy, has to discover Settings → Notifications.</li>
+    <li>No <strong>storefront branding</strong> step — slug, colors, customer-facing copy.</li>
+    <li>No <strong>memberships</strong> step — paid tiers are admin-only post-onboarding.</li>
+    <li>No <strong>milestones / streaks / birthday bonus / spin wheel</strong> — all the engagement rewards that exist in code are invisible during onboarding.</li>
+    <li>Tier thresholds and multipliers are <strong>hard-coded</strong> in the Tiers step.</li>
+    <li>The Done step's "View Storefront" button uses <code>merchant.slug</code> or falls back to <code>merchant.external_id</code> — fine but ad hoc.</li>
+  </ul>
+</div>
+
+<div class="intro" style="padding:32px;">
+  <p style="font-size:13px;">
+    Next: I'll add a small fix so the wizard isn't a one-shot — see the message after this mockup for the proposed change to bypass the gate.
+  </p>
+</div>
+
+</body>
+</html>

@@ -22,7 +22,7 @@
 </script>
 
 <div class="redemption-list">
-  <h3 class="redemption-heading">Redemption History</h3>
+  <h3 class="redemption-heading">Redemption history</h3>
 
   {#if redemptions.length === 0}
     <div class="empty-state">No redemptions found</div>
@@ -99,13 +99,13 @@
 
   .redemption-item {
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
     padding: var(--space-4);
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
     transition: box-shadow var(--transition-fast);
+    box-shadow: var(--shadow-card);
   }
 
   .redemption-item:hover {

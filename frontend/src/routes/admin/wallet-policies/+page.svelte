@@ -128,17 +128,17 @@
 
 <div class="wallet-policies-page">
   <header class="page-header">
-    <h1 class="page-title">Wallet Policies</h1>
+    <h1 class="page-title">Wallet policies</h1>
     <p class="subtitle">Configure your points currency and bucket policies</p>
   </header>
 
   {#if merchant !== null}
-    <div class="section-label">Points Configuration</div>
+    <div class="section-label">Points configuration</div>
     <div class="points-card">
       <div class="points-form">
         <div class="points-row">
           <div class="points-field" style="flex: 1;">
-            <span class="points-field-label">Points Name</span>
+            <span class="points-field-label">Points name</span>
             <Input
               value={pointsName}
               placeholder="Stars"
@@ -188,7 +188,7 @@
 
     {#if earnRules.length > 0}
       <div class="earn-rates">
-        <span class="earn-rates-label">Active Earn Rates</span>
+        <span class="earn-rates-label">Active earn rates</span>
         <div class="earn-rates-list">
           {#each earnRules as rule}
             <div class="earn-preview-card">
@@ -206,7 +206,7 @@
     {/if}
 
     <div class="section-divider"></div>
-    <div class="section-label">Wallet Policies</div>
+    <div class="section-label">Wallet policies</div>
   {/if}
 
   <div class="policies-constrained">
@@ -260,12 +260,12 @@
 
   .points-card {
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     overflow: hidden;
     display: grid;
     grid-template-columns: 1fr 210px;
     max-width: 720px;
+    box-shadow: var(--shadow-card);
   }
 
   .points-form {
@@ -290,8 +290,8 @@
   }
 
   .points-preview {
-    background: linear-gradient(165deg, #f0fdf4, #dcfce7);
-    border-left: 1px solid #bbf7d0;
+    background: linear-gradient(165deg, var(--green-100), var(--green-100));
+    border-left: 1px solid var(--green-100);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -305,7 +305,7 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: #16a34a;
+    color: var(--green-700);
     margin-bottom: var(--space-2);
   }
 
@@ -324,20 +324,20 @@
   .points-preview-name {
     font-size: 15px;
     font-weight: var(--font-weight-bold);
-    color: #14532d;
+    color: var(--green-700);
     margin-top: 6px;
   }
 
   .points-preview-rate {
-    font-size: 20px;
+    font-size: var(--font-size-xl);
     font-weight: 800;
-    color: #059669;
+    color: var(--green-700);
     margin-top: 2px;
   }
 
   .points-preview-eq {
-    font-size: 11px;
-    color: #16a34a;
+    font-size: var(--font-size-xs);
+    color: var(--green-700);
     opacity: 0.7;
   }
 
@@ -354,9 +354,9 @@
   .earn-rates {
     padding: var(--space-4);
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
     max-width: 720px;
+    box-shadow: var(--shadow-card);
   }
 
   .earn-rates-label {
@@ -420,5 +420,4 @@
   .policies-constrained {
     max-width: 720px;
   }
-
 </style>

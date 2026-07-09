@@ -30,12 +30,12 @@
   />
 
   <div class="form-field">
-    <label class="label" for="gc-expires">Expiry Date</label>
+    <label class="label" for="gc-expires">Expiry date</label>
     <input id="gc-expires" class="date-input" type="date" bind:value={expiresAt} required />
   </div>
 
   <Button
-    text="Issue Gift Card"
+    text="Issue gift card"
     classes="btn-primary"
     disabled={Number(amount) <= 0 || !expiresAt || isSubmitting}
     type="submit"

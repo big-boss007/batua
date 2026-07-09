@@ -22,7 +22,7 @@
   let configError = $state<string | null>(null);
 
   const capabilityItems = [
-    { id: 'payment_gateway', label: 'Payment Gateway' },
+    { id: 'payment_gateway', label: 'Payment gateway' },
     { id: 'sms', label: 'SMS' },
     { id: 'email', label: 'Email' },
     { id: 'webhook', label: 'Webhook' },
@@ -60,7 +60,7 @@
 </script>
 
 <form class="connector-form" onsubmit={handleSubmit}>
-  <h4 class="form-title">{connector ? 'Edit Connector' : 'New Connector'}</h4>
+  <h4 class="form-title">{connector ? 'Edit connector' : 'New connector'}</h4>
 
   <div class="form-grid">
     <div class="form-field">
@@ -108,7 +108,7 @@
   </div>
 
   <Button
-    text={connector ? 'Update Connector' : 'Create Connector'}
+    text={connector ? 'Update connector' : 'Create connector'}
     classes="btn-primary"
     disabled={capability === '' || vendor === '' || configError !== null}
     type="submit"
@@ -119,8 +119,8 @@
   .connector-form {
     padding: var(--space-6);
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
   }
 
   .form-title {

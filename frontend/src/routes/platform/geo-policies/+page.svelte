@@ -47,10 +47,10 @@
 <div class="geo-page">
   <div class="page-header">
     <div class="header-text">
-      <h1>Geo Policies</h1>
+      <h1>Geo policies</h1>
       <p class="subtitle">Manage geography-specific configuration layers</p>
     </div>
-    <Button text="+ Create Geo Policy" classes="btn-primary" onclick={handleOpenModal} />
+    <Button text="+ Create geo policy" classes="btn-primary" onclick={handleOpenModal} />
   </div>
 
   <GeoPolicyTable {policies} />
@@ -58,11 +58,11 @@
 
 {#if showCreateModal}
   <Modal
-    header={{ text: 'Create Geo Policy', rightImage: MODAL_CLOSE_ICON }}
+    header={{ text: 'Create geo policy', rightImage: MODAL_CLOSE_ICON }}
     size="fit-content"
     onheaderRightImageClick={handleCloseModal}
     footer={{
-      primaryButton: { text: 'Create Policy', enable: !createLoading },
+      primaryButton: { text: 'Create policy', enable: !createLoading },
       secondaryButton: { text: 'Cancel' }
     }}
     onprimaryButtonClick={() => {

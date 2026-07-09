@@ -1,10 +1,15 @@
 <script lang="ts">
-  import { Table, Pill, Select, Pagination, Shimmer, Modal, Button } from '@juspay/svelte-ui-components';
+  import {
+    Table,
+    Pill,
+    Select,
+    Pagination,
+    Shimmer,
+    Modal,
+    Button
+  } from '@juspay/svelte-ui-components';
   import type { Snippet } from 'svelte';
-  import type {
-    MerchantTransactionRow,
-    LedgerEntryDetail
-  } from '$lib/client/modules/transactions';
+  import type { MerchantTransactionRow, LedgerEntryDetail } from '$lib/client/modules/transactions';
   import {
     fetchMerchantTransactions,
     fetchEntryDetail,
@@ -24,7 +29,15 @@
     MODAL_CLOSE_ICON
   } from '$lib/client/modules/foundation';
 
-  const BUCKET_TYPES = ['earned_credit', 'cod_pending', 'gift_card', 'referral_reward', 'goodwill_credit', 'membership_benefit', 'refund_credit'];
+  const BUCKET_TYPES = [
+    'earned_credit',
+    'cod_pending',
+    'gift_card',
+    'referral_reward',
+    'goodwill_credit',
+    'membership_benefit',
+    'refund_credit'
+  ];
   const MOVEMENT_TYPES = ['in', 'out', 'held', 'across'];
 
   let bucketItems = $derived(BUCKET_TYPES.map((bt) => ({ id: bt, label: formatBucketType(bt) })));
@@ -52,7 +65,15 @@
 
   let pIcon = $derived(merchant?.points_icon ?? 'pts');
 
-  const TABLE_HEADERS = ['Customer', 'Bucket', 'Movement', 'Points / Cash', '₹ Value', 'State', 'Date'];
+  const TABLE_HEADERS = [
+    'Customer',
+    'Bucket',
+    'Movement',
+    'Points / Cash',
+    '₹ Value',
+    'State',
+    'Date'
+  ];
 
   const MOVEMENT_PILL_CLASS: Record<string, string> = {
     in: 'pill-success',
@@ -82,7 +103,12 @@
           ? `${tx.customer_name} (${formatPhone(tx.customer_phone)})`
           : formatPhone(tx.customer_phone);
       const pts = isPointsBucket(tx.bucket_type);
-      const prefix = tx.movement_type === 'in' || tx.movement_type === 'held' ? '+' : tx.movement_type === 'out' ? '-' : '';
+      const prefix =
+        tx.movement_type === 'in' || tx.movement_type === 'held'
+          ? '+'
+          : tx.movement_type === 'out'
+            ? '-'
+            : '';
       const nativeCell = pts
         ? `${prefix}${formatPoints(Math.abs(tx.earning_unit), pIcon)}`
         : `${prefix}${formatCurrencyINR(Math.abs(tx.currency_equivalent))}`;
@@ -251,7 +277,7 @@
 
           <div class="filter-row">
             <div class="filter-group">
-              <span class="filter-label">Bucket Type</span>
+              <span class="filter-label">Bucket type</span>
               <Select
                 placeholder="All buckets"
                 items={bucketItems}
@@ -261,7 +287,7 @@
             </div>
 
             <div class="filter-group">
-              <span class="filter-label">Movement Type</span>
+              <span class="filter-label">Movement type</span>
               <Select
                 placeholder="All movements"
                 items={movementItems}
@@ -271,7 +297,7 @@
             </div>
 
             {#if hasActiveFilters}
-              <Button text="Clear Filters" classes="btn-ghost" onclick={handleClearFilters} />
+              <Button text="Clear filters" classes="btn-ghost" onclick={handleClearFilters} />
             {/if}
           </div>
         </div>
@@ -300,11 +326,20 @@
                   classes={MOVEMENT_PILL_CLASS[String(value).toLowerCase()] ?? ''}
                 />
               {:else if colIndex === 3}
-                <span class="cell-native" style="color: {isPointsBucket(transactions[rowIndex]?.bucket_type ?? '') ? (transactions[rowIndex]?.movement_type === 'out' ? 'var(--color-error)' : 'var(--color-success)') : 'var(--color-primary)'}; font-weight: 500; font-family: var(--font-mono);">
+                <span
+                  class="cell-native"
+                  style="color: {isPointsBucket(transactions[rowIndex]?.bucket_type ?? '')
+                    ? transactions[rowIndex]?.movement_type === 'out'
+                      ? 'var(--color-error)'
+                      : 'var(--color-success)'
+                    : 'var(--color-primary)'}; font-weight: 500; font-family: var(--font-mono);"
+                >
                   {value}
                 </span>
               {:else if colIndex === 4}
-                <span style="font-family: var(--font-mono); color: var(--color-text-muted);">{value}</span>
+                <span style="font-family: var(--font-mono); color: var(--color-text-muted);"
+                  >{value}</span
+                >
               {:else if colIndex === 5}
                 <Pill
                   text={formatState(String(value)).label}
@@ -328,7 +363,13 @@
       </div>
 
       {#if loadingDetail || selectedEntry !== null}
-        <Modal header={{ text: 'Transaction Detail', rightImage: MODAL_CLOSE_ICON }} size="fit-content" onclose={handleCloseDetail} onoverlayClick={handleCloseDetail} onheaderRightImageClick={handleCloseDetail}>
+        <Modal
+          header={{ text: 'Transaction detail', rightImage: MODAL_CLOSE_ICON }}
+          size="fit-content"
+          onclose={handleCloseDetail}
+          onoverlayClick={handleCloseDetail}
+          onheaderRightImageClick={handleCloseDetail}
+        >
           {#snippet content()}
             {#if loadingDetail}
               <div class="shimmer-detail">
@@ -370,7 +411,10 @@
                 <div class="detail-row">
                   <span class="label">Bucket</span>
                   <span class="value">
-                    <Pill text={formatBucketType(selectedEntry.bucket_type)} classes="pill-neutral" />
+                    <Pill
+                      text={formatBucketType(selectedEntry.bucket_type)}
+                      classes="pill-neutral"
+                    />
                   </span>
                 </div>
 
@@ -418,7 +462,7 @@
 
                 {#if selectedEntry.payment_reference !== null}
                   <div class="detail-row">
-                    <span class="label">Payment Ref</span>
+                    <span class="label">Payment ref</span>
                     <span class="value mono">{selectedEntry.payment_reference}</span>
                   </div>
                 {/if}
@@ -426,17 +470,17 @@
                 <h4 class="section-heading">Amounts</h4>
 
                 <div class="detail-row">
-                  <span class="label">Earning Unit</span>
+                  <span class="label">Earning unit</span>
                   <span class="value">{selectedEntry.earning_unit}</span>
                 </div>
 
                 <div class="detail-row">
-                  <span class="label">Currency Equivalent</span>
+                  <span class="label">Currency equivalent</span>
                   <span class="value">{formatCurrencyINR(selectedEntry.currency_equivalent)}</span>
                 </div>
 
                 <div class="detail-row">
-                  <span class="label">Conversion Rate</span>
+                  <span class="label">Conversion rate</span>
                   <span class="value">{selectedEntry.conversion_rate}</span>
                 </div>
 
@@ -450,7 +494,7 @@
 
                   {#if selectedEntry.linked_entry_id !== null}
                     <div class="detail-row">
-                      <span class="label">Linked Entry</span>
+                      <span class="label">Linked entry</span>
                       <span class="value mono">{selectedEntry.linked_entry_id}</span>
                     </div>
                   {/if}
@@ -461,7 +505,9 @@
                   {#each Object.entries(selectedEntry.constraints) as [key, value]}
                     <div class="detail-row">
                       <span class="label">{key.replace(/_/g, ' ')}</span>
-                      <span class="value">{typeof value === 'object' ? JSON.stringify(value) : String(value)}</span>
+                      <span class="value"
+                        >{typeof value === 'object' ? JSON.stringify(value) : String(value)}</span
+                      >
                     </div>
                   {/each}
                 {/if}
@@ -481,7 +527,7 @@
                 </div>
 
                 <div class="detail-row">
-                  <span class="label">Idempotency Key</span>
+                  <span class="label">Idempotency key</span>
                   <span class="value mono small">{selectedEntry.idempotency_key}</span>
                 </div>
 
@@ -545,12 +591,12 @@
   .search-input {
     flex: 1;
     padding: var(--space-2) var(--space-3);
-    border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
     background: var(--color-surface);
     color: var(--color-text);
     font-size: var(--font-size-sm);
     transition: border-color var(--transition-fast);
+    border: 1px solid var(--color-border);
   }
 
   .search-input::placeholder {
@@ -571,8 +617,8 @@
     flex-wrap: wrap;
     padding: var(--space-4);
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
   }
 
   .filter-group {
@@ -586,7 +632,6 @@
     margin-bottom: var(--space-1);
     font-weight: var(--font-weight-medium);
   }
-
 
   .pagination-wrapper {
     display: flex;
@@ -691,8 +736,6 @@
     border-bottom: 1px solid var(--color-border);
   }
 
-
-
   .shimmer-detail {
     display: flex;
     flex-direction: column;
@@ -705,5 +748,4 @@
     --shimmer-height: 24px;
     --shimmer-border-radius: 4px;
   }
-
 </style>

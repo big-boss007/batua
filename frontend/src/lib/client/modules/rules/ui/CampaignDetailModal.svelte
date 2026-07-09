@@ -46,7 +46,11 @@
 
   function formatDateRange(startsAt: string, endsAt: string): string {
     const fmt = (iso: string) =>
-      new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+      new Date(iso).toLocaleDateString('en-IN', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      });
     return `${fmt(startsAt)} – ${fmt(endsAt)}`;
   }
 
@@ -60,7 +64,7 @@
 
 <Modal
   size="medium"
-  header={{ text: 'Campaign Details', rightImage: MODAL_CLOSE_ICON }}
+  header={{ text: 'Campaign details', rightImage: MODAL_CLOSE_ICON }}
   onclose={onClose}
   onoverlayClick={onClose}
   onheaderRightImageClick={onClose}
@@ -69,7 +73,12 @@
     <div class="modal-body">
       <div class="campaign-title-row">
         <span class="campaign-name">{campaign.name}</span>
-        <span class="status-badge" class:status-active={status === 'active'} class:status-upcoming={status === 'upcoming'} class:status-ended={status === 'ended'}>
+        <span
+          class="status-badge"
+          class:status-active={status === 'active'}
+          class:status-upcoming={status === 'upcoming'}
+          class:status-ended={status === 'ended'}
+        >
           {status}
         </span>
       </div>
@@ -87,15 +96,25 @@
 
       {#if linkedRule !== null}
         <div class="linked-rule-section">
-          <span class="label">Linked Reward Rule</span>
+          <span class="label">Linked reward rule</span>
           <div class="rule-info">
             <span class="rule-name">{linkedRule.name}</span>
             <span class="rule-type-pill">{linkedRule.rule_type}</span>
-            <span class="rule-status-pill" class:rule-active={linkedRule.is_active} class:rule-inactive={!linkedRule.is_active}>
+            <span
+              class="rule-status-pill"
+              class:rule-active={linkedRule.is_active}
+              class:rule-inactive={!linkedRule.is_active}
+            >
               {linkedRule.is_active ? 'Active' : 'Inactive'}
             </span>
           </div>
-          <div class="rule-event">Event: {linkedRule.config.event_type} &middot; {linkedRule.config.action.calculation === 'percentage' ? `${linkedRule.config.action.value}%` : `${linkedRule.config.action.value} point${linkedRule.config.action.value === 1 ? '' : 's'}`} per transaction</div>
+          <div class="rule-event">
+            Event: {linkedRule.config.event_type} &middot; {linkedRule.config.action.calculation ===
+            'percentage'
+              ? `${linkedRule.config.action.value}%`
+              : `${linkedRule.config.action.value} point${linkedRule.config.action.value === 1 ? '' : 's'}`}
+            per transaction
+          </div>
         </div>
       {/if}
 
@@ -112,28 +131,50 @@
       <div class="formula-section">
         <div class="formula-title">Earn Formula During This Campaign</div>
         <div class="earn-formula">
-          <div class="formula-block"><span class="formula-label">Base</span><span class="formula-val">100</span></div>
+          <div class="formula-block">
+            <span class="formula-label">Base</span><span class="formula-val">100</span>
+          </div>
           <span class="formula-op">&times;</span>
-          <div class="formula-block"><span class="formula-label">Campaign</span><span class="formula-val blue">{mult}x</span></div>
+          <div class="formula-block">
+            <span class="formula-label">Campaign</span><span class="formula-val blue">{mult}x</span>
+          </div>
           <span class="formula-op">&times;</span>
-          <div class="formula-block"><span class="formula-label">Tier</span><span class="formula-val purple">1x–2x</span></div>
+          <div class="formula-block">
+            <span class="formula-label">Tier</span><span class="formula-val purple">1x–2x</span>
+          </div>
           <span class="formula-op">=</span>
-          <div class="formula-result"><span class="formula-label">Effective</span><span class="formula-val">{mult}x–{mult * 2}x</span></div>
+          <div class="formula-result">
+            <span class="formula-label">Effective</span><span class="formula-val"
+              >{mult}x–{mult * 2}x</span
+            >
+          </div>
         </div>
       </div>
 
       <div class="performance-section">
-        <span class="label">Campaign Performance</span>
+        <span class="label">Campaign performance</span>
         <div class="perf-grid">
-          <div class="perf-item"><span class="perf-label">Orders</span><span class="perf-value">—</span></div>
-          <div class="perf-item"><span class="perf-label">Customers</span><span class="perf-value">—</span></div>
-          <div class="perf-item"><span class="perf-label">Extra Points</span><span class="perf-value green">—</span></div>
-          <div class="perf-item"><span class="perf-label">Extra Cost</span><span class="perf-value green">—</span></div>
+          <div class="perf-item">
+            <span class="perf-label">Orders</span><span class="perf-value">—</span>
+          </div>
+          <div class="perf-item">
+            <span class="perf-label">Customers</span><span class="perf-value">—</span>
+          </div>
+          <div class="perf-item">
+            <span class="perf-label">Extra points</span><span class="perf-value green">—</span>
+          </div>
+          <div class="perf-item">
+            <span class="perf-label">Extra cost</span><span class="perf-value green">—</span>
+          </div>
         </div>
       </div>
 
       {#if status === 'active'}
-        <Button text="Deactivate Campaign" onclick={() => onDeactivate(campaign.id)} classes="btn-danger deactivate-btn" />
+        <Button
+          text="Deactivate campaign"
+          onclick={() => onDeactivate(campaign.id)}
+          classes="btn-danger deactivate-btn"
+        />
       {/if}
     </div>
   {/snippet}
@@ -154,22 +195,31 @@
   }
 
   .campaign-name {
-    font-size: 18px;
+    font-size: var(--font-size-lg);
     font-weight: var(--font-weight-semibold);
   }
 
   .status-badge {
     padding: 3px 10px;
-    border-radius: 12px;
+    border-radius: var(--radius-lg);
     font-size: 10px;
     font-weight: var(--font-weight-semibold);
     text-transform: uppercase;
     letter-spacing: 0.04em;
   }
 
-  .status-active { background: #d1fae5; color: #065f46; }
-  .status-upcoming { background: #dbeafe; color: #1d4ed8; }
-  .status-ended { background: #f3f4f6; color: #6b7280; }
+  .status-active {
+    background: var(--green-100);
+    color: var(--green-700);
+  }
+  .status-upcoming {
+    background: var(--p-100);
+    color: var(--p-700);
+  }
+  .status-ended {
+    background: var(--color-surface-2);
+    color: var(--color-text-muted);
+  }
 
   .label {
     font-size: 10px;
@@ -186,7 +236,7 @@
   }
 
   .multiplier-val {
-    color: #6366f1;
+    color: var(--purple-500);
     font-family: var(--font-mono);
     font-weight: var(--font-weight-bold);
   }
@@ -197,18 +247,18 @@
     gap: var(--space-3);
     padding: var(--space-3);
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
   }
 
   .linked-rule-section {
     padding: var(--space-3);
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
+    box-shadow: var(--shadow-card);
   }
 
   .rule-info {
@@ -225,21 +275,27 @@
   .rule-type-pill {
     font-size: 10px;
     padding: 2px 8px;
-    background: #dbeafe;
-    color: #1d4ed8;
-    border-radius: 6px;
+    background: var(--p-100);
+    color: var(--p-700);
+    border-radius: var(--radius-sm);
     font-weight: var(--font-weight-medium);
   }
 
   .rule-status-pill {
     font-size: 10px;
     padding: 2px 8px;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     font-weight: var(--font-weight-medium);
   }
 
-  .rule-active { background: #d1fae5; color: #065f46; }
-  .rule-inactive { background: #fee2e2; color: #991b1b; }
+  .rule-active {
+    background: var(--green-100);
+    color: var(--green-700);
+  }
+  .rule-inactive {
+    background: var(--red-100);
+    color: var(--red-700);
+  }
 
   .rule-event {
     font-size: var(--font-size-xs);
@@ -260,8 +316,8 @@
   }
 
   .formula-section {
-    background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 100%);
-    border: 1px solid #bbf7d0;
+    background: linear-gradient(135deg, var(--green-100) 0%, var(--p-100) 100%);
+    border: 1px solid var(--green-100);
     border-radius: var(--radius-md);
     padding: var(--space-3) var(--space-4);
   }
@@ -269,7 +325,7 @@
   .formula-title {
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-semibold);
-    color: #065f46;
+    color: var(--green-700);
     margin-bottom: var(--space-2);
   }
 
@@ -304,12 +360,16 @@
     font-weight: var(--font-weight-bold);
   }
 
-  .formula-val.blue { color: #3b82f6; }
-  .formula-val.purple { color: #6366f1; }
+  .formula-val.blue {
+    color: var(--p-600);
+  }
+  .formula-val.purple {
+    color: var(--purple-500);
+  }
 
   .formula-op {
     font-size: var(--font-size-sm);
-    font-weight: 300;
+    font-weight: var(--font-weight-normal);
     color: var(--color-text-muted);
   }
 
@@ -319,13 +379,17 @@
     align-items: center;
     gap: 2px;
     padding: 4px 10px;
-    background: #065f46;
+    background: var(--green-700);
     border-radius: var(--radius-md);
     min-width: 50px;
   }
 
-  .formula-result .formula-label { color: rgba(255, 255, 255, 0.7); }
-  .formula-result .formula-val { color: white; }
+  .formula-result .formula-label {
+    color: rgba(255, 255, 255, 0.7);
+  }
+  .formula-result .formula-val {
+    color: white;
+  }
 
   .performance-section {
     display: flex;
@@ -339,11 +403,13 @@
     gap: var(--space-3);
     padding: var(--space-3);
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
   }
 
-  .perf-item { text-align: center; }
+  .perf-item {
+    text-align: center;
+  }
 
   .perf-label {
     font-size: 9px;
@@ -361,6 +427,7 @@
     display: block;
   }
 
-  .perf-value.green { color: #22c55e; }
-
+  .perf-value.green {
+    color: var(--green-500);
+  }
 </style>

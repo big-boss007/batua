@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VIP Tiers — Three Cap Modes UX</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #f0f1f5;
+    --surface: #ffffff;
+    --surface-2: #f0f1f3;
+    --text: #1a1a2e;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --primary: #7c6aff;
+    --primary-hover: #6b5ce7;
+    --success: #10b981;
+    --error: #ef4444;
+    --warning: #f59e0b;
+    --info: #3b82f6;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+
+  .intro { background: #1a1a2e; color: #fff; padding: 48px 32px; text-align: center; }
+  .intro h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+  .intro p { color: rgba(255,255,255,0.7); max-width: 760px; margin: 0 auto; font-size: 14px; line-height: 1.6; }
+  .intro .legend { margin-top: 20px; font-size: 13px; color: rgba(255,255,255,0.85); }
+  .intro .legend strong { color: #fff; }
+
+  .screen-label {
+    position: sticky; top: 0; z-index: 10;
+    background: #fef3c7; color: #78350f;
+    border-top: 1px solid #f59e0b; border-bottom: 1px solid #f59e0b;
+    padding: 12px 32px; font-size: 12px; font-weight: 600; letter-spacing: 0.4px;
+  }
+  .screen-label .tag { background: #f59e0b; color: #fff; padding: 2px 8px; border-radius: 4px; margin-right: 10px; font-weight: 700; }
+  .screen-label .approach { font-weight: 400; color: #78350f; opacity: 0.85; }
+
+  .frame { padding: 32px; }
+  .admin-shell {
+    display: flex;
+    max-width: 1280px; margin: 0 auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden;
+  }
+  .sidebar { width: 200px; background: var(--surface-2); padding: 16px 12px; border-right: 1px solid var(--border); flex-shrink: 0; }
+  .sidebar .logo { font-weight: 700; color: var(--primary); margin-bottom: 16px; padding: 0 8px; font-size: 15px; }
+  .sidebar a, .sidebar div { display: block; padding: 7px 10px; color: var(--muted); font-size: 13px; font-weight: 500; text-decoration: none; border-radius: 6px; }
+  .sidebar a.active { background: var(--primary); color: #fff; }
+  .sidebar .group { color: var(--text); font-weight: 600; margin-top: 8px; }
+  .sidebar .sub { padding-left: 24px; font-size: 12px; }
+  .content { flex: 1; padding: 28px; min-width: 0; }
+
+  .page-title { font-size: 24px; font-weight: 700; }
+  .page-subtitle { font-size: 13px; color: var(--muted); margin-bottom: 24px; margin-top: 4px; }
+
+  .program-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .program-name { font-weight: 600; font-size: 15px; }
+  .program-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .program-actions { display: flex; gap: 8px; }
+
+  /* Mode panel */
+  .mode-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .mode-section-head { margin-bottom: 14px; }
+  .mode-section-title { font-size: 14px; font-weight: 600; }
+  .mode-section-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .mode-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .mode-pill {
+    padding: 6px 14px;
+    border: 1px solid var(--border); border-radius: 6px;
+    font-size: 13px; font-weight: 600;
+    background: var(--surface); color: var(--text);
+    cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .mode-pill.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .mode-pill.active .pill-recommend { background: rgba(255,255,255,0.2); color: #fff; }
+  .pill-recommend {
+    display: inline-flex; align-items: center;
+    font-size: 9px; font-weight: 700;
+    padding: 1px 6px; border-radius: 999px;
+    background: color-mix(in srgb, var(--success) 14%, transparent);
+    color: var(--success);
+    letter-spacing: 0.3px; text-transform: uppercase;
+  }
+
+  .mode-consequence {
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 12px;
+    line-height: 1.5;
+    display: flex; align-items: flex-start; gap: 8px;
+  }
+  .mode-consequence.ok    { background: color-mix(in srgb, var(--success) 6%, transparent); color: var(--text); border-left: 3px solid var(--success); }
+  .mode-consequence.warn  { background: color-mix(in srgb, var(--warning) 8%, transparent); color: var(--text); border-left: 3px solid var(--warning); }
+  .mode-consequence.info  { background: color-mix(in srgb, var(--info) 6%, transparent);    color: var(--text); border-left: 3px solid var(--info); }
+  .mode-consequence strong { color: var(--text); }
+  .mode-consequence .icon { flex-shrink: 0; }
+  .mode-consequence a { color: var(--primary); text-decoration: none; }
+
+  /* Tier table */
+  .tier-table {
+    width: 100%; border-collapse: collapse; font-size: 13px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .tier-table th { padding: 10px 14px; text-align: left; background: var(--surface-2); color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+  .tier-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .tier-table tbody tr:last-child td { border-bottom: none; }
+  .tier-pill {
+    display: inline-flex; align-items: center;
+    padding: 2px 10px; border-radius: 999px;
+    font-size: 11px; font-weight: 600;
+  }
+  .tier-pill-bronze { background: #f5e6d3; color: #8b5e3c; }
+  .tier-pill-silver { background: #e8e8e8; color: #555555; }
+  .tier-pill-gold { background: #fdf3d7; color: #92742e; }
+  .tier-pill-platinum { background: #e8eaf6; color: #3949ab; }
+  .tier-pill-diamond { background: #b9f2ff; color: #036c8d; }
+  .mult { font-weight: 700; font-family: 'SF Mono', monospace; color: var(--primary); }
+  .threshold { font-family: 'SF Mono', monospace; }
+
+  /* Per-tier-cap input */
+  .cap-input-row { display: flex; flex-direction: column; gap: 2px; }
+  .cap-input {
+    width: 100px;
+    padding: 6px 10px;
+    border: 1px solid var(--border); border-radius: 6px;
+    font-size: 13px; font-family: inherit;
+    background: var(--surface);
+  }
+  .cap-input.custom { border-color: var(--primary); font-weight: 600; }
+  .cap-input.default { color: var(--muted); font-style: italic; }
+  .cap-hint {
+    font-size: 10px; color: var(--muted); margin-top: 2px;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .cap-hint a { color: var(--primary); text-decoration: none; }
+  .cap-hint .badge {
+    font-size: 9px; font-weight: 700; padding: 1px 5px;
+    border-radius: 3px; text-transform: uppercase; letter-spacing: 0.3px;
+  }
+  .cap-hint .badge-custom { background: color-mix(in srgb, var(--primary) 14%, transparent); color: var(--primary); }
+  .cap-hint .badge-default { background: var(--surface-2); color: var(--muted); }
+
+  /* Buttons */
+  .btn { padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid transparent; font-family: inherit; }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-secondary { background: var(--surface); color: var(--text); border-color: var(--border); }
+  .btn-ghost { background: transparent; color: var(--primary); }
+  .btn-sm { padding: 4px 10px; font-size: 12px; }
+
+  /* Note */
+  .note { background: #eef2ff; border-left: 3px solid var(--primary); color: #4338ca; padding: 12px 16px; border-radius: 4px; font-size: 12px; margin: 16px auto 0; line-height: 1.5; max-width: 1280px; }
+  .note strong { color: #312e81; }
+
+  /* Reset-all bar */
+  .custom-helper-bar {
+    background: color-mix(in srgb, var(--primary) 4%, transparent);
+    border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
+    border-radius: 8px;
+    padding: 10px 14px; margin-top: 12px; font-size: 12px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    color: var(--text);
+  }
+  .custom-helper-bar strong { color: var(--text); }
+  .custom-helper-bar a { color: var(--primary); text-decoration: none; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="intro">
+  <h1>VIP Tiers — Three cap modes (with real "Custom per-tier")</h1>
+  <p>
+    Three distinct mathematical behaviors, three distinct UX states. The third one — <strong>Custom per-tier</strong> —
+    is a genuine new feature: an editable max-per-order input on each tier row, overriding the rule's cap. Below are the three
+    states of the page as the merchant flips between modes.
+  </p>
+  <div class="legend">
+    <strong>1</strong> Hard cap · default &nbsp;·&nbsp;
+    <strong>2</strong> Soft cap · opt-in legacy &nbsp;·&nbsp;
+    <strong>3</strong> Custom per-tier · power-user
+  </div>
+</div>
+
+<!-- ====================================================================== -->
+<!-- STATE 1 — Hard cap selected                                              -->
+<!-- ====================================================================== -->
+<div class="screen-label">
+  <span class="tag">1</span>Hard cap selected (default)
+  <span class="approach">— rule's max ₹450 is the absolute ceiling. Tier table stays clean — no per-tier inputs.</span>
+</div>
+<div class="frame">
+<div class="admin-shell">
+  <div class="sidebar">
+    <div class="logo">Batua</div>
+    <div>Wallet</div>
+    <div class="group">Loyalty ▾</div>
+    <div class="sub">Earn Rules</div>
+    <a href="#" class="sub active">VIP Tiers</a>
+    <div class="sub">Memberships</div>
+    <div class="sub">Campaigns</div>
+    <div>Transactions</div><div>Customers</div><div>Gift Cards</div><div>Settings</div>
+  </div>
+  <div class="content">
+    <div class="page-title">VIP Tiers</div>
+    <div class="page-subtitle">Reward your best customers with earn-rate multipliers as their spend grows.</div>
+
+    <div class="program-card">
+      <div>
+        <div class="program-name">Sherwani Rewards</div>
+        <div class="program-meta">Criterion: rolling spend · Window: 365 days</div>
+      </div>
+      <div class="program-actions">
+        <button class="btn btn-secondary btn-sm">Edit program</button>
+        <button class="btn btn-primary btn-sm">+ Add tier</button>
+      </div>
+    </div>
+
+    <div class="mode-section">
+      <div class="mode-section-head">
+        <div class="mode-section-title">Multiplier behavior</div>
+        <div class="mode-section-desc">How tier, campaign &amp; membership multipliers interact with rule caps.</div>
+      </div>
+      <div class="mode-pills">
+        <div class="mode-pill active">Hard cap <span class="pill-recommend">Recommended</span></div>
+        <div class="mode-pill">Soft cap</div>
+        <div class="mode-pill">Custom per-tier</div>
+      </div>
+      <div class="mode-consequence ok">
+        <span class="icon">✓</span>
+        <span>
+          Rule caps are absolute. A Diamond customer (5×) on a ₹20,000 order earns <strong>₹450</strong> — the rule's "max per order". Same ceiling for every tier.
+        </span>
+      </div>
+    </div>
+
+    <table class="tier-table">
+      <thead><tr><th>Tier</th><th>Rank</th><th>Threshold</th><th>Multiplier</th><th></th></tr></thead>
+      <tbody>
+        <tr><td><span class="tier-pill tier-pill-bronze">Bronze</span></td><td>1</td><td class="threshold">₹0+</td><td class="mult">1×</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+        <tr><td><span class="tier-pill tier-pill-silver">Silver</span></td><td>2</td><td class="threshold">₹5,000+</td><td class="mult">1.5×</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+        <tr><td><span class="tier-pill tier-pill-gold">Gold</span></td><td>3</td><td class="threshold">₹15,000+</td><td class="mult">2×</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+        <tr><td><span class="tier-pill tier-pill-platinum">Platinum</span></td><td>4</td><td class="threshold">₹50,000+</td><td class="mult">3×</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+        <tr><td><span class="tier-pill tier-pill-diamond">Diamond</span></td><td>5</td><td class="threshold">₹1,00,000+</td><td class="mult">5×</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</div>
+<div class="note">
+  <strong>Default state.</strong> The tier table doesn't gain or lose any columns. The mode setting is purely policy. Cap value lives on the earn rule. Consequence line gives a worked example so the merchant can verify the behavior matches their intent.
+</div>
+
+<!-- ====================================================================== -->
+<!-- STATE 2 — Soft cap selected                                              -->
+<!-- ====================================================================== -->
+<div class="screen-label">
+  <span class="tag">2</span>Soft cap selected (legacy behavior)
+  <span class="approach">— tier table unchanged; consequence line shows top tiers escape the cap, with a warning tone.</span>
+</div>
+<div class="frame">
+<div class="admin-shell">
+  <div class="sidebar">
+    <div class="logo">Batua</div>
+    <div>Wallet</div>
+    <div class="group">Loyalty ▾</div>
+    <div class="sub">Earn Rules</div>
+    <a href="#" class="sub active">VIP Tiers</a>
+    <div class="sub">Memberships</div>
+    <div class="sub">Campaigns</div>
+    <div>Transactions</div><div>Customers</div><div>Gift Cards</div><div>Settings</div>
+  </div>
+  <div class="content">
+    <div class="page-title">VIP Tiers</div>
+    <div class="page-subtitle">Reward your best customers with earn-rate multipliers as their spend grows.</div>
+
+    <div class="program-card">
+      <div>
+        <div class="program-name">Sherwani Rewards</div>
+        <div class="program-meta">Criterion: rolling spend · Window: 365 days</div>
+      </div>
+      <div class="program-actions">
+        <button class="btn btn-secondary btn-sm">Edit program</button>
+        <button class="btn btn-primary btn-sm">+ Add tier</button>
+      </div>
+    </div>
+
+    <div class="mode-section">
+      <div class="mode-section-head">
+        <div class="mode-section-title">Multiplier behavior</div>
+        <div class="mode-section-desc">How tier, campaign &amp; membership multipliers interact with rule caps.</div>
+      </div>
+      <div class="mode-pills">
+        <div class="mode-pill">Hard cap <span class="pill-recommend">Recommended</span></div>
+        <div class="mode-pill active">Soft cap</div>
+        <div class="mode-pill">Custom per-tier</div>
+      </div>
+      <div class="mode-consequence warn">
+        <span class="icon">⚠</span>
+        <span>
+          Cap limits the base reward, then the multiplier scales it up. A Diamond customer (5×) on a ₹20,000 order earns <strong>₹2,250</strong> — 5× the rule's ₹450 max. Higher tiers can earn well beyond your stated cap.
+        </span>
+      </div>
+    </div>
+
+    <table class="tier-table">
+      <thead><tr><th>Tier</th><th>Rank</th><th>Threshold</th><th>Multiplier</th><th></th></tr></thead>
+      <tbody>
+        <tr><td><span class="tier-pill tier-pill-bronze">Bronze</span></td><td>1</td><td class="threshold">₹0+</td><td class="mult">1×</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+        <tr><td><span class="tier-pill tier-pill-silver">Silver</span></td><td>2</td><td class="threshold">₹5,000+</td><td class="mult">1.5×</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+        <tr><td><span class="tier-pill tier-pill-gold">Gold</span></td><td>3</td><td class="threshold">₹15,000+</td><td class="mult">2×</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+        <tr><td><span class="tier-pill tier-pill-platinum">Platinum</span></td><td>4</td><td class="threshold">₹50,000+</td><td class="mult">3×</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+        <tr><td><span class="tier-pill tier-pill-diamond">Diamond</span></td><td>5</td><td class="threshold">₹1,00,000+</td><td class="mult">5×</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</div>
+<div class="note">
+  <strong>Same table, different tone.</strong> The consequence line is the only visible change vs Hard cap, but it's warning-coloured because this mode lets top tiers exceed the merchant's stated ceiling — exactly the behavior a CFO would want to flag.
+</div>
+
+<!-- ====================================================================== -->
+<!-- STATE 3 — Custom per-tier selected                                       -->
+<!-- ====================================================================== -->
+<div class="screen-label">
+  <span class="tag">3</span>Custom per-tier selected
+  <span class="approach">— tier table grows a "Max per order" column. Each tier's cap is editable, defaults to rule's cap, switches to bold+purple when customised. A "(custom)" or "(default)" badge under each input makes it obvious which tiers were tuned.</span>
+</div>
+<div class="frame">
+<div class="admin-shell">
+  <div class="sidebar">
+    <div class="logo">Batua</div>
+    <div>Wallet</div>
+    <div class="group">Loyalty ▾</div>
+    <div class="sub">Earn Rules</div>
+    <a href="#" class="sub active">VIP Tiers</a>
+    <div class="sub">Memberships</div>
+    <div class="sub">Campaigns</div>
+    <div>Transactions</div><div>Customers</div><div>Gift Cards</div><div>Settings</div>
+  </div>
+  <div class="content">
+    <div class="page-title">VIP Tiers</div>
+    <div class="page-subtitle">Reward your best customers with earn-rate multipliers as their spend grows.</div>
+
+    <div class="program-card">
+      <div>
+        <div class="program-name">Sherwani Rewards</div>
+        <div class="program-meta">Criterion: rolling spend · Window: 365 days</div>
+      </div>
+      <div class="program-actions">
+        <button class="btn btn-secondary btn-sm">Edit program</button>
+        <button class="btn btn-primary btn-sm">+ Add tier</button>
+      </div>
+    </div>
+
+    <div class="mode-section">
+      <div class="mode-section-head">
+        <div class="mode-section-title">Multiplier behavior</div>
+        <div class="mode-section-desc">How tier, campaign &amp; membership multipliers interact with rule caps.</div>
+      </div>
+      <div class="mode-pills">
+        <div class="mode-pill">Hard cap <span class="pill-recommend">Recommended</span></div>
+        <div class="mode-pill">Soft cap</div>
+        <div class="mode-pill active">Custom per-tier</div>
+      </div>
+      <div class="mode-consequence info">
+        <span class="icon">⚙</span>
+        <span>
+          Each tier sets its own per-order ceiling — overriding the rule's "max per order". Configure below. A Diamond customer (5×) on a ₹20,000 order earns <strong>₹1,500</strong> — Diamond's ceiling. Customers with no tier fall back to the rule's ₹450.
+        </span>
+      </div>
+
+      <div class="custom-helper-bar">
+        <div>
+          <strong>3 of 5 tiers customised.</strong> Defaults inherit from the earn rule's max (₹450). Bronze &amp; Silver still use the default.
+        </div>
+        <div style="display:flex; gap:12px;">
+          <a href="#">↻ Reset all to default</a>
+          <a href="#">Fill from formula (cap × multiplier)</a>
+        </div>
+      </div>
+    </div>
+
+    <table class="tier-table">
+      <thead>
+        <tr>
+          <th>Tier</th>
+          <th>Rank</th>
+          <th>Threshold</th>
+          <th>Multiplier</th>
+          <th style="background: color-mix(in srgb, var(--primary) 8%, transparent); color: var(--primary);">Max per order</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="tier-pill tier-pill-bronze">Bronze</span></td>
+          <td>1</td><td class="threshold">₹0+</td><td class="mult">1×</td>
+          <td>
+            <div class="cap-input-row">
+              <input class="cap-input default" value="450" />
+              <div class="cap-hint"><span class="badge badge-default">Default</span> from rule's max</div>
+            </div>
+          </td>
+          <td><button class="btn btn-ghost btn-sm">Edit</button></td>
+        </tr>
+        <tr>
+          <td><span class="tier-pill tier-pill-silver">Silver</span></td>
+          <td>2</td><td class="threshold">₹5,000+</td><td class="mult">1.5×</td>
+          <td>
+            <div class="cap-input-row">
+              <input class="cap-input default" value="450" />
+              <div class="cap-hint"><span class="badge badge-default">Default</span> from rule's max</div>
+            </div>
+          </td>
+          <td><button class="btn btn-ghost btn-sm">Edit</button></td>
+        </tr>
+        <tr>
+          <td><span class="tier-pill tier-pill-gold">Gold</span></td>
+          <td>3</td><td class="threshold">₹15,000+</td><td class="mult">2×</td>
+          <td>
+            <div class="cap-input-row">
+              <input class="cap-input custom" value="750" />
+              <div class="cap-hint"><span class="badge badge-custom">Custom</span> <a href="#">↻ reset</a></div>
+            </div>
+          </td>
+          <td><button class="btn btn-ghost btn-sm">Edit</button></td>
+        </tr>
+        <tr>
+          <td><span class="tier-pill tier-pill-platinum">Platinum</span></td>
+          <td>4</td><td class="threshold">₹50,000+</td><td class="mult">3×</td>
+          <td>
+            <div class="cap-input-row">
+              <input class="cap-input custom" value="1,000" />
+              <div class="cap-hint"><span class="badge badge-custom">Custom</span> <a href="#">↻ reset</a></div>
+            </div>
+          </td>
+          <td><button class="btn btn-ghost btn-sm">Edit</button></td>
+        </tr>
+        <tr>
+          <td><span class="tier-pill tier-pill-diamond">Diamond</span></td>
+          <td>5</td><td class="threshold">₹1,00,000+</td><td class="mult">5×</td>
+          <td>
+            <div class="cap-input-row">
+              <input class="cap-input custom" value="1,500" />
+              <div class="cap-hint"><span class="badge badge-custom">Custom</span> <a href="#">↻ reset</a></div>
+            </div>
+          </td>
+          <td><button class="btn btn-ghost btn-sm">Edit</button></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div style="display:flex; justify-content: flex-end; gap: 8px; margin-top: 16px;">
+      <button class="btn btn-secondary">Discard changes</button>
+      <button class="btn btn-primary">Save per-tier caps</button>
+    </div>
+  </div>
+</div>
+</div>
+<div class="note">
+  <strong>New input column.</strong> Each row gets an editable ₹ input. The styling distinguishes <em>customised</em> tiers (purple border, bold value, "Custom" badge, ↻ reset link) from <em>default</em> tiers (grey italic, "Default" badge, no reset). The helper bar tells the merchant at a glance how many tiers they've tuned, and gives two power moves: <em>Reset all</em> (back to rule's max) and <em>Fill from formula</em> (auto-populate as cap × multiplier — same numbers Soft cap would produce, but materialised so the merchant can then tune individual tiers).
+</div>
+
+<!-- ====================================================================== -->
+<!-- Behavior + edge cases                                                    -->
+<!-- ====================================================================== -->
+<div style="background:#1a1a2e;color:#fff;padding:32px;">
+  <h2 style="font-size:18px;margin-bottom:12px;">Behavior &amp; edge cases</h2>
+  <ul style="font-size:13px;line-height:1.8;color:rgba(255,255,255,0.8);padding-left:20px;max-width:1280px;margin:0 auto;">
+    <li><strong>Falling back when a tier has no custom cap:</strong> the cap input shows the rule's max in italic+grey (the "Default" state). At runtime, the customer earns under the rule's <code>max_amount</code>.</li>
+    <li><strong>Customer with no tier yet:</strong> uses the rule's <code>max_amount</code> (same as a Bronze with default cap).</li>
+    <li><strong>Switching back to Hard or Soft from Custom:</strong> the per-tier values are <em>preserved but not applied</em> — a small note appears under the inactive Custom pill: "your per-tier values are saved; re-enable to use them". This protects merchants from losing tuning they spent time on.</li>
+    <li><strong>"Fill from formula" power move:</strong> populates every tier as <code>rule_cap × tier_multiplier</code> (so Diamond = ₹450 × 5 = ₹2,250). Useful starting point for merchants who want generous-but-still-capped top tiers.</li>
+    <li><strong>Validation:</strong> per-tier cap must be ≥ 0. We allow 0 (effectively no reward for that tier) and warn if &lt; the multiplier × the rule's typical small-order earn. Empty = inherit rule default.</li>
+    <li><strong>Compatibility with Soft cap mode:</strong> Soft cap and Custom cap are mutually exclusive. Hard cap is the default that all merchants start at.</li>
+  </ul>
+</div>
+
+<div class="intro" style="padding:32px;">
+  <p style="font-size:13px;">
+    Three distinct modes, three real behaviors, one extra editable column when Custom is selected. Tell me to wire it into <code>/admin/loyalty</code> + the backend (new column on <code>loyalty_tiers</code>: <code>max_amount_override NUMERIC NULL</code>, + a <code>cap_mode TEXT</code> on <code>loyalty_programs</code>: <code>'hard' | 'soft' | 'custom'</code>) and I'll draft the Skulls plan.
+  </p>
+</div>
+
+</body>
+</html>

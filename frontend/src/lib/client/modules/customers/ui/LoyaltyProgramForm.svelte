@@ -21,9 +21,9 @@
   let isEditing = $derived(program !== null);
 
   const criteriaItems = [
-    { id: 'spend', label: 'Total Spend' },
-    { id: 'orders', label: 'Order Count' },
-    { id: 'points', label: 'Points Earned' }
+    { id: 'spend', label: 'Total spend' },
+    { id: 'orders', label: 'Order count' },
+    { id: 'points', label: 'Points earned' }
   ];
 
   function handleSubmit(event: SubmitEvent) {
@@ -44,7 +44,7 @@
 
   <Input
     value={name}
-    label="Tier Program Name"
+    label="Tier program name"
     placeholder="e.g. Rewards Club"
     onInput={(val) => {
       nameOverride = val;
@@ -52,7 +52,7 @@
   />
 
   <div class="form-field">
-    <span class="field-label">Evaluation Criteria</span>
+    <span class="field-label">Evaluation criteria</span>
     <Select
       items={criteriaItems}
       value={[evaluationCriteria]}
@@ -65,7 +65,7 @@
 
   <div class="form-actions">
     <Button
-      text={isEditing ? 'Update Program' : 'Create Program'}
+      text={isEditing ? 'Update program' : 'Create program'}
       classes="btn-primary"
       disabled={!isValid || submitting}
       type="submit"
@@ -79,9 +79,9 @@
     flex-direction: column;
     gap: var(--space-5);
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     padding: var(--space-6);
+    box-shadow: var(--shadow-card);
   }
 
   .form-title {

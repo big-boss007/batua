@@ -3,6 +3,7 @@
   import { page } from '$app/stores';
 
   import { Tabs, Button } from '@juspay/svelte-ui-components';
+  import Icon from '$lib/components/Icon.svelte';
 
   import type { PageData } from './$types';
 
@@ -23,8 +24,8 @@
     {
       id: 'wallet',
       name: 'Wallet',
-      icon: '💳',
-      accent: '#7c6aff',
+      icon: 'wallet',
+      accent: 'var(--purple-500)',
       tagline: 'Store credit & cashback that brings customers back.',
       lead: 'The Batua wallet holds every form of store value a customer earns — cashback, refunds, gift-card balance, referral rewards, and goodwill credit — in one balance they spend at Shopify checkout.',
       capabilities: [
@@ -43,8 +44,8 @@
     {
       id: 'loyalty',
       name: 'Loyalty',
-      icon: '⭐',
-      accent: '#f59e0b',
+      icon: 'star',
+      accent: 'var(--yellow-500)',
       tagline: 'Points and VIP tiers that reward your best customers.',
       lead: 'Set earning rules on the actions you care about and let customers climb VIP tiers that boost how fast they earn — keeping your most valuable buyers engaged.',
       capabilities: [
@@ -63,8 +64,8 @@
     {
       id: 'giftcards',
       name: 'Gift Cards',
-      icon: '🎁',
-      accent: '#ec4899',
+      icon: 'gift',
+      accent: 'var(--magenta-500)',
       tagline: 'Digital gift cards your customers can send and redeem.',
       lead: 'Issue branded digital gift cards, let recipients claim them straight into their wallet, and let anyone check a balance — a gifting channel Shopify’s native feature doesn’t cover.',
       capabilities: [
@@ -83,8 +84,8 @@
     {
       id: 'referrals',
       name: 'Referrals',
-      icon: '🔗',
-      accent: '#3b82f6',
+      icon: 'share',
+      accent: 'var(--p-600)',
       tagline: 'Two-sided referrals that turn customers into a growth channel.',
       lead: 'Give every customer a referral code and reward both sides when a friend buys. Word of mouth is the #1 discovery channel for Indian shoppers — Batua makes it systematic.',
       capabilities: [
@@ -103,8 +104,8 @@
     {
       id: 'campaigns',
       name: 'Campaigns',
-      icon: '📣',
-      accent: '#10b981',
+      icon: 'megaphone',
+      accent: 'var(--green-500)',
       tagline: 'Time-boxed boosts for the festive season and big moments.',
       lead: 'Layer multiplier campaigns on top of your earn rules to run 2x or 3x earning events during Diwali, sales, or product launches — without rewriting a single rule.',
       capabilities: [
@@ -123,8 +124,8 @@
     {
       id: 'memberships',
       name: 'Memberships',
-      icon: '👑',
-      accent: '#8b5cf6',
+      icon: 'crown',
+      accent: 'var(--purple-500)',
       tagline: 'Paid memberships with premium earning perks.',
       lead: 'Offer paid membership tiers — like Tata Neu or Flipkart Plus — that give members a higher earn rate and exclusive benefits, creating a recurring revenue stream and deeper loyalty.',
       capabilities: [
@@ -185,13 +186,13 @@
   <div class="tab-content">
     {#if activeTab === 'overview'}
       <section class="hero">
-        <span class="eyebrow">Breeze Retention Suite</span>
+        <span class="eyebrow">Breeze retention suite</span>
         <h2 class="hero-headline">Turn one-time buyers into customers who keep coming back.</h2>
         <p class="hero-text">
-          Batua is the all-in-one retention platform for Indian Shopify D2C brands. It brings
-          wallet &amp; store credit, loyalty, gift cards, referrals, campaigns, and memberships
-          into a single platform — built COD-first, WhatsApp-native, and festive-ready for the
-          Indian market. Use the tabs above to explore each part of the suite.
+          Batua is the all-in-one retention platform for Indian Shopify D2C brands. It brings wallet
+          &amp; store credit, loyalty, gift cards, referrals, campaigns, and memberships into a
+          single platform — built COD-first, WhatsApp-native, and festive-ready for the Indian
+          market. Use the tabs above to explore each part of the suite.
         </p>
         <div class="hero-actions">
           <Button
@@ -200,7 +201,7 @@
             onclick={() => openWebsite('/website/index.html')}
           />
           <Button
-            text="See Pricing"
+            text="See pricing"
             classes="btn-secondary"
             onclick={() => openWebsite('/website/pricing.html')}
           />
@@ -212,7 +213,9 @@
         <div class="feature-grid">
           {#each features as feature (feature.id)}
             <button class="feature-card" onclick={() => goToFeature(feature.id)}>
-              <span class="feature-icon" style={iconStyle(feature.accent)}>{feature.icon}</span>
+              <span class="feature-icon" style={iconStyle(feature.accent)}
+                ><Icon name={feature.icon} size={20} /></span
+              >
               <span class="feature-card-name">{feature.name}</span>
               <span class="feature-card-desc">{feature.tagline}</span>
             </button>
@@ -223,7 +226,7 @@
       <section class="feature-detail">
         <div class="feature-head">
           <span class="feature-icon lg" style={iconStyle(activeFeature.accent)}
-            >{activeFeature.icon}</span
+            ><Icon name={activeFeature.icon} size={26} /></span
           >
           <div>
             <h2 class="feature-title">{activeFeature.name}</h2>
@@ -240,7 +243,7 @@
           {/each}
         </div>
         <div class="callout">
-          <span class="callout-icon">💡</span>
+          <span class="callout-icon"><Icon name="lightbulb" size={18} /></span>
           <span><strong>{activeFeature.callout.label}</strong> {activeFeature.callout.text}</span>
         </div>
       </section>
@@ -449,7 +452,7 @@
     border-radius: var(--radius-full);
     background: color-mix(in srgb, var(--color-success) 14%, transparent);
     color: var(--color-success);
-    font-size: 11px;
+    font-size: var(--font-size-xs);
     flex-shrink: 0;
     margin-top: 1px;
   }
@@ -458,14 +461,14 @@
     display: flex;
     gap: var(--space-3);
     padding: var(--space-4);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
     border-left: 3px solid var(--color-primary);
     font-size: var(--font-size-sm);
     line-height: var(--line-height-base);
     color: var(--color-text-muted);
     max-width: 680px;
+    box-shadow: var(--shadow-card);
   }
 
   .callout strong {

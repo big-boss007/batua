@@ -17,7 +17,12 @@
   } from '$lib/client/modules/gift-cards/ui';
   import { currentMerchant, currentMerchantId } from '$lib/client/modules/admin';
   import { MetricCard } from '$lib/client/modules/admin/ui';
-  import { toastStore, formatCurrencyINR, formatDateTime, MODAL_CLOSE_ICON } from '$lib/client/modules/foundation';
+  import {
+    toastStore,
+    formatCurrencyINR,
+    formatDateTime,
+    MODAL_CLOSE_ICON
+  } from '$lib/client/modules/foundation';
 
   let cards = $state<Array<GiftCard>>([]);
   let selectedCard = $state<GiftCard | null>(null);
@@ -32,7 +37,7 @@
   });
 
   const tabIds = ['list', 'issue', 'bulk'] as const;
-  const tabItems = ['All Cards', 'Issue Card', 'Bulk Issue'];
+  const tabItems = ['All Cards', 'Issue card', 'Bulk issue'];
   let activeTabIndex = $state(0);
   let activeTab = $derived(tabIds[activeTabIndex]);
 
@@ -92,8 +97,8 @@
   let statCards = $derived(
     stats !== null
       ? [
-          { label: 'Total Issued', value: stats.total_issued.toLocaleString('en-IN') },
-          { label: 'Outstanding Value', value: formatCurrencyINR(stats.total_outstanding_value) },
+          { label: 'Total issued', value: stats.total_issued.toLocaleString('en-IN') },
+          { label: 'Outstanding value', value: formatCurrencyINR(stats.total_outstanding_value) },
           { label: 'Active', value: stats.total_active.toLocaleString('en-IN') },
           { label: 'Claimed', value: stats.total_claimed.toLocaleString('en-IN') },
           { label: 'Expired', value: stats.total_expired.toLocaleString('en-IN') }
@@ -173,7 +178,7 @@
 
 <div class="page">
   <header class="page-header">
-    <h1 class="page-title">Gift Cards</h1>
+    <h1 class="page-title">Gift cards</h1>
     <p class="page-subtitle">Issue and manage gift cards for your customers</p>
   </header>
 
@@ -233,14 +238,14 @@
     {#if selectedCard !== null}
       {@const card = selectedCard}
       <Modal
-        header={{ text: 'Gift Card Detail', rightImage: MODAL_CLOSE_ICON }}
+        header={{ text: 'Gift card detail', rightImage: MODAL_CLOSE_ICON }}
         size="fit-content"
         onclose={handleCloseDetail}
         onoverlayClick={handleCloseDetail}
         onheaderRightImageClick={handleCloseDetail}
       >
         {#snippet content()}
-          <GiftCardDetail card={card} />
+          <GiftCardDetail {card} />
         {/snippet}
       </Modal>
     {/if}
@@ -335,6 +340,4 @@
     --shimmer-height: 48px;
     --shimmer-border-radius: 4px;
   }
-
-
 </style>

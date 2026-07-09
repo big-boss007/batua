@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Per-tier cap — two mocks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #f0f1f5;
+    --surface: #ffffff;
+    --surface-2: #f0f1f3;
+    --text: #1a1a2e;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --primary: #7c6aff;
+    --primary-hover: #6b5ce7;
+    --success: #10b981;
+    --error: #ef4444;
+    --warning: #f59e0b;
+    --info: #3b82f6;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+
+  .intro { background: #1a1a2e; color: #fff; padding: 40px 32px; text-align: center; }
+  .intro h1 { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+  .intro p { color: rgba(255,255,255,0.7); max-width: 760px; margin: 0 auto; font-size: 14px; line-height: 1.6; }
+
+  .screen-label {
+    position: sticky; top: 0; z-index: 10;
+    background: #fef3c7; color: #78350f;
+    border-top: 1px solid #f59e0b; border-bottom: 1px solid #f59e0b;
+    padding: 12px 32px; font-size: 12px; font-weight: 600; letter-spacing: 0.4px;
+  }
+  .screen-label .tag { background: #f59e0b; color: #fff; padding: 2px 8px; border-radius: 4px; margin-right: 10px; font-weight: 700; }
+  .screen-label .approach { font-weight: 400; color: #78350f; opacity: 0.85; }
+
+  .frame { padding: 32px; }
+  .container {
+    max-width: 900px; margin: 0 auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+  }
+
+  .ctx-bar {
+    background: color-mix(in srgb, var(--info) 6%, transparent);
+    border: 1px solid color-mix(in srgb, var(--info) 20%, transparent);
+    border-radius: 6px;
+    padding: 10px 14px; font-size: 12px; color: var(--muted);
+    margin-bottom: 20px;
+    display: flex; justify-content: space-between;
+  }
+  .ctx-bar strong { color: var(--text); }
+
+  .mode-section-title { font-size: 14px; font-weight: 600; }
+  .mode-section-desc { font-size: 12px; color: var(--muted); margin-top: 2px; margin-bottom: 14px; }
+  .mode-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .mode-pill {
+    padding: 6px 14px;
+    border: 1px solid var(--border); border-radius: 6px;
+    font-size: 13px; font-weight: 600;
+    background: var(--surface); color: var(--text);
+    cursor: pointer;
+  }
+  .mode-pill.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+  .mode-consequence {
+    border-radius: 6px;
+    padding: 10px 14px; margin-bottom: 16px;
+    font-size: 12px; line-height: 1.5;
+    display: flex; align-items: flex-start; gap: 8px;
+  }
+  .mode-consequence.info  { background: color-mix(in srgb, var(--info) 6%, transparent);  border-left: 3px solid var(--info); }
+  .mode-consequence.warn  { background: color-mix(in srgb, var(--warning) 8%, transparent); border-left: 3px solid var(--warning); }
+  .mode-consequence strong { color: var(--text); }
+  .mode-consequence a { color: var(--primary); text-decoration: none; }
+
+  /* Tier pills */
+  .tier-pill { display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .tier-bronze { background: #f5e6d3; color: #8b5e3c; }
+  .tier-silver { background: #e8e8e8; color: #555555; }
+  .tier-gold { background: #fdf3d7; color: #92742e; }
+  .tier-platinum { background: #e8eaf6; color: #3949ab; }
+  .tier-diamond { background: #b9f2ff; color: #036c8d; }
+  .mult { font-weight: 700; font-family: 'SF Mono', monospace; color: var(--primary); }
+
+  /* Buttons */
+  .btn { padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid transparent; font-family: inherit; }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-secondary { background: var(--surface); color: var(--text); border-color: var(--border); }
+  .btn-ghost { background: transparent; color: var(--primary); }
+  .btn-sm { padding: 4px 10px; font-size: 12px; }
+
+  /* Tier table */
+  .tier-table {
+    width: 100%; border-collapse: collapse; font-size: 13px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .tier-table th { padding: 10px 14px; text-align: left; background: var(--surface-2); color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+  .tier-table th.cap-col { background: color-mix(in srgb, var(--primary) 8%, transparent); color: var(--primary); }
+  .tier-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .tier-table tr:last-child td { border-bottom: none; }
+
+  /* ============ MOCK A: plain editable boxes ============ */
+  .a-input {
+    width: 110px; padding: 7px 10px;
+    border: 1px solid var(--border); border-radius: 6px;
+    font-size: 13px; font-family: inherit;
+    background: var(--surface);
+  }
+  .a-input::placeholder { color: var(--muted); font-style: italic; }
+  .a-input.custom { border-color: var(--primary); font-weight: 600; color: var(--primary); }
+  .a-hint { font-size: 10px; color: var(--muted); margin-top: 4px; display: flex; align-items: center; gap: 6px; }
+  .a-hint a { color: var(--primary); text-decoration: none; }
+  .a-hint .badge { font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.3px; }
+  .a-hint .badge-custom { background: color-mix(in srgb, var(--primary) 14%, transparent); color: var(--primary); }
+  .a-hint .badge-default { background: var(--surface-2); color: var(--muted); }
+
+  /* ============ MOCK B: read-only computed caps ============ */
+  .b-cap-display {
+    display: inline-flex; flex-direction: column; align-items: flex-start; gap: 2px;
+  }
+  .b-cap-value {
+    font-family: 'SF Mono', monospace;
+    font-size: 14px; font-weight: 700;
+    color: var(--text);
+    padding: 6px 10px;
+    background: var(--surface-2);
+    border: 1px dashed var(--border);
+    border-radius: 6px;
+    min-width: 110px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .b-cap-value .lock { color: var(--muted); font-size: 11px; }
+  .b-formula { font-size: 10px; color: var(--muted); font-family: 'SF Mono', monospace; margin-top: 4px; }
+  .b-formula .accent { color: var(--primary); font-weight: 600; }
+
+  /* Save bar */
+  .save-bar {
+    display: flex; justify-content: flex-end; gap: 8px;
+    margin-top: 16px; padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Note */
+  .note { background: #eef2ff; border-left: 3px solid var(--primary); color: #4338ca; padding: 12px 16px; border-radius: 4px; font-size: 12px; margin: 16px auto 0; line-height: 1.5; max-width: 900px; }
+  .note strong { color: #312e81; }
+</style>
+</head>
+<body>
+
+<div class="intro">
+  <h1>Per-tier cap — two mocks</h1>
+  <p>
+    Same base layout (the Custom-per-tier table). Mock A asks the merchant to type each tier's cap; Mock B
+    derives it automatically from the tier's multiplier — the merchant doesn't type anything.
+  </p>
+</div>
+
+<!-- ====================================================================== -->
+<!-- MOCK A — Plain empty boxes                                              -->
+<!-- ====================================================================== -->
+<div class="screen-label">
+  <span class="tag">A</span>Plain empty boxes
+  <span class="approach">— inputs start empty. Empty = no override (each rule's own cap applies). Filled = that tier's hard ceiling.</span>
+</div>
+<div class="frame">
+<div class="container">
+  <div class="ctx-bar">
+    <span><strong>Sherwani Rewards</strong> · 5 tiers · 2 active rules</span>
+    <span>Mode: <strong>Custom per-tier</strong></span>
+  </div>
+
+  <div class="mode-section-title">Multiplier behavior</div>
+  <div class="mode-section-desc">How tier, campaign &amp; membership multipliers interact with rule caps.</div>
+  <div class="mode-pills">
+    <div class="mode-pill">Hard cap</div>
+    <div class="mode-pill">Soft cap</div>
+    <div class="mode-pill active">Custom per-tier</div>
+  </div>
+
+  <div class="mode-consequence info">
+    <span>⚙</span>
+    <span>
+      Each tier sets its own per-order ceiling that <strong>overrides whichever rule's cap fires</strong>. Leave empty for a tier to use each rule's own cap unchanged.
+      A Gold customer (2×) earns at most <strong>₹750</strong> on any single transaction.
+    </span>
+  </div>
+
+  <table class="tier-table">
+    <thead>
+      <tr>
+        <th>Tier</th><th>Threshold</th><th>Multiplier</th>
+        <th class="cap-col">Max per order</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="tier-pill tier-bronze">Bronze</span></td>
+        <td>₹0+</td><td class="mult">1×</td>
+        <td>
+          <input class="a-input" placeholder="No override" />
+          <div class="a-hint">rule's max applies as a hard cap</div>
+        </td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td>
+      </tr>
+      <tr>
+        <td><span class="tier-pill tier-silver">Silver</span></td>
+        <td>₹5,000+</td><td class="mult">1.5×</td>
+        <td>
+          <input class="a-input" placeholder="No override" />
+          <div class="a-hint">rule's max applies as a hard cap</div>
+        </td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td>
+      </tr>
+      <tr>
+        <td><span class="tier-pill tier-gold">Gold</span></td>
+        <td>₹15,000+</td><td class="mult">2×</td>
+        <td>
+          <input class="a-input custom" value="750" />
+          <div class="a-hint"><span class="badge badge-custom">Custom</span> caps Gold customers at ₹750 · <a href="#">↻ clear</a></div>
+        </td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td>
+      </tr>
+      <tr>
+        <td><span class="tier-pill tier-platinum">Platinum</span></td>
+        <td>₹50,000+</td><td class="mult">3×</td>
+        <td>
+          <input class="a-input" placeholder="No override" />
+          <div class="a-hint">rule's max applies as a hard cap</div>
+        </td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td>
+      </tr>
+      <tr>
+        <td><span class="tier-pill tier-diamond">Diamond</span></td>
+        <td>₹1,00,000+</td><td class="mult">5×</td>
+        <td>
+          <input class="a-input custom" value="1,500" />
+          <div class="a-hint"><span class="badge badge-custom">Custom</span> caps Diamond customers at ₹1,500 · <a href="#">↻ clear</a></div>
+        </td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="save-bar">
+    <button class="btn btn-secondary">Discard changes</button>
+    <button class="btn btn-primary">Save per-tier caps</button>
+  </div>
+</div>
+</div>
+<div class="note">
+  <strong>What the merchant does:</strong> types a ₹ value only on tiers they want to bound. Empty = that tier follows whichever rule's own cap fired (rule-by-rule). The hint text now correctly says "rules' own caps apply" instead of pretending there's a single rule cap. Honest about <em>"this is a per-tier ceiling, not derived from any one rule"</em>.
+</div>
+
+<!-- ====================================================================== -->
+<!-- MOCK B — Auto-computed from multiplier                                  -->
+<!-- ====================================================================== -->
+<div class="screen-label">
+  <span class="tag">B</span>Computed from tier multiplier
+  <span class="approach">— merchant doesn't type anything. The per-order cap is derived: each rule's cap × the tier's multiplier. Read-only; updates if either changes.</span>
+</div>
+<div class="frame">
+<div class="container">
+  <div class="ctx-bar">
+    <span><strong>Sherwani Rewards</strong> · 5 tiers · 2 active rules</span>
+    <span>Mode: <strong>Soft cap (auto-scales with multiplier)</strong></span>
+  </div>
+
+  <div class="mode-section-title">Multiplier behavior</div>
+  <div class="mode-section-desc">How tier, campaign &amp; membership multipliers interact with rule caps.</div>
+  <div class="mode-pills">
+    <div class="mode-pill">Hard cap</div>
+    <div class="mode-pill active">Soft cap</div>
+    <div class="mode-pill">Custom per-tier</div>
+  </div>
+
+  <div class="mode-consequence warn">
+    <span>📐</span>
+    <span>
+      Each rule's cap <strong>multiplies at every tier</strong>. The per-order ceiling for any tier is automatically computed as
+      <code style="background:#fff7e6; padding: 1px 6px; border-radius: 3px;">rule_cap × tier_multiplier</code>. Adjust per rule or per tier and the values below update automatically. To set independent ceilings, switch to <a href="#">Custom per-tier</a>.
+    </span>
+  </div>
+
+  <table class="tier-table">
+    <thead>
+      <tr>
+        <th>Tier</th><th>Threshold</th><th>Multiplier</th>
+        <th class="cap-col">Effective max per order</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="tier-pill tier-bronze">Bronze</span></td>
+        <td>₹0+</td><td class="mult">1×</td>
+        <td>
+          <div class="b-cap-display">
+            <div class="b-cap-value"><span class="lock">🔒</span> ₹450</div>
+            <div class="b-formula">Order Reward 50: <span class="accent">₹450 × 1×</span></div>
+          </div>
+        </td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td>
+      </tr>
+      <tr>
+        <td><span class="tier-pill tier-silver">Silver</span></td>
+        <td>₹5,000+</td><td class="mult">1.5×</td>
+        <td>
+          <div class="b-cap-display">
+            <div class="b-cap-value"><span class="lock">🔒</span> ₹675</div>
+            <div class="b-formula">Order Reward 50: <span class="accent">₹450 × 1.5×</span></div>
+          </div>
+        </td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td>
+      </tr>
+      <tr>
+        <td><span class="tier-pill tier-gold">Gold</span></td>
+        <td>₹15,000+</td><td class="mult">2×</td>
+        <td>
+          <div class="b-cap-display">
+            <div class="b-cap-value"><span class="lock">🔒</span> ₹900</div>
+            <div class="b-formula">Order Reward 50: <span class="accent">₹450 × 2×</span></div>
+          </div>
+        </td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td>
+      </tr>
+      <tr>
+        <td><span class="tier-pill tier-platinum">Platinum</span></td>
+        <td>₹50,000+</td><td class="mult">3×</td>
+        <td>
+          <div class="b-cap-display">
+            <div class="b-cap-value"><span class="lock">🔒</span> ₹1,350</div>
+            <div class="b-formula">Order Reward 50: <span class="accent">₹450 × 3×</span></div>
+          </div>
+        </td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td>
+      </tr>
+      <tr>
+        <td><span class="tier-pill tier-diamond">Diamond</span></td>
+        <td>₹1,00,000+</td><td class="mult">5×</td>
+        <td>
+          <div class="b-cap-display">
+            <div class="b-cap-value"><span class="lock">🔒</span> ₹2,250</div>
+            <div class="b-formula">Order Reward 50: <span class="accent">₹450 × 5×</span></div>
+          </div>
+        </td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top: 16px; padding: 12px 14px; background: var(--surface-2); border-radius: 6px; font-size: 12px; color: var(--muted); display: flex; gap: 8px; align-items: flex-start;">
+    <span>ℹ</span>
+    <span>
+      These caps come from <strong>Order Reward 50 (₹450 max)</strong>. Other rules with caps would each scale the same way per tier — see <a href="#" style="color: var(--primary); text-decoration: none;">Rules &amp; caps →</a> for the full matrix. The "Review Bonus 50" rule has no cap, so this column doesn't apply to it.
+    </span>
+  </div>
+</div>
+</div>
+<div class="note">
+  <strong>What the merchant does:</strong> nothing. The cap value is read-only — derived from the rule's cap (set on the Earn Rule page) × the tier's multiplier (set in the rows above). No input boxes, no save-per-tier-caps button. To change a value, the merchant either edits the rule's cap or the tier's multiplier; this view re-renders. Best for merchants who want consistent, formula-driven ceilings.
+</div>
+
+<div class="intro" style="padding:32px;">
+  <p style="font-size:13px;">
+    <strong>A vs. B in one line:</strong> A lets the merchant type a hard ceiling per tier (overriding rule caps). B locks the ceiling to "rule cap × multiplier" and just shows the consequence. They map to <em>Custom per-tier</em> and <em>Soft cap</em> modes respectively — both honest about which rule a cap originates from.
+  </p>
+</div>
+
+</body>
+</html>

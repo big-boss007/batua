@@ -13,7 +13,7 @@
   const navItems: NavItem[] = [
     { label: 'Dashboard', href: '/platform', icon: '\u25A6' },
     { label: 'Merchants', href: '/platform/merchants', icon: '\u2616' },
-    { label: 'Geo Policies', href: '/platform/geo-policies', icon: '\u2637' },
+    { label: 'Geo policies', href: '/platform/geo-policies', icon: '\u2637' },
     { label: 'Defaults', href: '/platform/defaults', icon: '\u2699' },
     { label: 'System', href: '/platform/system', icon: '\u2638' }
   ];

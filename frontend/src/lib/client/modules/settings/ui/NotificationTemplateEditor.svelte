@@ -78,7 +78,7 @@
   <form class="editor-body" onsubmit={handleSubmit}>
     <Input
       value={bodyTemplate}
-      label="Template Body"
+      label="Template body"
       useTextArea
       onInput={(val) => {
         bodyTemplate = val;
@@ -110,16 +110,16 @@
       </div>
     </div>
 
-    <Button text="Save Template" classes="btn-primary" type="submit" />
+    <Button text="Save template" classes="btn-primary" type="submit" />
   </form>
 </div>
 
 <style>
   .template-editor {
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     overflow: hidden;
+    box-shadow: var(--shadow-card);
   }
 
   .editor-header {
@@ -211,5 +211,4 @@
     --input-font-family: var(--font-mono);
     --input-font-size: var(--font-size-sm);
   }
-
 </style>

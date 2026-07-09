@@ -1,6 +1,7 @@
 <script lang="ts">
   import { SvelteSet } from 'svelte/reactivity';
   import { Modal, Button, Avatar, Toggle } from '@juspay/svelte-ui-components';
+  import Icon from '$lib/components/Icon.svelte';
   import {
     MODAL_CLOSE_ICON,
     formatCurrencyINR,
@@ -66,7 +67,9 @@
   // svelte-ignore state_referenced_locally
   let selectedBucket: string = $state(
     initialAction === 'add'
-      ? (initialUnit === 'cash' ? ADD_CASH_BUCKETS[0] : ADD_POINTS_BUCKETS[0])
+      ? initialUnit === 'cash'
+        ? ADD_CASH_BUCKETS[0]
+        : ADD_POINTS_BUCKETS[0]
       : ''
   );
   let selectedExpireBuckets = $state(new SvelteSet<string>());
@@ -84,9 +87,7 @@
   let wallet = $derived(detail.wallet);
 
   let currentBalance = $derived(
-    wallet !== null
-      ? (unit === 'cash' ? wallet.cash_balance : wallet.points_balance)
-      : 0
+    wallet !== null ? (unit === 'cash' ? wallet.cash_balance : wallet.points_balance) : 0
   );
 
   let availableBuckets = $derived.by((): Array<BucketBalance> => {
@@ -125,10 +126,10 @@
 
   let isFormValid = $derived(
     isAmountValid &&
-    reasonCategory.length > 0 &&
-    reasonText.length > 0 &&
-    (action !== 'expire' || selectedExpireBuckets.size > 0) &&
-    (action === 'expire' || selectedBucket.length > 0)
+      reasonCategory.length > 0 &&
+      reasonText.length > 0 &&
+      (action !== 'expire' || selectedExpireBuckets.size > 0) &&
+      (action === 'expire' || selectedBucket.length > 0)
   );
 
   let previewNewBalance = $derived.by(() => {
@@ -143,9 +144,7 @@
     return confirmInput.toUpperCase() === 'EXPIRE';
   });
 
-  let actionColor = $derived(
-    action === 'add' ? 'green' : action === 'remove' ? 'red' : 'amber'
-  );
+  let actionColor = $derived(action === 'add' ? 'green' : action === 'remove' ? 'red' : 'amber');
 
   let actionBtnClass = $derived(
     action === 'add' ? 'btn-success' : action === 'remove' ? 'btn-danger' : 'btn-warning'
@@ -191,9 +190,8 @@
   function switchAction(newAction: WalletActionType) {
     action = newAction;
     step = 'form';
-    selectedBucket = newAction === 'add'
-      ? (unit === 'cash' ? ADD_CASH_BUCKETS[0] : ADD_POINTS_BUCKETS[0])
-      : '';
+    selectedBucket =
+      newAction === 'add' ? (unit === 'cash' ? ADD_CASH_BUCKETS[0] : ADD_POINTS_BUCKETS[0]) : '';
     selectedExpireBuckets = new SvelteSet();
     amountStr = '';
     expiryDaysStr = '';
@@ -287,13 +285,18 @@
 
   function initials(name: string | null): string {
     if (name === null || name.length === 0) return 'U';
-    return name.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2);
+    return name
+      .split(' ')
+      .map((w) => w[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
   }
 </script>
 
 <Modal
   size="fit-content"
-  header={{ text: 'Wallet Action', rightImage: MODAL_CLOSE_ICON }}
+  header={{ text: 'Wallet action', rightImage: MODAL_CLOSE_ICON }}
   onclose={onClose}
   onoverlayClick={onClose}
   onheaderRightImageClick={onClose}
@@ -307,18 +310,18 @@
           <button
             class="wa-tab"
             class:wa-tab-add={action === 'add'}
-            onclick={() => switchAction('add')}
-          >Add</button>
+            onclick={() => switchAction('add')}>Add</button
+          >
           <button
             class="wa-tab"
             class:wa-tab-remove={action === 'remove'}
-            onclick={() => switchAction('remove')}
-          >Remove</button>
+            onclick={() => switchAction('remove')}>Remove</button
+          >
           <button
             class="wa-tab"
             class:wa-tab-expire={action === 'expire'}
-            onclick={() => switchAction('expire')}
-          >Expire</button>
+            onclick={() => switchAction('expire')}>Expire</button
+          >
         </div>
 
         <!-- Error Banner -->
@@ -337,7 +340,11 @@
             <div class="wa-customer-phone">{customer.phone}</div>
           </div>
           <div class="wa-customer-balance">
-            <div class="wa-balance-val" class:points={unit === 'points'} class:cash={unit === 'cash'}>
+            <div
+              class="wa-balance-val"
+              class:points={unit === 'points'}
+              class:cash={unit === 'cash'}
+            >
               {formatBalance(currentBalance)}
             </div>
             <div class="wa-balance-label">current {unit} balance</div>
@@ -348,14 +355,21 @@
         {#if action === 'expire'}
           <div class="wa-warning-banner">
             <span>&#9888;&#65039;</span>
-            <div><strong>Irreversible action.</strong> All balance in selected bucket(s) will be permanently expired.</div>
+            <div>
+              <strong>Irreversible action.</strong> All balance in selected bucket(s) will be permanently
+              expired.
+            </div>
           </div>
         {/if}
 
         <!-- Bucket Selector -->
         <div class="wa-field">
           <span class="wa-label">
-            {action === 'expire' ? 'Select bucket(s) to expire' : (action === 'remove' ? 'Remove from bucket' : 'Bucket')}
+            {action === 'expire'
+              ? 'Select bucket(s) to expire'
+              : action === 'remove'
+                ? 'Remove from bucket'
+                : 'Bucket'}
             <span class="wa-req">*</span>
           </span>
 
@@ -367,7 +381,10 @@
                   class:selected={selectedExpireBuckets.has(bucket.bucket_type)}
                   onclick={() => toggleExpireBucket(bucket.bucket_type)}
                 >
-                  <span class="wa-check" class:checked={selectedExpireBuckets.has(bucket.bucket_type)}>
+                  <span
+                    class="wa-check"
+                    class:checked={selectedExpireBuckets.has(bucket.bucket_type)}
+                  >
                     {#if selectedExpireBuckets.has(bucket.bucket_type)}&#10003;{/if}
                   </span>
                   <span class="wa-bucket-name">{bucketLabel(bucket.bucket_type)}</span>
@@ -384,9 +401,12 @@
                 <button
                   class="wa-radio-card"
                   class:selected={selectedBucket === bucket.bucket_type}
-                  onclick={() => { selectedBucket = bucket.bucket_type; }}
+                  onclick={() => {
+                    selectedBucket = bucket.bucket_type;
+                  }}
                 >
-                  <span class="wa-radio" class:checked={selectedBucket === bucket.bucket_type}></span>
+                  <span class="wa-radio" class:checked={selectedBucket === bucket.bucket_type}
+                  ></span>
                   <span class="wa-bucket-name">{bucketLabel(bucket.bucket_type)}</span>
                   {#if action === 'remove'}
                     <span class="wa-bucket-bal">{formatBalance(bucket.spendable)}</span>
@@ -431,13 +451,24 @@
                 <div class="wa-hint">Worth {formatCurrencyINR(parsedAmount * pointsRate)}</div>
               {/if}
               {#if action === 'remove' && parsedAmount > selectedBucketBalance && selectedBucketBalance > 0}
-                <div class="wa-field-error">Exceeds {bucketLabel(selectedBucket)} balance ({formatBalance(selectedBucketBalance)})</div>
+                <div class="wa-field-error">
+                  Exceeds {bucketLabel(selectedBucket)} balance ({formatBalance(
+                    selectedBucketBalance
+                  )})
+                </div>
               {/if}
             </div>
             {#if action === 'add'}
               <div class="wa-field">
                 <label class="wa-label" for="wa-expiry-days">Expiry (days)</label>
-                <input id="wa-expiry-days" class="wa-input" type="number" min="1" placeholder="Policy default" bind:value={expiryDaysStr} />
+                <input
+                  id="wa-expiry-days"
+                  class="wa-input"
+                  type="number"
+                  min="1"
+                  placeholder="Policy default"
+                  bind:value={expiryDaysStr}
+                />
                 <div class="wa-hint">Leave blank for wallet policy default</div>
               </div>
             {/if}
@@ -455,17 +486,25 @@
                 class:pill-green={action === 'add' && reasonCategory === pill}
                 class:pill-red={action === 'remove' && reasonCategory === pill}
                 class:pill-amber={action === 'expire' && reasonCategory === pill}
-                onclick={() => { reasonCategory = reasonCategory === pill ? '' : pill; }}
-              >{pill}</button>
+                onclick={() => {
+                  reasonCategory = reasonCategory === pill ? '' : pill;
+                }}>{pill}</button
+              >
             {/each}
           </div>
-          <textarea class="wa-textarea" placeholder="Describe the reason..." bind:value={reasonText}></textarea>
+          <textarea class="wa-textarea" placeholder="Describe the reason..." bind:value={reasonText}
+          ></textarea>
         </div>
 
         <!-- Reference -->
         <div class="wa-field">
-          <label class="wa-label" for="wa-internal-ref">Internal Reference</label>
-          <input id="wa-internal-ref" class="wa-input" placeholder="e.g. Shopify #1234, support ticket #567" bind:value={reference} />
+          <label class="wa-label" for="wa-internal-ref">Internal reference</label>
+          <input
+            id="wa-internal-ref"
+            class="wa-input"
+            placeholder="e.g. Shopify #1234, support ticket #567"
+            bind:value={reference}
+          />
         </div>
 
         <!-- Notify (add only) -->
@@ -475,61 +514,131 @@
               <div class="wa-notify-text">Notify customer</div>
               <div class="wa-hint">Send email notification</div>
             </div>
-            <Toggle checked={notifyCustomer} text="" onclick={(val) => { notifyCustomer = val; }} />
+            <Toggle
+              checked={notifyCustomer}
+              text=""
+              onclick={(val) => {
+                notifyCustomer = val;
+              }}
+            />
           </div>
         {/if}
 
         <!-- Preview -->
         {#if (action !== 'expire' && parsedAmount > 0 && selectedBucket) || (action === 'expire' && selectedExpireBuckets.size > 0)}
-          <div class="wa-preview" class:preview-green={action === 'add'} class:preview-red={action === 'remove'} class:preview-amber={action === 'expire'}>
-            <div class="wa-preview-title">{action === 'add' ? 'Add' : action === 'remove' ? 'Remove' : 'Expire'} Summary</div>
+          <div
+            class="wa-preview"
+            class:preview-green={action === 'add'}
+            class:preview-red={action === 'remove'}
+            class:preview-amber={action === 'expire'}
+          >
+            <div class="wa-preview-title">
+              {action === 'add' ? 'Add' : action === 'remove' ? 'Remove' : 'Expire'} Summary
+            </div>
             {#if action === 'expire'}
-              {#each availableBuckets.filter((b) => selectedExpireBuckets.has(b.bucket_type)) as bucket (bucket.bucket_type)}
-                <div class="wa-preview-row"><span>{bucketLabel(bucket.bucket_type)}</span><span class="wa-preview-val">{formatBalance(bucket.spendable)}</span></div>
+              {#each availableBuckets.filter( (b) => selectedExpireBuckets.has(b.bucket_type) ) as bucket (bucket.bucket_type)}
+                <div class="wa-preview-row">
+                  <span>{bucketLabel(bucket.bucket_type)}</span><span class="wa-preview-val"
+                    >{formatBalance(bucket.spendable)}</span
+                  >
+                </div>
               {/each}
             {:else}
-              <div class="wa-preview-row"><span>Amount</span><span class="wa-preview-val">{action === 'remove' ? '-' : '+'}{formatBalance(parsedAmount)}</span></div>
-              <div class="wa-preview-row"><span>Bucket</span><span class="wa-preview-val">{bucketLabel(selectedBucket)}</span></div>
+              <div class="wa-preview-row">
+                <span>Amount</span><span class="wa-preview-val"
+                  >{action === 'remove' ? '-' : '+'}{formatBalance(parsedAmount)}</span
+                >
+              </div>
+              <div class="wa-preview-row">
+                <span>Bucket</span><span class="wa-preview-val">{bucketLabel(selectedBucket)}</span>
+              </div>
             {/if}
             <div class="wa-preview-divider"></div>
-            <div class="wa-preview-row wa-preview-total"><span>New {unit} balance</span><span class="wa-preview-val">{formatBalance(Math.max(0, previewNewBalance))}</span></div>
+            <div class="wa-preview-row wa-preview-total">
+              <span>New {unit} balance</span><span class="wa-preview-val"
+                >{formatBalance(Math.max(0, previewNewBalance))}</span
+              >
+            </div>
           </div>
         {/if}
-
       {:else if step === 'confirm' || step === 'loading'}
         <!-- Confirmation -->
         <div class="wa-confirm">
-          <div class="wa-confirm-icon">{action === 'add' ? '💳' : action === 'remove' ? '⚠️' : '⏳'}</div>
-          <div class="wa-confirm-title" class:text-green={action === 'add'} class:text-red={action === 'remove'} class:text-amber={action === 'expire'}>
-            {#if action === 'add'}Add {formatBalance(parsedAmount)} to {bucketLabel(selectedBucket)}?
-            {:else if action === 'remove'}Remove {formatBalance(parsedAmount)} from {bucketLabel(selectedBucket)}?
+          <div class="wa-confirm-icon">
+            <Icon
+              name={action === 'add' ? 'wallet' : action === 'remove' ? 'alert' : 'clock'}
+              size={20}
+            />
+          </div>
+          <div
+            class="wa-confirm-title"
+            class:text-green={action === 'add'}
+            class:text-red={action === 'remove'}
+            class:text-amber={action === 'expire'}
+          >
+            {#if action === 'add'}Add {formatBalance(parsedAmount)} to {bucketLabel(
+                selectedBucket
+              )}?
+            {:else if action === 'remove'}Remove {formatBalance(parsedAmount)} from {bucketLabel(
+                selectedBucket
+              )}?
             {:else}Expire {formatBalance(expireTotalAmount)}?
             {/if}
           </div>
           <div class="wa-confirm-subtitle">
             {#if action === 'add'}This will immediately add funds to the customer's wallet.
-            {:else if action === 'remove'}This will remove funds. You would need to add again to reverse it.
+            {:else if action === 'remove'}This will remove funds. You would need to add again to
+              reverse it.
             {:else}This action is irreversible. The balance cannot be restored.
             {/if}
           </div>
 
           <div class="wa-confirm-summary">
-            <div class="wa-confirm-row"><span class="lbl">Customer</span><span class="val">{customer.name ?? customer.phone}</span></div>
+            <div class="wa-confirm-row">
+              <span class="lbl">Customer</span><span class="val"
+                >{customer.name ?? customer.phone}</span
+              >
+            </div>
             {#if action === 'expire'}
-              <div class="wa-confirm-row"><span class="lbl">Buckets</span><span class="val">{[...selectedExpireBuckets].map(bucketLabel).join(', ')}</span></div>
-              <div class="wa-confirm-row"><span class="lbl">Amount</span><span class="val">{formatBalance(expireTotalAmount)}</span></div>
+              <div class="wa-confirm-row">
+                <span class="lbl">Buckets</span><span class="val"
+                  >{[...selectedExpireBuckets].map(bucketLabel).join(', ')}</span
+                >
+              </div>
+              <div class="wa-confirm-row">
+                <span class="lbl">Amount</span><span class="val"
+                  >{formatBalance(expireTotalAmount)}</span
+                >
+              </div>
             {:else}
-              <div class="wa-confirm-row"><span class="lbl">Amount</span><span class="val">{action === 'remove' ? '-' : '+'}{formatBalance(parsedAmount)}</span></div>
-              <div class="wa-confirm-row"><span class="lbl">Bucket</span><span class="val">{bucketLabel(selectedBucket)}</span></div>
+              <div class="wa-confirm-row">
+                <span class="lbl">Amount</span><span class="val"
+                  >{action === 'remove' ? '-' : '+'}{formatBalance(parsedAmount)}</span
+                >
+              </div>
+              <div class="wa-confirm-row">
+                <span class="lbl">Bucket</span><span class="val">{bucketLabel(selectedBucket)}</span
+                >
+              </div>
             {/if}
-            <div class="wa-confirm-row"><span class="lbl">Reason</span><span class="val">{reasonCategory}</span></div>
-            <div class="wa-confirm-row wa-confirm-highlight"><span class="lbl">New balance</span><span class="val">{formatBalance(currentBalance)} → {formatBalance(Math.max(0, previewNewBalance))}</span></div>
+            <div class="wa-confirm-row">
+              <span class="lbl">Reason</span><span class="val">{reasonCategory}</span>
+            </div>
+            <div class="wa-confirm-row wa-confirm-highlight">
+              <span class="lbl">New balance</span><span class="val"
+                >{formatBalance(currentBalance)} → {formatBalance(
+                  Math.max(0, previewNewBalance)
+                )}</span
+              >
+            </div>
           </div>
 
           <!-- Type-to-confirm for remove/expire -->
           {#if action !== 'add'}
             <div class="wa-type-confirm">
-              <p>Type <code>{action === 'remove' ? String(parsedAmount) : 'EXPIRE'}</code> to confirm</p>
+              <p>
+                Type <code>{action === 'remove' ? String(parsedAmount) : 'EXPIRE'}</code> to confirm
+              </p>
               <input
                 class="wa-input wa-type-input"
                 placeholder={action === 'remove' ? 'Enter amount...' : 'Type EXPIRE...'}
@@ -540,9 +649,21 @@
           {/if}
 
           <div class="wa-confirm-actions">
-            <Button text="Go Back" classes="btn-ghost" onclick={() => { step = 'form'; confirmInput = ''; }} disabled={step === 'loading'} />
             <Button
-              text={step === 'loading' ? 'Processing...' : (action === 'add' ? 'Confirm & Add' : 'Confirm')}
+              text="Go back"
+              classes="btn-ghost"
+              onclick={() => {
+                step = 'form';
+                confirmInput = '';
+              }}
+              disabled={step === 'loading'}
+            />
+            <Button
+              text={step === 'loading'
+                ? 'Processing...'
+                : action === 'add'
+                  ? 'Confirm & Add'
+                  : 'Confirm'}
               classes={actionBtnClass}
               onclick={handleConfirm}
               disabled={step === 'loading' || !isConfirmValid}
@@ -551,11 +672,17 @@
             />
           </div>
         </div>
-
       {:else if step === 'success'}
         <!-- Success -->
         <div class="wa-result">
-          <div class="wa-result-icon" class:icon-green={action === 'add'} class:icon-red={action === 'remove'} class:icon-amber={action === 'expire'}>✓</div>
+          <div
+            class="wa-result-icon"
+            class:icon-green={action === 'add'}
+            class:icon-red={action === 'remove'}
+            class:icon-amber={action === 'expire'}
+          >
+            ✓
+          </div>
           <div class="wa-result-title">
             {#if action === 'add'}{formatBalance(parsedAmount)} added
             {:else if action === 'remove'}{formatBalance(parsedAmount)} removed
@@ -563,19 +690,38 @@
             {/if}
           </div>
           <div class="wa-result-subtitle">
-            {#if action === 'add'}Added to {customer.name ?? customer.phone}'s {bucketLabel(selectedBucket)}
-            {:else if action === 'remove'}Removed from {customer.name ?? customer.phone}'s {bucketLabel(selectedBucket)}
-            {:else}{result?.entries_affected ?? 0} entries expired for {customer.name ?? customer.phone}
+            {#if action === 'add'}Added to {customer.name ?? customer.phone}'s {bucketLabel(
+                selectedBucket
+              )}
+            {:else if action === 'remove'}Removed from {customer.name ?? customer.phone}'s {bucketLabel(
+                selectedBucket
+              )}
+            {:else}{result?.entries_affected ?? 0} entries expired for {customer.name ??
+                customer.phone}
             {/if}
           </div>
 
           <div class="wa-result-detail">
             {#if result?.ledger_entry_id}
-              <div class="wa-result-row"><span class="lbl">Transaction ID</span><span class="val mono">{result.ledger_entry_id.slice(0, 12)}</span></div>
+              <div class="wa-result-row">
+                <span class="lbl">Transaction ID</span><span class="val mono"
+                  >{result.ledger_entry_id.slice(0, 12)}</span
+                >
+              </div>
             {/if}
-            <div class="wa-result-row"><span class="lbl">Amount</span><span class="val">{action === 'remove' ? '-' : action === 'expire' ? '-' : '+'}{formatBalance(result?.amount_affected ?? parsedAmount)}</span></div>
+            <div class="wa-result-row">
+              <span class="lbl">Amount</span><span class="val"
+                >{action === 'remove' ? '-' : action === 'expire' ? '-' : '+'}{formatBalance(
+                  result?.amount_affected ?? parsedAmount
+                )}</span
+              >
+            </div>
             {#if result?.new_balance !== undefined && result.new_balance > 0}
-              <div class="wa-result-row"><span class="lbl">New balance</span><span class="val">{formatCurrencyINR(result.new_balance)}</span></div>
+              <div class="wa-result-row">
+                <span class="lbl">New balance</span><span class="val"
+                  >{formatCurrencyINR(result.new_balance)}</span
+                >
+              </div>
             {/if}
           </div>
 
@@ -588,7 +734,13 @@
         <div class="wa-footer">
           <Button text="Cancel" classes="btn-ghost" onclick={onClose} />
           <Button
-            text={isFormValid ? actionButtonLabel : (action === 'add' ? 'Add' : action === 'remove' ? 'Remove' : 'Expire')}
+            text={isFormValid
+              ? actionButtonLabel
+              : action === 'add'
+                ? 'Add'
+                : action === 'remove'
+                  ? 'Remove'
+                  : 'Expire'}
             classes={actionBtnClass}
             onclick={handleSubmit}
             disabled={!isFormValid}
@@ -600,216 +752,572 @@
 </Modal>
 
 <style>
-  .wa-body { padding: var(--space-5); }
+  .wa-body {
+    padding: var(--space-5);
+  }
 
   /* Tabs */
   .wa-tabs {
-    display: flex; gap: 4px; padding: 4px;
-    background: var(--color-surface-2); border-radius: var(--radius-md);
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    background: var(--color-surface-2);
+    border-radius: var(--radius-md);
     margin-bottom: var(--space-4);
   }
   .wa-tab {
-    flex: 1; padding: 7px 12px; border-radius: 6px;
-    border: none; font-size: var(--font-size-sm); font-weight: 600;
-    cursor: pointer; background: transparent; color: var(--color-text-muted);
-    transition: all 0.15s; text-align: center;
+    flex: 1;
+    padding: 7px 12px;
+    border-radius: var(--radius-sm);
+    border: none;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    cursor: pointer;
+    background: transparent;
+    color: var(--color-text-muted);
+    transition: all 0.15s;
+    text-align: center;
   }
-  .wa-tab-add { background: #dcfce7; color: #166534; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
-  .wa-tab-remove { background: #fef2f2; color: #991b1b; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
-  .wa-tab-expire { background: #fffbeb; color: #92400e; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  .wa-tab-add {
+    background: var(--green-100);
+    color: var(--green-700);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  }
+  .wa-tab-remove {
+    background: var(--red-100);
+    color: var(--red-700);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  }
+  .wa-tab-expire {
+    background: var(--yellow-100);
+    color: var(--yellow-700);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  }
 
   /* Customer Banner */
   .wa-customer {
-    display: flex; align-items: center; gap: var(--space-3);
-    padding: 10px 14px; background: var(--color-surface-2);
-    border-radius: var(--radius-md); margin-bottom: var(--space-4);
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: 10px 14px;
+    background: var(--color-surface-2);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-4);
   }
-  .wa-customer-info { flex: 1; min-width: 0; }
-  .wa-customer-name { font-size: var(--font-size-base); font-weight: 700; }
-  .wa-customer-phone { font-size: var(--font-size-xs); color: var(--color-text-muted); font-family: var(--font-mono); }
-  .wa-customer-balance { text-align: right; }
-  .wa-balance-val { font-size: var(--font-size-base); font-weight: 800; }
-  .wa-balance-val.points { color: var(--color-primary); }
-  .wa-balance-val.cash { color: var(--color-success); }
-  .wa-balance-label { font-size: 10px; color: var(--color-text-muted); }
+  .wa-customer-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .wa-customer-name {
+    font-size: var(--font-size-base);
+    font-weight: 700;
+  }
+  .wa-customer-phone {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+  }
+  .wa-customer-balance {
+    text-align: right;
+  }
+  .wa-balance-val {
+    font-size: var(--font-size-base);
+    font-weight: 800;
+  }
+  .wa-balance-val.points {
+    color: var(--color-primary);
+  }
+  .wa-balance-val.cash {
+    color: var(--color-success);
+  }
+  .wa-balance-label {
+    font-size: 10px;
+    color: var(--color-text-muted);
+  }
 
   /* Error & Warning Banners */
   .wa-error-banner {
-    display: flex; align-items: flex-start; gap: 8px;
-    padding: 10px 14px; border-radius: var(--radius-md);
-    background: #fef2f2; border: 1px solid #fecaca;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: var(--radius-md);
+    background: var(--red-100);
+    border: 1px solid var(--red-100);
     margin-bottom: var(--space-4);
   }
-  .wa-error-icon { color: var(--color-error); font-size: 15px; flex-shrink: 0; }
-  .wa-error-text { font-size: var(--font-size-sm); color: #991b1b; }
+  .wa-error-icon {
+    color: var(--color-error);
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+  .wa-error-text {
+    font-size: var(--font-size-sm);
+    color: var(--red-700);
+  }
 
   .wa-warning-banner {
-    display: flex; align-items: flex-start; gap: 8px;
-    padding: 10px 14px; border-radius: var(--radius-md);
-    background: #fffbeb; border: 1px solid #fde68a;
-    margin-bottom: var(--space-4); font-size: var(--font-size-sm); color: #92400e;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: var(--radius-md);
+    background: var(--yellow-100);
+    border: 1px solid var(--yellow-100);
+    margin-bottom: var(--space-4);
+    font-size: var(--font-size-sm);
+    color: var(--yellow-700);
   }
 
   /* Form Fields */
-  .wa-field { margin-bottom: var(--space-4); }
-  .wa-label { display: block; font-size: var(--font-size-xs); font-weight: 700; color: var(--color-text); margin-bottom: 5px; }
-  .wa-req { color: var(--color-error); }
-  .wa-hint { font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: 3px; }
-  .wa-field-error { font-size: var(--font-size-xs); color: var(--color-error); margin-top: 3px; }
-  .wa-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
-  .wa-no-data { font-size: var(--font-size-xs); color: var(--color-text-muted); font-style: italic; padding: var(--space-2); }
+  .wa-field {
+    margin-bottom: var(--space-4);
+  }
+  .wa-label {
+    display: block;
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: 5px;
+  }
+  .wa-req {
+    color: var(--color-error);
+  }
+  .wa-hint {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    margin-top: 3px;
+  }
+  .wa-field-error {
+    font-size: var(--font-size-xs);
+    color: var(--color-error);
+    margin-top: 3px;
+  }
+  .wa-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3);
+  }
+  .wa-no-data {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    font-style: italic;
+    padding: var(--space-2);
+  }
 
   .wa-input {
-    width: 100%; padding: 8px 12px; font-size: var(--font-size-base);
-    border: 1px solid var(--color-border); border-radius: var(--radius-md);
-    background: var(--color-surface); color: var(--color-text);
-    outline: none; font-family: inherit;
+    width: 100%;
+    padding: 8px 12px;
+    font-size: var(--font-size-base);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    color: var(--color-text);
+    outline: none;
+    font-family: inherit;
+    border: 1px solid var(--color-border);
   }
-  .wa-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); }
+  .wa-input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px var(--p-200);
+  }
   .wa-textarea {
-    width: 100%; padding: 8px 12px; font-size: var(--font-size-sm);
-    border: 1px solid var(--color-border); border-radius: var(--radius-md);
-    background: var(--color-surface); color: var(--color-text);
-    outline: none; font-family: inherit; resize: vertical; min-height: 56px;
+    width: 100%;
+    padding: 8px 12px;
+    font-size: var(--font-size-sm);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    color: var(--color-text);
+    outline: none;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 56px;
+    border: 1px solid var(--color-border);
   }
-  .wa-textarea:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); }
+  .wa-textarea:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px var(--p-200);
+  }
 
   /* Amount Input */
-  .wa-amount-wrap { position: relative; }
+  .wa-amount-wrap {
+    position: relative;
+  }
   .wa-amount-prefix {
-    position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
-    font-size: var(--font-size-base); font-weight: 700; color: var(--color-text-muted);
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: var(--font-size-base);
+    font-weight: 700;
+    color: var(--color-text-muted);
   }
   .wa-amount-suffix {
-    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-    font-size: var(--font-size-xs); font-weight: 600; color: var(--color-text-muted);
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: var(--color-text-muted);
   }
-  .wa-amount-input { font-weight: 700; font-family: var(--font-mono); }
-  .wa-amount-input.cash-input { padding-left: 28px; }
+  .wa-amount-input {
+    font-weight: 700;
+    font-family: var(--font-mono);
+  }
+  .wa-amount-input.cash-input {
+    padding-left: 28px;
+  }
 
   /* Bucket Cards */
-  .wa-bucket-list { display: flex; flex-direction: column; gap: 6px; }
-  .wa-radio-card, .wa-expire-card {
-    display: flex; align-items: center; gap: 10px;
-    padding: 9px 14px; border-radius: var(--radius-md);
-    border: 1px solid var(--color-border); cursor: pointer;
-    background: var(--color-surface); transition: all 0.15s;
-    width: 100%; text-align: left; font-family: inherit;
+  .wa-bucket-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
   }
-  .wa-radio-card:hover, .wa-expire-card:hover { border-color: var(--color-primary); }
-  .wa-radio-card.selected { border-color: var(--color-primary); background: #eef2ff; }
-  .wa-expire-card.selected { border-color: var(--color-warning); background: #fffbeb; }
-  .wa-bucket-name { font-size: var(--font-size-sm); font-weight: 600; flex: 1; color: var(--color-text); }
-  .wa-bucket-bal { font-size: var(--font-size-sm); font-weight: 700; font-family: var(--font-mono); color: var(--color-text-muted); }
+  .wa-radio-card,
+  .wa-expire-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 14px;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    background: var(--color-surface);
+    transition: all 0.15s;
+    width: 100%;
+    text-align: left;
+    font-family: inherit;
+    box-shadow: var(--shadow-card);
+  }
+  .wa-radio-card:hover,
+  .wa-expire-card:hover {
+    border-color: var(--color-primary);
+  }
+  .wa-radio-card.selected {
+    border-color: var(--color-primary);
+    background: color-mix(in srgb, var(--purple-500) 8%, #fff);
+  }
+  .wa-expire-card.selected {
+    border-color: var(--color-warning);
+    background: var(--yellow-100);
+  }
+  .wa-bucket-name {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    flex: 1;
+    color: var(--color-text);
+  }
+  .wa-bucket-bal {
+    font-size: var(--font-size-sm);
+    font-weight: 700;
+    font-family: var(--font-mono);
+    color: var(--color-text-muted);
+  }
 
   .wa-radio {
-    width: 16px; height: 16px; border-radius: 50%;
-    border: 2px solid var(--color-border); flex-shrink: 0;
-    position: relative; transition: all 0.15s;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid var(--color-border);
+    flex-shrink: 0;
+    position: relative;
+    transition: all 0.15s;
   }
-  .wa-radio.checked { border-color: var(--color-primary); background: var(--color-primary); }
+  .wa-radio.checked {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+  }
   .wa-radio.checked::after {
-    content: ''; position: absolute; width: 6px; height: 6px; border-radius: 50%;
-    background: #fff; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    content: '';
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #fff;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
   }
 
   .wa-check {
-    width: 18px; height: 18px; border-radius: 4px;
-    border: 2px solid var(--color-border); display: flex;
-    align-items: center; justify-content: center; flex-shrink: 0;
-    font-size: 11px; color: transparent; transition: all 0.15s;
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    border: 2px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: var(--font-size-xs);
+    color: transparent;
+    transition: all 0.15s;
   }
-  .wa-check.checked { background: var(--color-warning); border-color: var(--color-warning); color: #fff; }
+  .wa-check.checked {
+    background: var(--color-warning);
+    border-color: var(--color-warning);
+    color: #fff;
+  }
 
   /* Reason Pills */
-  .wa-pills { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 6px; }
-  .wa-pill {
-    padding: 3px 11px; border-radius: 9999px;
-    border: 1px solid var(--color-border); background: var(--color-surface);
-    font-size: var(--font-size-xs); cursor: pointer; color: var(--color-text-muted);
-    transition: all 0.15s; font-weight: 500; font-family: inherit;
+  .wa-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 6px;
   }
-  .wa-pill:hover { border-color: var(--color-primary); color: var(--color-primary); }
-  .wa-pill.active { border-color: var(--color-primary); color: var(--color-primary); background: #eef2ff; }
-  .wa-pill.pill-green { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
-  .wa-pill.pill-red { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
-  .wa-pill.pill-amber { background: #fffbeb; color: #92400e; border-color: #fde68a; }
+  .wa-pill {
+    padding: 3px 11px;
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    font-size: var(--font-size-xs);
+    cursor: pointer;
+    color: var(--color-text-muted);
+    transition: all 0.15s;
+    font-weight: 500;
+    font-family: inherit;
+    border: 1px solid var(--color-border);
+  }
+  .wa-pill:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+  .wa-pill.active {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: color-mix(in srgb, var(--purple-500) 8%, #fff);
+  }
+  .wa-pill.pill-green {
+    background: var(--green-100);
+    color: var(--green-700);
+    border-color: var(--green-100);
+  }
+  .wa-pill.pill-red {
+    background: var(--red-100);
+    color: var(--red-700);
+    border-color: var(--red-100);
+  }
+  .wa-pill.pill-amber {
+    background: var(--yellow-100);
+    color: var(--yellow-700);
+    border-color: var(--yellow-100);
+  }
 
   /* Notify Row */
   .wa-notify-row {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 8px 0; margin-bottom: var(--space-3);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    margin-bottom: var(--space-3);
   }
-  .wa-notify-text { font-size: var(--font-size-sm); }
+  .wa-notify-text {
+    font-size: var(--font-size-sm);
+  }
 
   /* Preview */
-  .wa-preview { border-radius: var(--radius-md); padding: 12px 16px; margin-top: 4px; }
-  .wa-preview.preview-green { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
-  .wa-preview.preview-red { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
-  .wa-preview.preview-amber { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
-  .wa-preview-title { font-size: var(--font-size-xs); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
-  .wa-preview-row { display: flex; justify-content: space-between; font-size: var(--font-size-sm); padding: 2px 0; }
-  .wa-preview-val { font-weight: 700; }
-  .wa-preview-divider { border-top: 1px dashed currentColor; margin: 5px 0; opacity: 0.3; }
-  .wa-preview-total .wa-preview-val { font-size: 15px; font-weight: 800; }
+  .wa-preview {
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    margin-top: 4px;
+  }
+  .wa-preview.preview-green {
+    background: var(--green-100);
+    border: 1px solid var(--green-100);
+    color: var(--green-700);
+  }
+  .wa-preview.preview-red {
+    background: var(--red-100);
+    border: 1px solid var(--red-100);
+    color: var(--red-700);
+  }
+  .wa-preview.preview-amber {
+    background: var(--yellow-100);
+    border: 1px solid var(--yellow-100);
+    color: var(--yellow-700);
+  }
+  .wa-preview-title {
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+  }
+  .wa-preview-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--font-size-sm);
+    padding: 2px 0;
+  }
+  .wa-preview-val {
+    font-weight: 700;
+  }
+  .wa-preview-divider {
+    border-top: 1px dashed currentColor;
+    margin: 5px 0;
+    opacity: 0.3;
+  }
+  .wa-preview-total .wa-preview-val {
+    font-size: 15px;
+    font-weight: 800;
+  }
 
   /* Footer */
   .wa-footer {
-    display: flex; align-items: center; justify-content: flex-end;
-    gap: 8px; padding-top: var(--space-4); margin-top: var(--space-2);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    padding-top: var(--space-4);
+    margin-top: var(--space-2);
     border-top: 1px solid var(--color-border);
   }
 
   /* Confirm */
-  .wa-confirm { padding: var(--space-6) var(--space-5); text-align: center; }
-  .wa-confirm-icon { font-size: 40px; margin-bottom: 10px; }
-  .wa-confirm-title { font-size: var(--font-size-lg); font-weight: 800; margin-bottom: 4px; }
-  .wa-confirm-title.text-green { color: #166534; }
-  .wa-confirm-title.text-red { color: #991b1b; }
-  .wa-confirm-title.text-amber { color: #92400e; }
-  .wa-confirm-subtitle { font-size: var(--font-size-sm); color: var(--color-text-muted); margin-bottom: 18px; }
-  .wa-confirm-summary {
-    background: var(--color-surface-2); border-radius: var(--radius-md);
-    padding: 14px 18px; text-align: left; margin-bottom: 18px;
+  .wa-confirm {
+    padding: var(--space-6) var(--space-5);
+    text-align: center;
   }
-  .wa-confirm-row { display: flex; justify-content: space-between; font-size: var(--font-size-sm); padding: 3px 0; }
-  .wa-confirm-row .lbl { color: var(--color-text-muted); }
-  .wa-confirm-row .val { font-weight: 700; }
-  .wa-confirm-highlight { border-top: 1px solid var(--color-border); padding-top: 8px; margin-top: 4px; }
-  .wa-confirm-actions { display: flex; gap: 8px; justify-content: center; }
+  .wa-confirm-icon {
+    font-size: 40px;
+    margin-bottom: 10px;
+  }
+  .wa-confirm-title {
+    font-size: var(--font-size-lg);
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+  .wa-confirm-title.text-green {
+    color: var(--green-700);
+  }
+  .wa-confirm-title.text-red {
+    color: var(--red-700);
+  }
+  .wa-confirm-title.text-amber {
+    color: var(--yellow-700);
+  }
+  .wa-confirm-subtitle {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    margin-bottom: 18px;
+  }
+  .wa-confirm-summary {
+    background: var(--color-surface-2);
+    border-radius: var(--radius-md);
+    padding: 14px 18px;
+    text-align: left;
+    margin-bottom: 18px;
+  }
+  .wa-confirm-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--font-size-sm);
+    padding: 3px 0;
+  }
+  .wa-confirm-row .lbl {
+    color: var(--color-text-muted);
+  }
+  .wa-confirm-row .val {
+    font-weight: 700;
+  }
+  .wa-confirm-highlight {
+    border-top: 1px solid var(--color-border);
+    padding-top: 8px;
+    margin-top: 4px;
+  }
+  .wa-confirm-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+  }
 
   .wa-type-confirm {
-    background: var(--color-surface-2); border-radius: var(--radius-md);
-    padding: 14px 18px; margin-bottom: 16px; text-align: center;
+    background: var(--color-surface-2);
+    border-radius: var(--radius-md);
+    padding: 14px 18px;
+    margin-bottom: 16px;
+    text-align: center;
   }
-  .wa-type-confirm p { font-size: var(--font-size-sm); color: var(--color-text-muted); margin-bottom: 8px; }
+  .wa-type-confirm p {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    margin-bottom: 8px;
+  }
   .wa-type-confirm code {
-    background: #fef2f2; color: var(--color-error);
-    padding: 2px 8px; border-radius: 4px; font-family: var(--font-mono);
-    font-size: var(--font-size-sm); font-weight: 700;
+    background: var(--red-100);
+    color: var(--color-error);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    font-weight: 700;
   }
-  .wa-type-input { max-width: 200px; margin: 0 auto; text-align: center; font-family: var(--font-mono); }
+  .wa-type-input {
+    max-width: 200px;
+    margin: 0 auto;
+    text-align: center;
+    font-family: var(--font-mono);
+  }
 
   /* Result */
-  .wa-result { padding: var(--space-8) var(--space-6); text-align: center; }
+  .wa-result {
+    padding: var(--space-8) var(--space-6);
+    text-align: center;
+  }
   .wa-result-icon {
-    width: 52px; height: 52px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 26px; margin: 0 auto 14px;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    margin: 0 auto 14px;
   }
-  .wa-result-icon.icon-green { background: #dcfce7; color: var(--color-success); }
-  .wa-result-icon.icon-red { background: #fef2f2; color: var(--color-error); }
-  .wa-result-icon.icon-amber { background: #fffbeb; color: var(--color-warning); }
-  .wa-result-title { font-size: var(--font-size-lg); font-weight: 800; margin-bottom: 4px; }
-  .wa-result-subtitle { font-size: var(--font-size-sm); color: var(--color-text-muted); margin-bottom: 14px; }
+  .wa-result-icon.icon-green {
+    background: var(--green-100);
+    color: var(--color-success);
+  }
+  .wa-result-icon.icon-red {
+    background: var(--red-100);
+    color: var(--color-error);
+  }
+  .wa-result-icon.icon-amber {
+    background: var(--yellow-100);
+    color: var(--color-warning);
+  }
+  .wa-result-title {
+    font-size: var(--font-size-lg);
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+  .wa-result-subtitle {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    margin-bottom: 14px;
+  }
   .wa-result-detail {
-    background: var(--color-surface-2); border-radius: var(--radius-md);
-    padding: 14px 18px; text-align: left; margin-bottom: 18px;
+    background: var(--color-surface-2);
+    border-radius: var(--radius-md);
+    padding: 14px 18px;
+    text-align: left;
+    margin-bottom: 18px;
   }
-  .wa-result-row { display: flex; justify-content: space-between; font-size: var(--font-size-sm); padding: 2px 0; }
-  .wa-result-row .lbl { color: var(--color-text-muted); }
-  .wa-result-row .val { font-weight: 700; }
-  .wa-result-row .mono { font-family: var(--font-mono); font-size: var(--font-size-xs); }
+  .wa-result-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--font-size-sm);
+    padding: 2px 0;
+  }
+  .wa-result-row .lbl {
+    color: var(--color-text-muted);
+  }
+  .wa-result-row .val {
+    font-weight: 700;
+  }
+  .wa-result-row .mono {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+  }
 
   :global(.wallet-action-modal) {
     --modal-content-background-color: var(--color-surface);

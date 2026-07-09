@@ -13,7 +13,7 @@
 
 <div class="balance-card">
   <div class="balance-header">
-    <span class="balance-label">Displayed Balance</span>
+    <span class="balance-label">Displayed balance</span>
     <span class="balance-amount">{formatCurrencyINR(balance.displayed_balance)}</span>
   </div>
 
@@ -29,7 +29,7 @@
 
   {#if balance.buckets.length > 0}
     <div class="bucket-section">
-      <span class="bucket-heading">Bucket Breakdown</span>
+      <span class="bucket-heading">Bucket breakdown</span>
       <div class="bucket-list">
         {#each balance.buckets as bucket}
           <div class="bucket-row">
@@ -37,8 +37,12 @@
               <span class="bucket-name">{formatBucketType(bucket.bucket_type)}</span>
               <span class="bucket-values">
                 {isPointsBucket(bucket.bucket_type)
-                  ? formatPoints(bucket.displayed, '★') + ' / ' + formatPoints(bucket.spendable, '★')
-                  : formatCurrencyINR(bucket.displayed) + ' / ' + formatCurrencyINR(bucket.spendable)}
+                  ? formatPoints(bucket.displayed, '★') +
+                    ' / ' +
+                    formatPoints(bucket.spendable, '★')
+                  : formatCurrencyINR(bucket.displayed) +
+                    ' / ' +
+                    formatCurrencyINR(bucket.spendable)}
               </span>
             </div>
             <Progress value={maxBucket > 0 ? (bucket.displayed / maxBucket) * 100 : 0} />
@@ -53,12 +57,12 @@
 <style>
   .balance-card {
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     padding: var(--space-6);
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
+    box-shadow: var(--shadow-card);
   }
 
   .balance-header {

@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>COD Rewards — UX Mockups</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #f4f5f7;
+    --surface: #ffffff;
+    --surface-2: #f0f1f3;
+    --text: #1a1a2e;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --primary: #7c6aff;
+    --primary-hover: #6b5ce7;
+    --success: #10b981;
+    --error: #ef4444;
+    --warning: #f59e0b;
+    --info: #3b82f6;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); }
+
+  /* ===== Intro & Actor headers ===== */
+  .intro { background: #1a1a2e; color: #fff; padding: 48px 32px; text-align: center; }
+  .intro h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+  .intro p { color: rgba(255,255,255,0.7); max-width: 720px; margin: 0 auto; font-size: 14px; line-height: 1.6; }
+  .toc { max-width: 880px; margin: 24px auto 0; text-align: left; color: rgba(255,255,255,0.85); font-size: 13px; line-height: 1.7; }
+  .toc strong { color: #fff; }
+
+  .actor-band {
+    background: var(--primary);
+    color: #fff;
+    padding: 24px 32px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+  .actor-band span { background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 4px; margin-right: 10px; }
+
+  .screen-label {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #fef3c7;
+    color: #78350f;
+    border-top: 1px solid #f59e0b;
+    border-bottom: 1px solid #f59e0b;
+    padding: 10px 32px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+  }
+  .screen-label .tag { background: #f59e0b; color: #fff; padding: 2px 8px; border-radius: 4px; margin-right: 10px; font-weight: 700; }
+
+  .frame { padding: 32px; background: var(--bg); }
+  .note { background: #eef2ff; border-left: 3px solid var(--primary); color: #4338ca; padding: 12px 16px; border-radius: 4px; font-size: 12px; margin: 16px 32px 0; line-height: 1.5; }
+  .note strong { color: #312e81; }
+
+  /* ===== Admin UI primitives ===== */
+  .admin-shell { display: flex; max-width: 1280px; margin: 0 auto; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .sidebar { width: 200px; background: var(--surface-2); padding: 16px 12px; border-right: 1px solid var(--border); flex-shrink: 0; }
+  .sidebar .logo { font-weight: 700; color: var(--primary); margin-bottom: 16px; padding: 0 8px; font-size: 15px; }
+  .sidebar a, .sidebar div { display: block; padding: 7px 10px; color: var(--muted); font-size: 13px; font-weight: 500; text-decoration: none; border-radius: 6px; }
+  .sidebar a.active { background: var(--primary); color: #fff; }
+  .sidebar .group { color: var(--text); font-weight: 600; margin-top: 8px; }
+  .sidebar .sub { padding-left: 24px; font-size: 12px; }
+  .content { flex: 1; padding: 28px; min-width: 0; }
+  .h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .sub { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+
+  .stepper { display: flex; gap: 6px; margin-bottom: 24px; }
+  .step-chip { padding: 6px 14px; background: var(--surface-2); color: var(--muted); border-radius: 999px; font-size: 12px; font-weight: 500; }
+  .step-chip.active { background: var(--primary); color: #fff; }
+  .step-chip.done { background: color-mix(in srgb, var(--success) 14%, transparent); color: var(--success); }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+  .card-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .card-sub { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+
+  .row { display: flex; gap: 16px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+  .field { flex: 1; min-width: 200px; }
+  .field label { display: block; font-size: 12px; font-weight: 500; color: var(--muted); margin-bottom: 4px; }
+  .field input, .field select { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; font-family: inherit; background: var(--surface); }
+
+  .slider-row { display: flex; align-items: center; gap: 16px; }
+  .slider-bar { flex: 1; height: 4px; background: var(--surface-2); border-radius: 999px; position: relative; }
+  .slider-bar::after { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 35%; background: var(--primary); border-radius: 999px; }
+  .slider-knob { position: absolute; left: 33%; top: 50%; transform: translate(0, -50%); width: 16px; height: 16px; background: var(--primary); border-radius: 50%; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+  .slider-value { font-weight: 600; min-width: 40px; text-align: right; }
+
+  .toggle { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+  .toggle-track { width: 36px; height: 20px; background: var(--surface-2); border-radius: 999px; position: relative; transition: background 0.2s; }
+  .toggle-track::after { content: ''; position: absolute; left: 2px; top: 2px; width: 16px; height: 16px; background: #fff; border-radius: 50%; box-shadow: 0 1px 2px rgba(0,0,0,0.1); transition: left 0.2s; }
+  .toggle.on .toggle-track { background: var(--primary); }
+  .toggle.on .toggle-track::after { left: 18px; }
+
+  .pill { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+  .pill-success { background: color-mix(in srgb, var(--success) 14%, transparent); color: var(--success); }
+  .pill-warning { background: color-mix(in srgb, var(--warning) 14%, transparent); color: var(--warning); }
+  .pill-error { background: color-mix(in srgb, var(--error) 14%, transparent); color: var(--error); }
+  .pill-info { background: color-mix(in srgb, var(--info) 14%, transparent); color: var(--info); }
+  .pill-muted { background: var(--surface-2); color: var(--muted); }
+
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid transparent; font-family: inherit; }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-secondary { background: var(--surface); color: var(--text); border-color: var(--border); }
+  .btn-danger { background: var(--error); color: #fff; }
+  .btn-ghost { background: transparent; color: var(--primary); }
+
+  .code-display { font-family: 'SF Mono', monospace; font-size: 12px; background: var(--surface-2); padding: 8px 12px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; word-break: break-all; }
+
+  .radio-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .radio-item { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 13px; }
+  .radio-item.selected { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 4%, transparent); }
+  .radio-dot { width: 14px; height: 14px; border: 2px solid var(--border); border-radius: 50%; flex-shrink: 0; }
+  .radio-item.selected .radio-dot { border-color: var(--primary); background: radial-gradient(circle, var(--primary) 4px, transparent 4px); }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th { text-align: left; padding: 10px 12px; background: var(--surface-2); color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); }
+  tbody td { padding: 12px; border-bottom: 1px solid var(--border); }
+  tbody tr:hover { background: var(--surface-2); }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 24px; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .stat-value { font-size: 20px; font-weight: 700; }
+  .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+
+  /* Timeline */
+  .timeline { position: relative; padding-left: 24px; }
+  .timeline::before { content: ''; position: absolute; left: 5px; top: 8px; bottom: 8px; width: 2px; background: var(--border); }
+  .timeline-item { position: relative; margin-bottom: 16px; }
+  .timeline-item::before { content: ''; position: absolute; left: -22px; top: 6px; width: 10px; height: 10px; border-radius: 50%; background: var(--surface); border: 2px solid var(--primary); }
+  .timeline-item.success::before { background: var(--success); border-color: var(--success); }
+  .timeline-item.danger::before { background: var(--error); border-color: var(--error); }
+  .timeline-item.muted::before { background: var(--surface-2); border-color: var(--border); }
+  .timeline-time { font-size: 11px; color: var(--muted); font-family: 'SF Mono', monospace; }
+  .timeline-title { font-size: 13px; font-weight: 600; margin: 2px 0; }
+  .timeline-desc { font-size: 12px; color: var(--muted); }
+
+  /* Modal mock */
+  .modal-overlay { background: rgba(0,0,0,0.4); padding: 40px; }
+  .modal { background: var(--surface); border-radius: 12px; max-width: 560px; margin: 0 auto; padding: 24px; }
+
+  /* Drawer */
+  .drawer { background: var(--surface); border-left: 1px solid var(--border); width: 480px; padding: 24px; max-height: 700px; overflow-y: auto; }
+
+  /* Sidebar variants */
+  .sidebar-options { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .sidebar-option { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+  .sidebar-option h4 { font-size: 13px; font-weight: 700; margin-bottom: 12px; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* ===== Storefront primitives — hardcoded hex per project convention ===== */
+  .storefront-frame { background: #1a1d27; padding: 32px; border-radius: 16px; max-width: 480px; margin: 0 auto; color: #fff; }
+  .sf-header { font-size: 14px; color: #94a3b8; margin-bottom: 24px; }
+  .sf-balance { font-size: 40px; font-weight: 700; }
+  .sf-balance-label { font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+  .sf-pending { background: #2a2d3a; padding: 12px 16px; border-radius: 10px; margin-top: 16px; display: flex; align-items: center; justify-content: space-between; }
+  .sf-pending-amt { color: #fbbf24; font-weight: 600; font-size: 16px; }
+  .sf-pending-lbl { font-size: 12px; color: #94a3b8; }
+  .sf-info-icon { width: 16px; height: 16px; border-radius: 50%; border: 1px solid #94a3b8; color: #94a3b8; font-size: 11px; display: inline-flex; align-items: center; justify-content: center; cursor: help; margin-left: 6px; }
+  .sf-tooltip { background: #0f172a; color: #cbd5e1; font-size: 11px; padding: 8px 12px; border-radius: 6px; margin-top: 8px; }
+  .sf-history { margin-top: 24px; }
+  .sf-history-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 12px 0; border-top: 1px solid #2a2d3a; gap: 12px; }
+  .sf-history-row:last-child { border-bottom: 1px solid #2a2d3a; }
+  .sf-history-text { font-size: 13px; }
+  .sf-history-sub { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+  .sf-amt-pending { color: #fbbf24; }
+  .sf-amt-released { color: #4ade80; }
+  .sf-amt-cancelled { color: #f87171; text-decoration: line-through; }
+  .sf-amt-debit { color: #94a3b8; }
+  .sf-status { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; display: inline-block; }
+  .sf-status-pending { background: rgba(251,191,36,0.15); color: #fbbf24; }
+  .sf-status-released { background: rgba(74,222,128,0.15); color: #4ade80; }
+  .sf-status-cancelled { background: rgba(248,113,113,0.15); color: #f87171; }
+
+  /* ===== WhatsApp message mockup ===== */
+  .wa-frame { background: #0b141a; padding: 24px; border-radius: 16px; max-width: 400px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+  .wa-header { display: flex; align-items: center; gap: 10px; color: #fff; padding-bottom: 12px; border-bottom: 1px solid #1f2c33; margin-bottom: 16px; }
+  .wa-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #7c6aff, #ec4899); display: flex; align-items: center; justify-content: center; font-weight: 700; }
+  .wa-name { font-size: 14px; font-weight: 600; }
+  .wa-status { font-size: 11px; color: #8696a0; }
+  .wa-msg { background: #005c4b; color: #fff; padding: 8px 12px; border-radius: 8px 8px 8px 0; max-width: 90%; font-size: 13px; line-height: 1.5; margin-bottom: 4px; position: relative; }
+  .wa-msg-self { background: #202c33; }
+  .wa-time { font-size: 10px; color: #8696a0; margin-left: 8px; margin-bottom: 12px; }
+  .wa-emoji { display: inline-block; }
+</style>
+</head>
+<body>
+
+<div class="intro">
+  <h1>COD Rewards — UX Mockups</h1>
+  <p>
+    Every touchpoint of the COD-rewards feature, grouped by actor. Each screen is annotated with the
+    open question(s) it forces you to answer. Yellow banners label each screen. Skim, decide, and
+    we'll close out the design.
+  </p>
+  <div class="toc">
+    <strong>MERCHANT</strong> &mdash; M1 Onboarding (off) · M2 Onboarding (on) · M3 Connection verified · M4 Settings COD card · M5 Connector edit modal · M6 /admin/cod list · M7 Order detail drawer · M8 Analytics · M9 Notification editor · M10 Sidebar placement options<br>
+    <strong>CUSTOMER</strong> &mdash; C1 Storefront wallet (split balance) · C2 Wallet history (lifecycle) · C3 WhatsApp held · C4 WhatsApp released · C5 WhatsApp cancelled
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- ACTOR: MERCHANT                                                -->
+<!-- ============================================================ -->
+<div class="actor-band"><span>Actor 1</span>Merchant — admin onboarding, settings, operations</div>
+
+<!-- ============================== M1 ============================== -->
+<div class="screen-label"><span class="tag">M1</span>Onboarding — Rewards step (COD toggle OFF, default state)</div>
+<div class="frame">
+<div class="admin-shell">
+  <div class="sidebar">
+    <div class="logo">Batua</div>
+    <div class="group">Setup</div>
+  </div>
+  <div class="content">
+    <div class="stepper">
+      <div class="step-chip done">✓ Welcome</div>
+      <div class="step-chip active">Rewards</div>
+      <div class="step-chip">Policy</div>
+      <div class="step-chip">Tiers</div>
+      <div class="step-chip">Referrals</div>
+      <div class="step-chip">Done</div>
+    </div>
+    <div class="h1">Set up rewards</div>
+    <div class="sub">Cashback your customers earn on every order. Configure prepaid and COD separately.</div>
+
+    <div class="card">
+      <div class="card-title">Prepaid rewards</div>
+      <div class="card-sub">Applied instantly when the order is placed.</div>
+      <div class="row">
+        <div class="field"><label>Cashback %</label><div class="slider-row"><div class="slider-bar"><div class="slider-knob"></div></div><div class="slider-value">5%</div></div></div>
+        <div class="field"><label>Min order value</label><input value="₹500" /></div>
+        <div class="field"><label>Max cashback / order</label><input value="₹200" /></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+        <div>
+          <div class="card-title">COD rewards</div>
+          <div class="card-sub">Cashback for cash-on-delivery orders, released after delivery confirmation.</div>
+        </div>
+        <div class="toggle"><span style="font-size:13px;color:var(--muted)">Off</span><div class="toggle-track"></div></div>
+      </div>
+      <div style="background:var(--surface-2);padding:12px 16px;border-radius:8px;font-size:12px;color:var(--muted);">
+        <span style="color:var(--warning);font-weight:600;">⚠ Requires a logistics provider.</span> COD rewards are held until your shipping partner confirms delivery — connect Shiprocket, Delhivery, or another provider to enable.
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;margin-top:24px;">
+      <button class="btn btn-secondary">Back</button>
+      <button class="btn btn-primary">Continue →</button>
+    </div>
+  </div>
+</div>
+</div>
+<div class="note"><strong>Open Q:</strong> Should the COD toggle be visible-but-disabled (as shown) or hidden until a logistics provider is connected? Showing it answers <strong>Q1</strong> implicitly by making COD a deliberate choice.</div>
+
+<!-- ============================== M2 ============================== -->
+<div class="screen-label"><span class="tag">M2</span>Onboarding — Rewards step (COD toggle ON, configuring provider)</div>
+<div class="frame">
+<div class="admin-shell">
+  <div class="sidebar">
+    <div class="logo">Batua</div>
+    <div class="group">Setup</div>
+  </div>
+  <div class="content">
+    <div class="stepper">
+      <div class="step-chip done">✓ Welcome</div>
+      <div class="step-chip active">Rewards</div>
+      <div class="step-chip">Policy</div>
+      <div class="step-chip">Tiers</div>
+      <div class="step-chip">Referrals</div>
+      <div class="step-chip">Done</div>
+    </div>
+    <div class="h1">Set up rewards</div>
+    <div class="sub">Cashback your customers earn on every order. Configure prepaid and COD separately.</div>
+
+    <div class="card">
+      <div class="card-title">Prepaid rewards</div>
+      <div class="card-sub">Applied instantly when the order is placed.</div>
+      <div class="row">
+        <div class="field"><label>Cashback %</label><div class="slider-row"><div class="slider-bar"><div class="slider-knob"></div></div><div class="slider-value">5%</div></div></div>
+        <div class="field"><label>Min order value</label><input value="₹500" /></div>
+        <div class="field"><label>Max cashback / order</label><input value="₹200" /></div>
+      </div>
+    </div>
+
+    <div class="card" style="border-color:var(--primary);">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
+        <div>
+          <div class="card-title">COD rewards <span class="pill pill-info" style="margin-left:6px;">NEW</span></div>
+          <div class="card-sub">Cashback for COD orders, released after delivery confirmation.</div>
+        </div>
+        <div class="toggle on"><div class="toggle-track"></div><span style="font-size:13px;color:var(--primary);font-weight:600;">On</span></div>
+      </div>
+
+      <label style="display:block;font-size:12px;font-weight:500;color:var(--muted);margin-bottom:8px;">Logistics provider</label>
+      <div class="radio-grid" style="margin-bottom:16px;">
+        <div class="radio-item selected"><div class="radio-dot"></div>Shiprocket</div>
+        <div class="radio-item"><div class="radio-dot"></div>Delhivery</div>
+        <div class="radio-item"><div class="radio-dot"></div>Pickrr</div>
+        <div class="radio-item"><div class="radio-dot"></div>Other (generic)</div>
+      </div>
+
+      <label style="display:block;font-size:12px;font-weight:500;color:var(--muted);margin-bottom:4px;">Webhook URL <span style="color:var(--muted);font-weight:400;">(paste into your Shiprocket dashboard)</span></label>
+      <div class="code-display" style="margin-bottom:12px;">
+        https://breeze.app/webhooks/logistics/shiprocket/b0000000-0000-0000-0000-000000000007
+        <button class="btn btn-ghost" style="padding:2px 8px;">📋 Copy</button>
+      </div>
+
+      <label style="display:block;font-size:12px;font-weight:500;color:var(--muted);margin-bottom:4px;">Webhook secret <span class="pill pill-warning" style="margin-left:6px;">Shown once</span></label>
+      <div class="code-display" style="margin-bottom:16px;">
+        shp_sec_••••••••••••••••••••••••
+        <span><button class="btn btn-ghost" style="padding:2px 8px;">👁 Show</button><button class="btn btn-ghost" style="padding:2px 8px;">📋 Copy</button></span>
+      </div>
+
+      <details style="margin-bottom:16px;padding:10px 12px;background:var(--surface-2);border-radius:6px;font-size:12px;">
+        <summary style="cursor:pointer;font-weight:600;">How to set this up in Shiprocket ↓</summary>
+        <ol style="margin-top:10px;padding-left:20px;line-height:1.7;color:var(--muted);">
+          <li>In Shiprocket → Settings → Webhooks, click "Add new webhook"</li>
+          <li>Paste the Webhook URL above into the URL field</li>
+          <li>Paste the Webhook secret into the "Signing secret" field</li>
+          <li>Subscribe to: <code>order.delivered</code>, <code>order.rto_initiated</code>, <code>order.cancelled</code></li>
+          <li>Save. Come back here and click "Test connection"</li>
+        </ol>
+      </details>
+
+      <div class="row">
+        <div class="field"><label>COD cashback %</label><div class="slider-row"><div class="slider-bar"><div class="slider-knob" style="left:23%;"></div></div><div class="slider-value">3%</div></div></div>
+        <div class="field"><label>Auto-cancel after</label><input value="14 days" /></div>
+        <div class="field"><label>Notify customer on release</label><div class="toggle on" style="margin-top:6px;"><div class="toggle-track"></div></div></div>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="btn btn-secondary">Test connection</button>
+        <span style="font-size:12px;color:var(--muted);align-self:center;">Awaiting your first webhook from Shiprocket…</span>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;margin-top:24px;">
+      <button class="btn btn-secondary">Back</button>
+      <button class="btn btn-primary">Continue →</button>
+    </div>
+  </div>
+</div>
+</div>
+<div class="note"><strong>Open Q5</strong> — Webhook URL format: <code>/webhooks/logistics/&lt;vendor&gt;/&lt;merchant_id&gt;</code> shown here. Stable across connector rotations; the secret is the auth. Confirm this format works for you. <br><strong>Open Q:</strong> Is "Auto-cancel after" exposed at onboarding (as shown) or hidden as an advanced setting? Default 14 days.</div>
+
+<!-- ============================== M3 ============================== -->
+<div class="screen-label"><span class="tag">M3</span>Onboarding — Connection verified (after the first webhook fires)</div>
+<div class="frame">
+<div class="admin-shell">
+  <div class="sidebar">
+    <div class="logo">Batua</div>
+    <div class="group">Setup</div>
+  </div>
+  <div class="content">
+    <div class="stepper">
+      <div class="step-chip done">✓ Welcome</div>
+      <div class="step-chip done">✓ Rewards</div>
+      <div class="step-chip active">Policy</div>
+      <div class="step-chip">Tiers</div>
+      <div class="step-chip">Referrals</div>
+      <div class="step-chip">Done</div>
+    </div>
+    <div class="card" style="border-color:var(--success);background:color-mix(in srgb, var(--success) 4%, transparent);">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:32px;height:32px;border-radius:50%;background:var(--success);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;">✓</div>
+        <div>
+          <div class="card-title">COD rewards connected to Shiprocket</div>
+          <div class="card-sub" style="margin:0;">Last webhook received 2 minutes ago • Signature verified</div>
+        </div>
+        <button class="btn btn-ghost" style="margin-left:auto;">View settings →</button>
+      </div>
+    </div>
+    <div style="font-size:13px;color:var(--muted);">Next: set up your wallet policy. <button class="btn btn-primary" style="margin-left:12px;">Continue →</button></div>
+  </div>
+</div>
+</div>
+
+<!-- ============================== M4 ============================== -->
+<div class="screen-label"><span class="tag">M4</span>Settings — COD Rewards card (post-onboarding management)</div>
+<div class="frame">
+<div class="admin-shell">
+  <div class="sidebar">
+    <div class="logo">Batua</div>
+    <div>Wallet</div><div>Loyalty</div><div>Transactions</div><div>Customers</div><div>Gift Cards</div><div>Referrals</div><div>Notifications</div>
+    <a href="#" class="active">⚙ Settings</a>
+    <div>About</div>
+  </div>
+  <div class="content">
+    <div class="h1">Settings</div>
+    <div class="sub">Store, connectors, notifications, COD rewards</div>
+
+    <div style="display:flex;gap:24px;border-bottom:1px solid var(--border);margin-bottom:24px;font-size:13px;font-weight:600;">
+      <div style="padding-bottom:12px;color:var(--muted);">My Store</div>
+      <div style="padding-bottom:12px;color:var(--muted);">Connectors</div>
+      <div style="padding-bottom:12px;color:var(--muted);">Notifications</div>
+      <div style="padding-bottom:12px;color:var(--primary);border-bottom:2px solid var(--primary);">COD Rewards</div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div>
+          <div class="card-title">COD rewards <span class="pill pill-success" style="margin-left:6px;">● Active</span></div>
+          <div class="card-sub">Held credits release after your shipping partner confirms delivery.</div>
+        </div>
+        <div class="toggle on"><div class="toggle-track"></div><span style="font-size:13px;color:var(--primary);font-weight:600;">On</span></div>
+      </div>
+
+      <div style="background:var(--surface-2);padding:14px 16px;border-radius:8px;margin-top:8px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+        <div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;">Provider</div><div style="font-weight:600;margin-top:2px;">Shiprocket</div></div>
+        <div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;">Last event</div><div style="font-weight:600;margin-top:2px;">12 min ago</div></div>
+        <div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;">Pending orders</div><div style="font-weight:600;margin-top:2px;">47 <a href="#" style="color:var(--primary);font-weight:500;font-size:12px;">View →</a></div></div>
+      </div>
+
+      <div class="row" style="margin-top:20px;">
+        <div class="field"><label>COD cashback %</label><div class="slider-row"><div class="slider-bar"><div class="slider-knob" style="left:23%;"></div></div><div class="slider-value">3%</div></div></div>
+        <div class="field"><label>Auto-cancel after</label><input value="14 days" /></div>
+        <div class="field"><label>Notify customer on release</label><div class="toggle on" style="margin-top:6px;"><div class="toggle-track"></div></div></div>
+      </div>
+
+      <div style="display:flex;gap:12px;margin-top:8px;">
+        <button class="btn btn-secondary">Edit connector</button>
+        <button class="btn btn-secondary">Test connection</button>
+        <button class="btn btn-ghost" style="color:var(--error);margin-left:auto;">Disconnect</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+<div class="note"><strong>Open Q1</strong> — When the toggle is flipped OFF while pending COD orders exist, what happens? Options: (a) keep processing existing pending, block new Held entries (recommended); (b) auto-cancel all pending immediately. UX needs a confirm dialog if (b).</div>
+
+<!-- ============================== M5 ============================== -->
+<div class="screen-label"><span class="tag">M5</span>Edit connector — modal (rotate secret, switch vendor)</div>
+<div class="frame modal-overlay">
+<div class="modal">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+    <div class="card-title" style="font-size:16px;">Edit logistics connector</div>
+    <div style="color:var(--muted);cursor:pointer;font-size:20px;">×</div>
+  </div>
+
+  <label style="display:block;font-size:12px;font-weight:500;color:var(--muted);margin-bottom:8px;">Logistics provider</label>
+  <div class="radio-grid" style="margin-bottom:8px;">
+    <div class="radio-item selected"><div class="radio-dot"></div>Shiprocket</div>
+    <div class="radio-item"><div class="radio-dot"></div>Delhivery</div>
+    <div class="radio-item"><div class="radio-dot"></div>Pickrr</div>
+    <div class="radio-item"><div class="radio-dot"></div>Other (generic)</div>
+  </div>
+  <div style="background:#fef3c7;color:#78350f;padding:10px 12px;border-radius:6px;font-size:12px;margin-bottom:16px;line-height:1.5;">
+    <strong>⚠ Switching providers</strong> will stop webhook events from the current one. Existing pending COD orders will still release when the current provider's webhook fires — until you remove this connector.
+  </div>
+
+  <label style="display:block;font-size:12px;font-weight:500;color:var(--muted);margin-bottom:4px;">Webhook URL</label>
+  <div class="code-display" style="margin-bottom:16px;">
+    https://breeze.app/webhooks/logistics/shiprocket/b0000000-0000-0000-0000-000000000007
+    <button class="btn btn-ghost" style="padding:2px 8px;">📋</button>
+  </div>
+
+  <label style="display:block;font-size:12px;font-weight:500;color:var(--muted);margin-bottom:4px;">Webhook secret</label>
+  <div class="code-display" style="margin-bottom:8px;">shp_sec_•••••••••••••••••••••••• <span style="font-size:11px;color:var(--muted);">last rotated 28 days ago</span></div>
+  <button class="btn btn-secondary" style="margin-bottom:16px;">🔄 Rotate secret</button>
+
+  <div style="background:var(--surface-2);padding:10px 12px;border-radius:6px;font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.5;">
+    After rotating, paste the new secret into Shiprocket within <strong>60 minutes</strong>. Webhooks signed with the old secret continue to be accepted during this grace period.
+  </div>
+
+  <div style="display:flex;justify-content:flex-end;gap:8px;">
+    <button class="btn btn-secondary">Cancel</button>
+    <button class="btn btn-primary">Save</button>
+  </div>
+</div>
+</div>
+<div class="note"><strong>Open Q2</strong> — Multi-logistics merchants. Should this modal allow <em>multiple</em> active logistics connectors per merchant (Shiprocket + Delhivery simultaneously, first-webhook-wins)? Or strict single-vendor? Recommend single for v1.</div>
+
+<!-- ============================== M6 ============================== -->
+<div class="screen-label"><span class="tag">M6</span>/admin/cod — Pending COD orders list</div>
+<div class="frame">
+<div class="admin-shell">
+  <div class="sidebar">
+    <div class="logo">Batua</div>
+    <div class="group">Wallet</div>
+    <a href="#" class="sub active">Pending COD</a>
+    <div class="sub">Policies</div>
+    <div>Loyalty</div><div>Transactions</div><div>Customers</div><div>Gift Cards</div><div>Referrals</div><div>Notifications</div><div>Settings</div><div>About</div>
+  </div>
+  <div class="content">
+    <div class="h1">Pending COD orders</div>
+    <div class="sub">Credits held until your shipping partner confirms delivery.</div>
+
+    <div class="stat-grid">
+      <div class="stat"><div class="stat-value">47</div><div class="stat-label">Pending</div></div>
+      <div class="stat"><div class="stat-value" style="color:var(--success);">12</div><div class="stat-label">Released today</div></div>
+      <div class="stat"><div class="stat-value" style="color:var(--error);">3</div><div class="stat-label">RTO today</div></div>
+      <div class="stat"><div class="stat-value" style="color:var(--warning);">1</div><div class="stat-label">Auto-cancelled / wk</div></div>
+      <div class="stat"><div class="stat-value">₹14,250</div><div class="stat-label">Held value</div></div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+      <div class="pill pill-info">All states</div>
+      <div class="pill pill-muted">Pending (47)</div>
+      <div class="pill pill-muted">Delivered (124)</div>
+      <div class="pill pill-muted">RTO (8)</div>
+      <div class="pill pill-muted">Auto-cancelled (1)</div>
+      <span style="margin-left:auto;font-size:12px;color:var(--muted);">Filter by vendor, age, customer →</span>
+    </div>
+
+    <table>
+      <thead><tr><th>Order #</th><th>Customer</th><th>Pending</th><th>Vendor</th><th>Last update</th><th>Expected release</th><th></th></tr></thead>
+      <tbody>
+        <tr><td><strong>#3401</strong></td><td>Priya M.</td><td>₹150</td><td>Shiprocket</td><td>Out for delivery · 2h ago</td><td>in 4 days</td><td><button class="btn btn-ghost">⋯</button></td></tr>
+        <tr><td><strong>#3398</strong></td><td>Vikram S.</td><td>₹85</td><td>Shiprocket</td><td>In transit · 1d ago</td><td>in 6 days</td><td><button class="btn btn-ghost">⋯</button></td></tr>
+        <tr style="background:color-mix(in srgb, var(--warning) 4%, transparent);"><td><strong>#3380</strong></td><td>Anita K.</td><td>₹220</td><td>Shiprocket</td><td><span class="pill pill-warning">No update · 11d</span></td><td><strong style="color:var(--warning);">in 3 days</strong></td><td><button class="btn btn-ghost">⋯</button></td></tr>
+        <tr><td><strong>#3375</strong></td><td>Rajesh P.</td><td>₹120</td><td>Shiprocket</td><td>Pickup scheduled · 4h ago</td><td>in 13 days</td><td><button class="btn btn-ghost">⋯</button></td></tr>
+        <tr><td><strong>#3372</strong></td><td>Kavya R.</td><td>₹95</td><td>Shiprocket</td><td>In transit · 2d ago</td><td>in 9 days</td><td><button class="btn btn-ghost">⋯</button></td></tr>
+      </tbody>
+    </table>
+
+    <div style="margin-top:16px;font-size:12px;color:var(--muted);">Showing 5 of 47 pending · <a href="#" style="color:var(--primary);">Export CSV</a></div>
+  </div>
+</div>
+</div>
+<div class="note"><strong>Open Q4</strong> — Stuck orders (the yellow row, 11 days no update, 3 days from auto-cancel). Should the merchant get a weekly digest email summarizing all near-stale orders? Or a notification only when something is auto-cancelled?</div>
+
+<!-- ============================== M7 ============================== -->
+<div class="screen-label"><span class="tag">M7</span>/admin/cod — Order detail drawer (timeline + force-release / force-cancel)</div>
+<div class="frame">
+<div style="display:flex;justify-content:flex-end;max-width:1280px;margin:0 auto;background:rgba(0,0,0,0.3);border-radius:12px;">
+  <div class="drawer">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
+      <div>
+        <div style="font-size:18px;font-weight:700;">Order #3401</div>
+        <div style="font-size:12px;color:var(--muted);">Priya M. · placed 14:23, today</div>
+      </div>
+      <div style="color:var(--muted);cursor:pointer;font-size:20px;">×</div>
+    </div>
+
+    <div style="background:var(--surface-2);padding:12px 14px;border-radius:8px;margin-bottom:20px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;">Pending amount</div><div style="font-weight:700;font-size:18px;color:var(--warning);">₹150</div></div>
+      <div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;">State</div><div style="margin-top:4px;"><span class="pill pill-warning">● Pending</span></div></div>
+      <div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;">Vendor</div><div style="font-weight:600;font-size:13px;">Shiprocket</div></div>
+      <div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;">AWB</div><div style="font-weight:600;font-size:13px;font-family:'SF Mono',monospace;">1234567890</div></div>
+    </div>
+
+    <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);margin-bottom:12px;">Timeline</div>
+    <div class="timeline">
+      <div class="timeline-item success">
+        <div class="timeline-time">14:23 · today</div>
+        <div class="timeline-title">Order placed (COD)</div>
+        <div class="timeline-desc">Held ₹150 → CodPending bucket · <a href="#" style="color:var(--primary);">ledger entry</a></div>
+      </div>
+      <div class="timeline-item muted">
+        <div class="timeline-time">14:25 · Shiprocket webhook</div>
+        <div class="timeline-title">Pickup scheduled</div>
+        <div class="timeline-desc">No ledger change. Signature ✓</div>
+      </div>
+      <div class="timeline-item muted">
+        <div class="timeline-time">18:10 · Shiprocket webhook</div>
+        <div class="timeline-title">In transit</div>
+        <div class="timeline-desc">No ledger change. Signature ✓</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-time">11:55 · Shiprocket webhook</div>
+        <div class="timeline-title">Out for delivery</div>
+        <div class="timeline-desc">No ledger change. Signature ✓ · <a href="#" style="color:var(--primary);">payload</a></div>
+      </div>
+      <div class="timeline-item muted" style="opacity:0.5;">
+        <div class="timeline-time">expected</div>
+        <div class="timeline-title">Delivery confirmation</div>
+        <div class="timeline-desc">Releases ₹150 to wallet, notifies customer</div>
+      </div>
+    </div>
+
+    <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:8px;">
+      <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);margin-bottom:12px;">Manual override <span class="pill pill-muted" style="margin-left:4px;">audit-logged</span></div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-secondary">✓ Force release ₹150</button>
+        <button class="btn btn-danger">✕ Force cancel</button>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:8px;">Use when Shiprocket fails to fire a webhook for a delivered/returned order.</div>
+    </div>
+  </div>
+</div>
+</div>
+<div class="note"><strong>Open Q3</strong> — Partial deliveries. If a 3-item order delivers in 2 shipments, the timeline gets two "delivered" events. v1 proposal: release on the <em>first</em> "delivered" — but should the timeline show subsequent shipment events as informational without doubling the credit?</div>
+
+<!-- ============================== M8 ============================== -->
+<div class="screen-label"><span class="tag">M8</span>/admin/cod — Analytics tab</div>
+<div class="frame">
+<div class="admin-shell">
+  <div class="sidebar">
+    <div class="logo">Batua</div>
+    <div class="group">Wallet</div><a href="#" class="sub active">Pending COD</a><div class="sub">Policies</div>
+    <div>Loyalty</div><div>Transactions</div><div>Customers</div><div>Gift Cards</div><div>Referrals</div><div>Notifications</div><div>Settings</div><div>About</div>
+  </div>
+  <div class="content">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px;">
+      <div><div class="h1">COD analytics</div><div class="sub" style="margin:0;">Last 30 days</div></div>
+      <div style="font-size:12px;color:var(--muted);">Range: <strong>Apr 25 — May 25</strong> ▾</div>
+    </div>
+
+    <div style="display:flex;gap:16px;border-bottom:1px solid var(--border);margin-bottom:24px;font-size:13px;font-weight:600;">
+      <div style="padding-bottom:10px;color:var(--muted);">Orders</div>
+      <div style="padding-bottom:10px;color:var(--primary);border-bottom:2px solid var(--primary);">Analytics</div>
+    </div>
+
+    <div class="stat-grid" style="grid-template-columns:repeat(4,1fr);">
+      <div class="stat"><div class="stat-value">62%</div><div class="stat-label">COD order share</div><div style="font-size:11px;color:var(--success);margin-top:4px;">↓ 3% vs prev. month</div></div>
+      <div class="stat"><div class="stat-value">28%</div><div class="stat-label">RTO rate</div><div style="font-size:11px;color:var(--error);margin-top:4px;">↑ 2% vs prev. month</div></div>
+      <div class="stat"><div class="stat-value">9%</div><div class="stat-label">COD→prepaid conversion</div><div style="font-size:11px;color:var(--success);margin-top:4px;">↑ 4% vs prev. month</div></div>
+      <div class="stat"><div class="stat-value">₹14,250</div><div class="stat-label">Held right now</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Held vs Released vs Cancelled — last 30 days</div>
+      <div class="card-sub">Daily flow through the COD lifecycle.</div>
+      <div style="height:200px;background:linear-gradient(to top, var(--surface-2), transparent);border-radius:8px;display:flex;align-items:flex-end;gap:4px;padding:12px;">
+        <!-- fake bar chart -->
+        <div style="flex:1;background:var(--primary);height:60%;border-radius:2px;opacity:0.7;"></div>
+        <div style="flex:1;background:var(--primary);height:75%;border-radius:2px;opacity:0.7;"></div>
+        <div style="flex:1;background:var(--primary);height:50%;border-radius:2px;opacity:0.7;"></div>
+        <div style="flex:1;background:var(--primary);height:80%;border-radius:2px;opacity:0.7;"></div>
+        <div style="flex:1;background:var(--primary);height:65%;border-radius:2px;opacity:0.7;"></div>
+        <div style="flex:1;background:var(--primary);height:90%;border-radius:2px;opacity:0.7;"></div>
+        <div style="flex:1;background:var(--primary);height:70%;border-radius:2px;opacity:0.7;"></div>
+        <div style="flex:1;background:var(--primary);height:85%;border-radius:2px;"></div>
+        <div style="flex:1;background:var(--primary);height:95%;border-radius:2px;"></div>
+        <div style="flex:1;background:var(--primary);height:60%;border-radius:2px;"></div>
+      </div>
+      <div style="display:flex;gap:16px;margin-top:12px;font-size:12px;color:var(--muted);"><span><span style="display:inline-block;width:10px;height:10px;background:var(--primary);border-radius:2px;"></span> Held</span><span><span style="display:inline-block;width:10px;height:10px;background:var(--success);border-radius:2px;"></span> Released</span><span><span style="display:inline-block;width:10px;height:10px;background:var(--error);border-radius:2px;"></span> RTO/Cancelled</span></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ============================== M9 ============================== -->
+<div class="screen-label"><span class="tag">M9</span>Notification template editor — three new COD events</div>
+<div class="frame">
+<div class="admin-shell">
+  <div class="sidebar">
+    <div class="logo">Batua</div>
+    <div>Wallet</div><div>Loyalty</div><div>Transactions</div><div>Customers</div><div>Gift Cards</div><div>Referrals</div><a href="#" class="active">Notifications</a><div>Settings</div><div>About</div>
+  </div>
+  <div class="content">
+    <div class="h1">Notification templates</div>
+    <div class="sub">Edit the message customers receive at every lifecycle moment.</div>
+
+    <div style="display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap;">
+      <div class="pill pill-muted">order_earned</div>
+      <div class="pill pill-muted">order_redeemed</div>
+      <div class="pill pill-muted">birthday_bonus</div>
+      <div class="pill" style="background:color-mix(in srgb, var(--primary) 14%, transparent);color:var(--primary);">cod_credit_held <span style="margin-left:4px;">NEW</span></div>
+      <div class="pill pill-muted">cod_credit_released <span style="font-weight:700;background:var(--success);color:#fff;padding:0 5px;border-radius:3px;margin-left:4px;font-size:9px;">NEW</span></div>
+      <div class="pill pill-muted">cod_credit_cancelled <span style="font-weight:700;background:var(--success);color:#fff;padding:0 5px;border-radius:3px;margin-left:4px;font-size:9px;">NEW</span></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 320px;gap:24px;">
+      <div class="card">
+        <div class="card-title">cod_credit_held</div>
+        <div class="card-sub">Sent when a COD order is placed — credits are held pending delivery.</div>
+
+        <label style="display:block;font-size:12px;font-weight:500;color:var(--muted);margin-bottom:4px;">Channel</label>
+        <div style="display:flex;gap:6px;margin-bottom:16px;"><div class="pill" style="background:color-mix(in srgb, var(--success) 14%, transparent);color:var(--success);">● WhatsApp</div><div class="pill pill-muted">SMS</div><div class="pill pill-muted">Email</div></div>
+
+        <label style="display:block;font-size:12px;font-weight:500;color:var(--muted);margin-bottom:4px;">Message</label>
+        <textarea style="width:100%;height:100px;padding:10px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px;line-height:1.6;" rows="4">Hi {{customer_name}}! ₹{{amount}} cashback is on its way for order #{{order_id}} — will be added to your wallet once delivery is confirmed. Track your order: {{tracking_url}}</textarea>
+
+        <div style="margin-top:12px;font-size:12px;color:var(--muted);"><strong>Available variables:</strong> {{customer_name}} {{amount}} {{order_id}} {{tracking_url}} {{wallet_balance}}</div>
+
+        <div style="display:flex;gap:8px;margin-top:16px;">
+          <button class="btn btn-primary">Save</button>
+          <button class="btn btn-secondary">Send test to me</button>
+          <button class="btn btn-ghost" style="margin-left:auto;">Reset to default</button>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;">Preview</div>
+        <div class="wa-frame" style="max-width:none;">
+          <div class="wa-header">
+            <div class="wa-avatar">D</div>
+            <div><div class="wa-name">Desi Drapes</div><div class="wa-status">online</div></div>
+          </div>
+          <div class="wa-msg">Hi Priya! ₹150 cashback is on its way for order #3401 — will be added to your wallet once delivery is confirmed.<br><br>Track your order: <span style="color:#80c8ff;">https://shp.rt/abc</span></div>
+          <div class="wa-time">14:23</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ============================== M10 ============================== -->
+<div class="screen-label"><span class="tag">M10</span>Where does COD live in the sidebar? — two options</div>
+<div class="frame">
+<div class="sidebar-options">
+  <div class="sidebar-option">
+    <h4>Option A — Top-level "COD"</h4>
+    <div class="admin-shell" style="border:none;">
+      <div class="sidebar" style="border-radius:8px;">
+        <div class="logo">Batua</div>
+        <div>Wallet</div>
+        <a href="#" class="active">📦 COD</a>
+        <div>Loyalty</div>
+        <div>Transactions</div>
+        <div>Customers</div>
+        <div>Gift Cards</div>
+        <div>Referrals</div>
+        <div>Notifications</div>
+        <div>Settings</div>
+        <div>About</div>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-top:12px;line-height:1.6;"><strong>Pro:</strong> Discoverable, signals "COD is a feature." <strong>Con:</strong> Bloats top-level for merchants who don't use COD.</p>
+  </div>
+
+  <div class="sidebar-option">
+    <h4>Option B — Sub-item under Wallet</h4>
+    <div class="admin-shell" style="border:none;">
+      <div class="sidebar" style="border-radius:8px;">
+        <div class="logo">Batua</div>
+        <div class="group">Wallet ▾</div>
+        <div class="sub">Overview</div>
+        <a href="#" class="sub active">Pending COD</a>
+        <div class="sub">Policies</div>
+        <div>Loyalty</div>
+        <div>Transactions</div>
+        <div>Customers</div>
+        <div>Gift Cards</div>
+        <div>Referrals</div>
+        <div>Notifications</div>
+        <div>Settings</div>
+        <div>About</div>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-top:12px;line-height:1.6;"><strong>Pro:</strong> Conceptually correct — COD is a wallet bucket. Doesn't bloat top-level. <strong>Con:</strong> One extra click to reach.</p>
+  </div>
+</div>
+</div>
+<div class="note"><strong>Open Q (new):</strong> Pick A or B. Recommend B — COD is a bucket of the wallet ledger, not a peer feature; and merchants who never enable COD don't see the nav item.</div>
+
+<!-- ============================================================ -->
+<!-- ACTOR: CUSTOMER                                                -->
+<!-- ============================================================ -->
+<div class="actor-band"><span>Actor 2</span>Customer — storefront and WhatsApp lifecycle</div>
+
+<!-- ============================== C1 ============================== -->
+<div class="screen-label"><span class="tag">C1</span>Storefront — wallet with split balance (spendable vs pending COD)</div>
+<div class="frame">
+<div class="storefront-frame">
+  <div class="sf-header">Welcome back, Priya 👋</div>
+  <div>
+    <div class="sf-balance">₹540</div>
+    <div class="sf-balance-label">Spendable balance</div>
+  </div>
+  <div class="sf-pending">
+    <div>
+      <div class="sf-pending-lbl">Pending<span class="sf-info-icon">i</span></div>
+      <div class="sf-pending-amt">₹150</div>
+    </div>
+    <div style="font-size:11px;color:#94a3b8;text-align:right;line-height:1.4;">2 COD orders<br>awaiting delivery</div>
+  </div>
+  <div class="sf-tooltip" style="display:block;">
+    💡 Pending balance is held for COD orders — it becomes spendable once your order is delivered. Tap to see which orders.
+  </div>
+</div>
+</div>
+<div class="note"><strong>Open Q6</strong> — Showing pending immediately (as above) vs waiting 24h. Recommend: show immediately with the tooltip — transparency builds trust; the marketing site already promises "displayed vs spendable."</div>
+
+<!-- ============================== C2 ============================== -->
+<div class="screen-label"><span class="tag">C2</span>Storefront — wallet history (the COD lifecycle in customer view)</div>
+<div class="frame">
+<div class="storefront-frame">
+  <div class="sf-header">Recent activity</div>
+
+  <div class="sf-history">
+    <div class="sf-history-row">
+      <div>
+        <div class="sf-history-text">Cashback on order #3401</div>
+        <div class="sf-history-sub">Today · 14:23 · COD</div>
+        <span class="sf-status sf-status-pending">⏳ Pending delivery</span>
+      </div>
+      <div class="sf-amt-pending" style="font-weight:600;font-size:15px;">+₹150</div>
+    </div>
+
+    <div class="sf-history-row">
+      <div>
+        <div class="sf-history-text">Cashback on order #3398</div>
+        <div class="sf-history-sub">Yesterday · 11:05 · Delivered</div>
+        <span class="sf-status sf-status-released">✓ Released</span>
+      </div>
+      <div class="sf-amt-released" style="font-weight:600;font-size:15px;">+₹85</div>
+    </div>
+
+    <div class="sf-history-row">
+      <div>
+        <div class="sf-history-text">Redeemed at checkout</div>
+        <div class="sf-history-sub">2 days ago · Order #3393</div>
+      </div>
+      <div class="sf-amt-debit" style="font-weight:600;font-size:15px;">−₹120</div>
+    </div>
+
+    <div class="sf-history-row">
+      <div>
+        <div class="sf-history-text">Cashback on order #3387</div>
+        <div class="sf-history-sub">5 days ago · Returned</div>
+        <span class="sf-status sf-status-cancelled">✕ Cancelled (returned)</span>
+      </div>
+      <div class="sf-amt-cancelled" style="font-weight:600;font-size:15px;">+₹220</div>
+    </div>
+
+    <div class="sf-history-row">
+      <div>
+        <div class="sf-history-text">Welcome bonus</div>
+        <div class="sf-history-sub">2 weeks ago</div>
+        <span class="sf-status sf-status-released">✓ Released</span>
+      </div>
+      <div class="sf-amt-released" style="font-weight:600;font-size:15px;">+₹100</div>
+    </div>
+  </div>
+</div>
+</div>
+<div class="note">Three terminal states visible: <strong>Pending</strong> (yellow), <strong>Released</strong> (green check), <strong>Cancelled</strong> (struck-through, red). The struck-through cancelled entry preserves history transparency — the customer sees that ₹220 was promised but voided because they returned.</div>
+
+<!-- ============================== C3 ============================== -->
+<div class="screen-label"><span class="tag">C3</span>WhatsApp — cod_credit_held (fires when COD order placed)</div>
+<div class="frame">
+<div class="wa-frame">
+  <div class="wa-header">
+    <div class="wa-avatar">D</div>
+    <div><div class="wa-name">Desi Drapes</div><div class="wa-status">online</div></div>
+  </div>
+  <div class="wa-msg">Hi Priya! 📦 ₹150 cashback is on its way for order <strong>#3401</strong>.<br><br>It'll land in your wallet once delivery is confirmed (usually 3-7 days).<br><br>Track your order →</div>
+  <div class="wa-time">14:23 · just now</div>
+</div>
+</div>
+
+<!-- ============================== C4 ============================== -->
+<div class="screen-label"><span class="tag">C4</span>WhatsApp — cod_credit_released (fires on delivery confirmation)</div>
+<div class="frame">
+<div class="wa-frame">
+  <div class="wa-header">
+    <div class="wa-avatar">D</div>
+    <div><div class="wa-name">Desi Drapes</div><div class="wa-status">online</div></div>
+  </div>
+  <div class="wa-msg">🎉 Your order <strong>#3401</strong> was delivered, Priya!<br><br>₹150 cashback is now <strong>spendable</strong> in your wallet.<br><br>Your balance: ₹690<br><br>Shop again →</div>
+  <div class="wa-time">21:35 · just now</div>
+</div>
+</div>
+
+<!-- ============================== C5 ============================== -->
+<div class="screen-label"><span class="tag">C5</span>WhatsApp — cod_credit_cancelled (fires on RTO/cancellation)</div>
+<div class="frame">
+<div class="wa-frame">
+  <div class="wa-header">
+    <div class="wa-avatar">D</div>
+    <div><div class="wa-name">Desi Drapes</div><div class="wa-status">online</div></div>
+  </div>
+  <div class="wa-msg">Hi Priya — we noticed order <strong>#3387</strong> was returned.<br><br>The pending ₹220 cashback has been removed from your wallet.<br><br>Sorry it didn't work out! Want to try again? →</div>
+  <div class="wa-time">16:42 · just now</div>
+</div>
+</div>
+<div class="note">Three notification copies cover the full COD lifecycle for the customer. Tone is gentle on cancellation (apology + soft re-engagement). Editable in the merchant's notification template editor (M9).</div>
+
+<div class="intro" style="padding:32px;">
+  <p style="font-size:13px;">End of mockups. After you decide on Q1–Q6 and Q (sidebar placement, M10), I can drop a Skulls plan into <code>plans/cod-rewards-feature/</code> with phase files matching the design.</p>
+</div>
+
+</body>
+</html>

@@ -58,11 +58,11 @@
   }}
 >
   <div class="form-field">
-    <Input value={geoCode} label="Geo Code" placeholder="india" onInput={handleGeoCodeInput} />
+    <Input value={geoCode} label="Geo code" placeholder="india" onInput={handleGeoCodeInput} />
   </div>
 
   <div class="form-field">
-    <Input value={name} label="Policy Name" placeholder="India Default" onInput={handleNameInput} />
+    <Input value={name} label="Policy name" placeholder="India default" onInput={handleNameInput} />
   </div>
 
   <div class="form-field">
@@ -107,13 +107,13 @@
     width: 100%;
     padding: var(--space-3) var(--space-4);
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     color: var(--color-text);
     font-family: var(--font-mono);
     font-size: var(--font-size-sm);
     resize: vertical;
     line-height: var(--line-height-base);
+    border: 1px solid var(--color-border);
   }
 
   .config-textarea:focus {

@@ -69,23 +69,55 @@
     <div class="code-row">
       <code class="detail-code">{displayCode}</code>
       {#if !codeRevealed && !codeCopied}
-        <button class="icon-btn" onclick={handleReveal} aria-label="Reveal code" title="Reveal code">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-            <circle cx="12" cy="12" r="3"/>
+        <button
+          class="icon-btn"
+          onclick={handleReveal}
+          aria-label="Reveal code"
+          title="Reveal code"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+            <circle cx="12" cy="12" r="3" />
           </svg>
         </button>
       {:else if codeRevealed}
         <button class="icon-btn" onclick={handleCopy} aria-label="Copy code" title="Copy code">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
           </svg>
         </button>
       {:else if codeCopied}
         <button class="icon-btn copied" aria-label="Copied" title="Copied!">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12"/>
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="20 6 9 17 4 12" />
           </svg>
         </button>
       {/if}
@@ -95,11 +127,11 @@
 
   <div class="detail-grid">
     <div class="detail-item">
-      <span class="detail-label">Initial Amount</span>
+      <span class="detail-label">Initial amount</span>
       <span class="detail-value">{formatCurrencyINR(card.initial_amount)}</span>
     </div>
     <div class="detail-item">
-      <span class="detail-label">Current Balance</span>
+      <span class="detail-label">Current balance</span>
       <span class="detail-value">{formatCurrencyINR(card.current_amount)}</span>
     </div>
     <div class="detail-item">

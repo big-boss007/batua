@@ -29,7 +29,7 @@
     stats !== null
       ? [
           {
-            label: 'Total Wallets',
+            label: 'Total wallets',
             value: stats.total_wallets,
             metricType: 'number' as const,
             icon: 'W'
@@ -41,19 +41,19 @@
             icon: 'C'
           },
           {
-            label: 'Ledger Entries',
+            label: 'Ledger entries',
             value: stats.total_ledger_entries,
             metricType: 'number' as const,
             icon: '#'
           },
           {
-            label: 'Active Credits',
+            label: 'Active credits',
             value: stats.active_credits,
             metricType: 'currency' as const,
             icon: '$'
           },
           {
-            label: 'Total Redeemed',
+            label: 'Total redeemed',
             value: stats.total_redeemed,
             metricType: 'currency' as const,
             icon: 'R'
@@ -160,7 +160,7 @@
 
       <div class="info-controls">
         <div class="control-item">
-          <span class="control-label">Plan Tier</span>
+          <span class="control-label">Plan tier</span>
           <div class="plan-select">
             <Select
               items={planItems}
@@ -253,12 +253,12 @@
 
   .info-card {
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     padding: var(--space-6);
     display: flex;
     flex-direction: column;
     gap: var(--space-6);
+    box-shadow: var(--shadow-card);
   }
 
   .info-grid {

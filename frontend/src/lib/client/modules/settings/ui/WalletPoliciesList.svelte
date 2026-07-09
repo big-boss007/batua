@@ -45,7 +45,7 @@
     {#if pointsPolicies.length > 0}
       <div class="category-section">
         <div class="category-header">
-          <span class="category-label">Points Buckets</span>
+          <span class="category-label">Points buckets</span>
           <span class="category-badge badge-points">Points</span>
           <span class="category-line"></span>
         </div>
@@ -70,7 +70,7 @@
               <div class="policy-details">
                 <div class="detail-grid">
                   <div class="detail-item">
-                    <span class="detail-label">Min Redemption</span>
+                    <span class="detail-label">Min redemption</span>
                     <span class="detail-value">
                       {policy.min_redemption !== null ? policy.min_redemption : 'None'}
                     </span>
@@ -88,7 +88,7 @@
                     </span>
                   </div>
                 </div>
-                <Button text="Edit Policy" classes="btn-secondary" onclick={() => onEdit(policy)} />
+                <Button text="Edit policy" classes="btn-secondary" onclick={() => onEdit(policy)} />
               </div>
             {/if}
           </div>
@@ -99,7 +99,7 @@
     {#if cashPolicies.length > 0}
       <div class="category-section">
         <div class="category-header">
-          <span class="category-label">Cash Buckets</span>
+          <span class="category-label">Cash buckets</span>
           <span class="category-badge badge-cash">Cash</span>
           <span class="category-line"></span>
         </div>
@@ -124,7 +124,7 @@
               <div class="policy-details">
                 <div class="detail-grid">
                   <div class="detail-item">
-                    <span class="detail-label">Min Redemption</span>
+                    <span class="detail-label">Min redemption</span>
                     <span class="detail-value">
                       {policy.min_redemption !== null ? policy.min_redemption : 'None'}
                     </span>
@@ -142,7 +142,7 @@
                     </span>
                   </div>
                 </div>
-                <Button text="Edit Policy" classes="btn-secondary" onclick={() => onEdit(policy)} />
+                <Button text="Edit policy" classes="btn-secondary" onclick={() => onEdit(policy)} />
               </div>
             {/if}
           </div>
@@ -168,10 +168,10 @@
 
   .policy-item {
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     overflow: hidden;
     transition: box-shadow var(--transition-fast);
+    box-shadow: var(--shadow-card);
   }
 
   .policy-item.expanded {
@@ -249,7 +249,6 @@
     font-weight: var(--font-weight-semibold);
   }
 
-
   .category-section {
     display: flex;
     flex-direction: column;
@@ -272,7 +271,7 @@
   }
 
   .category-badge {
-    font-size: 11px;
+    font-size: var(--font-size-xs);
     font-weight: var(--font-weight-semibold);
     padding: 2px 10px;
     border-radius: 100px;

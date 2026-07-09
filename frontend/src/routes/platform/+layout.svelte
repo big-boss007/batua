@@ -22,14 +22,14 @@
 </script>
 
 <svelte:head>
-  <title>Breeze Platform</title>
+  <title>Breeze platform</title>
 </svelte:head>
 
 <div class="platform-layout">
   <PlatformSidebar collapsed={sidebarCollapsed} ontoggle={handleToggleSidebar} />
 
   <div class="platform-main">
-    <div class="accent-bar">Breeze Platform</div>
+    <div class="accent-bar">Breeze platform</div>
 
     <header class="top-bar">
       <div class="top-bar-left">
@@ -49,7 +49,7 @@
             <line x1="3" y1="18" x2="21" y2="18"></line>
           </svg>
         </button>
-        <span class="platform-title">Platform Admin</span>
+        <span class="platform-title">Platform admin</span>
       </div>
       <div class="top-bar-right">
         <ThemeSwitcher mode="toggle" onchange={handleThemeChange} />

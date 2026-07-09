@@ -91,7 +91,7 @@
   </div>
 
   <Button
-    text="Create Code"
+    text="Create code"
     classes="btn-primary"
     disabled={!customerId || isSubmitting}
     type="submit"

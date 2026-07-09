@@ -12,38 +12,38 @@
     {
       label: 'Wallet',
       href: '/admin',
-      icon: '\u25A6',
+      icon: 'wallet',
       children: [
         { label: 'Overview', href: '/admin', icon: '' },
-        { label: 'Wallet Policies', href: '/admin/wallet-policies', icon: '' }
+        { label: 'Wallet policies', href: '/admin/wallet-policies', icon: '' }
       ]
     },
     {
       label: 'Loyalty',
       href: '/admin/loyalty',
-      icon: '\u2665',
+      icon: 'heart',
       children: [
-        { label: 'Earn Rules', href: '/admin/rules', icon: '' },
-        { label: 'VIP Tiers', href: '/admin/loyalty', icon: '' },
+        { label: 'Earn rules', href: '/admin/rules', icon: '' },
+        { label: 'VIP tiers', href: '/admin/loyalty', icon: '' },
         { label: 'Memberships', href: '/admin/memberships', icon: '' },
         { label: 'Campaigns', href: '/admin/campaigns', icon: '' }
       ]
     },
-    { label: 'Transactions', href: '/admin/transactions', icon: '\u21C4' },
-    { label: 'Customers', href: '/admin/customers', icon: '\u2616' },
-    { label: 'Gift Cards', href: '/admin/gift-cards', icon: '\u2606' },
+    { label: 'Transactions', href: '/admin/transactions', icon: 'swap' },
+    { label: 'Customers', href: '/admin/customers', icon: 'users' },
+    { label: 'Gift cards', href: '/admin/gift-cards', icon: 'gift' },
     {
       label: 'Referrals',
       href: '/admin/referrals',
-      icon: '\u2192',
+      icon: 'share',
       children: [
-        { label: 'Referral Program', href: '/admin/referrals', icon: '' },
+        { label: 'Referral program', href: '/admin/referrals', icon: '' },
         { label: 'Influencers', href: '/admin/influencers', icon: '' }
       ]
     },
-    { label: 'Notifications', href: '/admin/notifications', icon: '\u2709' },
-    { label: 'Settings', href: '/admin/settings', icon: '\u2638' },
-    { label: 'About', href: '/admin/about', icon: '\u24d8' }
+    { label: 'Notifications', href: '/admin/notifications', icon: 'bell' },
+    { label: 'Settings', href: '/admin/settings', icon: 'settings' },
+    { label: 'About', href: '/admin/about', icon: 'info' }
   ];
 
   let sidebarCollapsed = $state(false);
@@ -87,7 +87,7 @@
 </script>
 
 <svelte:head>
-  <title>Batua Admin</title>
+  <title>Batua admin</title>
 </svelte:head>
 
 <div class="admin-layout">
@@ -112,7 +112,7 @@
             <line x1="3" y1="18" x2="21" y2="18"></line>
           </svg>
         </button>
-        <span class="merchant-name">Merchant Admin</span>
+        <span class="merchant-name">Merchant admin</span>
         {#if merchantName}
           <Pill text={merchantName} classes="pill-neutral" />
         {/if}
@@ -195,7 +195,6 @@
     padding: var(--space-8);
     overflow-y: auto;
   }
-
 
   @media (max-width: 768px) {
     .mobile-toggle {

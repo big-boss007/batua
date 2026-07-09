@@ -35,9 +35,8 @@
     display: flex;
     align-items: stretch;
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--shadow-card);
     overflow: hidden;
     transition: box-shadow var(--transition-fast);
   }

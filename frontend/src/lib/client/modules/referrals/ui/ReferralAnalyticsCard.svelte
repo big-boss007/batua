@@ -9,15 +9,15 @@
 </script>
 
 <div class="analytics-card">
-  <h3 class="analytics-title">Referral Analytics</h3>
+  <h3 class="analytics-title">Referral analytics</h3>
   <div class="metrics-grid">
     <div class="metric">
       <span class="metric-value">{analytics.total_codes}</span>
-      <span class="metric-label">Total Codes</span>
+      <span class="metric-label">Total codes</span>
     </div>
     <div class="metric">
       <span class="metric-value">{analytics.total_referrals}</span>
-      <span class="metric-label">Total Referrals</span>
+      <span class="metric-label">Total referrals</span>
     </div>
     <div class="metric">
       <span class="metric-value">{analytics.total_conversions}</span>
@@ -25,7 +25,7 @@
     </div>
     <div class="metric">
       <span class="metric-value">{formattedRate}</span>
-      <span class="metric-label">Conversion Rate</span>
+      <span class="metric-label">Conversion rate</span>
     </div>
     {#if analytics.total_suspicious > 0}
       <div class="metric metric-warning">
@@ -43,8 +43,8 @@
     gap: var(--space-4);
     padding: var(--space-6);
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
   }
 
   .analytics-title {

@@ -18,25 +18,25 @@
 
   let metricItems = $derived([
     {
-      label: 'Total Merchants',
+      label: 'Total merchants',
       value: stats.total_merchants,
       metricType: 'number' as const,
       icon: 'M'
     },
     {
-      label: 'Total Wallets',
+      label: 'Total wallets',
       value: stats.total_wallets,
       metricType: 'number' as const,
       icon: 'W'
     },
     {
-      label: 'Ledger Entries',
+      label: 'Ledger entries',
       value: stats.total_ledger_entries,
       metricType: 'number' as const,
       icon: '#'
     },
     {
-      label: 'Active Credits',
+      label: 'Active credits',
       value: stats.total_value_in_system,
       metricType: 'currency' as const,
       icon: '$'
@@ -50,14 +50,14 @@
 
 <div class="dashboard">
   <div class="page-header">
-    <h1>Platform Dashboard</h1>
+    <h1>Platform dashboard</h1>
     <p class="subtitle">System-wide overview of the Breeze platform</p>
   </div>
 
   <StatsGrid items={metricItems} />
 
   <section class="events-section">
-    <h3 class="section-title">Recent Events</h3>
+    <h3 class="section-title">Recent events</h3>
     <EventsTable {events} />
   </section>
 </div>

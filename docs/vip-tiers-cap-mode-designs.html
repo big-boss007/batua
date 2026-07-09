@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VIP Tiers — Cap Mode Placements</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #f0f1f5;
+    --surface: #ffffff;
+    --surface-2: #f0f1f3;
+    --text: #1a1a2e;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --primary: #7c6aff;
+    --primary-hover: #6b5ce7;
+    --success: #10b981;
+    --error: #ef4444;
+    --warning: #f59e0b;
+    --info: #3b82f6;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+
+  .intro { background: #1a1a2e; color: #fff; padding: 48px 32px; text-align: center; }
+  .intro h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+  .intro p { color: rgba(255,255,255,0.7); max-width: 760px; margin: 0 auto; font-size: 14px; line-height: 1.6; }
+  .intro .legend { margin-top: 20px; font-size: 13px; color: rgba(255,255,255,0.85); }
+  .intro .legend strong { color: #fff; }
+
+  .screen-label {
+    position: sticky; top: 0; z-index: 10;
+    background: #fef3c7; color: #78350f;
+    border-top: 1px solid #f59e0b; border-bottom: 1px solid #f59e0b;
+    padding: 12px 32px; font-size: 12px; font-weight: 600; letter-spacing: 0.4px;
+  }
+  .screen-label .tag { background: #f59e0b; color: #fff; padding: 2px 8px; border-radius: 4px; margin-right: 10px; font-weight: 700; }
+  .screen-label .approach { font-weight: 400; color: #78350f; opacity: 0.85; }
+
+  /* Admin shell */
+  .frame { padding: 32px; }
+  .admin-shell {
+    display: flex;
+    max-width: 1280px; margin: 0 auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .sidebar { width: 200px; background: var(--surface-2); padding: 16px 12px; border-right: 1px solid var(--border); flex-shrink: 0; }
+  .sidebar .logo { font-weight: 700; color: var(--primary); margin-bottom: 16px; padding: 0 8px; font-size: 15px; }
+  .sidebar a, .sidebar div { display: block; padding: 7px 10px; color: var(--muted); font-size: 13px; font-weight: 500; text-decoration: none; border-radius: 6px; }
+  .sidebar a.active { background: var(--primary); color: #fff; }
+  .sidebar .group { color: var(--text); font-weight: 600; margin-top: 8px; }
+  .sidebar .sub { padding-left: 24px; font-size: 12px; }
+  .content { flex: 1; padding: 28px; min-width: 0; }
+
+  /* Page header */
+  .page-title { font-size: 24px; font-weight: 700; }
+  .page-subtitle { font-size: 13px; color: var(--muted); margin-bottom: 24px; margin-top: 4px; }
+
+  /* Program card */
+  .program-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .program-name { font-weight: 600; font-size: 15px; }
+  .program-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .program-actions { display: flex; gap: 8px; }
+
+  /* Tier table */
+  .tier-table {
+    width: 100%; border-collapse: collapse; font-size: 13px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .tier-table th { padding: 10px 14px; text-align: left; background: var(--surface-2); color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+  .tier-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); }
+  .tier-table tbody tr:last-child td { border-bottom: none; }
+  .tier-table .tier-pill {
+    display: inline-flex; align-items: center;
+    padding: 2px 10px; border-radius: 999px;
+    font-size: 11px; font-weight: 600;
+  }
+  .tier-pill-bronze { background: #f5e6d3; color: #8b5e3c; }
+  .tier-pill-silver { background: #e8e8e8; color: #555555; }
+  .tier-pill-gold { background: #fdf3d7; color: #92742e; }
+  .tier-pill-platinum { background: #e8eaf6; color: #3949ab; }
+  .tier-pill-diamond { background: #b9f2ff; color: #036c8d; }
+  .mult { font-weight: 700; font-family: 'SF Mono', monospace; color: var(--primary); }
+  .threshold { font-family: 'SF Mono', monospace; }
+
+  /* Buttons */
+  .btn { padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid transparent; font-family: inherit; }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-secondary { background: var(--surface); color: var(--text); border-color: var(--border); }
+  .btn-ghost { background: transparent; color: var(--primary); }
+  .btn-sm { padding: 4px 10px; font-size: 12px; }
+
+  /* Pill */
+  .pill { display: inline-flex; align-items: center; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px; letter-spacing: 0.3px; text-transform: uppercase; }
+  .pill-recommend { background: color-mix(in srgb, var(--success) 14%, transparent); color: var(--success); }
+
+  /* ========= DESIGN 1: Header strip ========= */
+  .d1-strip {
+    background: color-mix(in srgb, var(--info) 6%, transparent);
+    border: 1px solid color-mix(in srgb, var(--info) 24%, transparent);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 16px;
+    font-size: 13px;
+  }
+  .d1-strip .label { font-weight: 600; color: var(--info); display: flex; align-items: center; gap: 6px; }
+  .d1-strip select {
+    padding: 6px 12px;
+    border: 1px solid var(--border); border-radius: 6px;
+    font-size: 13px; font-weight: 600;
+    background: var(--surface); color: var(--text);
+    font-family: inherit;
+  }
+  .d1-strip .help { color: var(--muted); font-size: 12px; flex: 1; }
+  .d1-strip a { color: var(--primary); text-decoration: none; }
+
+  /* ========= DESIGN 2: Inline section above tiers ========= */
+  .d2-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .d2-section-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+  .d2-section-title { font-size: 14px; font-weight: 600; }
+  .d2-section-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .d2-mode-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+  .d2-mode-pill {
+    padding: 6px 14px;
+    border: 1px solid var(--border); border-radius: 6px;
+    font-size: 13px; font-weight: 600;
+    background: var(--surface); color: var(--text);
+    cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .d2-mode-pill.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .d2-mode-consequence {
+    background: var(--surface-2);
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+    display: flex; align-items: flex-start; gap: 8px;
+  }
+  .d2-mode-consequence strong { color: var(--text); }
+  .d2-mode-consequence .icon { color: var(--primary); flex-shrink: 0; }
+
+  /* ========= DESIGN 3: Impact panel below tiers ========= */
+  .d3-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 16px;
+  }
+  .d3-panel-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border);
+  }
+  .d3-panel-title { font-size: 14px; font-weight: 600; }
+  .d3-panel-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .d3-mode-toggle { display: flex; align-items: center; gap: 8px; }
+  .d3-mode-label { font-size: 11px; color: var(--muted); }
+  .d3-mode-segment {
+    display: inline-flex;
+    background: var(--surface-2); border-radius: 6px;
+    padding: 2px;
+  }
+  .d3-mode-segment > div {
+    padding: 4px 12px; border-radius: 4px;
+    font-size: 12px; font-weight: 600; color: var(--muted);
+    cursor: pointer;
+  }
+  .d3-mode-segment > div.active { background: var(--surface); color: var(--primary); box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+
+  .d3-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .d3-table th { padding: 8px 10px; text-align: left; background: var(--surface-2); font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); font-weight: 600; }
+  .d3-table td { padding: 10px; border-bottom: 1px solid var(--border); }
+  .d3-table tbody tr:last-child td { border-bottom: none; }
+  .d3-table td.amt { font-weight: 600; font-family: 'SF Mono', monospace; }
+  .d3-table td.amt-cap { color: var(--warning); }
+  .d3-help {
+    margin-top: 14px;
+    background: var(--surface-2); border-radius: 6px;
+    padding: 10px 14px; font-size: 12px; color: var(--muted); line-height: 1.5;
+    display: flex; align-items: flex-start; gap: 8px;
+  }
+  .d3-help strong { color: var(--text); }
+  .d3-help a { color: var(--primary); text-decoration: none; }
+
+  /* Note callout */
+  .note { background: #eef2ff; border-left: 3px solid var(--primary); color: #4338ca; padding: 12px 16px; border-radius: 4px; font-size: 12px; margin: 16px 32px 0; line-height: 1.5; max-width: 1280px; margin-left: auto; margin-right: auto; }
+  .note strong { color: #312e81; }
+</style>
+</head>
+<body>
+
+<div class="intro">
+  <h1>VIP Tiers — Where to place the cap-mode setting</h1>
+  <p>
+    Three placements within the existing VIP Tiers page. Same setting, three locations and visual weights.
+    Sherwani Studio's actual 5-tier ladder is used as the live data.
+  </p>
+  <div class="legend">
+    <strong>1</strong> Header strip · minimal &nbsp;·&nbsp;
+    <strong>2</strong> Inline section above the table · contextual &nbsp;·&nbsp;
+    <strong>3</strong> Impact panel below the table · consequence-first
+  </div>
+</div>
+
+<!-- ====================================================================== -->
+<!-- DESIGN 1 — Header strip                                                 -->
+<!-- ====================================================================== -->
+<div class="screen-label">
+  <span class="tag">1</span>Header strip
+  <span class="approach">— a thin blue info strip at the top of the VIP Tiers page, with the mode as a dropdown. Smallest footprint, visible immediately.</span>
+</div>
+<div class="frame">
+<div class="admin-shell">
+  <div class="sidebar">
+    <div class="logo">Batua</div>
+    <div>Wallet</div>
+    <div class="group">Loyalty ▾</div>
+    <div class="sub">Earn Rules</div>
+    <a href="#" class="sub active">VIP Tiers</a>
+    <div class="sub">Memberships</div>
+    <div class="sub">Campaigns</div>
+    <div>Transactions</div>
+    <div>Customers</div>
+    <div>Gift Cards</div>
+    <div>Settings</div>
+  </div>
+  <div class="content">
+    <div class="page-title">VIP Tiers</div>
+    <div class="page-subtitle">Reward your best customers with earn-rate multipliers as their spend grows.</div>
+
+    <div class="d1-strip">
+      <span class="label">⚙ Multiplier cap policy</span>
+      <select>
+        <option>Hard cap (recommended) — rule's max is the absolute ceiling</option>
+        <option>Base-rate cap — multipliers amplify above the rule's max</option>
+        <option>Per-tier cap — cap scales with each tier's multiplier</option>
+      </select>
+      <span class="pill pill-recommend">Recommended</span>
+      <span class="help"><a href="#">Learn more →</a></span>
+    </div>
+
+    <div class="program-card">
+      <div>
+        <div class="program-name">Sherwani Rewards</div>
+        <div class="program-meta">Criterion: rolling spend · Window: 365 days</div>
+      </div>
+      <div class="program-actions">
+        <button class="btn btn-secondary btn-sm">Edit program</button>
+        <button class="btn btn-primary btn-sm">+ Add tier</button>
+      </div>
+    </div>
+
+    <table class="tier-table">
+      <thead><tr><th>Tier</th><th>Rank</th><th>Threshold</th><th>Multiplier</th><th></th></tr></thead>
+      <tbody>
+        <tr><td><span class="tier-pill tier-pill-bronze">Bronze</span></td><td>1</td><td class="threshold">₹0+</td><td class="mult">1×</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+        <tr><td><span class="tier-pill tier-pill-silver">Silver</span></td><td>2</td><td class="threshold">₹5,000+</td><td class="mult">1.5×</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+        <tr><td><span class="tier-pill tier-pill-gold">Gold</span></td><td>3</td><td class="threshold">₹15,000+</td><td class="mult">2×</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+        <tr><td><span class="tier-pill tier-pill-platinum">Platinum</span></td><td>4</td><td class="threshold">₹50,000+</td><td class="mult">3×</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+        <tr><td><span class="tier-pill tier-pill-diamond">Diamond</span></td><td>5</td><td class="threshold">₹1,00,000+</td><td class="mult">5×</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</div>
+<div class="note">
+  <strong>Pros:</strong> instantly visible without scrolling; small, unobtrusive; reads as a global policy because it sits above everything. <strong>Cons:</strong> dropdown labels need to be long to be meaningful; merchants may treat it as a notification banner and dismiss visually; doesn't show consequences.
+</div>
+
+<!-- ====================================================================== -->
+<!-- DESIGN 2 — Inline section above tier table                              -->
+<!-- ====================================================================== -->
+<div class="screen-label">
+  <span class="tag">2</span>Inline section above the tier table
+  <span class="approach">— a proper "Multiplier behavior" panel between the program card and the tier table. Three pill buttons, one-line consequence below. Sits exactly where multipliers visually live.</span>
+</div>
+<div class="frame">
+<div class="admin-shell">
+  <div class="sidebar">
+    <div class="logo">Batua</div>
+    <div>Wallet</div>
+    <div class="group">Loyalty ▾</div>
+    <div class="sub">Earn Rules</div>
+    <a href="#" class="sub active">VIP Tiers</a>
+    <div class="sub">Memberships</div>
+    <div class="sub">Campaigns</div>
+    <div>Transactions</div>
+    <div>Customers</div>
+    <div>Gift Cards</div>
+    <div>Settings</div>
+  </div>
+  <div class="content">
+    <div class="page-title">VIP Tiers</div>
+    <div class="page-subtitle">Reward your best customers with earn-rate multipliers as their spend grows.</div>
+
+    <div class="program-card">
+      <div>
+        <div class="program-name">Sherwani Rewards</div>
+        <div class="program-meta">Criterion: rolling spend · Window: 365 days</div>
+      </div>
+      <div class="program-actions">
+        <button class="btn btn-secondary btn-sm">Edit program</button>
+        <button class="btn btn-primary btn-sm">+ Add tier</button>
+      </div>
+    </div>
+
+    <div class="d2-section">
+      <div class="d2-section-head">
+        <div>
+          <div class="d2-section-title">Multiplier behavior</div>
+          <div class="d2-section-desc">How tier, campaign &amp; membership multipliers interact with rule caps. Applies across the whole program.</div>
+        </div>
+      </div>
+      <div class="d2-mode-pills">
+        <div class="d2-mode-pill active">Hard cap <span class="pill pill-recommend">Recommended</span></div>
+        <div class="d2-mode-pill">Base-rate cap</div>
+        <div class="d2-mode-pill">Per-tier cap</div>
+      </div>
+      <div class="d2-mode-consequence">
+        <span class="icon">💡</span>
+        <span>
+          <strong>Hard cap:</strong> a Diamond customer (5×) on a ₹20,000 order earns <strong>₹450</strong> — the rule's max. The cap is the same across all tiers.
+          <a href="#" style="color:var(--primary); text-decoration:none;">Compare modes →</a>
+        </span>
+      </div>
+    </div>
+
+    <table class="tier-table">
+      <thead><tr><th>Tier</th><th>Rank</th><th>Threshold</th><th>Multiplier</th><th></th></tr></thead>
+      <tbody>
+        <tr><td><span class="tier-pill tier-pill-bronze">Bronze</span></td><td>1</td><td class="threshold">₹0+</td><td class="mult">1×</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+        <tr><td><span class="tier-pill tier-pill-silver">Silver</span></td><td>2</td><td class="threshold">₹5,000+</td><td class="mult">1.5×</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+        <tr><td><span class="tier-pill tier-pill-gold">Gold</span></td><td>3</td><td class="threshold">₹15,000+</td><td class="mult">2×</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+        <tr><td><span class="tier-pill tier-pill-platinum">Platinum</span></td><td>4</td><td class="threshold">₹50,000+</td><td class="mult">3×</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+        <tr><td><span class="tier-pill tier-pill-diamond">Diamond</span></td><td>5</td><td class="threshold">₹1,00,000+</td><td class="mult">5×</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</div>
+<div class="note">
+  <strong>Pros:</strong> explicit, contextual, prominent without being huge; the three modes are visible side-by-side; the consequence updates with the chosen mode. <strong>Cons:</strong> takes ~120px of vertical space on every visit; merchant who's not configuring multipliers (just adding a tier) still has to scroll past it.
+</div>
+
+<!-- ====================================================================== -->
+<!-- DESIGN 3 — Impact panel below tier table                                -->
+<!-- ====================================================================== -->
+<div class="screen-label">
+  <span class="tag">3</span>Impact panel below the tier table
+  <span class="approach">— mode selector is a small segmented control; the panel shows a live table of what each tier earns under the chosen mode for sample orders. Decision-by-seeing-consequence.</span>
+</div>
+<div class="frame">
+<div class="admin-shell">
+  <div class="sidebar">
+    <div class="logo">Batua</div>
+    <div>Wallet</div>
+    <div class="group">Loyalty ▾</div>
+    <div class="sub">Earn Rules</div>
+    <a href="#" class="sub active">VIP Tiers</a>
+    <div class="sub">Memberships</div>
+    <div class="sub">Campaigns</div>
+    <div>Transactions</div>
+    <div>Customers</div>
+    <div>Gift Cards</div>
+    <div>Settings</div>
+  </div>
+  <div class="content">
+    <div class="page-title">VIP Tiers</div>
+    <div class="page-subtitle">Reward your best customers with earn-rate multipliers as their spend grows.</div>
+
+    <div class="program-card">
+      <div>
+        <div class="program-name">Sherwani Rewards</div>
+        <div class="program-meta">Criterion: rolling spend · Window: 365 days</div>
+      </div>
+      <div class="program-actions">
+        <button class="btn btn-secondary btn-sm">Edit program</button>
+        <button class="btn btn-primary btn-sm">+ Add tier</button>
+      </div>
+    </div>
+
+    <table class="tier-table">
+      <thead><tr><th>Tier</th><th>Rank</th><th>Threshold</th><th>Multiplier</th><th></th></tr></thead>
+      <tbody>
+        <tr><td><span class="tier-pill tier-pill-bronze">Bronze</span></td><td>1</td><td class="threshold">₹0+</td><td class="mult">1×</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+        <tr><td><span class="tier-pill tier-pill-silver">Silver</span></td><td>2</td><td class="threshold">₹5,000+</td><td class="mult">1.5×</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+        <tr><td><span class="tier-pill tier-pill-gold">Gold</span></td><td>3</td><td class="threshold">₹15,000+</td><td class="mult">2×</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+        <tr><td><span class="tier-pill tier-pill-platinum">Platinum</span></td><td>4</td><td class="threshold">₹50,000+</td><td class="mult">3×</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+        <tr><td><span class="tier-pill tier-pill-diamond">Diamond</span></td><td>5</td><td class="threshold">₹1,00,000+</td><td class="mult">5×</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      </tbody>
+    </table>
+
+    <div class="d3-panel">
+      <div class="d3-panel-head">
+        <div>
+          <div class="d3-panel-title">Reward impact preview</div>
+          <div class="d3-panel-desc">What each tier actually earns under your "Order Reward 50" rule (5%, max ₹450).</div>
+        </div>
+        <div class="d3-mode-toggle">
+          <span class="d3-mode-label">Cap mode:</span>
+          <div class="d3-mode-segment">
+            <div class="active">Hard</div>
+            <div>Base-rate</div>
+            <div>Per-tier</div>
+          </div>
+        </div>
+      </div>
+
+      <table class="d3-table">
+        <thead>
+          <tr>
+            <th>Tier</th>
+            <th>Mult.</th>
+            <th>₹1,000 order</th>
+            <th>₹5,000 order</th>
+            <th>₹20,000 order</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="tier-pill tier-pill-bronze">Bronze</span></td><td class="mult">1×</td><td class="amt">₹50</td><td class="amt">₹250</td><td class="amt amt-cap">₹450 <span style="color:var(--muted); font-weight:400;">(cap)</span></td></tr>
+          <tr><td><span class="tier-pill tier-pill-silver">Silver</span></td><td class="mult">1.5×</td><td class="amt">₹75</td><td class="amt">₹375</td><td class="amt amt-cap">₹450 <span style="color:var(--muted); font-weight:400;">(cap)</span></td></tr>
+          <tr><td><span class="tier-pill tier-pill-gold">Gold</span></td><td class="mult">2×</td><td class="amt">₹100</td><td class="amt amt-cap">₹450 <span style="color:var(--muted); font-weight:400;">(cap)</span></td><td class="amt amt-cap">₹450 <span style="color:var(--muted); font-weight:400;">(cap)</span></td></tr>
+          <tr><td><span class="tier-pill tier-pill-platinum">Platinum</span></td><td class="mult">3×</td><td class="amt">₹150</td><td class="amt amt-cap">₹450 <span style="color:var(--muted); font-weight:400;">(cap)</span></td><td class="amt amt-cap">₹450 <span style="color:var(--muted); font-weight:400;">(cap)</span></td></tr>
+          <tr><td><span class="tier-pill tier-pill-diamond">Diamond</span></td><td class="mult">5×</td><td class="amt">₹250</td><td class="amt amt-cap">₹450 <span style="color:var(--muted); font-weight:400;">(cap)</span></td><td class="amt amt-cap">₹450 <span style="color:var(--muted); font-weight:400;">(cap)</span></td></tr>
+        </tbody>
+      </table>
+
+      <div class="d3-help">
+        <span>💡</span>
+        <span>
+          With <strong>Hard cap</strong>, no order pays more than the rule's ₹450 ceiling. Switch the toggle above to see how <strong>Base-rate</strong> would let Diamond earn ₹2,250 on a ₹20,000 order. Cap value lives on the <a href="#">rule itself →</a>; mode is set here.
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+<div class="note">
+  <strong>Pros:</strong> the merchant sees the consequence in their own data — no abstraction required; toggling the mode visibly changes the table; teaches without explaining. <strong>Cons:</strong> depends on having at least one earn rule to demo against (needs fallback if none); biggest engineering effort of the three; the panel sits below the tier list, which means a merchant looking only at "what tiers do I have" sees only one half of the page.
+</div>
+
+<div class="intro" style="padding:32px;">
+  <p style="font-size:13px;">
+    My recommendation: <strong>Design 2</strong> for v1 — it sits between the program card and the tier table, exactly where the merchant is reasoning about multipliers. Add <strong>Design 3's impact panel as an opt-in expansion</strong> ("Preview impact ↓") below the tier table when the merchant wants to see consequences. Tell me which to wire up.
+  </p>
+</div>
+
+</body>
+</html>

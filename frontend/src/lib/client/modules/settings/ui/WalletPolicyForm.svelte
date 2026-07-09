@@ -24,7 +24,8 @@
     ReferralReward: 'Controls how referral points can be redeemed.',
     GoodwillCredit: 'Policy for courtesy points issued by your team.',
     MembershipBenefit: 'Policy for membership benefit credits.',
-    RefundCredit: 'Policy for store credits (goodwill, refund, token of apology etc.) issued to customers.'
+    RefundCredit:
+      'Policy for store credits (goodwill, refund, token of apology etc.) issued to customers.'
   };
 
   let {
@@ -141,7 +142,7 @@
 
   <div class="form-actions">
     <Button text="Cancel" classes="btn-ghost" onclick={onCancel} />
-    <Button text="Save Policy" classes="btn-primary" type="submit" />
+    <Button text="Save policy" classes="btn-primary" type="submit" />
   </div>
 </form>
 
@@ -149,8 +150,8 @@
   .policy-form {
     padding: var(--space-6);
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
   }
 
   .form-title {
@@ -206,7 +207,7 @@
   }
 
   .toggle-desc {
-    font-size: 11px;
+    font-size: var(--font-size-xs);
     color: var(--color-text-muted);
   }
 

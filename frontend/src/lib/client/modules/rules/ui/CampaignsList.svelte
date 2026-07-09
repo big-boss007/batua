@@ -25,7 +25,11 @@
     const fmt = (iso: string) =>
       new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
     const fmtYear = (iso: string) =>
-      new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+      new Date(iso).toLocaleDateString('en-IN', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      });
     return `${fmt(startsAt)} – ${fmtYear(endsAt)}`;
   }
 
@@ -59,7 +63,9 @@
   {#if campaigns.length === 0}
     <div class="empty-state">
       <div class="empty-icon">📢</div>
-      <div class="empty-text">No campaigns yet. Create a campaign to boost reward earning during special periods.</div>
+      <div class="empty-text">
+        No campaigns yet. Create a campaign to boost reward earning during special periods.
+      </div>
     </div>
   {:else}
     <div class="campaigns-grid">
@@ -72,13 +78,20 @@
           class:upcoming-card={status === 'upcoming'}
           class:ended-card={status === 'ended'}
           onclick={() => onSelect?.(campaign)}
-          onkeydown={(e) => { if (e.key === 'Enter') onSelect?.(campaign); }}
+          onkeydown={(e) => {
+            if (e.key === 'Enter') onSelect?.(campaign);
+          }}
           role="button"
           tabindex="0"
         >
           <div class="campaign-header">
             <span class="campaign-name">{campaign.name}</span>
-            <span class="status-badge" class:status-active={status === 'active'} class:status-upcoming={status === 'upcoming'} class:status-ended={status === 'ended'}>
+            <span
+              class="status-badge"
+              class:status-active={status === 'active'}
+              class:status-upcoming={status === 'upcoming'}
+              class:status-ended={status === 'ended'}
+            >
               {status}
             </span>
           </div>
@@ -86,7 +99,9 @@
           <div class="campaign-meta">
             <div class="campaign-row">
               <span class="campaign-label">Dates</span>
-              <span class="campaign-val">{formatDateRange(campaign.starts_at, campaign.ends_at)}</span>
+              <span class="campaign-val"
+                >{formatDateRange(campaign.starts_at, campaign.ends_at)}</span
+              >
             </div>
             {#if campaign.multiplier !== null}
               <div class="campaign-row">
@@ -125,7 +140,9 @@
 </div>
 
 <style>
-  .campaigns-list { width: 100%; }
+  .campaigns-list {
+    width: 100%;
+  }
 
   .empty-state {
     padding: var(--space-8);
@@ -134,7 +151,10 @@
     border-radius: var(--radius-lg);
   }
 
-  .empty-icon { font-size: 32px; margin-bottom: var(--space-2); }
+  .empty-icon {
+    font-size: 32px;
+    margin-bottom: var(--space-2);
+  }
 
   .empty-text {
     font-size: var(--font-size-sm);
@@ -157,13 +177,20 @@
   }
 
   .campaign-card:hover {
-    border-color: #c7d2fe;
+    border-color: color-mix(in srgb, var(--purple-500) 25%, #fff);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   }
 
-  .active-card { border-color: #86efac; background: #fafffe; }
-  .upcoming-card { border-color: #c7d2fe; }
-  .ended-card { opacity: 0.6; }
+  .active-card {
+    border-color: var(--green-100);
+    background: var(--green-100);
+  }
+  .upcoming-card {
+    border-color: color-mix(in srgb, var(--purple-500) 25%, #fff);
+  }
+  .ended-card {
+    opacity: 0.6;
+  }
 
   .campaign-header {
     display: flex;
@@ -179,16 +206,25 @@
 
   .status-badge {
     padding: 3px 10px;
-    border-radius: 12px;
+    border-radius: var(--radius-lg);
     font-size: 10px;
     font-weight: var(--font-weight-semibold);
     text-transform: uppercase;
     letter-spacing: 0.04em;
   }
 
-  .status-active { background: #d1fae5; color: #065f46; }
-  .status-upcoming { background: #dbeafe; color: #1d4ed8; }
-  .status-ended { background: #f3f4f6; color: #6b7280; }
+  .status-active {
+    background: var(--green-100);
+    color: var(--green-700);
+  }
+  .status-upcoming {
+    background: var(--p-100);
+    color: var(--p-700);
+  }
+  .status-ended {
+    background: var(--color-surface-2);
+    color: var(--color-text-muted);
+  }
 
   .campaign-meta {
     display: flex;
@@ -202,7 +238,9 @@
     font-size: var(--font-size-sm);
   }
 
-  .campaign-label { color: var(--color-text-muted); }
+  .campaign-label {
+    color: var(--color-text-muted);
+  }
 
   .campaign-val {
     color: var(--color-text);
@@ -210,7 +248,7 @@
   }
 
   .campaign-val.mult {
-    color: #6366f1;
+    color: var(--purple-500);
     font-weight: var(--font-weight-bold);
     font-family: var(--font-mono);
   }
@@ -253,6 +291,6 @@
   .starts-in {
     margin-top: var(--space-2);
     font-size: var(--font-size-xs);
-    color: #1d4ed8;
+    color: var(--p-700);
   }
 </style>

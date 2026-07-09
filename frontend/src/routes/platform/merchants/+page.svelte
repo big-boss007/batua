@@ -52,7 +52,7 @@
       <h1>Merchants</h1>
       <p class="subtitle">Manage all merchants on the Breeze platform</p>
     </div>
-    <Button text="+ Onboard Merchant" classes="btn-primary" onclick={handleOpenModal} />
+    <Button text="+ Onboard merchant" classes="btn-primary" onclick={handleOpenModal} />
   </div>
 
   <MerchantTable {merchants} />
@@ -60,11 +60,11 @@
 
 {#if showOnboardModal}
   <Modal
-    header={{ text: 'Onboard New Merchant', rightImage: MODAL_CLOSE_ICON }}
+    header={{ text: 'Onboard new merchant', rightImage: MODAL_CLOSE_ICON }}
     size="fit-content"
     onheaderRightImageClick={handleCloseModal}
     footer={{
-      primaryButton: { text: 'Create Merchant', enable: !onboardLoading },
+      primaryButton: { text: 'Create merchant', enable: !onboardLoading },
       secondaryButton: { text: 'Cancel' }
     }}
     onprimaryButtonClick={() => {

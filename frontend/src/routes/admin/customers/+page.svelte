@@ -4,16 +4,24 @@
   import type {
     Customer,
     CustomerDetail as CustomerDetailType,
-    MerchantCustomerRow
+    MerchantCustomerRow,
+    WalletActionType,
+    WalletUnitType
   } from '$lib/client/modules/customers';
   import { getCustomerDetail, fetchMerchantCustomers } from '$lib/client/modules/customers';
   import { currentMerchant, currentMerchantId } from '$lib/client/modules/admin';
   import type { Merchant } from '$lib/client/modules/admin';
-  import { toastStore, formatDate, formatPhone, MODAL_CLOSE_ICON } from '$lib/client/modules/foundation';
-  import { CustomerDetail } from '$lib/client/modules/customers/ui';
+  import {
+    toastStore,
+    formatDate,
+    formatPhone,
+    MODAL_CLOSE_ICON
+  } from '$lib/client/modules/foundation';
+  import { CustomerDetail, WalletActionModal } from '$lib/client/modules/customers/ui';
 
   let selectedDetail = $state<CustomerDetailType | null>(null);
   let loadingDetail = $state(false);
+  let walletAction = $state<{ action: WalletActionType; unit: WalletUnitType } | null>(null);
   let merchantId = $state<string | null>(null);
   let merchant = $state<Merchant | null>(null);
 
@@ -175,8 +183,15 @@
       {/if}
     </div>
 
-    {#if loadingDetail || selectedDetail !== null}
-      <Modal header={{ text: 'Customer Detail', rightImage: MODAL_CLOSE_ICON }} size="fit-content" classes="customer-detail-modal" onclose={handleCloseDetail} onoverlayClick={handleCloseDetail} onheaderRightImageClick={handleCloseDetail}>
+    {#if (loadingDetail || selectedDetail !== null) && walletAction === null}
+      <Modal
+        header={{ text: 'Customer detail', rightImage: MODAL_CLOSE_ICON }}
+        size="fit-content"
+        classes="customer-detail-modal"
+        onclose={handleCloseDetail}
+        onoverlayClick={handleCloseDetail}
+        onheaderRightImageClick={handleCloseDetail}
+      >
         {#snippet content()}
           {#if loadingDetail}
             <div class="shimmer-detail">
@@ -191,6 +206,7 @@
               merchantId={merchantId ?? ''}
               pointsIcon={merchant?.points_icon ?? '★'}
               pointsRate={merchant?.points_to_currency_rate ?? 1.0}
+              onWalletAction={(action, unit) => (walletAction = { action, unit })}
               onRefresh={async () => {
                 if (merchantId && selectedDetail) {
                   const res = await getCustomerDetail(merchantId, selectedDetail.customer.id);
@@ -201,6 +217,24 @@
           {/if}
         {/snippet}
       </Modal>
+    {/if}
+
+    {#if walletAction !== null && selectedDetail !== null}
+      <WalletActionModal
+        detail={selectedDetail}
+        merchantId={merchantId ?? ''}
+        initialAction={walletAction.action}
+        initialUnit={walletAction.unit}
+        pointsIcon={merchant?.points_icon ?? '★'}
+        pointsRate={merchant?.points_to_currency_rate ?? 1.0}
+        onClose={() => (walletAction = null)}
+        onSuccess={async () => {
+          if (merchantId && selectedDetail) {
+            const res = await getCustomerDetail(merchantId, selectedDetail.customer.id);
+            if (res.tag === 'success') selectedDetail = res.data;
+          }
+        }}
+      />
     {/if}
   {/if}
 </div>
@@ -246,12 +280,12 @@
   .search-input {
     flex: 1;
     padding: var(--space-2) var(--space-3);
-    border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
     background: var(--color-surface);
     color: var(--color-text);
     font-size: var(--font-size-sm);
     transition: border-color var(--transition-fast);
+    border: 1px solid var(--color-border);
   }
 
   .search-input::placeholder {

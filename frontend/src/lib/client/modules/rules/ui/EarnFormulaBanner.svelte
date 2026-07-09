@@ -22,10 +22,10 @@
 </script>
 
 <div class="earn-banner">
-  <div class="earn-banner-title">Active Campaign Earning Formula</div>
+  <div class="earn-banner-title">Active campaign earning formula</div>
   <div class="earn-formula">
     <div class="formula-block">
-      <span class="formula-label">Base Earn</span>
+      <span class="formula-label">Base earn</span>
       <span class="formula-val">{baseEarn}</span>
       <span class="formula-src">from rule</span>
     </div>
@@ -48,15 +48,16 @@
     </div>
   </div>
   <div class="earn-example">
-    A Silver member earning {baseEarn} base points will receive <strong>{effective} points</strong> during this campaign.
-    Stacking: <strong>{formatStackingMode(stackingMode)}</strong> &middot; Max cap: <strong>{maxCap}x</strong>
+    A Silver member earning {baseEarn} base points will receive <strong>{effective} points</strong>
+    during this campaign. Stacking: <strong>{formatStackingMode(stackingMode)}</strong> &middot; Max
+    cap: <strong>{maxCap}x</strong>
   </div>
 </div>
 
 <style>
   .earn-banner {
-    background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 100%);
-    border: 1px solid #bbf7d0;
+    background: var(--green-100);
+    border: 1px solid var(--green-100);
     border-radius: var(--radius-lg);
     padding: var(--space-4) var(--space-5);
   }
@@ -64,7 +65,7 @@
   .earn-banner-title {
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-semibold);
-    color: #065f46;
+    color: var(--green-700);
     margin-bottom: var(--space-3);
     display: flex;
     align-items: center;
@@ -102,8 +103,12 @@
     font-weight: var(--font-weight-bold);
   }
 
-  .formula-val.blue { color: #3b82f6; }
-  .formula-val.purple { color: #6366f1; }
+  .formula-val.blue {
+    color: var(--p-600);
+  }
+  .formula-val.purple {
+    color: var(--purple-500);
+  }
 
   .formula-src {
     font-size: 9px;
@@ -111,8 +116,8 @@
   }
 
   .formula-op {
-    font-size: 18px;
-    font-weight: 300;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-normal);
     color: var(--color-text-muted);
   }
 
@@ -122,13 +127,17 @@
     align-items: center;
     gap: 2px;
     padding: var(--space-2) var(--space-3);
-    background: #065f46;
+    background: var(--green-700);
     border-radius: var(--radius-md);
     min-width: 70px;
   }
 
-  .formula-result .formula-label { color: rgba(255, 255, 255, 0.7); }
-  .formula-result .formula-val { color: white; }
+  .formula-result .formula-label {
+    color: rgba(255, 255, 255, 0.7);
+  }
+  .formula-result .formula-val {
+    color: white;
+  }
 
   .earn-example {
     font-size: var(--font-size-xs);
@@ -137,5 +146,7 @@
     line-height: 1.5;
   }
 
-  .earn-example strong { color: var(--color-text); }
+  .earn-example strong {
+    color: var(--color-text);
+  }
 </style>

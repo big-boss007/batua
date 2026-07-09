@@ -181,11 +181,11 @@
       {#if merchant !== null}
         <div class="store-split">
           <div class="store-left">
-            <div class="section-label">Store Details</div>
+            <div class="section-label">Store details</div>
             <div class="store-fields">
               <Input
                 value={storeName}
-                label="Store Name"
+                label="Store name"
                 placeholder="Store name"
                 onInput={(val) => {
                   storeName = val;
@@ -209,7 +209,7 @@
               />
               <div class="store-save">
                 <Button
-                  text={savingStore ? 'Saving...' : 'Save Changes'}
+                  text={savingStore ? 'Saving...' : 'Save changes'}
                   classes="btn-primary"
                   onclick={handleSaveStore}
                 />
@@ -232,7 +232,7 @@
             </div>
 
             {#if customerLinks.length > 0}
-              <div class="section-label">Customer Links</div>
+              <div class="section-label">Customer links</div>
               <div class="links-list">
                 {#each customerLinks as link (link.path)}
                   <div class="link-row">
@@ -250,26 +250,50 @@
                       >
                         {#snippet children()}
                           {#if copiedLink === link.path}
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                              <polyline points="20 6 9 17 4 12"/>
+                            <svg
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2.5"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            >
+                              <polyline points="20 6 9 17 4 12" />
                             </svg>
                           {:else}
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                              <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+                            <svg
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            >
+                              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                              <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
                             </svg>
                           {/if}
                         {/snippet}
                       </Button>
-                      <Button
-                        classes="icon-btn"
-                        onclick={() => handleOpenLink(link.path)}
-                      >
+                      <Button classes="icon-btn" onclick={() => handleOpenLink(link.path)}>
                         {#snippet children()}
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
-                            <polyline points="15 3 21 3 21 9"/>
-                            <line x1="10" y1="14" x2="21" y2="3"/>
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          >
+                            <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
+                            <polyline points="15 3 21 3 21 9" />
+                            <line x1="10" y1="14" x2="21" y2="3" />
                           </svg>
                         {/snippet}
                       </Button>
@@ -284,7 +308,7 @@
         <p class="empty-state">Select a merchant to edit store settings.</p>
       {/if}
     {:else if activeTab === 'connectors'}
-      <ConnectorsList connectors={connectors} />
+      <ConnectorsList {connectors} />
       {#if showConnectorForm}
         <ConnectorForm onSave={handleCreateConnector} />
         <Button
@@ -296,7 +320,7 @@
         />
       {:else}
         <Button
-          text="Add Connector"
+          text="Add connector"
           classes="btn-primary"
           onclick={() => {
             showConnectorForm = true;
@@ -448,7 +472,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 14px;
+    font-size: var(--font-size-base);
     background: var(--color-surface-2);
     flex-shrink: 0;
   }
@@ -460,7 +484,7 @@
   }
 
   .link-path {
-    font-size: 11px;
+    font-size: var(--font-size-xs);
     color: var(--color-text-muted);
     font-family: var(--font-mono);
     margin-top: 1px;
@@ -518,5 +542,4 @@
     color: var(--color-text-muted);
     font-size: var(--font-size-sm);
   }
-
 </style>

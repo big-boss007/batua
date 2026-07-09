@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cap modes — Final implementation designs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #f0f1f5;
+    --surface: #ffffff;
+    --surface-2: #f0f1f3;
+    --text: #1a1a2e;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --primary: #7c6aff;
+    --primary-hover: #6b5ce7;
+    --success: #10b981;
+    --error: #ef4444;
+    --warning: #f59e0b;
+    --info: #3b82f6;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+  code { font-family: 'SF Mono', monospace; font-size: 0.92em; }
+
+  /* Intro & TOC */
+  .intro { background: #1a1a2e; color: #fff; padding: 40px 32px; text-align: center; }
+  .intro h1 { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+  .intro p { color: rgba(255,255,255,0.7); max-width: 760px; margin: 0 auto; font-size: 14px; line-height: 1.6; }
+  .toc {
+    max-width: 900px; margin: 24px auto 0; padding: 16px;
+    background: rgba(255,255,255,0.06); border-radius: 8px;
+    font-size: 13px; color: rgba(255,255,255,0.85);
+    text-align: left;
+  }
+  .toc h3 { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .toc ul { list-style: none; padding-left: 0; margin-bottom: 12px; }
+  .toc li { padding: 2px 0; }
+  .toc a { color: rgba(255,255,255,0.85); text-decoration: none; }
+  .toc a:hover { color: #fff; text-decoration: underline; }
+  .toc strong { color: #fff; }
+
+  /* Section header — full-width banner separating modes */
+  .section-header {
+    background: linear-gradient(90deg, var(--primary), var(--primary-hover));
+    color: #fff;
+    padding: 24px 32px;
+    font-size: 18px; font-weight: 700;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .section-header .num {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+  .section-header .sub { font-size: 13px; font-weight: 400; opacity: 0.8; margin-left: 8px; }
+
+  /* State label */
+  .state-label {
+    position: sticky; top: 0; z-index: 10;
+    background: #fef3c7; color: #78350f;
+    border-top: 1px solid #f59e0b; border-bottom: 1px solid #f59e0b;
+    padding: 12px 32px; font-size: 12px; font-weight: 600; letter-spacing: 0.4px;
+  }
+  .state-label .tag { background: #f59e0b; color: #fff; padding: 2px 8px; border-radius: 4px; margin-right: 10px; font-weight: 700; font-family: 'SF Mono', monospace; }
+  .state-label .approach { font-weight: 400; color: #78350f; opacity: 0.85; }
+
+  .frame { padding: 28px 32px; }
+  .container {
+    max-width: 900px; margin: 0 auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+
+  /* Context bar */
+  .ctx-bar {
+    background: color-mix(in srgb, var(--info) 6%, transparent);
+    border: 1px solid color-mix(in srgb, var(--info) 20%, transparent);
+    border-radius: 6px;
+    padding: 8px 12px; font-size: 11px; color: var(--muted);
+    margin-bottom: 16px;
+    display: flex; justify-content: space-between;
+  }
+  .ctx-bar strong { color: var(--text); }
+
+  /* Mode pills */
+  .mode-section-title { font-size: 14px; font-weight: 600; }
+  .mode-section-desc { font-size: 12px; color: var(--muted); margin-top: 2px; margin-bottom: 12px; }
+  .mode-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .mode-pill {
+    padding: 6px 14px;
+    border: 1px solid var(--border); border-radius: 6px;
+    font-size: 13px; font-weight: 600;
+    background: var(--surface); color: var(--text);
+    cursor: pointer;
+  }
+  .mode-pill.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .pill-recommend { font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 999px; margin-left: 6px;
+    background: color-mix(in srgb, var(--success) 14%, transparent); color: var(--success); letter-spacing: 0.3px; text-transform: uppercase; }
+  .mode-pill.active .pill-recommend { background: rgba(255,255,255,0.22); color: #fff; }
+
+  /* Consequence */
+  .mode-consequence {
+    border-radius: 6px; padding: 10px 14px; margin-bottom: 16px;
+    font-size: 12px; line-height: 1.5;
+    display: flex; align-items: flex-start; gap: 8px;
+  }
+  .mode-consequence.ok    { background: color-mix(in srgb, var(--success) 6%, transparent); border-left: 3px solid var(--success); }
+  .mode-consequence.warn  { background: color-mix(in srgb, var(--warning) 8%, transparent); border-left: 3px solid var(--warning); }
+  .mode-consequence.info  { background: color-mix(in srgb, var(--info) 6%, transparent);   border-left: 3px solid var(--info); }
+  .mode-consequence.error { background: color-mix(in srgb, var(--error) 6%, transparent);  border-left: 3px solid var(--error); }
+  .mode-consequence strong { color: var(--text); }
+  .mode-consequence a { color: var(--primary); text-decoration: none; }
+
+  /* Tier pills */
+  .tier-pill { display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .tier-bronze { background: #f5e6d3; color: #8b5e3c; }
+  .tier-silver { background: #e8e8e8; color: #555555; }
+  .tier-gold { background: #fdf3d7; color: #92742e; }
+  .tier-platinum { background: #e8eaf6; color: #3949ab; }
+  .tier-diamond { background: #b9f2ff; color: #036c8d; }
+  .mult { font-weight: 700; font-family: 'SF Mono', monospace; color: var(--primary); }
+
+  /* Buttons */
+  .btn { padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid transparent; font-family: inherit; }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-secondary { background: var(--surface); color: var(--text); border-color: var(--border); }
+  .btn-ghost { background: transparent; color: var(--primary); }
+  .btn-danger { background: var(--error); color: #fff; }
+  .btn-sm { padding: 4px 10px; font-size: 12px; }
+
+  /* Tier table */
+  .tier-table { width: 100%; border-collapse: collapse; font-size: 13px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .tier-table th { padding: 10px 14px; text-align: left; background: var(--surface-2); color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+  .tier-table th.cap-col { background: color-mix(in srgb, var(--primary) 8%, transparent); color: var(--primary); }
+  .tier-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .tier-table tr:last-child td { border-bottom: none; }
+
+  /* Soft cap per-tier preview cell */
+  .soft-cell { display: flex; flex-direction: column; gap: 2px; }
+  .soft-value { font-family: 'SF Mono', monospace; font-weight: 700; color: var(--warning); }
+  .soft-formula { font-size: 10px; color: var(--muted); font-family: 'SF Mono', monospace; }
+
+  /* Custom base card */
+  .base-card {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 18px 20px;
+    background: var(--surface);
+    border: 2px solid var(--primary);
+    border-radius: 8px;
+    margin-bottom: 14px;
+  }
+  .base-card .left .title { font-size: 14px; font-weight: 600; }
+  .base-card .left .desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .base-card .input-wrap { display: flex; align-items: center; gap: 6px; }
+  .base-card .input-wrap span { font-size: 14px; color: var(--muted); font-weight: 600; }
+  .base-card input {
+    width: 130px; padding: 10px 14px;
+    border: 1px solid var(--primary); border-radius: 6px;
+    font-size: 16px; font-weight: 700; font-family: 'SF Mono', monospace;
+    color: var(--primary); background: var(--surface); text-align: right;
+  }
+  .base-card input.empty-state { color: var(--muted); font-weight: 400; }
+
+  /* Derived rows */
+  .derived-table { background: var(--surface-2); border-radius: 8px; overflow: hidden; }
+  .derived-row {
+    display: grid; grid-template-columns: 1fr 80px 1.5fr 100px;
+    padding: 10px 14px; align-items: center; font-size: 13px;
+    border-bottom: 1px solid var(--border);
+  }
+  .derived-row:last-child { border-bottom: none; }
+  .derived-row .formula { color: var(--muted); font-size: 11px; font-family: 'SF Mono', monospace; }
+  .derived-row .value { font-family: 'SF Mono', monospace; font-weight: 700; }
+  .derived-row.overridden .value { color: var(--primary); }
+  .derived-row.fallback .value { color: var(--muted); font-style: italic; }
+  .derived-row input { width: 100px; padding: 6px 10px; border: 1px solid var(--primary); border-radius: 4px; font-size: 13px; font-family: inherit; font-weight: 600; color: var(--primary); }
+  .override-link { font-size: 11px; color: var(--primary); text-decoration: none; }
+  .override-link.reset { color: var(--muted); }
+  .override-link:hover { text-decoration: underline; }
+
+  /* Save bar */
+  .save-bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+  .save-bar .left { font-size: 11px; color: var(--muted); }
+
+  /* Empty / error states */
+  .empty-state {
+    padding: 32px;
+    text-align: center;
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    background: var(--surface-2);
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .empty-state h4 { color: var(--text); font-size: 15px; margin-bottom: 6px; }
+
+  /* Modal overlay (for mode-switch confirmation) */
+  .modal-bg { background: rgba(0,0,0,0.3); padding: 24px; border-radius: 8px; }
+  .modal {
+    background: var(--surface); border-radius: 12px;
+    max-width: 480px; margin: 0 auto; padding: 22px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .modal h4 { font-size: 15px; font-weight: 600; }
+  .modal p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .modal .modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+  /* Note */
+  .note { background: #eef2ff; border-left: 3px solid var(--primary); color: #4338ca; padding: 12px 16px; border-radius: 4px; font-size: 12px; margin: 16px auto 0; line-height: 1.5; max-width: 900px; }
+  .note strong { color: #312e81; }
+  .note code { background: rgba(67,56,202,0.08); padding: 1px 4px; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="intro">
+  <h1>Cap modes — final implementation designs</h1>
+  <p>
+    All three modes (<strong>Hard cap</strong>, <strong>Soft cap</strong>, <strong>Custom per-tier</strong>) with every state and edge case for implementation. Custom per-tier uses the stepped-disclosure pattern: base first, exceptions in-place.
+  </p>
+  <div class="toc">
+    <h3>Table of contents</h3>
+    <ul>
+      <li><strong>§1 Hard cap</strong> &nbsp; <a href="#H1">H1 default</a> · <a href="#H2">H2 no rules-with-caps</a> · <a href="#H3">H3 multiple rules</a></li>
+      <li><strong>§2 Soft cap</strong> &nbsp; <a href="#S1">S1 default</a> · <a href="#S2">S2 multiple rules</a></li>
+      <li><strong>§3 Custom per-tier</strong> &nbsp; <a href="#C1">C1 empty</a> · <a href="#C2">C2 base only</a> · <a href="#C3">C3 mixed</a> · <a href="#C4">C4 overrides only</a></li>
+      <li><strong>§4 Edge cases</strong> &nbsp; <a href="#E1">E1 no tiers</a> · <a href="#E2">E2 mode-switch warn</a> · <a href="#E3">E3 validation</a> · <a href="#E4">E4 inactive rule</a> · <a href="#E5">E5 load/save states</a></li>
+      <li><strong>§5 Resolution logic</strong> — runtime cap resolution per mode</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ====================================================================== -->
+<!-- §1 HARD CAP                                                              -->
+<!-- ====================================================================== -->
+<div class="section-header" id="sec-hard"><span class="num">1</span>Hard cap <span class="sub">— rule's max is the absolute ceiling, applied after all multipliers</span></div>
+
+<div class="state-label" id="H1"><span class="tag">H1</span>Default — one rule with a cap, tiers exist</div>
+<div class="frame">
+<div class="container">
+  <div class="ctx-bar"><span><strong>Sherwani Rewards</strong> · 5 tiers · "Order Reward 50" max ₹450</span><span>Mode: <strong>Hard cap</strong></span></div>
+  <div class="mode-section-title">Multiplier behavior</div>
+  <div class="mode-section-desc">How tier, campaign &amp; membership multipliers interact with rule caps.</div>
+  <div class="mode-pills">
+    <div class="mode-pill active">Hard cap <span class="pill-recommend">Recommended</span></div>
+    <div class="mode-pill">Soft cap</div>
+    <div class="mode-pill">Custom per-tier</div>
+  </div>
+  <div class="mode-consequence ok"><span>✓</span><span>
+    Rule caps are absolute. A Diamond customer (5×) on a ₹20,000 order earns <strong>₹450</strong> — the rule's "max per order". Same ceiling for every tier.
+  </span></div>
+  <table class="tier-table">
+    <thead><tr><th>Tier</th><th>Threshold</th><th>Multiplier</th><th></th></tr></thead>
+    <tbody>
+      <tr><td><span class="tier-pill tier-bronze">Bronze</span></td><td>₹0+</td><td class="mult">1×</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      <tr><td><span class="tier-pill tier-silver">Silver</span></td><td>₹5,000+</td><td class="mult">1.5×</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      <tr><td><span class="tier-pill tier-gold">Gold</span></td><td>₹15,000+</td><td class="mult">2×</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      <tr><td><span class="tier-pill tier-platinum">Platinum</span></td><td>₹50,000+</td><td class="mult">3×</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      <tr><td><span class="tier-pill tier-diamond">Diamond</span></td><td>₹1,00,000+</td><td class="mult">5×</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+    </tbody>
+  </table>
+</div>
+</div>
+
+<div class="state-label" id="H2"><span class="tag">H2</span>No reward rule has a cap yet (consequence text adapts)</div>
+<div class="frame">
+<div class="container">
+  <div class="ctx-bar"><span><strong>Sherwani Rewards</strong> · 5 tiers · no rules with caps</span><span>Mode: <strong>Hard cap</strong></span></div>
+  <div class="mode-section-title">Multiplier behavior</div>
+  <div class="mode-section-desc">How tier, campaign &amp; membership multipliers interact with rule caps.</div>
+  <div class="mode-pills">
+    <div class="mode-pill active">Hard cap <span class="pill-recommend">Recommended</span></div>
+    <div class="mode-pill">Soft cap</div>
+    <div class="mode-pill">Custom per-tier</div>
+  </div>
+  <div class="mode-consequence info"><span>ℹ</span><span>
+    None of your active rules has a "max per order" set. Rewards are uncapped — tier multipliers scale earn freely. Set a cap on a rule at <a href="#">Earn Rules →</a> to give this mode something to enforce.
+  </span></div>
+</div>
+</div>
+<div class="note">When no rule has a <code>max_amount</code>, all three modes behave identically (no cap to apply). The mode picker stays visible so the merchant can pre-set a preference, but the consequence text explicitly says there's nothing to cap yet.</div>
+
+<div class="state-label" id="H3"><span class="tag">H3</span>Multiple rules with different caps (consequence enumerates)</div>
+<div class="frame">
+<div class="container">
+  <div class="ctx-bar"><span><strong>Sherwani Rewards</strong> · 5 tiers · 3 rules with caps</span><span>Mode: <strong>Hard cap</strong></span></div>
+  <div class="mode-section-title">Multiplier behavior</div>
+  <div class="mode-section-desc">How tier, campaign &amp; membership multipliers interact with rule caps.</div>
+  <div class="mode-pills">
+    <div class="mode-pill active">Hard cap <span class="pill-recommend">Recommended</span></div>
+    <div class="mode-pill">Soft cap</div>
+    <div class="mode-pill">Custom per-tier</div>
+  </div>
+  <div class="mode-consequence ok"><span>✓</span><span>
+    Each rule's max is its absolute ceiling — tier multipliers cannot push earnings past it. Active caps:
+    <strong>Order Reward 50</strong> ₹450 · <strong>Festive Bonus</strong> ₹1,000 · <strong>Welcome Bonus</strong> ₹100.
+    A Diamond customer hits whichever rule's cap fires.
+  </span></div>
+</div>
+</div>
+
+<!-- ====================================================================== -->
+<!-- §2 SOFT CAP                                                              -->
+<!-- ====================================================================== -->
+<div class="section-header" id="sec-soft"><span class="num">2</span>Soft cap <span class="sub">— legacy: cap on base; multipliers amplify above (top tiers can exceed the cap)</span></div>
+
+<div class="state-label" id="S1"><span class="tag">S1</span>Default — with per-tier consequence preview</div>
+<div class="frame">
+<div class="container">
+  <div class="ctx-bar"><span><strong>Sherwani Rewards</strong> · 5 tiers · "Order Reward 50" max ₹450</span><span>Mode: <strong>Soft cap</strong></span></div>
+  <div class="mode-section-title">Multiplier behavior</div>
+  <div class="mode-section-desc">How tier, campaign &amp; membership multipliers interact with rule caps.</div>
+  <div class="mode-pills">
+    <div class="mode-pill">Hard cap <span class="pill-recommend">Recommended</span></div>
+    <div class="mode-pill active">Soft cap</div>
+    <div class="mode-pill">Custom per-tier</div>
+  </div>
+  <div class="mode-consequence warn"><span>⚠</span><span>
+    The cap limits the base reward; tier multipliers scale it up. A Diamond customer (5×) on a ₹20,000 order earns <strong>₹2,250</strong> — 5× the rule's ₹450 ceiling. Top tiers can earn well beyond your stated cap.
+  </span></div>
+  <table class="tier-table">
+    <thead><tr><th>Tier</th><th>Multiplier</th><th class="cap-col">Effective ceiling (per rule)</th></tr></thead>
+    <tbody>
+      <tr><td><span class="tier-pill tier-bronze">Bronze</span></td><td class="mult">1×</td>
+        <td><div class="soft-cell"><span class="soft-value">₹450</span><span class="soft-formula">Order Reward 50: ₹450 × 1×</span></div></td></tr>
+      <tr><td><span class="tier-pill tier-silver">Silver</span></td><td class="mult">1.5×</td>
+        <td><div class="soft-cell"><span class="soft-value">₹675</span><span class="soft-formula">Order Reward 50: ₹450 × 1.5×</span></div></td></tr>
+      <tr><td><span class="tier-pill tier-gold">Gold</span></td><td class="mult">2×</td>
+        <td><div class="soft-cell"><span class="soft-value">₹900</span><span class="soft-formula">Order Reward 50: ₹450 × 2×</span></div></td></tr>
+      <tr><td><span class="tier-pill tier-platinum">Platinum</span></td><td class="mult">3×</td>
+        <td><div class="soft-cell"><span class="soft-value">₹1,350</span><span class="soft-formula">Order Reward 50: ₹450 × 3×</span></div></td></tr>
+      <tr><td><span class="tier-pill tier-diamond">Diamond</span></td><td class="mult">5×</td>
+        <td><div class="soft-cell"><span class="soft-value">₹2,250</span><span class="soft-formula">Order Reward 50: ₹450 × 5×</span></div></td></tr>
+    </tbody>
+  </table>
+</div>
+</div>
+<div class="note">The per-tier preview is the difference from Hard cap mode — merchants visually see top tiers escaping. The warning tone matches: <em>this is the leaky mode</em>.</div>
+
+<div class="state-label" id="S2"><span class="tag">S2</span>Multiple rules with caps — table shows all</div>
+<div class="frame">
+<div class="container">
+  <div class="ctx-bar"><span><strong>Sherwani Rewards</strong> · 5 tiers · 2 rules with caps</span><span>Mode: <strong>Soft cap</strong></span></div>
+  <div class="mode-pills">
+    <div class="mode-pill">Hard cap <span class="pill-recommend">Recommended</span></div>
+    <div class="mode-pill active">Soft cap</div>
+    <div class="mode-pill">Custom per-tier</div>
+  </div>
+  <div class="mode-consequence warn"><span>⚠</span><span>
+    Each rule's cap multiplies at every tier. See per-rule, per-tier effective ceilings below.
+  </span></div>
+  <table class="tier-table">
+    <thead><tr><th>Tier</th><th>Multiplier</th><th class="cap-col">Order Reward 50 (₹450 max)</th><th class="cap-col">Festive Bonus (₹1,000 max)</th></tr></thead>
+    <tbody>
+      <tr><td><span class="tier-pill tier-bronze">Bronze</span></td><td class="mult">1×</td>
+        <td><div class="soft-cell"><span class="soft-value">₹450</span><span class="soft-formula">₹450 × 1×</span></div></td>
+        <td><div class="soft-cell"><span class="soft-value">₹1,000</span><span class="soft-formula">₹1,000 × 1×</span></div></td></tr>
+      <tr><td><span class="tier-pill tier-gold">Gold</span></td><td class="mult">2×</td>
+        <td><div class="soft-cell"><span class="soft-value">₹900</span><span class="soft-formula">₹450 × 2×</span></div></td>
+        <td><div class="soft-cell"><span class="soft-value">₹2,000</span><span class="soft-formula">₹1,000 × 2×</span></div></td></tr>
+      <tr><td><span class="tier-pill tier-diamond">Diamond</span></td><td class="mult">5×</td>
+        <td><div class="soft-cell"><span class="soft-value">₹2,250</span><span class="soft-formula">₹450 × 5×</span></div></td>
+        <td><div class="soft-cell"><span class="soft-value">₹5,000</span><span class="soft-formula">₹1,000 × 5×</span></div></td></tr>
+    </tbody>
+  </table>
+</div>
+</div>
+<div class="note">When multiple rules exist, the table grows columns rather than rows. (Showing Bronze/Gold/Diamond for brevity; production renders all tiers.)</div>
+
+<!-- ====================================================================== -->
+<!-- §3 CUSTOM PER-TIER                                                       -->
+<!-- ====================================================================== -->
+<div class="section-header" id="sec-custom"><span class="num">3</span>Custom per-tier <span class="sub">— stepped disclosure: base first, exceptions in-place</span></div>
+
+<div class="state-label" id="C1"><span class="tag">C1</span>Empty — no base, no overrides (acts as Hard cap fallback)</div>
+<div class="frame">
+<div class="container">
+  <div class="ctx-bar"><span><strong>Sherwani Rewards</strong> · 5 tiers · "Order Reward 50" max ₹450</span><span>Mode: <strong>Custom per-tier</strong></span></div>
+  <div class="mode-pills">
+    <div class="mode-pill">Hard cap <span class="pill-recommend">Recommended</span></div>
+    <div class="mode-pill">Soft cap</div>
+    <div class="mode-pill active">Custom per-tier</div>
+  </div>
+  <div class="mode-consequence info"><span>⚙</span><span>
+    No base or per-tier overrides set yet. Until you configure something, every tier falls back to <strong>Hard cap</strong>: each rule's max is the absolute ceiling.
+  </span></div>
+  <div class="base-card">
+    <div class="left"><div class="title">Custom base cap</div><div class="desc">Per-tier ceilings derive as base × tier multiplier. Leave empty to fall back to rule's hard cap.</div></div>
+    <div class="input-wrap"><span>₹</span><input class="empty-state" placeholder="No base set" /></div>
+  </div>
+  <div class="derived-table">
+    <div class="derived-row fallback"><div><span class="tier-pill tier-bronze">Bronze</span></div><div class="mult">1×</div><div><span class="value">₹450</span> <span class="formula">· rule's hard cap</span></div><div><a href="#" class="override-link">Override</a></div></div>
+    <div class="derived-row fallback"><div><span class="tier-pill tier-silver">Silver</span></div><div class="mult">1.5×</div><div><span class="value">₹450</span> <span class="formula">· rule's hard cap</span></div><div><a href="#" class="override-link">Override</a></div></div>
+    <div class="derived-row fallback"><div><span class="tier-pill tier-gold">Gold</span></div><div class="mult">2×</div><div><span class="value">₹450</span> <span class="formula">· rule's hard cap</span></div><div><a href="#" class="override-link">Override</a></div></div>
+    <div class="derived-row fallback"><div><span class="tier-pill tier-platinum">Platinum</span></div><div class="mult">3×</div><div><span class="value">₹450</span> <span class="formula">· rule's hard cap</span></div><div><a href="#" class="override-link">Override</a></div></div>
+    <div class="derived-row fallback"><div><span class="tier-pill tier-diamond">Diamond</span></div><div class="mult">5×</div><div><span class="value">₹450</span> <span class="formula">· rule's hard cap</span></div><div><a href="#" class="override-link">Override</a></div></div>
+  </div>
+</div>
+</div>
+<div class="note">Empty state is honest: this mode without any data behaves exactly like Hard cap. Each row still shows what the customer would earn (rule's cap), so the merchant can verify before committing. Italic-muted value to signal "fallback, not configured".</div>
+
+<div class="state-label" id="C2"><span class="tag">C2</span>Base only — every tier derived from base</div>
+<div class="frame">
+<div class="container">
+  <div class="ctx-bar"><span><strong>Sherwani Rewards</strong> · 5 tiers · "Order Reward 50" max ₹450</span><span>Mode: <strong>Custom per-tier</strong></span></div>
+  <div class="mode-pills">
+    <div class="mode-pill">Hard cap <span class="pill-recommend">Recommended</span></div>
+    <div class="mode-pill">Soft cap</div>
+    <div class="mode-pill active">Custom per-tier</div>
+  </div>
+  <div class="mode-consequence info"><span>⚙</span><span>
+    Every tier's ceiling is base × tier multiplier. A Diamond customer (5×) earns at most <strong>₹2,500</strong>. Override any tier to break the formula.
+  </span></div>
+  <div class="base-card">
+    <div class="left"><div class="title">Custom base cap</div><div class="desc">Per-tier ceilings derive as base × tier multiplier.</div></div>
+    <div class="input-wrap"><span>₹</span><input value="500" /></div>
+  </div>
+  <div class="derived-table">
+    <div class="derived-row"><div><span class="tier-pill tier-bronze">Bronze</span></div><div class="mult">1×</div><div><span class="value">₹500</span> <span class="formula">· ₹500 × 1×</span></div><div><a href="#" class="override-link">Override</a></div></div>
+    <div class="derived-row"><div><span class="tier-pill tier-silver">Silver</span></div><div class="mult">1.5×</div><div><span class="value">₹750</span> <span class="formula">· ₹500 × 1.5×</span></div><div><a href="#" class="override-link">Override</a></div></div>
+    <div class="derived-row"><div><span class="tier-pill tier-gold">Gold</span></div><div class="mult">2×</div><div><span class="value">₹1,000</span> <span class="formula">· ₹500 × 2×</span></div><div><a href="#" class="override-link">Override</a></div></div>
+    <div class="derived-row"><div><span class="tier-pill tier-platinum">Platinum</span></div><div class="mult">3×</div><div><span class="value">₹1,500</span> <span class="formula">· ₹500 × 3×</span></div><div><a href="#" class="override-link">Override</a></div></div>
+    <div class="derived-row"><div><span class="tier-pill tier-diamond">Diamond</span></div><div class="mult">5×</div><div><span class="value">₹2,500</span> <span class="formula">· ₹500 × 5×</span></div><div><a href="#" class="override-link">Override</a></div></div>
+  </div>
+  <div class="save-bar"><span class="left">5 tiers derived from base · 0 overrides</span><div><button class="btn btn-secondary">Discard</button> <button class="btn btn-primary">Save</button></div></div>
+</div>
+</div>
+
+<div class="state-label" id="C3"><span class="tag">C3</span>Mixed — base set + a few overrides (typical case)</div>
+<div class="frame">
+<div class="container">
+  <div class="ctx-bar"><span><strong>Sherwani Rewards</strong> · 5 tiers · "Order Reward 50" max ₹450</span><span>Mode: <strong>Custom per-tier</strong></span></div>
+  <div class="mode-pills">
+    <div class="mode-pill">Hard cap <span class="pill-recommend">Recommended</span></div>
+    <div class="mode-pill">Soft cap</div>
+    <div class="mode-pill active">Custom per-tier</div>
+  </div>
+  <div class="mode-consequence info"><span>⚙</span><span>
+    3 tiers follow base, 2 have custom overrides. Diamond is capped at ₹2,000 (overrides the ₹2,500 derived value).
+  </span></div>
+  <div class="base-card">
+    <div class="left"><div class="title">Custom base cap</div><div class="desc">Per-tier ceilings derive as base × tier multiplier.</div></div>
+    <div class="input-wrap"><span>₹</span><input value="500" /></div>
+  </div>
+  <div class="derived-table">
+    <div class="derived-row"><div><span class="tier-pill tier-bronze">Bronze</span></div><div class="mult">1×</div><div><span class="value">₹500</span> <span class="formula">· ₹500 × 1×</span></div><div><a href="#" class="override-link">Override</a></div></div>
+    <div class="derived-row"><div><span class="tier-pill tier-silver">Silver</span></div><div class="mult">1.5×</div><div><span class="value">₹750</span> <span class="formula">· ₹500 × 1.5×</span></div><div><a href="#" class="override-link">Override</a></div></div>
+    <div class="derived-row overridden"><div><span class="tier-pill tier-gold">Gold</span></div><div class="mult">2×</div>
+      <div style="display:flex; align-items:center; gap:8px;"><input value="900" /><span class="formula">overrides ₹1,000</span></div>
+      <div><a href="#" class="override-link reset">↻ reset</a></div></div>
+    <div class="derived-row"><div><span class="tier-pill tier-platinum">Platinum</span></div><div class="mult">3×</div><div><span class="value">₹1,500</span> <span class="formula">· ₹500 × 3×</span></div><div><a href="#" class="override-link">Override</a></div></div>
+    <div class="derived-row overridden"><div><span class="tier-pill tier-diamond">Diamond</span></div><div class="mult">5×</div>
+      <div style="display:flex; align-items:center; gap:8px;"><input value="2,000" /><span class="formula">overrides ₹2,500</span></div>
+      <div><a href="#" class="override-link reset">↻ reset</a></div></div>
+  </div>
+  <div class="save-bar"><span class="left">3 derived · 2 overridden</span><div><button class="btn btn-secondary">Discard</button> <button class="btn btn-primary">Save</button></div></div>
+</div>
+</div>
+
+<div class="state-label" id="C4"><span class="tag">C4</span>Overrides only — no base (per-tier-as-individual)</div>
+<div class="frame">
+<div class="container">
+  <div class="ctx-bar"><span><strong>Sherwani Rewards</strong> · 5 tiers</span><span>Mode: <strong>Custom per-tier</strong></span></div>
+  <div class="mode-pills">
+    <div class="mode-pill">Hard cap <span class="pill-recommend">Recommended</span></div>
+    <div class="mode-pill">Soft cap</div>
+    <div class="mode-pill active">Custom per-tier</div>
+  </div>
+  <div class="mode-consequence info"><span>⚙</span><span>
+    No base cap. Tiers with an override use that value; tiers without fall back to <strong>rule's hard cap</strong>.
+  </span></div>
+  <div class="base-card">
+    <div class="left"><div class="title">Custom base cap</div><div class="desc">Per-tier ceilings derive as base × tier multiplier. Leave empty to fall back to rule's hard cap.</div></div>
+    <div class="input-wrap"><span>₹</span><input class="empty-state" placeholder="No base set" /></div>
+  </div>
+  <div class="derived-table">
+    <div class="derived-row fallback"><div><span class="tier-pill tier-bronze">Bronze</span></div><div class="mult">1×</div><div><span class="value">₹450</span> <span class="formula">· rule's hard cap</span></div><div><a href="#" class="override-link">Override</a></div></div>
+    <div class="derived-row fallback"><div><span class="tier-pill tier-silver">Silver</span></div><div class="mult">1.5×</div><div><span class="value">₹450</span> <span class="formula">· rule's hard cap</span></div><div><a href="#" class="override-link">Override</a></div></div>
+    <div class="derived-row overridden"><div><span class="tier-pill tier-gold">Gold</span></div><div class="mult">2×</div>
+      <div style="display:flex; align-items:center; gap:8px;"><input value="750" /><span class="formula">caps Gold at ₹750</span></div>
+      <div><a href="#" class="override-link reset">↻ reset</a></div></div>
+    <div class="derived-row fallback"><div><span class="tier-pill tier-platinum">Platinum</span></div><div class="mult">3×</div><div><span class="value">₹450</span> <span class="formula">· rule's hard cap</span></div><div><a href="#" class="override-link">Override</a></div></div>
+    <div class="derived-row overridden"><div><span class="tier-pill tier-diamond">Diamond</span></div><div class="mult">5×</div>
+      <div style="display:flex; align-items:center; gap:8px;"><input value="1,500" /><span class="formula">caps Diamond at ₹1,500</span></div>
+      <div><a href="#" class="override-link reset">↻ reset</a></div></div>
+  </div>
+  <div class="save-bar"><span class="left">3 fallback to rule · 2 overridden</span><div><button class="btn btn-secondary">Discard</button> <button class="btn btn-primary">Save</button></div></div>
+</div>
+</div>
+<div class="note">C4 covers the "I only care about top tiers" case: no base, just override the ones that matter. The unset tiers correctly fall back to <strong>Hard cap</strong> behavior — never Soft cap.</div>
+
+<!-- ====================================================================== -->
+<!-- §4 EDGE CASES                                                            -->
+<!-- ====================================================================== -->
+<div class="section-header" id="sec-edge"><span class="num">4</span>Edge cases <span class="sub">— states that need explicit handling</span></div>
+
+<div class="state-label" id="E1"><span class="tag">E1</span>No tiers defined yet — modes are still selectable but irrelevant</div>
+<div class="frame">
+<div class="container">
+  <div class="ctx-bar"><span><strong>Sherwani Rewards</strong> · 0 tiers</span><span>Mode: <strong>Hard cap</strong></span></div>
+  <div class="mode-section-title">Multiplier behavior</div>
+  <div class="mode-section-desc">How tier, campaign &amp; membership multipliers interact with rule caps.</div>
+  <div class="mode-pills">
+    <div class="mode-pill active">Hard cap <span class="pill-recommend">Recommended</span></div>
+    <div class="mode-pill">Soft cap</div>
+    <div class="mode-pill">Custom per-tier</div>
+  </div>
+  <div class="mode-consequence info"><span>ℹ</span><span>
+    No tiers configured yet — the mode picker has no effect until you add at least one tier. Memberships and campaigns also feed multipliers; this setting applies to those.
+  </span></div>
+  <div class="empty-state">
+    <h4>No tiers yet</h4>
+    Add your first VIP tier to start rewarding repeat customers.
+    <div style="margin-top: 12px;"><button class="btn btn-primary btn-sm">+ Add tier</button></div>
+  </div>
+</div>
+</div>
+
+<div class="state-label" id="E2"><span class="tag">E2</span>Mode switch warning — leaving Custom with data</div>
+<div class="frame">
+<div class="modal-bg">
+<div class="modal">
+  <h4>⚠ Switch to Hard cap?</h4>
+  <p>
+    You have <strong>2 per-tier overrides</strong> and a <strong>base cap of ₹500</strong> configured in Custom per-tier mode. Switching to Hard cap will <em>not delete</em> them — they'll be preserved and re-applied if you switch back.
+  </p>
+  <p style="font-size: 12px; color: var(--muted); background: var(--surface-2); padding: 8px 12px; border-radius: 4px;">
+    <strong>Until you switch back:</strong> rule caps apply as hard ceilings for every tier. Diamond customers no longer earn ₹2,000 — they earn ₹450 (the rule's max).
+  </p>
+  <div class="modal-actions">
+    <button class="btn btn-secondary">Cancel</button>
+    <button class="btn btn-primary">Switch to Hard cap</button>
+  </div>
+</div>
+</div>
+</div>
+<div class="note">Switching modes is non-destructive. We preserve Custom data when switching away so the merchant can return; we just stop applying it. The modal explicitly tells them what their customers will earn after the switch.</div>
+
+<div class="state-label" id="E3"><span class="tag">E3</span>Validation — invalid override values</div>
+<div class="frame">
+<div class="container">
+  <div class="ctx-bar"><span><strong>Sherwani Rewards</strong> · 5 tiers</span><span>Mode: <strong>Custom per-tier</strong></span></div>
+  <div class="base-card">
+    <div class="left"><div class="title">Custom base cap</div></div>
+    <div class="input-wrap"><span>₹</span><input value="500" /></div>
+  </div>
+  <div class="derived-table">
+    <div class="derived-row overridden" style="background: color-mix(in srgb, var(--error) 6%, transparent);">
+      <div><span class="tier-pill tier-gold">Gold</span></div>
+      <div class="mult">2×</div>
+      <div style="display:flex; align-items:center; gap:8px;"><input value="0" style="border-color: var(--error);" /><span style="color: var(--error); font-size: 11px;">Gold customers will earn nothing. Confirm or set a positive value.</span></div>
+      <div><a href="#" class="override-link reset">↻ reset</a></div>
+    </div>
+    <div class="derived-row overridden" style="background: color-mix(in srgb, var(--warning) 6%, transparent);">
+      <div><span class="tier-pill tier-platinum">Platinum</span></div>
+      <div class="mult">3×</div>
+      <div style="display:flex; align-items:center; gap:8px;"><input value="50,000" style="border-color: var(--warning);" /><span style="color: var(--warning); font-size: 11px;">Unusually high — typical caps are 5–50× the order value. Confirm?</span></div>
+      <div><a href="#" class="override-link reset">↻ reset</a></div>
+    </div>
+    <div class="derived-row overridden">
+      <div><span class="tier-pill tier-diamond">Diamond</span></div>
+      <div class="mult">5×</div>
+      <div style="display:flex; align-items:center; gap:8px;"><input value="-100" style="border-color: var(--error);" disabled /><span style="color: var(--error); font-size: 11px;">Negative caps aren't allowed.</span></div>
+      <div><a href="#" class="override-link reset">↻ reset</a></div>
+    </div>
+  </div>
+  <div class="save-bar">
+    <span class="left" style="color: var(--error);">⚠ 1 error · 1 warning. Fix to save.</span>
+    <div><button class="btn btn-secondary">Discard</button> <button class="btn btn-primary" disabled style="opacity: 0.5; cursor: not-allowed;">Save</button></div>
+  </div>
+</div>
+</div>
+<div class="note">Validation rules: <code>0</code> is allowed (tier earns nothing — must confirm); <code>&gt; 50×</code> typical order yields warning (likely typo); negative numbers blocked outright. Save disabled while any error stands.</div>
+
+<div class="state-label" id="E4"><span class="tag">E4</span>Inactive rule — its cap doesn't count toward consequence text</div>
+<div class="frame">
+<div class="container">
+  <div class="ctx-bar"><span><strong>Sherwani Rewards</strong> · 5 tiers · 2 rules (1 active)</span><span>Mode: <strong>Hard cap</strong></span></div>
+  <div class="mode-pills">
+    <div class="mode-pill active">Hard cap <span class="pill-recommend">Recommended</span></div>
+    <div class="mode-pill">Soft cap</div>
+    <div class="mode-pill">Custom per-tier</div>
+  </div>
+  <div class="mode-consequence ok"><span>✓</span><span>
+    Active caps: <strong>Order Reward 50</strong> ₹450. <span style="color: var(--muted);">("Welcome Bonus" with ₹100 cap is paused — not counted here. <a href="#">View →</a>)</span>
+  </span></div>
+</div>
+</div>
+<div class="note">Inactive rules (<code>is_active = false</code>) don't contribute to runtime cap calculations and are explicitly excluded from the consequence text. Mention them in muted text so the merchant knows we noticed.</div>
+
+<div class="state-label" id="E5"><span class="tag">E5</span>Loading &amp; saving states</div>
+<div class="frame">
+<div class="container">
+  <div class="ctx-bar"><span><strong>Sherwani Rewards</strong></span><span>Mode: <strong>Custom per-tier</strong></span></div>
+  <div class="mode-pills">
+    <div class="mode-pill">Hard cap</div>
+    <div class="mode-pill">Soft cap</div>
+    <div class="mode-pill active">Custom per-tier</div>
+  </div>
+  <div class="empty-state" style="border: 1px solid var(--border); background: var(--surface-2);">
+    <div style="display: inline-block; width: 18px; height: 18px; border: 2px solid var(--primary); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+    <div style="margin-top: 12px;">Loading caps…</div>
+  </div>
+</div>
+</div>
+<div class="frame">
+<div class="container">
+  <div class="ctx-bar"><span><strong>Sherwani Rewards</strong></span><span>Mode: <strong>Custom per-tier</strong></span></div>
+  <div class="mode-consequence" style="background: color-mix(in srgb, var(--success) 6%, transparent); border-left: 3px solid var(--success);">
+    <span>✓</span><span>Saved. Live for new earn events in <strong>~5 seconds</strong> (cache refresh).</span>
+  </div>
+</div>
+</div>
+<div class="frame">
+<div class="container">
+  <div class="ctx-bar"><span><strong>Sherwani Rewards</strong></span><span>Mode: <strong>Custom per-tier</strong></span></div>
+  <div class="mode-consequence error">
+    <span>✕</span><span><strong>Save failed:</strong> "Server returned 503". Your changes are preserved locally — try again. <a href="#">Retry</a></span>
+  </div>
+</div>
+</div>
+<style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+
+<!-- ====================================================================== -->
+<!-- §5 RESOLUTION LOGIC                                                      -->
+<!-- ====================================================================== -->
+<div class="section-header" id="sec-logic"><span class="num">5</span>Runtime cap resolution <span class="sub">— what the earn flow does per mode</span></div>
+
+<div class="frame">
+<div class="container" style="max-width: 900px;">
+  <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">Per earn-event, after base reward and multipliers compute:</h3>
+
+  <div style="background: var(--surface-2); padding: 16px; border-radius: 8px; font-family: 'SF Mono', monospace; font-size: 12px; line-height: 1.7; margin-bottom: 16px; overflow-x: auto;">
+let gross = rule.base_reward(order)             <span style="color: var(--muted);">// 5% × ₹20,000 = ₹1,000</span>
+let mult  = max(loyalty_mult, membership_mult) × campaign_mult
+let raw   = gross × mult                        <span style="color: var(--muted);">// ₹1,000 × 5 = ₹5,000</span>
+
+let cap = match program.cap_mode {
+  <span style="color: var(--success);">"hard"</span>       =&gt; rule.max_amount,                                  <span style="color: var(--muted);">// ₹450</span>
+  <span style="color: var(--warning);">"soft"</span>       =&gt; rule.max_amount × mult,                           <span style="color: var(--muted);">// ₹450 × 5 = ₹2,250</span>
+  <span style="color: var(--primary);">"custom"</span>     =&gt; tier.max_amount_override                          <span style="color: var(--muted);">// override wins</span>
+                  .or(program.custom_base_cap × tier.multiplier)     <span style="color: var(--muted);">// base × mult</span>
+                  .or(rule.max_amount),                              <span style="color: var(--muted);">// fall back to rule</span>
+}
+
+let result = min(raw, cap)
+  </div>
+
+  <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Resolution table</h3>
+  <table class="tier-table" style="font-size: 12px;">
+    <thead><tr><th>Mode</th><th>base</th><th>override</th><th>rule.max_amount</th><th>Effective cap</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Hard</strong></td><td>—</td><td>—</td><td>₹450</td><td><code>₹450</code></td></tr>
+      <tr><td><strong>Soft</strong></td><td>—</td><td>—</td><td>₹450</td><td><code>₹450 × tier_mult</code></td></tr>
+      <tr><td><strong>Custom</strong></td><td>—</td><td>—</td><td>₹450</td><td><code>₹450</code> (fall back)</td></tr>
+      <tr><td><strong>Custom</strong></td><td>₹500</td><td>—</td><td>₹450</td><td><code>₹500 × tier_mult</code></td></tr>
+      <tr><td><strong>Custom</strong></td><td>—</td><td>₹750 (Gold)</td><td>₹450</td><td><code>₹750</code> (override wins)</td></tr>
+      <tr><td><strong>Custom</strong></td><td>₹500</td><td>₹900 (Gold)</td><td>₹450</td><td><code>₹900</code> (override wins)</td></tr>
+      <tr><td><strong>Custom</strong></td><td>₹500</td><td>—</td><td>—</td><td><code>₹500 × tier_mult</code> (no rule cap to fall back to)</td></tr>
+    </tbody>
+  </table>
+</div>
+</div>
+<div class="note">
+  <strong>Custom resolution order</strong> (highest precedence first): per-tier override → program base × tier multiplier → rule's own cap → uncapped. This means even an "empty" Custom mode still produces a sane ceiling whenever the rule itself has a cap.
+</div>
+
+<!-- ====================================================================== -->
+<!-- Schema                                                                   -->
+<!-- ====================================================================== -->
+<div class="section-header"><span class="num">6</span>Schema additions <span class="sub">— migrations</span></div>
+<div class="frame">
+<div class="container" style="font-family: 'SF Mono', monospace; font-size: 12px; line-height: 1.7;">
+<pre style="background: var(--surface-2); padding: 16px; border-radius: 8px; overflow-x: auto;">
+ALTER TABLE loyalty_programs
+  ADD COLUMN cap_mode TEXT NOT NULL DEFAULT 'hard',     -- 'hard' | 'soft' | 'custom'
+  ADD COLUMN custom_base_cap DOUBLE PRECISION;          -- nullable; only meaningful when cap_mode='custom'
+
+ALTER TABLE loyalty_tiers
+  ADD COLUMN max_amount_override DOUBLE PRECISION;      -- nullable; per-tier override
+
+ALTER TABLE loyalty_programs
+  ADD CONSTRAINT cap_mode_check CHECK (cap_mode IN ('hard','soft','custom'));
+</pre>
+
+<p style="margin-top: 12px; font-size: 13px; color: var(--muted);">
+Existing merchants get <code>cap_mode = 'hard'</code> by default (the recommended, conservative behavior). The previous bug-behavior is <code>cap_mode = 'soft'</code> and only activates when a merchant explicitly chooses it.
+</p>
+</div>
+</div>
+
+<div class="intro" style="padding:32px;">
+  <p style="font-size:13px;">
+    All states drawn. Tell me to ship and I'll draft <code>plans/loyalty-cap-modes/</code> with the migrations, the earn-flow refactor (move clamp to the final step in <code>do_process_earn</code>), and the <code>/admin/loyalty</code> UI.
+  </p>
+</div>
+
+</body>
+</html>

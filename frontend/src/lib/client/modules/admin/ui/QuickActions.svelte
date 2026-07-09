@@ -17,19 +17,19 @@
       ? actions
       : [
           {
-            label: 'Create Rule',
+            label: 'Create rule',
             href: '/admin/rules',
             icon: '+',
             description: 'Set up earn or burn rules'
           },
           {
-            label: 'Issue Gift Card',
+            label: 'Issue gift card',
             href: '/admin/gift-cards',
             icon: '$',
             description: 'Create and send gift cards'
           },
           {
-            label: 'View Transactions',
+            label: 'View transactions',
             href: '/admin/transactions',
             icon: '#',
             description: 'Browse recent transactions'
@@ -39,7 +39,7 @@
 </script>
 
 <section class="quick-actions">
-  <h3 class="section-title">Quick Actions</h3>
+  <h3 class="section-title">Quick actions</h3>
   <div class="actions-grid">
     {#each displayActions as action}
       <a href={action.href} class="action-card">
@@ -78,12 +78,12 @@
     gap: var(--space-3);
     padding: var(--space-4);
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
     text-decoration: none;
     transition:
       border-color var(--transition-fast),
       box-shadow var(--transition-fast);
+    box-shadow: var(--shadow-card);
   }
 
   .action-card:hover {

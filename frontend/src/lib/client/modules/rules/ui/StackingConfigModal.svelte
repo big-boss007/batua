@@ -31,21 +31,24 @@
       value: 'multiplicative',
       name: 'Multiplicative',
       recommended: true,
-      description: 'Campaign and tier multipliers multiply together. Higher-tier members benefit more from campaigns.',
+      description:
+        'Campaign and tier multipliers multiply together. Higher-tier members benefit more from campaigns.',
       example: 'Gold 2x × Campaign 2x = 4x total'
     },
     {
       value: 'best_of',
       name: 'Best-of',
       recommended: false,
-      description: 'Customer gets the higher of campaign or tier multiplier, not both. More conservative.',
+      description:
+        'Customer gets the higher of campaign or tier multiplier, not both. More conservative.',
       example: 'Gold 2x vs Campaign 3x = 3x total'
     },
     {
       value: 'additive',
       name: 'Additive',
       recommended: false,
-      description: 'Campaign bonus is added to tier multiplier. Predictable costs, moderate reward boost.',
+      description:
+        'Campaign bonus is added to tier multiplier. Predictable costs, moderate reward boost.',
       example: 'Gold 2x + Campaign 2x = 3x total'
     }
   ];
@@ -60,12 +63,12 @@
 
 <Modal
   size="medium"
-  header={{ text: 'Campaign Settings', rightImage: MODAL_CLOSE_ICON }}
+  header={{ text: 'Campaign settings', rightImage: MODAL_CLOSE_ICON }}
   onclose={onCancel}
   onoverlayClick={onCancel}
   onheaderRightImageClick={onCancel}
   footer={{
-    primaryButton: { text: 'Save Settings' },
+    primaryButton: { text: 'Save settings' },
     secondaryButton: { text: 'Cancel' }
   }}
   onprimaryButtonClick={handleSave}
@@ -74,14 +77,16 @@
   {#snippet content()}
     <div class="modal-body">
       <div class="config-section">
-        <div class="config-title">Multiplier Stacking Mode</div>
+        <div class="config-title">Multiplier stacking mode</div>
         <p class="config-desc">How campaign multipliers combine with tier/membership multipliers</p>
         <div class="stacking-options">
           {#each STACKING_OPTIONS as option (option.value)}
             <button
               class="stacking-option"
               class:selected={stackingMode === option.value}
-              onclick={() => { stackingMode = option.value; }}
+              onclick={() => {
+                stackingMode = option.value;
+              }}
             >
               <div class="stacking-radio" class:selected={stackingMode === option.value}></div>
               <div class="stacking-info">
@@ -100,16 +105,18 @@
       </div>
 
       <div class="config-section">
-        <div class="config-title">Safety Limits</div>
+        <div class="config-title">Safety limits</div>
         <div class="config-row">
           <div>
-            <div class="config-label">Maximum Effective Multiplier</div>
+            <div class="config-label">Maximum effective multiplier</div>
             <div class="config-sublabel">Cap the total multiplier regardless of stacking mode</div>
           </div>
           <div class="cap-input-row">
             <Input
               value={String(maxMultiplier)}
-              onInput={(val) => { maxMultiplier = Number(val) || 1; }}
+              onInput={(val) => {
+                maxMultiplier = Number(val) || 1;
+              }}
               classes="cap-input"
             />
             <span class="cap-suffix">x</span>
@@ -118,7 +125,8 @@
       </div>
 
       <div class="info-note">
-        <strong>Note:</strong> When multiple campaigns overlap on the same rule, the campaign with the higher multiplier automatically wins. This is a platform-level safety rule and cannot be changed.
+        <strong>Note:</strong> When multiple campaigns overlap on the same rule, the campaign with the
+        higher multiplier automatically wins. This is a platform-level safety rule and cannot be changed.
       </div>
     </div>
   {/snippet}
@@ -172,14 +180,19 @@
     font-family: inherit;
   }
 
-  .stacking-option:hover { border-color: #c7d2fe; }
-  .stacking-option.selected { border-color: #6366f1; background: #f5f3ff; }
+  .stacking-option:hover {
+    border-color: color-mix(in srgb, var(--purple-500) 25%, #fff);
+  }
+  .stacking-option.selected {
+    border-color: var(--purple-500);
+    background: color-mix(in srgb, var(--purple-500) 7%, #fff);
+  }
 
   .stacking-radio {
     width: 18px;
     height: 18px;
     border-radius: 50%;
-    border: 2px solid #d1d5db;
+    border: 2px solid var(--g-500);
     margin-top: 2px;
     flex-shrink: 0;
     display: flex;
@@ -187,16 +200,20 @@
     justify-content: center;
   }
 
-  .stacking-radio.selected { border-color: #6366f1; }
+  .stacking-radio.selected {
+    border-color: var(--purple-500);
+  }
   .stacking-radio.selected::after {
     content: '';
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: #6366f1;
+    background: var(--purple-500);
   }
 
-  .stacking-info { flex: 1; }
+  .stacking-info {
+    flex: 1;
+  }
 
   .stacking-name {
     font-size: var(--font-size-sm);
@@ -260,13 +277,14 @@
   .info-note {
     padding: var(--space-3);
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
     font-size: var(--font-size-xs);
     color: var(--color-text-muted);
     line-height: 1.5;
+    box-shadow: var(--shadow-card);
   }
 
-  .info-note strong { color: var(--color-text); }
-
+  .info-note strong {
+    color: var(--color-text);
+  }
 </style>

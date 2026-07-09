@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Custom Per-Tier Section — 5 Designs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #f0f1f5;
+    --surface: #ffffff;
+    --surface-2: #f0f1f3;
+    --text: #1a1a2e;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --primary: #7c6aff;
+    --primary-hover: #6b5ce7;
+    --success: #10b981;
+    --error: #ef4444;
+    --warning: #f59e0b;
+    --info: #3b82f6;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+
+  .intro { background: #1a1a2e; color: #fff; padding: 48px 32px; text-align: center; }
+  .intro h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+  .intro p { color: rgba(255,255,255,0.7); max-width: 760px; margin: 0 auto; font-size: 14px; line-height: 1.6; }
+  .intro .legend { margin-top: 20px; font-size: 13px; color: rgba(255,255,255,0.85); }
+  .intro .legend strong { color: #fff; }
+
+  .screen-label {
+    position: sticky; top: 0; z-index: 10;
+    background: #fef3c7; color: #78350f;
+    border-top: 1px solid #f59e0b; border-bottom: 1px solid #f59e0b;
+    padding: 12px 32px; font-size: 12px; font-weight: 600; letter-spacing: 0.4px;
+  }
+  .screen-label .tag { background: #f59e0b; color: #fff; padding: 2px 8px; border-radius: 4px; margin-right: 10px; font-weight: 700; }
+  .screen-label .approach { font-weight: 400; color: #78350f; opacity: 0.85; }
+
+  .frame {
+    padding: 32px; background: var(--bg);
+  }
+  .container {
+    max-width: 880px; margin: 0 auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+  }
+
+  .ctx-bar {
+    background: color-mix(in srgb, var(--info) 6%, transparent);
+    border: 1px solid color-mix(in srgb, var(--info) 20%, transparent);
+    border-radius: 6px;
+    padding: 8px 12px; font-size: 11px; color: var(--muted);
+    margin-bottom: 20px;
+    display: flex; justify-content: space-between;
+  }
+  .ctx-bar strong { color: var(--text); }
+
+  /* Mode pills (shared header for all designs) */
+  .mode-section-title { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+  .mode-section-desc { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+  .mode-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .mode-pill {
+    padding: 6px 14px;
+    border: 1px solid var(--border); border-radius: 6px;
+    font-size: 13px; font-weight: 600;
+    background: var(--surface); color: var(--text);
+    cursor: pointer;
+  }
+  .mode-pill.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+  /* Tier pills */
+  .tier-pill {
+    display: inline-flex; align-items: center;
+    padding: 2px 10px; border-radius: 999px;
+    font-size: 11px; font-weight: 600; white-space: nowrap;
+  }
+  .tier-bronze { background: #f5e6d3; color: #8b5e3c; }
+  .tier-silver { background: #e8e8e8; color: #555555; }
+  .tier-gold { background: #fdf3d7; color: #92742e; }
+  .tier-platinum { background: #e8eaf6; color: #3949ab; }
+  .tier-diamond { background: #b9f2ff; color: #036c8d; }
+  .mult { font-weight: 700; font-family: 'SF Mono', monospace; color: var(--primary); }
+
+  /* Buttons */
+  .btn { padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid transparent; font-family: inherit; }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-secondary { background: var(--surface); color: var(--text); border-color: var(--border); }
+  .btn-ghost { background: transparent; color: var(--primary); }
+  .btn-sm { padding: 4px 10px; font-size: 12px; }
+
+  /* Note */
+  .note { background: #eef2ff; border-left: 3px solid var(--primary); color: #4338ca; padding: 12px 16px; border-radius: 4px; font-size: 12px; margin: 16px auto 0; line-height: 1.5; max-width: 880px; }
+  .note strong { color: #312e81; }
+
+  /* =========== A: Inline column (recap) =========== */
+  .a-table { width: 100%; border-collapse: collapse; font-size: 13px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .a-table th { padding: 10px 14px; text-align: left; background: var(--surface-2); color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+  .a-table th.cap-col { background: color-mix(in srgb, var(--primary) 8%, transparent); color: var(--primary); }
+  .a-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .a-table tr:last-child td { border-bottom: none; }
+  .a-input { width: 100px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; font-family: inherit; background: var(--surface); }
+  .a-input.custom { border-color: var(--primary); font-weight: 600; }
+  .a-input.default { color: var(--muted); font-style: italic; }
+  .a-hint { font-size: 10px; color: var(--muted); margin-top: 2px; display: flex; align-items: center; gap: 4px; }
+  .a-hint a { color: var(--primary); text-decoration: none; }
+
+  /* =========== B: Companion panel =========== */
+  .b-table { width: 100%; border-collapse: collapse; font-size: 13px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 16px; }
+  .b-table th { padding: 10px 14px; text-align: left; background: var(--surface-2); color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+  .b-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); }
+  .b-table tr:last-child td { border-bottom: none; }
+  .b-cap-panel { background: color-mix(in srgb, var(--primary) 4%, transparent); border: 1px solid color-mix(in srgb, var(--primary) 24%, transparent); border-radius: 8px; padding: 18px; }
+  .b-cap-panel h3 { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .b-cap-panel .desc { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+  .b-cap-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .b-cap-item { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .b-cap-item .left { display: flex; align-items: center; gap: 10px; }
+  .b-cap-item .input-wrap { display: flex; align-items: center; gap: 4px; }
+  .b-cap-item .input { width: 80px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; font-family: inherit; }
+  .b-cap-item .input.custom { border-color: var(--primary); color: var(--primary); font-weight: 600; }
+
+  /* =========== C: Expandable rows =========== */
+  .c-table { width: 100%; border-collapse: collapse; font-size: 13px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .c-table th { padding: 10px 14px; text-align: left; background: var(--surface-2); color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+  .c-table > tbody > tr > td { padding: 12px 14px; border-bottom: 1px solid var(--border); }
+  .c-row-summary { cursor: pointer; }
+  .c-row-summary:hover { background: var(--surface-2); }
+  .c-chev { font-size: 10px; color: var(--muted); margin-right: 4px; }
+  .c-row-expanded { background: color-mix(in srgb, var(--primary) 4%, transparent); }
+  .c-row-expanded td { padding: 0 !important; border-bottom: 1px solid var(--border); }
+  .c-row-expanded .inner { padding: 16px 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: center; }
+  .c-row-expanded .field-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.3px; }
+  .c-row-expanded .input { padding: 8px 12px; border: 1px solid var(--primary); border-radius: 6px; font-size: 14px; font-family: inherit; width: 140px; font-weight: 600; color: var(--primary); }
+  .c-preview { background: var(--surface); border-radius: 6px; padding: 10px 14px; font-size: 11px; color: var(--muted); line-height: 1.6; border-left: 3px solid var(--success); }
+  .c-preview strong { color: var(--text); }
+  .c-preview .num { font-family: 'SF Mono', monospace; color: var(--success); font-weight: 700; }
+
+  /* =========== D: Visual ladder =========== */
+  .d-ladder { display: flex; flex-direction: column; gap: 10px; padding: 18px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; }
+  .d-ladder-head { display: flex; justify-content: space-between; align-items: center; padding: 0 4px 8px; border-bottom: 1px solid var(--border); }
+  .d-ladder-head .title { font-size: 13px; font-weight: 600; }
+  .d-ladder-head .scale { font-size: 11px; color: var(--muted); }
+  .d-row { display: grid; grid-template-columns: 120px 1fr 90px; gap: 12px; align-items: center; }
+  .d-tier-name { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+  .d-bar-track {
+    position: relative; height: 28px;
+    background: var(--surface-2);
+    border-radius: 6px;
+    overflow: visible;
+  }
+  .d-bar-fill {
+    position: absolute; left: 0; top: 0; bottom: 0;
+    background: linear-gradient(to right, color-mix(in srgb, var(--primary) 40%, transparent), var(--primary));
+    border-radius: 6px;
+  }
+  .d-bar-default {
+    background: var(--surface-2);
+    border: 1px dashed var(--border);
+  }
+  .d-knob {
+    position: absolute; top: 50%; transform: translate(50%, -50%);
+    width: 16px; height: 16px;
+    background: #fff; border: 2px solid var(--primary);
+    border-radius: 50%;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    cursor: ew-resize;
+  }
+  .d-rule-line {
+    position: absolute; top: -4px; bottom: -4px;
+    width: 2px; background: var(--warning);
+    border-radius: 1px;
+  }
+  .d-rule-line::after {
+    content: '₹450 (rule)';
+    position: absolute; top: -16px; left: 4px;
+    font-size: 9px; color: var(--warning); white-space: nowrap;
+    font-weight: 600;
+  }
+  .d-value { text-align: right; font-family: 'SF Mono', monospace; font-weight: 700; font-size: 14px; color: var(--text); }
+  .d-value.default { color: var(--muted); font-style: italic; }
+
+  /* =========== E: Relative input =========== */
+  .e-toggle-wrap { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding: 12px 16px; background: var(--surface-2); border-radius: 8px; }
+  .e-toggle-label { font-size: 12px; color: var(--muted); }
+  .e-toggle {
+    display: inline-flex;
+    background: var(--surface); border-radius: 6px; padding: 2px;
+    border: 1px solid var(--border);
+  }
+  .e-toggle > div { padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: 600; color: var(--muted); cursor: pointer; }
+  .e-toggle > div.active { background: var(--primary); color: #fff; }
+  .e-table { width: 100%; border-collapse: collapse; font-size: 13px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .e-table th { padding: 10px 14px; text-align: left; background: var(--surface-2); color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+  .e-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .e-table tr:last-child td { border-bottom: none; }
+  .e-mult-input {
+    display: inline-flex; align-items: center;
+    padding: 6px 10px;
+    border: 1px solid var(--border); border-radius: 6px;
+    background: var(--surface); font-family: 'SF Mono', monospace;
+  }
+  .e-mult-input.custom { border-color: var(--primary); }
+  .e-mult-input input {
+    width: 50px; border: none; outline: none; background: transparent;
+    font-family: inherit; font-size: 13px; font-weight: 600; color: var(--primary);
+    text-align: right;
+  }
+  .e-mult-input input.default { color: var(--muted); font-weight: 400; }
+  .e-mult-input .suffix { color: var(--muted); margin-left: 2px; font-size: 13px; }
+  .e-resolved { font-size: 12px; color: var(--muted); margin-left: 12px; font-family: 'SF Mono', monospace; }
+  .e-resolved strong { color: var(--text); }
+</style>
+</head>
+<body>
+
+<div class="intro">
+  <h1>Custom per-tier section — 5 designs</h1>
+  <p>
+    Same data, five different UX philosophies for letting the merchant set a per-tier cap. Same scenario in all five: Sherwani Studio's 5 tiers, rule cap ₹450, three tiers customised (Gold ₹750, Platinum ₹1000, Diamond ₹1500).
+  </p>
+  <div class="legend">
+    <strong>A</strong> Inline column &nbsp;·&nbsp;
+    <strong>B</strong> Companion panel &nbsp;·&nbsp;
+    <strong>C</strong> Expand-on-click + preview &nbsp;·&nbsp;
+    <strong>D</strong> Visual ladder &nbsp;·&nbsp;
+    <strong>E</strong> Relative-multiplier input
+  </div>
+</div>
+
+<!-- ====================================================================== -->
+<!-- A — Inline column (recap)                                               -->
+<!-- ====================================================================== -->
+<div class="screen-label">
+  <span class="tag">A</span>Inline column
+  <span class="approach">— tier table grows a "Max per order" column. Default-vs-custom shown with styling on the input itself.</span>
+</div>
+<div class="frame">
+<div class="container">
+  <div class="ctx-bar">
+    <span><strong>Sherwani Rewards</strong> · 5 tiers</span>
+    <span>Mode: <strong>Custom per-tier</strong></span>
+  </div>
+
+  <div class="mode-pills">
+    <div class="mode-pill">Hard cap</div>
+    <div class="mode-pill">Soft cap</div>
+    <div class="mode-pill active">Custom per-tier</div>
+  </div>
+
+  <table class="a-table">
+    <thead><tr><th>Tier</th><th>Threshold</th><th>Multiplier</th><th class="cap-col">Max per order</th><th></th></tr></thead>
+    <tbody>
+      <tr><td><span class="tier-pill tier-bronze">Bronze</span></td><td>₹0+</td><td class="mult">1×</td>
+        <td><input class="a-input default" value="450" /><div class="a-hint">Default · from rule</div></td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      <tr><td><span class="tier-pill tier-silver">Silver</span></td><td>₹5,000+</td><td class="mult">1.5×</td>
+        <td><input class="a-input default" value="450" /><div class="a-hint">Default · from rule</div></td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      <tr><td><span class="tier-pill tier-gold">Gold</span></td><td>₹15,000+</td><td class="mult">2×</td>
+        <td><input class="a-input custom" value="750" /><div class="a-hint">Custom · <a href="#">↻ reset</a></div></td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      <tr><td><span class="tier-pill tier-platinum">Platinum</span></td><td>₹50,000+</td><td class="mult">3×</td>
+        <td><input class="a-input custom" value="1,000" /><div class="a-hint">Custom · <a href="#">↻ reset</a></div></td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      <tr><td><span class="tier-pill tier-diamond">Diamond</span></td><td>₹1,00,000+</td><td class="mult">5×</td>
+        <td><input class="a-input custom" value="1,500" /><div class="a-hint">Custom · <a href="#">↻ reset</a></div></td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+    </tbody>
+  </table>
+</div>
+</div>
+<div class="note">
+  <strong>Pros:</strong> all caps visible at once; trivial to scan; same row layout as Hard/Soft modes (just one extra column). <strong>Cons:</strong> 6-column table starts to feel wide; default vs. custom relies on subtle styling that may be missed.
+</div>
+
+<!-- ====================================================================== -->
+<!-- B — Companion panel below table                                         -->
+<!-- ====================================================================== -->
+<div class="screen-label">
+  <span class="tag">B</span>Companion panel below table
+  <span class="approach">— tier table stays clean; "Per-tier caps" lives in its own card below. Conceptually separates "tier definition" from "tier cap".</span>
+</div>
+<div class="frame">
+<div class="container">
+  <div class="ctx-bar">
+    <span><strong>Sherwani Rewards</strong> · 5 tiers</span>
+    <span>Mode: <strong>Custom per-tier</strong></span>
+  </div>
+
+  <div class="mode-pills">
+    <div class="mode-pill">Hard cap</div>
+    <div class="mode-pill">Soft cap</div>
+    <div class="mode-pill active">Custom per-tier</div>
+  </div>
+
+  <table class="b-table">
+    <thead><tr><th>Tier</th><th>Threshold</th><th>Multiplier</th><th></th></tr></thead>
+    <tbody>
+      <tr><td><span class="tier-pill tier-bronze">Bronze</span></td><td>₹0+</td><td class="mult">1×</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      <tr><td><span class="tier-pill tier-silver">Silver</span></td><td>₹5,000+</td><td class="mult">1.5×</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      <tr><td><span class="tier-pill tier-gold">Gold</span></td><td>₹15,000+</td><td class="mult">2×</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      <tr><td><span class="tier-pill tier-platinum">Platinum</span></td><td>₹50,000+</td><td class="mult">3×</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      <tr><td><span class="tier-pill tier-diamond">Diamond</span></td><td>₹1,00,000+</td><td class="mult">5×</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+    </tbody>
+  </table>
+
+  <div class="b-cap-panel">
+    <h3>Per-tier caps</h3>
+    <div class="desc">Override the rule's "max per order" for specific tiers. Leave on default to inherit ₹450.</div>
+    <div class="b-cap-grid">
+      <div class="b-cap-item"><div class="left"><span class="tier-pill tier-bronze">Bronze</span><span style="font-size:10px;color:var(--muted);">1×</span></div>
+        <div class="input-wrap"><span style="color:var(--muted)">₹</span><input class="input" value="450" placeholder="Default" /></div></div>
+      <div class="b-cap-item"><div class="left"><span class="tier-pill tier-silver">Silver</span><span style="font-size:10px;color:var(--muted);">1.5×</span></div>
+        <div class="input-wrap"><span style="color:var(--muted)">₹</span><input class="input" value="450" placeholder="Default" /></div></div>
+      <div class="b-cap-item"><div class="left"><span class="tier-pill tier-gold">Gold</span><span style="font-size:10px;color:var(--muted);">2×</span></div>
+        <div class="input-wrap"><span style="color:var(--primary)">₹</span><input class="input custom" value="750" /></div></div>
+      <div class="b-cap-item"><div class="left"><span class="tier-pill tier-platinum">Platinum</span><span style="font-size:10px;color:var(--muted);">3×</span></div>
+        <div class="input-wrap"><span style="color:var(--primary)">₹</span><input class="input custom" value="1,000" /></div></div>
+      <div class="b-cap-item" style="grid-column: 1 / -1;"><div class="left"><span class="tier-pill tier-diamond">Diamond</span><span style="font-size:10px;color:var(--muted);">5×</span></div>
+        <div class="input-wrap"><span style="color:var(--primary)">₹</span><input class="input custom" value="1,500" /></div></div>
+    </div>
+  </div>
+</div>
+</div>
+<div class="note">
+  <strong>Pros:</strong> tier table stays scannable; caps get a clearly-named home; visual separation reinforces that this is a Custom-mode-only feature. <strong>Cons:</strong> tier name appears twice on the page (in table and in panel); merchant scrolls between two areas to compare cap vs. multiplier.
+</div>
+
+<!-- ====================================================================== -->
+<!-- C — Expand-on-click + live preview                                       -->
+<!-- ====================================================================== -->
+<div class="screen-label">
+  <span class="tag">C</span>Expand-on-click + live preview
+  <span class="approach">— click any tier row to expand it inline; expanded panel has the cap input + a live "at this cap, a ₹20k order earns ₹X" preview.</span>
+</div>
+<div class="frame">
+<div class="container">
+  <div class="ctx-bar">
+    <span><strong>Sherwani Rewards</strong> · 5 tiers</span>
+    <span>Mode: <strong>Custom per-tier</strong></span>
+  </div>
+
+  <div class="mode-pills">
+    <div class="mode-pill">Hard cap</div>
+    <div class="mode-pill">Soft cap</div>
+    <div class="mode-pill active">Custom per-tier</div>
+  </div>
+
+  <table class="c-table">
+    <thead><tr><th>Tier</th><th>Threshold</th><th>Multiplier</th><th>Cap</th><th></th></tr></thead>
+    <tbody>
+      <tr class="c-row-summary"><td><span class="c-chev">▸</span><span class="tier-pill tier-bronze">Bronze</span></td><td>₹0+</td><td class="mult">1×</td><td style="color:var(--muted); font-style:italic;">₹450 (default)</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      <tr class="c-row-summary"><td><span class="c-chev">▸</span><span class="tier-pill tier-silver">Silver</span></td><td>₹5,000+</td><td class="mult">1.5×</td><td style="color:var(--muted); font-style:italic;">₹450 (default)</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      <tr class="c-row-summary"><td><span class="c-chev">▾</span><span class="tier-pill tier-gold">Gold</span></td><td>₹15,000+</td><td class="mult">2×</td><td style="font-weight:600; color:var(--primary);">₹750</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      <tr class="c-row-expanded"><td colspan="5"><div class="inner">
+        <div>
+          <div class="field-label">Max per order (Gold)</div>
+          <input class="input" value="₹750" />
+          <div style="font-size:11px; color: var(--muted); margin-top:6px;">Default is ₹450 (rule's max). <a href="#" style="color:var(--primary); text-decoration:none;">↻ reset</a></div>
+        </div>
+        <div class="c-preview">
+          <strong>At this cap:</strong><br>
+          ₹5,000 order → Gold earns <span class="num">₹500</span> (under cap)<br>
+          ₹10,000 order → Gold earns <span class="num">₹750</span> (cap)<br>
+          ₹20,000 order → Gold earns <span class="num">₹750</span> (cap)
+        </div>
+      </div></td></tr>
+      <tr class="c-row-summary"><td><span class="c-chev">▸</span><span class="tier-pill tier-platinum">Platinum</span></td><td>₹50,000+</td><td class="mult">3×</td><td style="font-weight:600; color:var(--primary);">₹1,000</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      <tr class="c-row-summary"><td><span class="c-chev">▸</span><span class="tier-pill tier-diamond">Diamond</span></td><td>₹1,00,000+</td><td class="mult">5×</td><td style="font-weight:600; color:var(--primary);">₹1,500</td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+    </tbody>
+  </table>
+</div>
+</div>
+<div class="note">
+  <strong>Pros:</strong> focused editing — one tier at a time with full context (multi-order preview); table stays compact when nothing's expanded. <strong>Cons:</strong> have to click each tier to edit it; can't bulk-compare values without expanding everything; chevron + expand pattern adds a UX layer.
+</div>
+
+<!-- ====================================================================== -->
+<!-- D — Visual ladder                                                        -->
+<!-- ====================================================================== -->
+<div class="screen-label">
+  <span class="tag">D</span>Visual ladder
+  <span class="approach">— horizontal bars per tier, with the cap as a draggable knob on each. The rule's default ₹450 shown as a dashed vertical line across all bars.</span>
+</div>
+<div class="frame">
+<div class="container">
+  <div class="ctx-bar">
+    <span><strong>Sherwani Rewards</strong> · 5 tiers</span>
+    <span>Mode: <strong>Custom per-tier</strong></span>
+  </div>
+
+  <div class="mode-pills">
+    <div class="mode-pill">Hard cap</div>
+    <div class="mode-pill">Soft cap</div>
+    <div class="mode-pill active">Custom per-tier</div>
+  </div>
+
+  <div class="d-ladder">
+    <div class="d-ladder-head">
+      <div class="title">Per-tier caps</div>
+      <div class="scale">0 — ₹2,500 →</div>
+    </div>
+
+    <!-- Bronze: default 450, on scale 0..2500 -->
+    <div class="d-row">
+      <div class="d-tier-name"><span class="tier-pill tier-bronze">Bronze</span><span class="mult">1×</span></div>
+      <div class="d-bar-track">
+        <div class="d-rule-line" style="left: 18%;"></div>
+        <div class="d-bar-fill d-bar-default" style="width: 18%;"><div class="d-knob" style="left: 100%;"></div></div>
+      </div>
+      <div class="d-value default">₹450</div>
+    </div>
+    <div class="d-row">
+      <div class="d-tier-name"><span class="tier-pill tier-silver">Silver</span><span class="mult">1.5×</span></div>
+      <div class="d-bar-track">
+        <div class="d-rule-line" style="left: 18%;"></div>
+        <div class="d-bar-fill d-bar-default" style="width: 18%;"><div class="d-knob" style="left: 100%;"></div></div>
+      </div>
+      <div class="d-value default">₹450</div>
+    </div>
+    <div class="d-row">
+      <div class="d-tier-name"><span class="tier-pill tier-gold">Gold</span><span class="mult">2×</span></div>
+      <div class="d-bar-track">
+        <div class="d-rule-line" style="left: 18%;"></div>
+        <div class="d-bar-fill" style="width: 30%;"><div class="d-knob" style="left: 100%;"></div></div>
+      </div>
+      <div class="d-value">₹750</div>
+    </div>
+    <div class="d-row">
+      <div class="d-tier-name"><span class="tier-pill tier-platinum">Platinum</span><span class="mult">3×</span></div>
+      <div class="d-bar-track">
+        <div class="d-rule-line" style="left: 18%;"></div>
+        <div class="d-bar-fill" style="width: 40%;"><div class="d-knob" style="left: 100%;"></div></div>
+      </div>
+      <div class="d-value">₹1,000</div>
+    </div>
+    <div class="d-row">
+      <div class="d-tier-name"><span class="tier-pill tier-diamond">Diamond</span><span class="mult">5×</span></div>
+      <div class="d-bar-track">
+        <div class="d-rule-line" style="left: 18%;"></div>
+        <div class="d-bar-fill" style="width: 60%;"><div class="d-knob" style="left: 100%;"></div></div>
+      </div>
+      <div class="d-value">₹1,500</div>
+    </div>
+  </div>
+</div>
+</div>
+<div class="note">
+  <strong>Pros:</strong> instantly shows the relationship between tiers — which ones got bumped vs. left at default; the rule-line shows the baseline visually. Best for "feeling" the program shape. <strong>Cons:</strong> precise numeric entry via drag is awkward (needs a numeric input alongside, doubling controls); heaviest engineering; small screens cramp the bars.
+</div>
+
+<!-- ====================================================================== -->
+<!-- E — Relative-multiplier input                                           -->
+<!-- ====================================================================== -->
+<div class="screen-label">
+  <span class="tag">E</span>Relative-multiplier input
+  <span class="approach">— merchant types caps as multiples of the rule's max (e.g. "2.5×" = ₹1,125), or switches to absolute ₹. System resolves and shows the absolute value next to each input.</span>
+</div>
+<div class="frame">
+<div class="container">
+  <div class="ctx-bar">
+    <span><strong>Sherwani Rewards</strong> · 5 tiers · rule cap <strong>₹450</strong></span>
+    <span>Mode: <strong>Custom per-tier</strong></span>
+  </div>
+
+  <div class="mode-pills">
+    <div class="mode-pill">Hard cap</div>
+    <div class="mode-pill">Soft cap</div>
+    <div class="mode-pill active">Custom per-tier</div>
+  </div>
+
+  <div class="e-toggle-wrap">
+    <span class="e-toggle-label">Enter caps as:</span>
+    <div class="e-toggle">
+      <div>₹ absolute</div>
+      <div class="active">× of rule cap</div>
+    </div>
+    <span class="e-toggle-label" style="margin-left:auto; font-size:11px;">Rule cap = ₹450. <code>1×</code> means inherit; <code>2.5×</code> = ₹1,125.</span>
+  </div>
+
+  <table class="e-table">
+    <thead><tr><th>Tier</th><th>Multiplier</th><th>Cap (× of rule)</th><th></th><th></th></tr></thead>
+    <tbody>
+      <tr><td><span class="tier-pill tier-bronze">Bronze</span></td><td class="mult">1×</td>
+        <td>
+          <div class="e-mult-input"><input class="default" value="1" /><span class="suffix">×</span></div>
+          <span class="e-resolved">= <strong>₹450</strong> (default)</span>
+        </td>
+        <td></td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      <tr><td><span class="tier-pill tier-silver">Silver</span></td><td class="mult">1.5×</td>
+        <td>
+          <div class="e-mult-input"><input class="default" value="1" /><span class="suffix">×</span></div>
+          <span class="e-resolved">= <strong>₹450</strong> (default)</span>
+        </td>
+        <td></td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      <tr><td><span class="tier-pill tier-gold">Gold</span></td><td class="mult">2×</td>
+        <td>
+          <div class="e-mult-input custom"><input value="1.67" /><span class="suffix">×</span></div>
+          <span class="e-resolved">= <strong>₹750</strong></span>
+        </td>
+        <td></td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      <tr><td><span class="tier-pill tier-platinum">Platinum</span></td><td class="mult">3×</td>
+        <td>
+          <div class="e-mult-input custom"><input value="2.22" /><span class="suffix">×</span></div>
+          <span class="e-resolved">= <strong>₹1,000</strong></span>
+        </td>
+        <td></td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      <tr><td><span class="tier-pill tier-diamond">Diamond</span></td><td class="mult">5×</td>
+        <td>
+          <div class="e-mult-input custom"><input value="3.33" /><span class="suffix">×</span></div>
+          <span class="e-resolved">= <strong>₹1,500</strong></span>
+        </td>
+        <td></td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top:12px; padding: 10px 14px; background: color-mix(in srgb, var(--info) 6%, transparent); border-left: 3px solid var(--info); border-radius: 4px; font-size: 12px; color: var(--muted);">
+    💡 In "× of rule" mode, your caps survive rule-cap changes proportionally. If you change the rule's max from ₹450 to ₹500, Gold's cap goes from ₹750 to ₹835 automatically.
+  </div>
+</div>
+</div>
+<div class="note">
+  <strong>Pros:</strong> lets merchants think in tier-relative terms ("Gold gets 2× the cap"); caps stay proportional if the rule cap changes. <strong>Cons:</strong> learning curve — merchants need to understand the × syntax; "1.67×" feels like an odd number; the toggle adds another decision point. Best for power users who already think in multiples.
+</div>
+
+<!-- ====================================================================== -->
+<!-- Comparison + recommendation                                              -->
+<!-- ====================================================================== -->
+<div style="background:#1a1a2e;color:#fff;padding:32px;">
+  <h2 style="font-size:18px;margin-bottom:16px;">At-a-glance comparison</h2>
+  <div style="max-width: 880px; margin: 0 auto; overflow-x: auto;">
+  <table style="width:100%; font-size: 13px; color: rgba(255,255,255,0.85); border-collapse: collapse;">
+    <thead><tr style="border-bottom: 1px solid rgba(255,255,255,0.2);"><th style="text-align:left; padding: 8px;">Design</th><th style="text-align:left;">All caps visible?</th><th style="text-align:left;">Best for</th><th style="text-align:left;">Engineering</th></tr></thead>
+    <tbody>
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);"><td style="padding: 8px;"><strong>A — Inline column</strong></td><td>Yes</td><td>Quick scanning, small tier counts (≤5)</td><td>Low</td></tr>
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);"><td style="padding: 8px;"><strong>B — Companion panel</strong></td><td>Yes</td><td>Conceptual separation, many tiers</td><td>Low–medium</td></tr>
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);"><td style="padding: 8px;"><strong>C — Expand + preview</strong></td><td>One at a time</td><td>Focused editing with consequences</td><td>Medium</td></tr>
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);"><td style="padding: 8px;"><strong>D — Visual ladder</strong></td><td>Yes (visually)</td><td>"Feel" the program shape; comparing tiers</td><td>High</td></tr>
+      <tr><td style="padding: 8px;"><strong>E — Relative input</strong></td><td>Yes</td><td>Power users; future rule-cap changes</td><td>Medium</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<div class="intro" style="padding:32px;">
+  <p style="font-size:13px;">
+    My pick for v1: <strong>A (inline column)</strong> for simplicity and speed-to-ship.
+    My pick for v2: layer <strong>C's per-tier preview</strong> on top of A by making the "Edit" link expand inline.
+    <strong>D</strong> and <strong>E</strong> are interesting but probably not worth the engineering for an opt-in advanced feature.
+  </p>
+</div>
+
+</body>
+</html>

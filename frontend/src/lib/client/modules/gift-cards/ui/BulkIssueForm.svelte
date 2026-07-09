@@ -100,8 +100,10 @@
 
 <form class="bulk-card" onsubmit={handleSubmit}>
   <div class="bulk-header">
-    <h4 class="bulk-title">Bulk Issue Gift Cards</h4>
-    <p class="bulk-desc">Upload a CSV to issue multiple gift cards at once. Each row creates one gift card.</p>
+    <h4 class="bulk-title">Bulk issue gift cards</h4>
+    <p class="bulk-desc">
+      Upload a CSV to issue multiple gift cards at once. Each row creates one gift card.
+    </p>
   </div>
 
   <div class="bulk-body">
@@ -121,10 +123,13 @@
           <span class="upload-text-sub">{parsedRows.length} cards parsed successfully</span>
         {:else}
           <span class="upload-text-main">Drop a CSV file or click to browse</span>
-          <span class="upload-text-sub">Columns: amount (required), recipient_phone (optional)</span>
+          <span class="upload-text-sub">Columns: amount (required), recipient_phone (optional)</span
+          >
         {/if}
       </div>
-      <span class="upload-btn" class:secondary={hasRows}>{hasRows ? 'Change File' : 'Choose File'}</span>
+      <span class="upload-btn" class:secondary={hasRows}
+        >{hasRows ? 'Change file' : 'Choose File'}</span
+      >
     </button>
 
     <div class="sample-row">
@@ -151,7 +156,7 @@
               <tr>
                 <th>#</th>
                 <th>Amount (₹)</th>
-                <th>Recipient Phone</th>
+                <th>Recipient phone</th>
               </tr>
             </thead>
             <tbody>
@@ -184,14 +189,14 @@
 <style>
   .bulk-card {
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     overflow: hidden;
+    box-shadow: var(--shadow-card);
   }
 
   .bulk-header {
     padding: var(--space-5) var(--space-6);
-    border-bottom: 1px solid var(--color-border-light, #f3f4f6);
+    border-bottom: 1px solid var(--color-border-light, var(--color-surface-2));
   }
 
   .bulk-title {
@@ -222,7 +227,7 @@
     padding: var(--space-4) var(--space-5);
     border: 2px dashed var(--color-border);
     border-radius: var(--radius-md);
-    background: var(--color-surface-2, #fafafa);
+    background: var(--color-surface-2, var(--g-100));
     cursor: pointer;
     width: 100%;
     text-align: left;
@@ -241,7 +246,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
+    font-size: var(--font-size-lg);
     flex-shrink: 0;
   }
 
@@ -259,7 +264,7 @@
   }
 
   .upload-text-sub {
-    font-size: 11px;
+    font-size: var(--font-size-xs);
     color: var(--color-text-muted);
   }
 
@@ -308,7 +313,7 @@
   }
 
   .sample-icon {
-    font-size: 14px;
+    font-size: var(--font-size-base);
   }
 
   .sample-divider {
@@ -318,7 +323,7 @@
   }
 
   .format-hint {
-    font-size: 11px;
+    font-size: var(--font-size-xs);
     color: var(--color-text-muted);
   }
 
@@ -386,7 +391,7 @@
 
   .bulk-footer {
     padding: var(--space-4) var(--space-6);
-    border-top: 1px solid var(--color-border-light, #f3f4f6);
+    border-top: 1px solid var(--color-border-light, var(--color-surface-2));
     display: flex;
     justify-content: flex-end;
   }

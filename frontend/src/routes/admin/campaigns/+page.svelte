@@ -166,43 +166,93 @@
     <div class="section-header">
       <h2 class="section-title">Active & Upcoming Campaigns</h2>
       <div class="section-actions">
-        <Button text="Settings" classes="btn-secondary" onclick={() => { showSettingsModal = true; }} />
-        <Button text="+ Create Campaign" classes="btn-primary" onclick={() => { showCreateModal = true; }} />
+        <Button
+          text="Settings"
+          classes="btn-secondary"
+          onclick={() => {
+            showSettingsModal = true;
+          }}
+        />
+        <Button
+          text="+ Create campaign"
+          classes="btn-primary"
+          onclick={() => {
+            showCreateModal = true;
+          }}
+        />
       </div>
     </div>
     <CampaignsList campaigns={$campaignsStore} {rules} onSelect={handleSelectCampaign} />
   </section>
 
   <section class="section">
-    <h2 class="section-title">Festive Templates</h2>
+    <h2 class="section-title">Festive templates</h2>
     <p class="section-description">Quick-start from a pre-configured template</p>
     <FestiveTemplateGrid {templates} onSelect={handleSelectTemplate} />
   </section>
 
   {#if selectedTemplate !== null}
-    <div class="modal-overlay" role="presentation" onclick={() => { selectedTemplate = null; }}>
+    <div
+      class="modal-overlay"
+      role="presentation"
+      onclick={() => {
+        selectedTemplate = null;
+      }}
+    >
       <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-      <div class="modal-panel" role="dialog" aria-label="Create campaign from template" tabindex="-1" onclick={(e) => e.stopPropagation()} onkeydown={(e) => { if (e.key === 'Escape') { selectedTemplate = null; } }}>
+      <div
+        class="modal-panel"
+        role="dialog"
+        aria-label="Create campaign from template"
+        tabindex="-1"
+        onclick={(e) => e.stopPropagation()}
+        onkeydown={(e) => {
+          if (e.key === 'Escape') {
+            selectedTemplate = null;
+          }
+        }}
+      >
         <CampaignForm
           template={selectedTemplate}
           {rules}
           existingCampaigns={$campaignsStore}
           onSaveTemplate={handleCreateFromTemplate}
-          onCancel={() => { selectedTemplate = null; }}
+          onCancel={() => {
+            selectedTemplate = null;
+          }}
         />
       </div>
     </div>
   {/if}
 
   {#if showCreateModal}
-    <div class="modal-overlay" role="presentation" onclick={() => { showCreateModal = false; }}>
+    <div
+      class="modal-overlay"
+      role="presentation"
+      onclick={() => {
+        showCreateModal = false;
+      }}
+    >
       <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-      <div class="modal-panel" role="dialog" aria-label="Create campaign" tabindex="-1" onclick={(e) => e.stopPropagation()} onkeydown={(e) => { if (e.key === 'Escape') { showCreateModal = false; } }}>
+      <div
+        class="modal-panel"
+        role="dialog"
+        aria-label="Create campaign"
+        tabindex="-1"
+        onclick={(e) => e.stopPropagation()}
+        onkeydown={(e) => {
+          if (e.key === 'Escape') {
+            showCreateModal = false;
+          }
+        }}
+      >
         <CampaignForm
           {rules}
           existingCampaigns={$campaignsStore}
           onSaveDirect={handleCreateDirect}
-          onCancel={() => { showCreateModal = false; }}
+          onCancel={() => {
+            showCreateModal = false;
+          }}
         />
       </div>
     </div>
@@ -214,7 +264,9 @@
       {rules}
       {stackingConfig}
       onDeactivate={handleDeactivate}
-      onClose={() => { selectedCampaign = null; }}
+      onClose={() => {
+        selectedCampaign = null;
+      }}
     />
   {/if}
 
@@ -222,7 +274,9 @@
     <StackingConfigModal
       config={stackingConfig}
       onSave={handleSaveSettings}
-      onCancel={() => { showSettingsModal = false; }}
+      onCancel={() => {
+        showSettingsModal = false;
+      }}
     />
   {/if}
 </div>
@@ -282,7 +336,6 @@
     color: var(--color-text-muted);
     margin-bottom: var(--space-4);
   }
-
 
   .modal-overlay {
     position: fixed;

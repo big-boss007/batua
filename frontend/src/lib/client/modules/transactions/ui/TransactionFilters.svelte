@@ -11,7 +11,16 @@
     onChange: (updated: TransactionFilters) => void;
   } = $props();
 
-  const BUCKET_TYPES = ['earned_credit', 'cod_pending', 'gift_card', 'customer_funded', 'referral_reward', 'goodwill_credit', 'membership_benefit', 'refund_credit'];
+  const BUCKET_TYPES = [
+    'earned_credit',
+    'cod_pending',
+    'gift_card',
+    'customer_funded',
+    'referral_reward',
+    'goodwill_credit',
+    'membership_benefit',
+    'refund_credit'
+  ];
   const MOVEMENT_TYPES = ['in', 'out', 'held', 'across'];
 
   let bucketItems = $derived(BUCKET_TYPES.map((bt) => ({ id: bt, label: formatBucketType(bt) })));
@@ -41,7 +50,7 @@
 
 <div class="filter-bar">
   <div class="filter-group">
-    <span class="filter-label">Bucket Type</span>
+    <span class="filter-label">Bucket type</span>
     <Select
       placeholder="All buckets"
       items={bucketItems}
@@ -51,7 +60,7 @@
   </div>
 
   <div class="filter-group">
-    <span class="filter-label">Movement Type</span>
+    <span class="filter-label">Movement type</span>
     <Select
       placeholder="All movements"
       items={movementItems}
@@ -61,7 +70,7 @@
   </div>
 
   {#if hasActiveFilters}
-    <Button text="Clear Filters" classes="btn-ghost" onclick={handleClear} />
+    <Button text="Clear filters" classes="btn-ghost" onclick={handleClear} />
   {/if}
 </div>
 
@@ -73,8 +82,8 @@
     flex-wrap: wrap;
     padding: var(--space-4);
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
   }
 
   .filter-group {
@@ -88,5 +97,4 @@
     margin-bottom: var(--space-1);
     font-weight: var(--font-weight-medium);
   }
-
 </style>
